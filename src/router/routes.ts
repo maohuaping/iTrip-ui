@@ -4,7 +4,17 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/',
     component: () => import('layouts/MainLayout.vue'),
-    children: [{ path: '', component: () => import('pages/IndexPage.vue') }],
+    children: [
+      { path: '', component: () => import('pages/IndexPage.vue') },
+      // 其他需要 MainLayout 的路由...
+    ],
+  },
+  {
+    path: '/work',
+    component: () => import('layouts/CleanLayout.vue'),
+    children: [
+      { path: '', component: () => import('pages/work/WorkPage.vue') }
+    ]
   },
 
   // Always leave this as last one,

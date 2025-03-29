@@ -1,0 +1,1186 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>工作平台 - 优化设计</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        dark: {
+                            100: '#1a1a2e',
+                            200: '#16213e',
+                            300: '#0f3460',
+                            400: '#1e2a3a',
+                        },
+                        accent: {
+                            100: '#4361ee',
+                            200: '#3a0ca3',
+                            300: '#4cc9f0',
+                        }
+                    },
+                    backdropBlur: {
+                        xs: '2px',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #0f172a;
+            color: #e2e8f0;
+            min-height: 100vh;
+            padding-top: env(safe-area-inset-top);
+            /* 适配刘海屏 */
+        }
+        
+        .glass {
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .glass-card {
+            background: rgba(30, 41, 59, 0.25);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        /* 固定导航栏的高度 */
+        
+        header {
+            height: 64px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 50;
+            background-color: rgba(15, 23, 42, 0.9);
+            /* 半透明背景 */
+            backdrop-filter: blur(8px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        /* 为主内容区域添加足够的顶部内边距 */
+        
+        main {
+            margin-top: 64px;
+            /* 与header高度相同 */
+            padding: 2rem 1rem;
+            position: relative;
+        }
+        /* 为锚点添加足够的顶部偏移 */
+        
+        section[id] {
+            scroll-margin-top: 80px;
+            /* 比导航栏高度多一些，确保有足够空间 */
+        }
+        /* 确保每个部分的标题有足够的顶部空间 */
+        
+        section[id] {
+            padding-top: 20px;
+        }
+        /* 确保内容容器正确定位 */
+        
+        .container {
+            position: relative;
+            width: 100%;
+            margin-left: auto;
+            margin-right: auto;
+        }
+    </style>
+</head>
+
+<body class="dark bg-gradient-to-br from-slate-900 to-slate-800 min-h-screen" x-data="{ showNewTaskModal: false }">
+    <!-- 顶部导航栏 -->
+    <header class="bg-slate-900 border-b border-slate-700 fixed w-full z-50">
+        <div class="container mx-auto px-4">
+            <div class="flex items-center justify-between h-16">
+                <!-- Logo 和标题 -->
+                <div class="flex items-center">
+                    <div class="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 flex items-center justify-center">
+                        <span class="text-white font-bold">W</span>
+                    </div>
+                    <h1 class="text-lg font-bold text-white ml-3">工作平台</h1>
+                </div>
+
+                <!-- 主导航菜单 - 居中显示 -->
+                <nav class="hidden md:flex space-x-1 absolute left-1/2 transform -translate-x-1/2">
+                    <!-- 任务列表 -->
+                    <div class="relative group">
+                        <a href="#tasks" class="px-4 py-2 rounded-lg text-white hover:bg-slate-800 transition flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                            </svg> 任务列表
+                        </a>
+                    </div>
+
+                    <!-- 工作日志 -->
+                    <div class="relative group">
+                        <a href="#worklog" class="px-4 py-2 rounded-lg text-white hover:bg-slate-800 transition flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg> 工作日志
+                        </a>
+                    </div>
+
+                    <!-- 快速访问下拉菜单 -->
+                    <div class="relative" x-data="{ open: false }">
+                        <div class="flex items-center">
+                            <a href="#quickaccess" class="px-4 py-2 rounded-lg text-white hover:bg-slate-800 transition flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                </svg> 快速访问
+                            </a>
+                            <button @click="open = !open" class="p-2 rounded-lg text-white hover:bg-slate-800 transition">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </button>
+                        </div>
+
+                        <!-- 下拉菜单 -->
+                        <div x-show="open" @click.away="open = false" class="absolute left-0 mt-2 w-56 rounded-md shadow-lg bg-slate-800 ring-1 ring-black ring-opacity-5">
+                            <div class="py-1">
+                                <a href="#api" class="block px-4 py-2 text-sm text-white hover:bg-slate-700">API 平台</a>
+                                <a href="#code" class="block px-4 py-2 text-sm text-white hover:bg-slate-700">代码仓库</a>
+                                <a href="#docs" class="block px-4 py-2 text-sm text-white hover:bg-slate-700">文档库</a>
+                                <a href="#design" class="block px-4 py-2 text-sm text-white hover:bg-slate-700">设计资源</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 实用工具下拉菜单 -->
+                    <div class="relative" x-data="{ open: false }">
+                        <div class="flex items-center">
+                            <a href="#tools" class="px-4 py-2 rounded-lg text-white hover:bg-slate-800 transition flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                </svg> 实用工具
+                            </a>
+                            <button @click="open = !open" class="p-2 rounded-lg text-white hover:bg-slate-800 transition">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </button>
+                        </div>
+
+                        <!-- 下拉菜单 -->
+                        <div x-show="open" @click.away="open = false" class="absolute left-0 mt-2 w-56 rounded-md shadow-lg bg-slate-800 ring-1 ring-black ring-opacity-5">
+                            <div class="py-1">
+                                <a href="#passwords" class="block px-4 py-2 text-sm text-white hover:bg-slate-700">环境密码</a>
+                                <a href="#timestamps" class="block px-4 py-2 text-sm text-white hover:bg-slate-700">时间戳工具</a>
+                                <a href="#converters" class="block px-4 py-2 text-sm text-white hover:bg-slate-700">格式转换</a>
+                            </div>
+                        </div>
+                    </div>
+                </nav>
+
+                <!-- 用户信息和设置 - 保持在右侧 -->
+                <div class="flex items-center">
+                    <!-- 通知图标 -->
+                    <div class="relative group mr-2">
+                        <button class="p-2 rounded-full hover:bg-slate-800 transition">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                            </svg>
+                            <span class="absolute top-0 right-0 block h-2 w-2 rounded-full bg-red-500"></span>
+                        </button>
+                    </div>
+
+                    <!-- 设置下拉菜单 -->
+                    <div class="relative group mr-2">
+                        <button class="p-2 rounded-full hover:bg-slate-800 transition">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                        </button>
+
+                        <!-- 下拉菜单 -->
+                        <div class="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-slate-800 ring-1 ring-black ring-opacity-5 hidden group-hover:block">
+                            <div class="py-1">
+                                <a href="#settings" class="block px-4 py-2 text-sm text-white hover:bg-slate-700">设置</a>
+                                <a href="#help" class="block px-4 py-2 text-sm text-white hover:bg-slate-700">帮助中心</a>
+                                <div class="border-t border-slate-700 my-1"></div>
+                                <a href="#logout" class="block px-4 py-2 text-sm text-red-400 hover:bg-slate-700">退出登录</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 用户头像 -->
+                    <div class="relative group">
+                        <button class="flex items-center">
+                            <div class="w-8 h-8 rounded-full bg-gradient-to-r from-purple-500 to-indigo-600 flex items-center justify-center">
+                                <span class="text-white font-bold">U</span>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 移动端菜单按钮 -->
+                <div class="md:hidden">
+                    <button id="mobile-menu-button" class="p-2 rounded-md text-slate-400 hover:text-white hover:bg-slate-800 focus:outline-none">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主内容区域 -->
+    <main>
+        <div class="container mx-auto">
+            <!-- 任务列表部分 -->
+            <section id="tasks" class="mb-12 glass rounded-xl overflow-hidden shadow-2xl">
+                <div class="p-6">
+                    <div class="flex justify-between mb-6">
+                        <h2 class="text-xl font-bold text-white">任务列表</h2>
+                        <div class="flex space-x-2">
+                            <button class="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-sm transition flex items-center" @click="showNewTaskModal = true">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+                                </svg>
+                                新建任务
+                            </button>
+                            <button class="px-3 py-1 bg-slate-700 hover:bg-slate-600 text-white rounded-md text-sm transition">筛选</button>
+                        </div>
+                    </div>
+
+                    <!-- 两栏布局：呼入/呼出 -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- 呼入任务列表 -->
+                        <div>
+                            <h3 class="text-lg font-semibold text-slate-300 mb-3 flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                                </svg> 呼入任务
+                            </h3>
+                            <div class="space-y-3">
+                                <!-- 呼入任务项 1 -->
+                                <div class="glass-card rounded-lg p-4 hover:bg-slate-700/30 transition cursor-pointer border-l-4 border-blue-500 group">
+                                    <div class="flex flex-col gap-2">
+                                        <div class="flex items-center gap-4">
+                                            <div class="flex items-center space-x-2 min-w-[140px]">
+                                                <div class="w-2 h-2 rounded-full bg-blue-500"></div>
+                                                <a href="#" class="text-slate-400 text-sm hover:text-blue-400 transition">
+                                                    28241226890
+                                                </a>
+                                            </div>
+                                            <div class="flex-1 overflow-hidden">
+                                                <a href="#" class="text-white hover:text-blue-300 transition whitespace-nowrap overflow-hidden text-ellipsis block" title="有广告信息需要发布广告位的服务">
+                                                    有广告信息需要发布广告位的服务
+                                                </a>
+                                            </div>
+                                            <span class="text-xs px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 flex-shrink-0">呼入</span>
+                                        </div>
+                                        <div class="flex items-center">
+                                            <div class="min-w-[140px]">
+                                                <span class="text-xs px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 ml-4">Gitee</span>
+                                            </div>
+                                            <div class="flex flex-wrap gap-1">
+                                                <a href="#" class="text-xs px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 hover:bg-blue-500/30 transition">需求</a>
+                                                <a href="#" class="text-xs px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 hover:bg-purple-500/30 transition">设计</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- 呼入任务项 2 -->
+                                <div class="glass-card rounded-lg p-4 hover:bg-slate-700/30 transition cursor-pointer border-l-4 border-blue-500 group">
+                                    <div class="flex flex-col gap-2">
+                                        <div class="flex items-center gap-4">
+                                            <div class="flex items-center space-x-2 min-w-[140px]">
+                                                <div class="w-2 h-2 rounded-full bg-blue-500"></div>
+                                                <a href="#" class="text-slate-400 text-sm hover:text-blue-400 transition">
+                                                    28241226892
+                                                </a>
+                                            </div>
+                                            <div class="flex-1 overflow-hidden">
+                                                <a href="#" class="text-white hover:text-blue-300 transition whitespace-nowrap overflow-hidden text-ellipsis block" title="数据分析平台的用户反馈优化需求">
+                                                    数据分析平台的用户反馈优化需求
+                                                </a>
+                                            </div>
+                                            <span class="text-xs px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 flex-shrink-0">呼入</span>
+                                        </div>
+                                        <div class="flex items-center">
+                                            <div class="min-w-[140px]">
+                                                <span class="text-xs px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 ml-4">Gitee</span>
+                                            </div>
+                                            <div class="flex flex-wrap gap-1">
+                                                <a href="#" class="text-xs px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 hover:bg-blue-500/30 transition">需求</a>
+                                                <a href="#" class="text-xs px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 hover:bg-purple-500/30 transition">设计</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- 呼入任务项 3 -->
+                                <div class="glass-card rounded-lg p-4 hover:bg-slate-700/30 transition cursor-pointer border-l-4 border-blue-500 group">
+                                    <div class="flex flex-col gap-2">
+                                        <div class="flex items-center gap-4">
+                                            <div class="flex items-center space-x-2 min-w-[140px]">
+                                                <div class="w-2 h-2 rounded-full bg-blue-500"></div>
+                                                <a href="#" class="text-slate-400 text-sm hover:text-blue-400 transition">
+                                                    28241226894
+                                                </a>
+                                            </div>
+                                            <div class="flex-1 overflow-hidden">
+                                                <a href="#" class="text-white hover:text-blue-300 transition whitespace-nowrap overflow-hidden text-ellipsis block" title="客户端性能优化与崩溃问题修复">
+                                                    客户端性能优化与崩溃问题修复
+                                                </a>
+                                            </div>
+                                            <span class="text-xs px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 flex-shrink-0">呼入</span>
+                                        </div>
+                                        <div class="flex items-center">
+                                            <div class="min-w-[140px]">
+                                                <span class="text-xs px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 ml-4">Gitee</span>
+                                            </div>
+                                            <div class="flex flex-wrap gap-1">
+                                                <a href="#" class="text-xs px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 hover:bg-blue-500/30 transition">需求</a>
+                                                <a href="#" class="text-xs px-2 py-0.5 rounded-full bg-red-500/20 text-red-300 hover:bg-red-500/30 transition">Bug</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mt-4">
+                                <button class="px-3 py-1 bg-slate-700 hover:bg-slate-600 text-white rounded-md text-sm transition w-full">
+                                    查看全部呼入任务
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- 呼出任务列表 -->
+                        <div>
+                            <h3 class="text-lg font-semibold text-slate-300 mb-3 flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 3h5m0 0v5m0-5l-6 6M5 3a2 2 0 00-2 2v1c0 8.284 6.716 15 15 15h1a2 2 0 002-2v-3.28a1 1 0 00-.684-.948l-4.493-1.498a1 1 0 00-1.21.502l-1.13 2.257a11.042 11.042 0 01-5.516-5.517l2.257-1.128a1 1 0 00.502-1.21L9.228 3.683A1 1 0 008.279 3H5z" />
+                                </svg> 呼出任务
+                            </h3>
+                            <div class="space-y-3">
+                                <!-- 呼出任务项 1 -->
+                                <div class="glass-card rounded-lg p-4 hover:bg-slate-700/30 transition cursor-pointer border-l-4 border-emerald-500 group">
+                                    <div class="flex flex-col gap-2">
+                                        <div class="flex items-center gap-4">
+                                            <div class="flex items-center space-x-2 min-w-[140px]">
+                                                <div class="w-2 h-2 rounded-full bg-emerald-500"></div>
+                                                <a href="#" class="text-slate-400 text-sm hover:text-emerald-400 transition">
+                                                    28241226891
+                                                </a>
+                                            </div>
+                                            <div class="flex-1 overflow-hidden">
+                                                <a href="#" class="text-white hover:text-emerald-300 transition whitespace-nowrap overflow-hidden text-ellipsis block" title="智慧乡镇化的乡村村入户服务需求产品相关的需求反馈">
+                                                    智慧乡镇化的乡村村入户服务需求产品相关的需求反馈
+                                                </a>
+                                            </div>
+                                            <span class="text-xs px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 flex-shrink-0">呼出</span>
+                                        </div>
+                                        <div class="flex items-center">
+                                            <div class="min-w-[140px]">
+                                                <span class="text-xs px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 ml-4">Gitee</span>
+                                            </div>
+                                            <div class="flex flex-wrap gap-1">
+                                                <a href="#" class="text-xs px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 hover:bg-blue-500/30 transition">需求</a>
+                                                <a href="#" class="text-xs px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 hover:bg-purple-500/30 transition">设计</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- 呼出任务项 2 -->
+                                <div class="glass-card rounded-lg p-4 hover:bg-slate-700/30 transition cursor-pointer border-l-4 border-emerald-500 group">
+                                    <div class="flex flex-col gap-2">
+                                        <div class="flex items-center gap-4">
+                                            <div class="flex items-center space-x-2 min-w-[140px]">
+                                                <div class="w-2 h-2 rounded-full bg-emerald-500"></div>
+                                                <a href="#" class="text-slate-400 text-sm hover:text-emerald-400 transition">
+                                                    28241226893
+                                                </a>
+                                            </div>
+                                            <div class="flex-1 overflow-hidden">
+                                                <a href="#" class="text-white hover:text-emerald-300 transition whitespace-nowrap overflow-hidden text-ellipsis block" title="移动端应用界面交互体验改进建议">
+                                                    移动端应用界面交互体验改进建议
+                                                </a>
+                                            </div>
+                                            <span class="text-xs px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 flex-shrink-0">呼出</span>
+                                        </div>
+                                        <div class="flex items-center">
+                                            <div class="min-w-[140px]">
+                                                <span class="text-xs px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 ml-4">Gitee</span>
+                                            </div>
+                                            <div class="flex flex-wrap gap-1">
+                                                <a href="#" class="text-xs px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 hover:bg-blue-500/30 transition">需求</a>
+                                                <a href="#" class="text-xs px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 hover:bg-purple-500/30 transition">设计</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- 呼出任务项 3 -->
+                                <div class="glass-card rounded-lg p-4 hover:bg-slate-700/30 transition cursor-pointer border-l-4 border-emerald-500 group">
+                                    <div class="flex flex-col gap-2">
+                                        <div class="flex items-center gap-4">
+                                            <div class="flex items-center space-x-2 min-w-[140px]">
+                                                <div class="w-2 h-2 rounded-full bg-emerald-500"></div>
+                                                <a href="#" class="text-slate-400 text-sm hover:text-emerald-400 transition">
+                                                    28241226895
+                                                </a>
+                                            </div>
+                                            <div class="flex-1 overflow-hidden">
+                                                <a href="#" class="text-white hover:text-emerald-300 transition whitespace-nowrap overflow-hidden text-ellipsis block" title="后台管理系统权限模块重构方案">
+                                                    后台管理系统权限模块重构方案
+                                                </a>
+                                            </div>
+                                            <span class="text-xs px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 flex-shrink-0">呼出</span>
+                                        </div>
+                                        <div class="flex items-center">
+                                            <div class="min-w-[140px]">
+                                                <span class="text-xs px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 ml-4">Gitee</span>
+                                            </div>
+                                            <div class="flex flex-wrap gap-1">
+                                                <a href="#" class="text-xs px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 hover:bg-blue-500/30 transition">需求</a>
+                                                <a href="#" class="text-xs px-2 py-0.5 rounded-full bg-yellow-500/20 text-yellow-300 hover:bg-yellow-500/30 transition">重构</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mt-4">
+                                <button class="px-3 py-1 bg-slate-700 hover:bg-slate-600 text-white rounded-md text-sm transition w-full">
+                                    查看全部呼出任务
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 工作日志部分 -->
+            <section id="worklog" class="mb-12 glass rounded-xl overflow-hidden shadow-2xl">
+                <div class="p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold text-white">工作日志</h2>
+                        <button class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-sm transition flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+                            </svg>
+                            添加日志
+                        </button>
+                    </div>
+
+                    <div class="relative">
+                        <div class="glass-card rounded-lg p-4 mb-4 border-l-4 border-blue-500">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <div class="text-xs text-slate-400 mb-1">2023-03-21 17:17</div>
+                                    <p class="text-white">今天完成了一个重要的数据查询功能的需求调研和原型设计，明天上线后就可以开始实现了。此外，我还处理了几个bug，测试通过并部署了7个功能点的修复。完成了"云计算"的分析，增强了对项目的理解。</p>
+                                </div>
+                                <button class="p-1 rounded hover:bg-slate-700/50 transition">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-400" viewBox="0 0 20 20" fill="currentColor">
+                                        <path d="M6 10a2 2 0 11-4 0 2 2 0 014 0zM12 10a2 2 0 11-4 0 2 2 0 014 0zM16 12a2 2 0 100-4 2 2 0 000 4z" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-center mt-6">
+                            <button class="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-md text-sm transition">
+                                加载更多
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 快速访问链接模块 -->
+            <section id="quickaccess" class="mb-12 glass rounded-xl overflow-hidden shadow-2xl">
+                <div class="p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold text-white">快速访问</h2>
+                        <button class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-sm transition flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+                            </svg>
+                            添加链接
+                        </button>
+                    </div>
+
+                    <!-- 开发工具分组 -->
+                    <div class="mb-6">
+                        <h3 class="text-lg font-semibold text-slate-300 mb-3 flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                            </svg> 开发工具
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <!-- 代码仓库 -->
+                            <a href="#" class="glass-card rounded-lg p-4 hover:bg-slate-700/30 transition group border-l-4 border-amber-500 flex items-center">
+                                <div class="w-10 h-10 rounded-lg bg-amber-600/20 flex items-center justify-center mr-3">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 class="text-white font-medium group-hover:text-amber-300 transition">代码仓库</h3>
+                                    <p class="text-xs text-slate-400">Gitee / GitHub 代码管理</p>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- API平台分组 -->
+                    <div class="mb-6">
+                        <h3 class="text-lg font-semibold text-slate-300 mb-3 flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                            </svg> API 平台
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <!-- 测试环境 API -->
+                            <a href="#" class="glass-card rounded-lg p-4 hover:bg-slate-700/30 transition group border-l-4 border-blue-500 flex items-center">
+                                <div class="w-10 h-10 rounded-lg bg-blue-600/20 flex items-center justify-center mr-3">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 class="text-white font-medium group-hover:text-blue-300 transition">测试环境 API</h3>
+                                    <p class="text-xs text-slate-400">测试环境接口文档与测试</p>
+                                </div>
+                            </a>
+
+                            <!-- 生产环境 API -->
+                            <a href="#" class="glass-card rounded-lg p-4 hover:bg-slate-700/30 transition group border-l-4 border-green-500 flex items-center">
+                                <div class="w-10 h-10 rounded-lg bg-green-600/20 flex items-center justify-center mr-3">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 class="text-white font-medium group-hover:text-green-300 transition">生产环境 API</h3>
+                                    <p class="text-xs text-slate-400">生产环境接口文档</p>
+                                </div>
+                            </a>
+
+                            <!-- API 监控 -->
+                            <a href="#" class="glass-card rounded-lg p-4 hover:bg-slate-700/30 transition group border-l-4 border-purple-500 flex items-center">
+                                <div class="w-10 h-10 rounded-lg bg-purple-600/20 flex items-center justify-center mr-3">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 class="text-white font-medium group-hover:text-purple-300 transition">API 监控</h3>
+                                    <p class="text-xs text-slate-400">接口性能与状态监控</p>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- 邮箱分组 -->
+                    <div class="mb-6">
+                        <h3 class="text-lg font-semibold text-slate-300 mb-3 flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                            </svg> 邮箱
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <!-- 工作邮箱 -->
+                            <a href="#" class="glass-card rounded-lg p-4 hover:bg-slate-700/30 transition group border-l-4 border-indigo-500 flex items-center">
+                                <div class="w-10 h-10 rounded-lg bg-indigo-600/20 flex items-center justify-center mr-3">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 class="text-white font-medium group-hover:text-indigo-300 transition">工作邮箱</h3>
+                                    <p class="text-xs text-slate-400">企业邮箱</p>
+                                </div>
+                            </a>
+
+                            <!-- QQ邮箱 -->
+                            <a href="#" class="glass-card rounded-lg p-4 hover:bg-slate-700/30 transition group border-l-4 border-blue-500 flex items-center">
+                                <div class="w-10 h-10 rounded-lg bg-blue-600/20 flex items-center justify-center mr-3">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-400" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                        <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 class="text-white font-medium group-hover:text-blue-300 transition">QQ邮箱</h3>
+                                    <p class="text-xs text-slate-400">个人QQ邮箱</p>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- 项目管理分组 -->
+                    <div class="mb-6">
+                        <h3 class="text-lg font-semibold text-slate-300 mb-3 flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                            </svg> 项目管理
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <!-- 项目排期 -->
+                            <a href="#" class="glass-card rounded-lg p-4 hover:bg-slate-700/30 transition group border-l-4 border-green-500 flex items-center">
+                                <div class="w-10 h-10 rounded-lg bg-green-600/20 flex items-center justify-center mr-3">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 class="text-white font-medium group-hover:text-green-300 transition">项目排期</h3>
+                                    <p class="text-xs text-slate-400">Excel 项目计划与进度</p>
+                                </div>
+                            </a>
+
+                            <!-- 文档库 -->
+                            <a href="#" class="glass-card rounded-lg p-4 hover:bg-slate-700/30 transition group border-l-4 border-purple-500 flex items-center">
+                                <div class="w-10 h-10 rounded-lg bg-purple-600/20 flex items-center justify-center mr-3">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 class="text-white font-medium group-hover:text-purple-300 transition">文档库</h3>
+                                    <p class="text-xs text-slate-400">项目文档与知识库</p>
+                                </div>
+                            </a>
+
+                            <!-- 会议安排 -->
+                            <a href="#" class="glass-card rounded-lg p-4 hover:bg-slate-700/30 transition group border-l-4 border-cyan-500 flex items-center">
+                                <div class="w-10 h-10 rounded-lg bg-cyan-600/20 flex items-center justify-center mr-3">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-cyan-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 class="text-white font-medium group-hover:text-cyan-300 transition">会议安排</h3>
+                                    <p class="text-xs text-slate-400">团队会议与日程安排</p>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- 设计资源分组 -->
+                    <div class="mb-6">
+                        <h3 class="text-lg font-semibold text-slate-300 mb-3 flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-pink-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
+                            </svg> 设计资源
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <!-- 设计资源 -->
+                            <a href="#" class="glass-card rounded-lg p-4 hover:bg-slate-700/30 transition group border-l-4 border-pink-500 flex items-center">
+                                <div class="w-10 h-10 rounded-lg bg-pink-600/20 flex items-center justify-center mr-3">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-pink-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 class="text-white font-medium group-hover:text-pink-300 transition">UI/UX 素材库</h3>
+                                    <p class="text-xs text-slate-400">设计素材与模板</p>
+                                </div>
+                            </a>
+
+                            <!-- 图标库 -->
+                            <a href="#" class="glass-card rounded-lg p-4 hover:bg-slate-700/30 transition group border-l-4 border-rose-500 flex items-center">
+                                <div class="w-10 h-10 rounded-lg bg-rose-600/20 flex items-center justify-center mr-3">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-rose-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 class="text-white font-medium group-hover:text-rose-300 transition">图标库</h3>
+                                    <p class="text-xs text-slate-400">项目图标资源</p>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="mt-6">
+                        <button class="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-md text-sm transition w-full">
+                            查看全部资源
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 实用工具模块 -->
+            <section id="tools" class="mb-12 glass rounded-xl overflow-hidden shadow-2xl">
+                <div class="p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold text-white">快速复制工具</h2>
+                        <button class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-sm transition flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+                            </svg>
+                            添加新项
+                        </button>
+                    </div>
+
+                    <!-- 测试环境密码 -->
+                    <div class="mb-6">
+                        <h3 class="text-lg font-semibold text-slate-300 mb-3 flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                            </svg> 测试环境密码
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <!-- 管理员账号 -->
+                            <div class="glass-card rounded-lg p-4 hover:bg-slate-700/30 transition group">
+                                <div class="flex justify-between items-center mb-2">
+                                    <h4 class="text-white font-medium">管理员账号</h4>
+                                    <button onclick="copyToClipboard('admin@123456', this)" class="px-2 py-1 bg-amber-600/20 text-amber-300 rounded text-xs hover:bg-amber-600/30 transition">
+                                        复制
+                                    </button>
+                                </div>
+                                <div class="flex items-center">
+                                    <span class="text-slate-400 text-sm font-mono mr-2">admin@123456</span>
+                                    <span class="text-xs px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300">管理员</span>
+                                </div>
+                            </div>
+
+                            <!-- 测试账号 -->
+                            <div class="glass-card rounded-lg p-4 hover:bg-slate-700/30 transition group">
+                                <div class="flex justify-between items-center mb-2">
+                                    <h4 class="text-white font-medium">测试账号</h4>
+                                    <button onclick="copyToClipboard('test@123456', this)" class="px-2 py-1 bg-blue-600/20 text-blue-300 rounded text-xs hover:bg-blue-600/30 transition">
+                                        复制
+                                    </button>
+                                </div>
+                                <div class="flex items-center">
+                                    <span class="text-slate-400 text-sm font-mono mr-2">test@123456</span>
+                                    <span class="text-xs px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300">测试用户</span>
+                                </div>
+                            </div>
+
+                            <!-- 数据库密码 -->
+                            <div class="glass-card rounded-lg p-4 hover:bg-slate-700/30 transition group">
+                                <div class="flex justify-between items-center mb-2">
+                                    <h4 class="text-white font-medium">数据库密码</h4>
+                                    <button onclick="copyToClipboard('db_test@2023', this)" class="px-2 py-1 bg-green-600/20 text-green-300 rounded text-xs hover:bg-green-600/30 transition">
+                                        复制
+                                    </button>
+                                </div>
+                                <div class="flex items-center">
+                                    <span class="text-slate-400 text-sm font-mono mr-2">db_test@2023</span>
+                                    <span class="text-xs px-2 py-0.5 rounded-full bg-green-500/20 text-green-300">数据库</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 生产环境密码 -->
+                    <div class="mb-6">
+                        <h3 class="text-lg font-semibold text-slate-300 mb-3 flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                            </svg> 生产环境密码
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <!-- 管理员账号 -->
+                            <div class="glass-card rounded-lg p-4 hover:bg-slate-700/30 transition group border-l-4 border-red-500">
+                                <div class="flex justify-between items-center mb-2">
+                                    <h4 class="text-white font-medium">管理员账号</h4>
+                                    <button onclick="copyToClipboard('prod_admin@2023Secure!', this)" class="px-2 py-1 bg-red-600/20 text-red-300 rounded text-xs hover:bg-red-600/30 transition">
+                                        复制
+                                    </button>
+                                </div>
+                                <div class="flex items-center">
+                                    <span class="text-slate-400 text-sm font-mono mr-2">prod_admin@2023Secure!</span>
+                                    <span class="text-xs px-2 py-0.5 rounded-full bg-red-500/20 text-red-300">生产管理员</span>
+                                </div>
+                            </div>
+
+                            <!-- 运维账号 -->
+                            <div class="glass-card rounded-lg p-4 hover:bg-slate-700/30 transition group border-l-4 border-red-500">
+                                <div class="flex justify-between items-center mb-2">
+                                    <h4 class="text-white font-medium">运维账号</h4>
+                                    <button onclick="copyToClipboard('ops_user@Prod2023!', this)" class="px-2 py-1 bg-red-600/20 text-red-300 rounded text-xs hover:bg-red-600/30 transition">
+                                        复制
+                                    </button>
+                                </div>
+                                <div class="flex items-center">
+                                    <span class="text-slate-400 text-sm font-mono mr-2">ops_user@Prod2023!</span>
+                                    <span class="text-xs px-2 py-0.5 rounded-full bg-red-500/20 text-red-300">运维</span>
+                                </div>
+                            </div>
+
+                            <!-- 数据库密码 -->
+                            <div class="glass-card rounded-lg p-4 hover:bg-slate-700/30 transition group border-l-4 border-red-500">
+                                <div class="flex justify-between items-center mb-2">
+                                    <h4 class="text-white font-medium">数据库密码</h4>
+                                    <button onclick="copyToClipboard('db_prod@Secure2023!', this)" class="px-2 py-1 bg-red-600/20 text-red-300 rounded text-xs hover:bg-red-600/30 transition">
+                                        复制
+                                    </button>
+                                </div>
+                                <div class="flex items-center">
+                                    <span class="text-slate-400 text-sm font-mono mr-2">db_prod@Secure2023!</span>
+                                    <span class="text-xs px-2 py-0.5 rounded-full bg-red-500/20 text-red-300">生产数据库</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 时间戳工具 -->
+                    <div>
+                        <h3 class="text-lg font-semibold text-slate-300 mb-3 flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg> 时间戳工具
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <!-- 当前时间戳 -->
+                            <div class="glass-card rounded-lg p-4 hover:bg-slate-700/30 transition group">
+                                <div class="flex justify-between items-center mb-2">
+                                    <h4 class="text-white font-medium">当前时间戳 (秒)</h4>
+                                    <button id="copyTimestampBtn" onclick="copyTimestamp('seconds')" class="px-2 py-1 bg-blue-600/20 text-blue-300 rounded text-xs hover:bg-blue-600/30 transition">
+                                        复制
+                                    </button>
+                                </div>
+                                <div class="flex items-center">
+                                    <span id="currentTimestamp" class="text-slate-400 text-sm font-mono"></span>
+                                </div>
+                            </div>
+
+                            <!-- 毫秒时间戳 -->
+                            <div class="glass-card rounded-lg p-4 hover:bg-slate-700/30 transition group">
+                                <div class="flex justify-between items-center mb-2">
+                                    <h4 class="text-white font-medium">当前时间戳 (毫秒)</h4>
+                                    <button id="copyMsTimestampBtn" onclick="copyTimestamp('milliseconds')" class="px-2 py-1 bg-purple-600/20 text-purple-300 rounded text-xs hover:bg-purple-600/30 transition">
+                                        复制
+                                    </button>
+                                </div>
+                                <div class="flex items-center">
+                                    <span id="currentMsTimestamp" class="text-slate-400 text-sm font-mono"></span>
+                                </div>
+                            </div>
+
+                            <!-- 格式化日期时间 -->
+                            <div class="glass-card rounded-lg p-4 hover:bg-slate-700/30 transition group">
+                                <div class="flex justify-between items-center mb-2">
+                                    <h4 class="text-white font-medium">格式化日期时间</h4>
+                                    <button id="copyFormattedDateBtn" onclick="copyFormattedDate()" class="px-2 py-1 bg-green-600/20 text-green-300 rounded text-xs hover:bg-green-600/30 transition">
+                                        复制
+                                    </button>
+                                </div>
+                                <div class="flex items-center">
+                                    <span id="formattedDate" class="text-slate-400 text-sm font-mono"></span>
+                                </div>
+                            </div>
+
+                            <!-- 自定义格式 -->
+                            <div class="glass-card rounded-lg p-4 hover:bg-slate-700/30 transition group">
+                                <div class="flex justify-between items-center mb-2">
+                                    <h4 class="text-white font-medium">记录ID格式</h4>
+                                    <button id="copyCustomFormatBtn" onclick="copyCustomFormat()" class="px-2 py-1 bg-indigo-600/20 text-indigo-300 rounded text-xs hover:bg-indigo-600/30 transition">
+                                        复制
+                                    </button>
+                                </div>
+                                <div class="flex items-center">
+                                    <span id="customFormat" class="text-slate-400 text-sm font-mono"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <script>
+        // 初始化Alpine.js数据
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('taskData', () => ({
+                showNewTaskModal: false,
+
+                // 打开新建任务模态框
+                openNewTaskModal() {
+                    this.showNewTaskModal = true;
+                },
+
+                // 关闭新建任务模态框
+                closeNewTaskModal() {
+                    this.showNewTaskModal = false;
+                }
+            }));
+        });
+
+        function copyToClipboard(text, element) {
+            navigator.clipboard.writeText(text).then(function() {
+                const originalText = element.textContent;
+                element.textContent = '已复制!';
+                setTimeout(function() {
+                    element.textContent = originalText;
+                }, 1000);
+            });
+        }
+
+        // 更新并复制时间戳
+        function updateTimestamps() {
+            const now = new Date();
+            const secondsTimestamp = Math.floor(now.getTime() / 1000);
+            const msTimestamp = now.getTime();
+
+            // 更新显示
+            document.getElementById('currentTimestamp').textContent = secondsTimestamp;
+            document.getElementById('currentMsTimestamp').textContent = msTimestamp;
+
+            // 格式化日期时间 (YYYY-MM-DD HH:MM:SS)
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            const formattedDate = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+            document.getElementById('formattedDate').textContent = formattedDate;
+
+            // 自定义格式 (常用于记录ID: YYYYMMDDHHMMSS)
+            const customFormat = `${year}${month}${day}${hours}${minutes}${seconds}`;
+            document.getElementById('customFormat').textContent = customFormat;
+        }
+
+        // 复制时间戳
+        function copyTimestamp(type) {
+            const element = type === 'seconds' ?
+                document.getElementById('copyTimestampBtn') :
+                document.getElementById('copyMsTimestampBtn');
+            const text = type === 'seconds' ?
+                document.getElementById('currentTimestamp').textContent :
+                document.getElementById('currentMsTimestamp').textContent;
+
+            copyToClipboard(text, element);
+        }
+
+        // 复制格式化日期
+        function copyFormattedDate() {
+            const element = document.getElementById('copyFormattedDateBtn');
+            const text = document.getElementById('formattedDate').textContent;
+            copyToClipboard(text, element);
+        }
+
+        // 复制自定义格式
+        function copyCustomFormat() {
+            const element = document.getElementById('copyCustomFormatBtn');
+            const text = document.getElementById('customFormat').textContent;
+            copyToClipboard(text, element);
+        }
+
+        // 初始化并每秒更新时间戳
+        updateTimestamps();
+        setInterval(updateTimestamps, 1000);
+
+        // 移动端菜单切换
+        document.getElementById('mobile-menu-button').addEventListener('click', function() {
+            const mobileMenu = document.getElementById('mobile-menu');
+            mobileMenu.classList.toggle('hidden');
+        });
+
+        // 监听所有导航链接的点击事件
+        document.addEventListener('DOMContentLoaded', function() {
+            const navLinks = document.querySelectorAll('a[href^="#"]');
+
+            navLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+
+                    const targetId = this.getAttribute('href').slice(1);
+                    const targetElement = document.getElementById(targetId);
+
+                    if (targetElement) {
+                        // 打印目标元素的位置信息
+                        const rect = targetElement.getBoundingClientRect();
+                        console.log('导航目标:', targetId);
+                        console.log('目标元素位置:', {
+                            top: rect.top,
+                            offsetTop: targetElement.offsetTop,
+                            scrollTop: window.scrollY,
+                            headerHeight: document.querySelector('header').offsetHeight
+                        });
+
+                        // 计算滚动位置
+                        const headerHeight = document.querySelector('header').offsetHeight;
+                        const scrollPosition = targetElement.offsetTop - headerHeight;
+
+                        console.log('计算的滚动位置:', scrollPosition);
+
+                        // 平滑滚动到目标位置
+                        window.scrollTo({
+                            top: scrollPosition,
+                            behavior: 'smooth'
+                        });
+
+                        // 滚动完成后再次检查位置
+                        setTimeout(() => {
+                            const newRect = targetElement.getBoundingClientRect();
+                            console.log('滚动后位置:', {
+                                top: newRect.top,
+                                scrollY: window.scrollY
+                            });
+                        }, 1000);
+                    } else {
+                        console.warn('未找到目标元素:', targetId);
+                    }
+                });
+            });
+        });
+
+        // 监听滚动事件
+        let scrollTimeout;
+        window.addEventListener('scroll', function() {
+            clearTimeout(scrollTimeout);
+            scrollTimeout = setTimeout(() => {
+                console.log('当前滚动位置:', {
+                    scrollY: window.scrollY,
+                    innerHeight: window.innerHeight
+                });
+            }, 150);
+        });
+    </script>
+
+    <!-- 新建任务模态框 -->
+    <div x-show="showNewTaskModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center overflow-auto" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+        x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
+
+        <!-- 模态框内容 -->
+        <div x-show="showNewTaskModal" @click.away="showNewTaskModal = false" class="glass-card rounded-xl max-w-2xl w-full mx-4 overflow-hidden shadow-2xl" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 transform scale-95"
+            x-transition:enter-end="opacity-100 transform scale-100" x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 transform scale-100" x-transition:leave-end="opacity-0 transform scale-95">
+
+            <!-- 模态框头部 -->
+            <div class="bg-slate-800 px-6 py-4 border-b border-slate-700 flex justify-between items-center">
+                <h3 class="text-xl font-bold text-white">新建任务</h3>
+                <button @click="showNewTaskModal = false" class="text-slate-400 hover:text-white transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+
+            <!-- 模态框内容 -->
+            <div class="p-6">
+                <form>
+                    <!-- 任务类型和任务编号（放在同一行，调整宽度） -->
+                    <div class="mb-4 grid grid-cols-5 gap-4">
+                        <!-- 任务类型（下拉框）- 左侧，宽度减小 -->
+                        <div class="col-span-2">
+                            <label for="task-type" class="block text-sm font-medium text-slate-300 mb-1">任务类型</label>
+                            <div class="relative">
+                                <select id="task-type" class="appearance-none w-full px-4 py-2 rounded-lg bg-slate-800 border border-slate-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent pr-8">
+                                    <option value="incoming">呼入任务</option>
+                                    <option value="outgoing">呼出任务</option>
+                                </select>
+                                <!-- 自定义下拉箭头 -->
+                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-400">
+                                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 任务编号 - 右侧，宽度增加 -->
+                        <div class="col-span-3">
+                            <label for="task-id" class="block text-sm font-medium text-slate-300 mb-1">任务编号</label>
+                            <input type="text" id="task-id" class="w-full px-4 py-2 rounded-lg bg-slate-800 border border-slate-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="请输入任务编号">
+                        </div>
+                    </div>
+
+                    <!-- 任务标题 -->
+                    <div class="mb-4">
+                        <label for="task-title" class="block text-sm font-medium text-slate-300 mb-1">任务标题</label>
+                        <input type="text" id="task-title" class="w-full px-4 py-2 rounded-lg bg-slate-800 border border-slate-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="请输入任务标题">
+                    </div>
+
+                    <!-- 关联文档 -->
+                    <div class="mb-6" x-data="{ 
+                        selectedDocs: {
+                            requirement: false,
+                            design: false
+                        } 
+                    }">
+                        <div class="flex justify-between items-center mb-1">
+                            <label class="block text-sm font-medium text-slate-300">关联文档</label>
+                            <span class="text-xs text-slate-400">如需关联多个文档，请用逗号分隔</span>
+                        </div>
+                        <div class="flex flex-wrap gap-2 mb-3">
+                            <label class="inline-flex items-center px-3 py-1 rounded-full bg-blue-500/20 text-blue-300 hover:bg-blue-500/30 transition cursor-pointer" :class="{ 'ring-2 ring-blue-400': selectedDocs.requirement }">
+                                <input type="checkbox" name="task-docs" value="requirement" class="sr-only" 
+                                       x-model="selectedDocs.requirement">
+                                <span>需求</span>
+                            </label>
+                            <label class="inline-flex items-center px-3 py-1 rounded-full bg-purple-500/20 text-purple-300 hover:bg-purple-500/30 transition cursor-pointer" :class="{ 'ring-2 ring-purple-400': selectedDocs.design }">
+                                <input type="checkbox" name="task-docs" value="design" class="sr-only"
+                                       x-model="selectedDocs.design">
+                                <span>设计</span>
+                            </label>
+                        </div>
+
+                        <!-- 动态显示文档名称输入字段 -->
+                        <div class="space-y-3">
+                            <!-- 需求文档名称 -->
+                            <div x-show="selectedDocs.requirement" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 transform -translate-y-2" x-transition:enter-end="opacity-100 transform translate-y-0">
+                                <label for="requirement-doc" class="block text-sm font-medium text-blue-300 mb-1">需求文档名称</label>
+                                <input type="text" id="requirement-doc" class="w-full px-4 py-2 rounded-lg bg-slate-800 border border-blue-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="请输入需求文档名称">
+                            </div>
+
+                            <!-- 设计文档名称 -->
+                            <div x-show="selectedDocs.design" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 transform -translate-y-2" x-transition:enter-end="opacity-100 transform translate-y-0">
+                                <label for="design-doc" class="block text-sm font-medium text-purple-300 mb-1">设计文档名称</label>
+                                <input type="text" id="design-doc" class="w-full px-4 py-2 rounded-lg bg-slate-800 border border-purple-700 text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="请输入设计文档名称">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 按钮组 -->
+                    <div class="flex justify-end space-x-3">
+                        <button type="button" @click="showNewTaskModal = false" class="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-md text-sm transition">
+                            取消
+                        </button>
+                        <button type="button" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-sm transition">
+                            创建任务
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- 添加自定义样式以优化下拉框 -->
+            <style>
+                /* 自定义下拉框样式 */
+                
+                select {
+                    background-image: none;
+                    /* 移除默认箭头 */
+                }
+                /* 自定义下拉选项样式 */
+                
+                select option {
+                    background-color: #1e293b;
+                    /* 深色背景 */
+                    color: white;
+                    padding: 10px;
+                }
+                /* 下拉框激活时的样式 */
+                
+                select:focus {
+                    border-color: #3b82f6;
+                    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
+                }
+            </style>
+        </div>
+    </div>
+</body>
+
+</html>
