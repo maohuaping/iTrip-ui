@@ -1,0 +1,53 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup PNPM
+      uses: pnpm/action-setup@v2
+      with:
+        version: 8
+        
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        cache: 'pnpm'
+        
+    - name: Install Dependencies
+      run: pnpm install
+      
+    - name: Build
+      run: pnpm run build
+        
+    - name: Deploy to Server
+      uses: easingthemes/ssh-deploy@v4
+      env:
+        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        ARGS: "-rlgoDzvc -i --chmod=755"
+        SOURCE: "dist/"
+        REMOTE_HOST: ${{ secrets.SERVER_HOST }}
+        REMOTE_USER: ${{ secrets.SERVER_USERNAME }}
+        TARGET: ${{ secrets.DEPLOY_PATH }}
+        EXCLUDE: "/dist/, /node_modules/, /.git/"
+        
+    - name: Execute Remote Commands
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.SERVER_HOST }}
+        username: ${{ secrets.SERVER_USERNAME }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        script: |
+          # 设置正确的目录权限
+          chmod -R 755 ${{ secrets.DEPLOY_PATH }}
+          # 重启 Nginx（使用 systemctl 的非交互模式）
+          sudo -n systemctl restart nginx || echo "无法重启 Nginx，请检查权限"
