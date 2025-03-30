@@ -182,31 +182,7 @@
 
           <!-- 工作日志部分 -->
           <section id="worklog" class="q-mb-xl glass rounded-xl overflow-hidden shadow-2xl">
-            <div class="q-pa-md">
-              <div class="row justify-between q-mb-md">
-                <h2 class="text-h5 text-weight-bold text-dark q-my-none">工作日志</h2>
-                <q-btn color="blue-6" size="sm" icon="eva-plus-outline" label="记录工作" />
-              </div>
-              
-              <!-- 日志列表 -->
-              <div class="q-gutter-y-md">
-                <!-- 日志项 1 -->
-                <q-card flat bordered class="q-pa-md glass-card">
-                  <div class="row justify-between items-center q-mb-sm">
-                    <div class="text-subtitle1 text-weight-medium text-dark">API 接口开发</div>
-                    <q-badge color="blue-2" text-color="blue-8" label="开发" />
-                  </div>
-                  <p class="q-mb-sm text-grey-8">完成了用户认证 API 的开发和测试，解决了 token 过期处理的问题。</p>
-                  <div class="row justify-between items-center text-caption text-grey-6">
-                    <div>2023-06-15 14:30</div>
-                    <div class="row items-center">
-                      <q-icon name="eva-clock-outline" size="xs" class="q-mr-xs" />
-                      <span>3.5 小时</span>
-                    </div>
-                  </div>
-                </q-card>
-              </div>
-            </div>
+            <WorkLog />
           </section>
 
           <!-- 快速访问部分 -->
@@ -383,6 +359,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import WorkSidebar from './components/WorkSidebar.vue'
+import WorkLog from './components/WorkLog.vue'
 
 // 新建任务模态框状态
 const showNewTaskModal = ref(false)
