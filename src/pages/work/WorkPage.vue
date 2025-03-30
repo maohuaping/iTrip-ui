@@ -12,7 +12,7 @@
           <section id="tasks" class="q-mb-xl glass rounded-xl overflow-hidden shadow-2xl">
             <div class="q-pa-md">
               <div class="row justify-between q-mb-md">
-                <h2 class="text-h5 text-weight-bold text-white q-my-none">任务列表</h2>
+                <h2 class="text-h5 text-weight-bold text-dark q-my-none">任务列表</h2>
                 <div class="row q-gutter-sm">
                   <q-btn color="blue-6" size="sm" icon="eva-plus-outline" label="新建任务" @click="showNewTaskModal = true" />
                   <q-btn flat color="grey-5" size="sm" label="筛选" icon="eva-funnel-outline" />
@@ -25,7 +25,7 @@
                 <div class="col-12 col-md-6">
                   <div class="row items-center q-mb-sm">
                     <q-icon name="eva-corner-left-down-outline" color="blue-6" size="sm" class="q-mr-sm" />
-                    <h3 class="text-subtitle1 text-weight-medium text-slate-300 q-my-none">呼入任务</h3>
+                    <h3 class="text-subtitle1 text-weight-medium text-dark q-my-none">呼入任务</h3>
                   </div>
                   
                   <div class="q-gutter-y-sm">
@@ -135,7 +135,7 @@
                 <div class="col-12 col-md-6">
                   <div class="row items-center q-mb-sm">
                     <q-icon name="eva-corner-right-up-outline" color="green-6" size="sm" class="q-mr-sm" />
-                    <h3 class="text-subtitle1 text-weight-medium text-slate-300 q-my-none">呼出任务</h3>
+                    <h3 class="text-subtitle1 text-weight-medium text-dark q-my-none">呼出任务</h3>
                   </div>
                   
                   <div class="q-gutter-y-sm">
@@ -184,7 +184,7 @@
           <section id="worklog" class="q-mb-xl glass rounded-xl overflow-hidden shadow-2xl">
             <div class="q-pa-md">
               <div class="row justify-between q-mb-md">
-                <h2 class="text-h5 text-weight-bold text-white q-my-none">工作日志</h2>
+                <h2 class="text-h5 text-weight-bold text-dark q-my-none">工作日志</h2>
                 <q-btn color="blue-6" size="sm" icon="eva-plus-outline" label="记录工作" />
               </div>
               
@@ -193,10 +193,10 @@
                 <!-- 日志项 1 -->
                 <q-card flat bordered class="q-pa-md glass-card">
                   <div class="row justify-between items-center q-mb-sm">
-                    <div class="text-subtitle1 text-weight-medium text-white">API 接口开发</div>
+                    <div class="text-subtitle1 text-weight-medium text-dark">API 接口开发</div>
                     <q-badge color="blue-2" text-color="blue-8" label="开发" />
                   </div>
-                  <p class="q-mb-sm text-grey-5">完成了用户认证 API 的开发和测试，解决了 token 过期处理的问题。</p>
+                  <p class="q-mb-sm text-grey-8">完成了用户认证 API 的开发和测试，解决了 token 过期处理的问题。</p>
                   <div class="row justify-between items-center text-caption text-grey-6">
                     <div>2023-06-15 14:30</div>
                     <div class="row items-center">
@@ -212,7 +212,7 @@
           <!-- 快速访问部分 -->
           <section id="quickaccess" class="q-mb-xl glass rounded-xl overflow-hidden shadow-2xl">
             <div class="q-pa-md">
-              <h2 class="text-h5 text-weight-bold text-white q-mb-md">快速访问</h2>
+              <h2 class="text-h5 text-weight-bold text-dark q-mb-md">快速访问</h2>
               
               <div class="row q-col-gutter-md">
                 <!-- 快速访问卡片 -->
@@ -222,7 +222,7 @@
                       <div class="row items-center no-wrap">
                         <q-avatar color="blue-1" text-color="blue-8" icon="eva-code-outline" size="md" class="q-mr-sm" />
                         <div>
-                          <div class="text-subtitle1 text-weight-medium text-white">API 平台</div>
+                          <div class="text-subtitle1 text-weight-medium text-dark">API 平台</div>
                           <div class="text-caption text-grey-5">接口文档和测试</div>
                         </div>
                       </div>
@@ -236,7 +236,7 @@
                       <div class="row items-center no-wrap">
                         <q-avatar color="green-1" text-color="green-8" icon="eva-folder-outline" size="md" class="q-mr-sm" />
                         <div>
-                          <div class="text-subtitle1 text-weight-medium text-white">代码仓库</div>
+                          <div class="text-subtitle1 text-weight-medium text-dark">代码仓库</div>
                           <div class="text-caption text-grey-5">项目源代码管理</div>
                         </div>
                       </div>
@@ -252,8 +252,8 @@
       <!-- 新建任务模态框 -->
       <q-dialog v-model="showNewTaskModal">
         <q-card class="glass-card" style="min-width: 500px">
-          <q-card-section class="bg-slate-800 q-pb-sm border-bottom">
-            <div class="text-h6 text-white">新建任务</div>
+          <q-card-section class="bg-grey-2 q-pb-sm border-bottom">
+            <div class="text-h6 text-dark">新建任务</div>
             <q-space />
             <q-btn icon="eva-close-outline" flat round dense v-close-popup class="absolute-top-right q-mt-sm q-mr-sm" color="grey-5" />
           </q-card-section>
@@ -439,7 +439,7 @@ defineOptions({
 <style lang="scss" scoped>
 .work-page-container {
   display: flex;
-  background: linear-gradient(to bottom right, #0f172a, #1e293b);
+  background: white;
   min-height: 100vh;
 }
 
@@ -448,28 +448,29 @@ defineOptions({
   margin-left: 0;
 }
 
-// 玻璃效果
+// 玻璃效果修改为适合白色背景的样式
 .glass {
-  background: rgba(15, 23, 42, 0.6);
+  background: rgba(255, 255, 255, 0.8);
   backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 .glass-card {
-  background: rgba(30, 41, 59, 0.25);
+  background: rgba(255, 255, 255, 0.9);
   backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
 }
 
-// 自定义样式
+// 自定义样式 - 更新颜色以适应白色背景
 .task-card {
   transition: all 0.3s ease;
   border-radius: 8px;
   
   &:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     transform: translateY(-2px);
-    background: rgba(30, 41, 59, 0.4);
+    background: rgba(255, 255, 255, 1);
   }
 }
 
@@ -479,9 +480,9 @@ defineOptions({
   border-radius: 8px;
   
   &:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     transform: translateY(-2px);
-    background: rgba(30, 41, 59, 0.4);
+    background: rgba(255, 255, 255, 1);
   }
 }
 
@@ -511,10 +512,10 @@ section {
   }
 }
 
-// 暗色主题输入框
+// 暗色主题输入框改为亮色主题
 .dark-field {
   .q-field__native, .q-field__prefix, .q-field__suffix, .q-field__input {
-    color: white;
+    color: #333;
   }
 }
 
@@ -565,6 +566,6 @@ section {
 
 // 边框底部
 .border-bottom {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
 }
 </style>
