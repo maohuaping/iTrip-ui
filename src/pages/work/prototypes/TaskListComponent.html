@@ -1,0 +1,225 @@
+<section id="tasks" class="mb-12 glass rounded-xl overflow-hidden shadow-2xl">
+    <div class="p-6">
+        <div class="flex justify-between mb-6">
+            <h2 class="text-xl font-bold text-white">任务列表</h2>
+            <div class="flex space-x-2">
+                <button class="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-sm transition flex items-center" @click="showNewTaskModal = true">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+                    </svg>
+                    新建任务
+                </button>
+                <button class="px-3 py-1 bg-slate-700 hover:bg-slate-600 text-white rounded-md text-sm transition">筛选</button>
+            </div>
+        </div>
+
+        <!-- 两栏布局：呼入/呼出 -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- 呼入任务列表 -->
+            <div>
+                <h3 class="text-lg font-semibold text-slate-300 mb-3 flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                    </svg> 呼入任务
+                </h3>
+                <div class="space-y-3">
+                    <!-- 呼入任务项 1 -->
+                    <div class="glass-card rounded-lg p-4 hover:bg-slate-700/30 transition cursor-pointer border-l-4 border-blue-500 group">
+                        <div class="flex flex-col gap-2">
+                            <div class="flex items-center gap-4">
+                                <div class="flex items-center space-x-2 min-w-[140px]">
+                                    <div class="w-2 h-2 rounded-full bg-blue-500"></div>
+                                    <a href="#" class="text-slate-400 text-sm hover:text-blue-400 transition">
+                                        28241226890
+                                    </a>
+                                </div>
+                                <div class="flex-1 overflow-hidden">
+                                    <a href="#" class="text-white hover:text-blue-300 transition whitespace-nowrap overflow-hidden text-ellipsis block" title="有广告信息需要发布广告位的服务">
+                                        有广告信息需要发布广告位的服务
+                                    </a>
+                                </div>
+                                <span class="text-xs px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 flex-shrink-0">呼入</span>
+                            </div>
+                            <div class="flex items-center">
+                                <div class="min-w-[140px]">
+                                    <span class="text-xs px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 ml-4">Gitee</span>
+                                </div>
+                                <div class="flex flex-wrap gap-1">
+                                    <a href="#" class="text-xs px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 hover:bg-blue-500/30 transition">需求</a>
+                                    <a href="#" class="text-xs px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 hover:bg-purple-500/30 transition">设计</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 呼入任务项 2 -->
+                    <div class="glass-card rounded-lg p-4 hover:bg-slate-700/30 transition cursor-pointer border-l-4 border-blue-500 group">
+                        <div class="flex flex-col gap-2">
+                            <div class="flex items-center gap-4">
+                                <div class="flex items-center space-x-2 min-w-[140px]">
+                                    <div class="w-2 h-2 rounded-full bg-blue-500"></div>
+                                    <a href="#" class="text-slate-400 text-sm hover:text-blue-400 transition">
+                                        28241226892
+                                    </a>
+                                </div>
+                                <div class="flex-1 overflow-hidden">
+                                    <a href="#" class="text-white hover:text-blue-300 transition whitespace-nowrap overflow-hidden text-ellipsis block" title="数据分析平台的用户反馈优化需求">
+                                        数据分析平台的用户反馈优化需求
+                                    </a>
+                                </div>
+                                <span class="text-xs px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 flex-shrink-0">呼入</span>
+                            </div>
+                            <div class="flex items-center">
+                                <div class="min-w-[140px]">
+                                    <span class="text-xs px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 ml-4">Gitee</span>
+                                </div>
+                                <div class="flex flex-wrap gap-1">
+                                    <a href="#" class="text-xs px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 hover:bg-blue-500/30 transition">需求</a>
+                                    <a href="#" class="text-xs px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 hover:bg-purple-500/30 transition">设计</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 呼入任务项 3 -->
+                    <div class="glass-card rounded-lg p-4 hover:bg-slate-700/30 transition cursor-pointer border-l-4 border-blue-500 group">
+                        <div class="flex flex-col gap-2">
+                            <div class="flex items-center gap-4">
+                                <div class="flex items-center space-x-2 min-w-[140px]">
+                                    <div class="w-2 h-2 rounded-full bg-blue-500"></div>
+                                    <a href="#" class="text-slate-400 text-sm hover:text-blue-400 transition">
+                                        28241226894
+                                    </a>
+                                </div>
+                                <div class="flex-1 overflow-hidden">
+                                    <a href="#" class="text-white hover:text-blue-300 transition whitespace-nowrap overflow-hidden text-ellipsis block" title="客户端性能优化与崩溃问题修复">
+                                        客户端性能优化与崩溃问题修复
+                                    </a>
+                                </div>
+                                <span class="text-xs px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 flex-shrink-0">呼入</span>
+                            </div>
+                            <div class="flex items-center">
+                                <div class="min-w-[140px]">
+                                    <span class="text-xs px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 ml-4">Gitee</span>
+                                </div>
+                                <div class="flex flex-wrap gap-1">
+                                    <a href="#" class="text-xs px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 hover:bg-blue-500/30 transition">需求</a>
+                                    <a href="#" class="text-xs px-2 py-0.5 rounded-full bg-red-500/20 text-red-300 hover:bg-red-500/30 transition">Bug</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <button class="px-3 py-1 bg-slate-700 hover:bg-slate-600 text-white rounded-md text-sm transition w-full">
+                        查看全部呼入任务
+                    </button>
+                </div>
+            </div>
+
+            <!-- 呼出任务列表 -->
+            <div>
+                <h3 class="text-lg font-semibold text-slate-300 mb-3 flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 3h5m0 0v5m0-5l-6 6M5 3a2 2 0 00-2 2v1c0 8.284 6.716 15 15 15h1a2 2 0 002-2v-3.28a1 1 0 00-.684-.948l-4.493-1.498a1 1 0 00-1.21.502l-1.13 2.257a11.042 11.042 0 01-5.516-5.517l2.257-1.128a1 1 0 00.502-1.21L9.228 3.683A1 1 0 008.279 3H5z" />
+                    </svg> 呼出任务
+                </h3>
+                <div class="space-y-3">
+                    <!-- 呼出任务项 1 -->
+                    <div class="glass-card rounded-lg p-4 hover:bg-slate-700/30 transition cursor-pointer border-l-4 border-emerald-500 group">
+                        <div class="flex flex-col gap-2">
+                            <div class="flex items-center gap-4">
+                                <div class="flex items-center space-x-2 min-w-[140px]">
+                                    <div class="w-2 h-2 rounded-full bg-emerald-500"></div>
+                                    <a href="#" class="text-slate-400 text-sm hover:text-emerald-400 transition">
+                                        28241226891
+                                    </a>
+                                </div>
+                                <div class="flex-1 overflow-hidden">
+                                    <a href="#" class="text-white hover:text-emerald-300 transition whitespace-nowrap overflow-hidden text-ellipsis block" title="智慧乡镇化的乡村村入户服务需求产品相关的需求反馈">
+                                        智慧乡镇化的乡村村入户服务需求产品相关的需求反馈
+                                    </a>
+                                </div>
+                                <span class="text-xs px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 flex-shrink-0">呼出</span>
+                            </div>
+                            <div class="flex items-center">
+                                <div class="min-w-[140px]">
+                                    <span class="text-xs px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 ml-4">Gitee</span>
+                                </div>
+                                <div class="flex flex-wrap gap-1">
+                                    <a href="#" class="text-xs px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 hover:bg-blue-500/30 transition">需求</a>
+                                    <a href="#" class="text-xs px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 hover:bg-purple-500/30 transition">设计</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 呼出任务项 2 -->
+                    <div class="glass-card rounded-lg p-4 hover:bg-slate-700/30 transition cursor-pointer border-l-4 border-emerald-500 group">
+                        <div class="flex flex-col gap-2">
+                            <div class="flex items-center gap-4">
+                                <div class="flex items-center space-x-2 min-w-[140px]">
+                                    <div class="w-2 h-2 rounded-full bg-emerald-500"></div>
+                                    <a href="#" class="text-slate-400 text-sm hover:text-emerald-400 transition">
+                                        28241226893
+                                    </a>
+                                </div>
+                                <div class="flex-1 overflow-hidden">
+                                    <a href="#" class="text-white hover:text-emerald-300 transition whitespace-nowrap overflow-hidden text-ellipsis block" title="移动端应用界面交互体验改进建议">
+                                        移动端应用界面交互体验改进建议
+                                    </a>
+                                </div>
+                                <span class="text-xs px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 flex-shrink-0">呼出</span>
+                            </div>
+                            <div class="flex items-center">
+                                <div class="min-w-[140px]">
+                                    <span class="text-xs px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 ml-4">Gitee</span>
+                                </div>
+                                <div class="flex flex-wrap gap-1">
+                                    <a href="#" class="text-xs px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 hover:bg-blue-500/30 transition">需求</a>
+                                    <a href="#" class="text-xs px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 hover:bg-purple-500/30 transition">设计</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 呼出任务项 3 -->
+                    <div class="glass-card rounded-lg p-4 hover:bg-slate-700/30 transition cursor-pointer border-l-4 border-emerald-500 group">
+                        <div class="flex flex-col gap-2">
+                            <div class="flex items-center gap-4">
+                                <div class="flex items-center space-x-2 min-w-[140px]">
+                                    <div class="w-2 h-2 rounded-full bg-emerald-500"></div>
+                                    <a href="#" class="text-slate-400 text-sm hover:text-emerald-400 transition">
+                                        28241226895
+                                    </a>
+                                </div>
+                                <div class="flex-1 overflow-hidden">
+                                    <a href="#" class="text-white hover:text-emerald-300 transition whitespace-nowrap overflow-hidden text-ellipsis block" title="后台管理系统权限模块重构方案">
+                                        后台管理系统权限模块重构方案
+                                    </a>
+                                </div>
+                                <span class="text-xs px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 flex-shrink-0">呼出</span>
+                            </div>
+                            <div class="flex items-center">
+                                <div class="min-w-[140px]">
+                                    <span class="text-xs px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 ml-4">Gitee</span>
+                                </div>
+                                <div class="flex flex-wrap gap-1">
+                                    <a href="#" class="text-xs px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 hover:bg-blue-500/30 transition">需求</a>
+                                    <a href="#" class="text-xs px-2 py-0.5 rounded-full bg-yellow-500/20 text-yellow-300 hover:bg-yellow-500/30 transition">重构</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <button class="px-3 py-1 bg-slate-700 hover:bg-slate-600 text-white rounded-md text-sm transition w-full">
+                        查看全部呼出任务
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

@@ -1,0 +1,175 @@
+<section id="tools" class="mb-12 glass rounded-xl overflow-hidden shadow-2xl">
+    <div class="p-6">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-white">实用工具</h2>
+        </div>
+
+        <div class="space-y-8">
+            <!-- 开发环境 -->
+            <div>
+                <h3 class="text-lg font-semibold text-slate-300 mb-3 flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                    </svg> 开发环境
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <!-- 测试环境 -->
+                    <div class="glass-card rounded-lg p-4 hover:bg-slate-700/30 transition group border-l-4 border-amber-500">
+                        <div class="flex justify-between items-center mb-2">
+                            <h4 class="text-white font-medium">测试环境</h4>
+                            <button onclick="copyToClipboard('https://test.example.com', this)" class="px-2 py-1 bg-amber-600/20 text-amber-300 rounded text-xs hover:bg-amber-600/30 transition">
+                                复制
+                            </button>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="text-slate-400 text-sm mr-2">https://test.example.com</span>
+                            <span class="text-xs px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300">测试</span>
+                        </div>
+                    </div>
+
+                    <!-- 开发环境 -->
+                    <div class="glass-card rounded-lg p-4 hover:bg-slate-700/30 transition group border-l-4 border-green-500">
+                        <div class="flex justify-between items-center mb-2">
+                            <h4 class="text-white font-medium">开发环境</h4>
+                            <button onclick="copyToClipboard('https://dev.example.com', this)" class="px-2 py-1 bg-green-600/20 text-green-300 rounded text-xs hover:bg-green-600/30 transition">
+                                复制
+                            </button>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="text-slate-400 text-sm mr-2">https://dev.example.com</span>
+                            <span class="text-xs px-2 py-0.5 rounded-full bg-green-500/20 text-green-300">开发</span>
+                        </div>
+                    </div>
+
+                    <!-- 生产环境 -->
+                    <div class="glass-card rounded-lg p-4 hover:bg-slate-700/30 transition group border-l-4 border-red-500">
+                        <div class="flex justify-between items-center mb-2">
+                            <h4 class="text-white font-medium">生产环境</h4>
+                            <button onclick="copyToClipboard('https://www.example.com', this)" class="px-2 py-1 bg-red-600/20 text-red-300 rounded text-xs hover:bg-red-600/30 transition">
+                                复制
+                            </button>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="text-slate-400 text-sm mr-2">https://www.example.com</span>
+                            <span class="text-xs px-2 py-0.5 rounded-full bg-red-500/20 text-red-300">生产</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 账号信息 -->
+            <div>
+                <h3 class="text-lg font-semibold text-slate-300 mb-3 flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    </svg> 账号信息
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <!-- 管理员账号 -->
+                    <div class="glass-card rounded-lg p-4 hover:bg-slate-700/30 transition group border-l-4 border-red-500">
+                        <div class="flex justify-between items-center mb-2">
+                            <h4 class="text-white font-medium">管理员账号</h4>
+                            <button onclick="copyToClipboard('prod_admin@2023Secure!', this)" class="px-2 py-1 bg-red-600/20 text-red-300 rounded text-xs hover:bg-red-600/30 transition">
+                                复制
+                            </button>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="text-slate-400 text-sm font-mono mr-2">prod_admin@2023Secure!</span>
+                            <span class="text-xs px-2 py-0.5 rounded-full bg-red-500/20 text-red-300">生产管理员</span>
+                        </div>
+                    </div>
+
+                    <!-- 运维账号 -->
+                    <div class="glass-card rounded-lg p-4 hover:bg-slate-700/30 transition group border-l-4 border-red-500">
+                        <div class="flex justify-between items-center mb-2">
+                            <h4 class="text-white font-medium">运维账号</h4>
+                            <button onclick="copyToClipboard('ops_user@Prod2023!', this)" class="px-2 py-1 bg-red-600/20 text-red-300 rounded text-xs hover:bg-red-600/30 transition">
+                                复制
+                            </button>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="text-slate-400 text-sm font-mono mr-2">ops_user@Prod2023!</span>
+                            <span class="text-xs px-2 py-0.5 rounded-full bg-red-500/20 text-red-300">运维</span>
+                        </div>
+                    </div>
+
+                    <!-- 数据库密码 -->
+                    <div class="glass-card rounded-lg p-4 hover:bg-slate-700/30 transition group border-l-4 border-red-500">
+                        <div class="flex justify-between items-center mb-2">
+                            <h4 class="text-white font-medium">数据库密码</h4>
+                            <button onclick="copyToClipboard('db_prod@Secure2023!', this)" class="px-2 py-1 bg-red-600/20 text-red-300 rounded text-xs hover:bg-red-600/30 transition">
+                                复制
+                            </button>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="text-slate-400 text-sm font-mono mr-2">db_prod@Secure2023!</span>
+                            <span class="text-xs px-2 py-0.5 rounded-full bg-red-500/20 text-red-300">生产数据库</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 时间戳工具 -->
+            <div>
+                <h3 class="text-lg font-semibold text-slate-300 mb-3 flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg> 时间戳工具
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- 当前时间戳 -->
+                    <div class="glass-card rounded-lg p-4 hover:bg-slate-700/30 transition group">
+                        <div class="flex justify-between items-center mb-2">
+                            <h4 class="text-white font-medium">当前时间戳 (秒)</h4>
+                            <button id="copyTimestampBtn" onclick="copyTimestamp('seconds')" class="px-2 py-1 bg-blue-600/20 text-blue-300 rounded text-xs hover:bg-blue-600/30 transition">
+                                复制
+                            </button>
+                        </div>
+                        <div class="flex items-center">
+                            <span id="currentTimestamp" class="text-slate-400 text-sm font-mono"></span>
+                        </div>
+                    </div>
+
+                    <!-- 毫秒时间戳 -->
+                    <div class="glass-card rounded-lg p-4 hover:bg-slate-700/30 transition group">
+                        <div class="flex justify-between items-center mb-2">
+                            <h4 class="text-white font-medium">当前时间戳 (毫秒)</h4>
+                            <button id="copyMsTimestampBtn" onclick="copyTimestamp('milliseconds')" class="px-2 py-1 bg-purple-600/20 text-purple-300 rounded text-xs hover:bg-purple-600/30 transition">
+                                复制
+                            </button>
+                        </div>
+                        <div class="flex items-center">
+                            <span id="currentMsTimestamp" class="text-slate-400 text-sm font-mono"></span>
+                        </div>
+                    </div>
+
+                    <!-- 格式化日期时间 -->
+                    <div class="glass-card rounded-lg p-4 hover:bg-slate-700/30 transition group">
+                        <div class="flex justify-between items-center mb-2">
+                            <h4 class="text-white font-medium">格式化日期时间</h4>
+                            <button id="copyFormattedDateBtn" onclick="copyFormattedDate()" class="px-2 py-1 bg-green-600/20 text-green-300 rounded text-xs hover:bg-green-600/30 transition">
+                                复制
+                            </button>
+                        </div>
+                        <div class="flex items-center">
+                            <span id="formattedDate" class="text-slate-400 text-sm font-mono"></span>
+                        </div>
+                    </div>
+
+                    <!-- 自定义格式 -->
+                    <div class="glass-card rounded-lg p-4 hover:bg-slate-700/30 transition group">
+                        <div class="flex justify-between items-center mb-2">
+                            <h4 class="text-white font-medium">记录ID格式</h4>
+                            <button id="copyCustomFormatBtn" onclick="copyCustomFormat()" class="px-2 py-1 bg-indigo-600/20 text-indigo-300 rounded text-xs hover:bg-indigo-600/30 transition">
+                                复制
+                            </button>
+                        </div>
+                        <div class="flex items-center">
+                            <span id="customFormat" class="text-slate-400 text-sm font-mono"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
