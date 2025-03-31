@@ -8,24 +8,23 @@ declare module 'vue' {
   }
 }
 
-// Be careful when using SSR for cross-request state pollution
-// due to creating a Singleton instance here;
-// If any client changes this (global) instance, it might be a
-// good idea to move this instance creation inside of the
-// "export default () => {}" function below (which runs individually
-// for each client)
+// 在使用SSR时要小心跨请求状态污染
+// 因为这里创建了一个单例实例；
+// 如果任何客户端更改了这个（全局）实例，
+// 最好将这个实例创建移到下面的
+// "export default () => {}" 函数内部（该函数为每个客户端单独运行）
 const api = axios.create({ baseURL: 'https://api.example.com' });
 
 export default defineBoot(({ app }) => {
-  // for use inside Vue files (Options API) through this.$axios and this.$api
+  // 用于在Vue文件内部（选项式API）通过this.$axios和this.$api使用
 
   app.config.globalProperties.$axios = axios;
-  // ^ ^ ^ this will allow you to use this.$axios (for Vue Options API form)
-  //       so you won't necessarily have to import axios in each vue file
+  // ^ ^ ^ 这将允许你使用this.$axios（用于Vue选项式API）
+  //       所以你不必在每个vue文件中都导入axios
 
   app.config.globalProperties.$api = api;
-  // ^ ^ ^ this will allow you to use this.$api (for Vue Options API form)
-  //       so you can easily perform requests against your app's API
+  // ^ ^ ^ 这将允许你使用this.$api（用于Vue选项式API）
+  //       所以你可以轻松地对你的应用API执行请求
 });
 
 export { api };
