@@ -13,7 +13,7 @@ declare module 'vue' {
 // 如果任何客户端更改了这个（全局）实例，
 // 最好将这个实例创建移到下面的
 // "export default () => {}" 函数内部（该函数为每个客户端单独运行）
-const api = axios.create({ baseURL: 'https://api.example.com' });
+const api = axios.create({ baseURL: 'http://localhost:8080' });
 
 export default defineBoot(({ app }) => {
   // 用于在Vue文件内部（选项式API）通过this.$axios和this.$api使用

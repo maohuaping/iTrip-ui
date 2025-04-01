@@ -25,11 +25,11 @@ export default defineConfig((/* ctx */) => {
       // 'ionicons-v4',
       // 'mdi-v7',
       // 'fontawesome-v6',
-      'eva-icons',
+      // 'eva-icons',
       // 'themify',
       // 'line-awesome',
       // 'roboto-font-latin-ext', // this or either 'roboto-font', NEVER both!
-      // 'material-icons', // optional, you are not bound to it
+      'material-icons', // optional, you are not bound to it
       
       'roboto-font', // optional, you are not bound to it
     ],
@@ -98,7 +98,9 @@ export default defineConfig((/* ctx */) => {
       // directives: [],
 
       // Quasar plugins
-      plugins: []
+      plugins: [
+        'Notify'  // 添加 Notify 插件
+      ]
     },
 
     // animations: 'all', // --- includes all animations

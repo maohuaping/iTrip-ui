@@ -135,22 +135,21 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useQuasar } from 'quasar'
+import { getWorkLog } from 'src/api/work-log/work-log'
+import type { WorkLogEntity } from 'src/api/api.schemas'
 
 const $q = useQuasar()
+const workLogApi = getWorkLog()
 
 // 日志输入表单
 const logContent = ref('')
 const characterCount = ref(0)
 const maxLength = 500
 const selectedTags = ref<string[]>([])
+const isLoading = ref(false)
 
 // 日志列表
-const logs = ref<{
-  id: number
-  content: string
-  date: string
-  tags: string[]
-}[]>([])
+const logs = ref<WorkLogEntity[]>([])
 
 // 可用标签
 const availableTags = [
@@ -185,30 +184,91 @@ const clearForm = () => {
 }
 
 // 提交日志
-const submitLog = () => {
+const submitLog = async () => {
   if (logContent.value.trim() === '') return
-
-  // Ensure date is always a string
-  const today = new Date().toISOString().split('T')[0] || new Date().toDateString();
   
-  const newLog = {
-    id: Date.now(),
-    content: logContent.value,
-    date: today,
-    tags: selectedTags.value.length > 0 ? [...selectedTags.value] : ['开发'] // 默认标签
+  isLoading.value = true
+  
+  try {
+    const newLog: WorkLogEntity = {
+      content: logContent.value,
+      tags: selectedTags.value.length > 0 ? selectedTags.value.join(',') : '开发', // API可能需要字符串形式的标签
+      // 其他必要的字段根据WorkLogEntity类型添加
+    }
+    
+    const response = await workLogApi.workLogCreate(newLog)
+    
+    if (response.data.success) {
+      // 提交成功后重新获取日志列表
+      fetchLogs()
+      clearForm()
+      $q.notify({
+        message: '日志提交成功',
+        color: 'positive',
+        position: 'bottom-right',
+        timeout: 2000
+      })
+    }
+  } catch (error) {
+    console.error('提交日志失败:', error)
+    $q.notify({
+      message: '提交日志失败',
+      color: 'negative',
+      position: 'bottom-right',
+      timeout: 2000
+    })
+  } finally {
+    isLoading.value = false
   }
-
-  logs.value.unshift(newLog)
-  clearForm()
-
-  // 保存到本地存储
-  localStorage.setItem('workLogs', JSON.stringify(logs.value))
 }
 
 // 删除日志
-const deleteLog = (id: number) => {
-  logs.value = logs.value.filter(log => log.id !== id)
-  localStorage.setItem('workLogs', JSON.stringify(logs.value))
+const deleteLog = async (id: number) => {
+  try {
+    const response = await workLogApi.workLogDelete(id)
+    
+    if (response.data.success) {
+      // 删除成功后更新日志列表
+      logs.value = logs.value.filter(log => log.id !== id)
+      $q.notify({
+        message: '日志已删除',
+        color: 'positive',
+        position: 'bottom-right',
+        timeout: 2000
+      })
+    }
+  } catch (error) {
+    console.error('删除日志失败:', error)
+    $q.notify({
+      message: '删除日志失败',
+      color: 'negative',
+      position: 'bottom-right',
+      timeout: 2000
+    })
+  }
+}
+
+// 获取日志列表
+const fetchLogs = async () => {
+  isLoading.value = true
+  
+  try {
+    const response = await workLogApi.workLogMeLogs()
+    
+    if (response.data.success && response.data.data) {
+      logs.value = response.data.data
+    }
+  } catch (error) {
+    console.error('获取日志列表失败:', error)
+    $q.notify({
+      message: '获取日志列表失败',
+      color: 'negative',
+      position: 'bottom-right',
+      timeout: 2000
+    })
+  } finally {
+    isLoading.value = false
+  }
 }
 
 // 复制日志
@@ -227,7 +287,7 @@ const copyLog = (content: string) => {
     })
 }
 
-// 格式化日期
+// 格式化日期 - 修改为处理API返回的日期格式
 const formatDate = (dateString: string) => {
   const date = new Date(dateString)
   return date.toLocaleDateString('zh-CN', {
@@ -238,12 +298,9 @@ const formatDate = (dateString: string) => {
   })
 }
 
-// 从本地存储加载日志
+// 从API加载日志
 onMounted(() => {
-  const savedLogs = localStorage.getItem('workLogs')
-  if (savedLogs) {
-    logs.value = JSON.parse(savedLogs)
-  }
+  fetchLogs()
 })
 
 // 添加组件名称

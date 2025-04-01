@@ -16,6 +16,11 @@ const routes: RouteRecordRaw[] = [
       { path: '', component: () => import('pages/work/WorkPage.vue') }
     ]
   },
+  {
+    path: '/login',
+    component: () => import('pages/auth/LoginPage.vue'),
+    meta: { requiresAuth: false }
+  },
 
   // Always leave this as last one,
   // but you can also remove it
