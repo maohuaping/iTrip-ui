@@ -14,7 +14,7 @@
     </q-input>
 
     <div class="row q-col-gutter-sm">
-      <div class="col-8">
+      <div class="col-8" style="padding-left: 0">
         <q-input
           v-model="form.verificationCode"
           label="验证码"
