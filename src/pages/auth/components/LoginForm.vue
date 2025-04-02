@@ -9,7 +9,7 @@
       dense
     >
       <template v-slot:prepend>
-        <q-icon name="eva-email-outline" />
+        <q-icon name="email" />
       </template>
     </q-input>
 
@@ -22,11 +22,11 @@
       dense
     >
       <template v-slot:prepend>
-        <q-icon name="eva-lock-outline" />
+        <q-icon name="lock" />
       </template>
       <template v-slot:append>
         <q-icon
-          :name="isPwdVisible ? 'eva-eye-outline' : 'eva-eye-off-outline'"
+          :name="isPwdVisible ? 'visibility' : 'visibility_off'"
           class="cursor-pointer"
           @click="isPwdVisible = !isPwdVisible"
         />

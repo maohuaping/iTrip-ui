@@ -18,7 +18,7 @@
             dense
           >
             <template v-slot:prepend>
-              <q-icon name="eva-email-outline" />
+              <q-icon name="email" />
             </template>
           </q-input>
 
@@ -35,7 +35,7 @@
                 dense
               >
                 <template v-slot:prepend>
-                  <q-icon name="eva-shield-outline" />
+                  <q-icon name="security" />
                 </template>
               </q-input>
             </div>
@@ -46,7 +46,7 @@
                 :label="codeCountdown > 0 ? `${codeCountdown}s` : '获取验证码'"
                 color="primary"
                 class="full-width"
-                style="height: 40px"
+                style="height: 40px; font-size: 12px; padding: 0 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
                 @click="sendForgetPasswordCode"
               />
             </div>
@@ -65,11 +65,11 @@
             dense
           >
             <template v-slot:prepend>
-              <q-icon name="eva-lock-outline" />
+              <q-icon name="lock" />
             </template>
             <template v-slot:append>
               <q-icon
-                :name="isPwdVisible ? 'eva-eye-outline' : 'eva-eye-off-outline'"
+                :name="isPwdVisible ? 'visibility' : 'visibility_off'"
                 class="cursor-pointer"
                 @click="isPwdVisible = !isPwdVisible"
               />
@@ -88,7 +88,14 @@
             dense
           >
             <template v-slot:prepend>
-              <q-icon name="eva-lock-outline" />
+              <q-icon name="lock" />
+            </template>
+            <template v-slot:append>
+              <q-icon
+                :name="isPwdVisible ? 'visibility' : 'visibility_off'"
+                class="cursor-pointer"
+                @click="isPwdVisible = !isPwdVisible"
+              />
             </template>
           </q-input>
 
