@@ -30,8 +30,8 @@
             <q-card v-for="task in incomingTasks" :key="task.id"
                     flat
                     bordered
-                    class="task-card q-pa-md cursor-pointer glass-card hover-effect"
-                    style="border-left: 4px solid #1976D2;"
+                    class="task-card q-pa-md cursor-pointer hover-effect"
+                    style="border-left: 4px solid #1976D2; background-color: white;"
             >
               <q-card-section class="q-pa-none">
                 <div class="column q-gutter-y-md">
@@ -47,7 +47,7 @@
                     </div>
                   </div>
 
-                  <div class="text-subtitle1 text-weight-medium text-dark ellipsis">
+                  <div class="text-subtitle1 text-weight-medium text-dark">
                     {{ task.title }}
                   </div>
 
@@ -79,8 +79,8 @@
             <q-card v-for="task in outgoingTasks" :key="task.id"
                     flat
                     bordered
-                    class="task-card q-pa-md cursor-pointer glass-card hover-effect"
-                    style="border-left: 4px solid #26A69A;"
+                    class="task-card q-pa-md cursor-pointer hover-effect"
+                    style="border-left: 4px solid #26A69A; background-color: white;"
             >
               <q-card-section class="q-pa-none">
                 <div class="column q-gutter-y-md">
@@ -96,7 +96,7 @@
                     </div>
                   </div>
 
-                  <div class="text-subtitle1 text-weight-medium text-dark ellipsis">
+                  <div class="text-subtitle1 text-weight-medium text-dark">
                     {{ task.title }}
                   </div>
 
@@ -222,11 +222,5 @@ defineOptions({
     opacity: 0.8;
     transform: scale(1.05);
   }
-}
-
-.glass-card {
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 </style>

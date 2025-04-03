@@ -49,27 +49,21 @@
           </div>
           
           <div class="row q-gutter-sm q-mb-sm">
-            <q-checkbox
-              v-model="task.docs.requirement"
-              label="需求"
-              class="doc-checkbox"
-              dense
+            <div 
+              class="doc-label doc-requirement cursor-pointer"
+              :class="{ 'doc-active': task.docs.requirement }"
+              @click="task.docs.requirement = !task.docs.requirement"
             >
-              <template v-slot:default>
-                <span class="doc-label doc-requirement">需求</span>
-              </template>
-            </q-checkbox>
+              需求
+            </div>
             
-            <q-checkbox
-              v-model="task.docs.design"
-              label="设计"
-              class="doc-checkbox"
-              dense
+            <div 
+              class="doc-label doc-design cursor-pointer"
+              :class="{ 'doc-active': task.docs.design }"
+              @click="task.docs.design = !task.docs.design"
             >
-              <template v-slot:default>
-                <span class="doc-label doc-design">设计</span>
-              </template>
-            </q-checkbox>
+              设计
+            </div>
           </div>
           
           <!-- 动态显示文档名称输入字段 -->
@@ -93,15 +87,6 @@
             />
           </div>
         </div>
-
-        <q-input 
-          v-model="task.description" 
-          label="任务描述" 
-          type="textarea" 
-          outlined 
-          class="light-field q-mb-md"
-          placeholder="请输入任务描述"
-        />
       </q-card-section>
 
       <q-card-actions align="right" class="q-pb-md q-pr-md">
@@ -135,7 +120,6 @@ const task = ref({
   title: '',
   type: { label: '呼入任务', value: 'incoming' }, // 设置默认值
   id: '',
-  description: '',
   docs: {
     requirement: false,
     design: false
@@ -155,7 +139,6 @@ const createTask = () => {
     title: '',
     type: { label: '呼入任务', value: 'incoming' },
     id: '',
-    description: '',
     docs: {
       requirement: false,
       design: false
@@ -190,16 +173,11 @@ defineOptions({
 }
 
 // 文档标签样式
-.doc-checkbox {
-  display: inline-block !important;
-}
-
 .doc-label {
   display: inline-flex;
   padding: 4px 12px;
   border-radius: 16px;
   font-size: 0.8rem;
-  cursor: pointer;
   transition: all 0.2s ease;
   
   &.doc-requirement {
@@ -209,6 +187,12 @@ defineOptions({
     &:hover {
       background: rgba(59, 130, 246, 0.3);
     }
+    
+    &.doc-active {
+      background: rgba(59, 130, 246, 0.5);
+      color: #1e40af;
+      font-weight: 500;
+    }
   }
   
   &.doc-design {
@@ -217,6 +201,12 @@ defineOptions({
     
     &:hover {
       background: rgba(168, 85, 247, 0.3);
+    }
+    
+    &.doc-active {
+      background: rgba(168, 85, 247, 0.5);
+      color: #6b21a8;
+      font-weight: 500;
     }
   }
 }
