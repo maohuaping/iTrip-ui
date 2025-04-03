@@ -3,7 +3,7 @@
     <!-- Logo/品牌图标 -->
     <div class="q-mb-lg flex justify-center">
       <q-avatar size="40px" class="bg-dark">
-        <q-icon name="eva-code-outline" color="blue-5" />
+        <q-icon name="code" color="blue-5" />
       </q-avatar>
     </div>
 
@@ -12,9 +12,9 @@
 
     <!-- 导航图标 -->
     <div class="column items-center q-gutter-y-md">
-      <q-btn round flat icon="eva-message-square-outline" size="md" />
-      <q-btn round flat icon="eva-file-text-outline" size="md" />
-      <q-btn round flat icon="eva-grid-outline" size="md" />
+      <q-btn round flat icon="chat" size="md" />
+      <q-btn round flat icon="description" size="md" />
+      <q-btn round flat icon="grid_view" size="md" />
     </div>
 
     <!-- 分隔线 -->
@@ -23,8 +23,8 @@
     <!-- 底部图标 -->
     <div class="column items-center q-gutter-y-md">
       <q-btn round flat color="primary" label="登录" />
-      <q-btn round flat icon="eva-minus-outline" size="md" />
-      <q-btn round flat icon="eva-monitor-outline" size="md" />
+      <q-btn round flat icon="remove" size="md" />
+      <q-btn round flat icon="monitor" size="md" />
     </div>
   </div>
 </template>
@@ -55,10 +55,10 @@
 :deep(.q-btn) {
   opacity: 0.7;
   transition: all 0.3s ease;
-  
+
   &:hover {
     opacity: 1;
     background: rgba(0, 0, 0, 0.05);
   }
 }
-</style> 
+</style>
