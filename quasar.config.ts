@@ -67,6 +67,7 @@ export default defineConfig((/* ctx */) => {
       // viteVuePluginOptions: {},
 
       vitePlugins: [
+        // https://vite-plugin-checker.netlify.app/introduction/introduction.html
         ['vite-plugin-checker', {
           vueTsc: true,
           eslint: {
