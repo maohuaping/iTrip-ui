@@ -19,15 +19,24 @@
                 </div>
               </div>
 
-              <!-- 两栏布局：呼入/呼出 -->
-              <div class="row q-col-gutter-md">
-                <!-- 呼入任务列表 -->
-                <div class="col-12 col-md-6">
-                  <div class="row items-center q-mb-sm">
-                    <q-icon name="eva-corner-left-down-outline" color="blue-6" size="sm" class="q-mr-sm" />
-                    <h3 class="text-subtitle1 text-weight-medium text-dark q-my-none">呼入任务</h3>
-                  </div>
-                  
+              <!-- 使用Tab切换呼入/呼出任务 -->
+              <q-tabs
+                v-model="activeTaskTab"
+                class="text-grey-7"
+                active-color="primary"
+                indicator-color="primary"
+                align="left"
+                narrow-indicator
+              >
+                <q-tab name="incoming" label="呼入任务" />
+                <q-tab name="outgoing" label="呼出任务" />
+              </q-tabs>
+
+              <q-separator />
+
+              <q-tab-panels v-model="activeTaskTab" animated>
+                <!-- 呼入任务面板 -->
+                <q-tab-panel name="incoming" class="q-pa-none q-mt-md">
                   <div class="q-gutter-y-sm">
                     <!-- 呼入任务项 1 -->
                     <q-card flat bordered class="task-card q-pa-sm cursor-pointer glass-card" style="border-left: 4px solid #1976D2;">
@@ -129,15 +138,10 @@
                   <div class="q-mt-md">
                     <q-btn flat color="grey-5" label="查看全部呼入任务" class="full-width" icon-right="eva-arrow-right-outline" />
                   </div>
-                </div>
+                </q-tab-panel>
 
-                <!-- 呼出任务列表 -->
-                <div class="col-12 col-md-6">
-                  <div class="row items-center q-mb-sm">
-                    <q-icon name="eva-corner-right-up-outline" color="green-6" size="sm" class="q-mr-sm" />
-                    <h3 class="text-subtitle1 text-weight-medium text-dark q-my-none">呼出任务</h3>
-                  </div>
-                  
+                <!-- 呼出任务面板 -->
+                <q-tab-panel name="outgoing" class="q-pa-none q-mt-md">
                   <div class="q-gutter-y-sm">
                     <!-- 呼出任务项 1 -->
                     <q-card flat bordered class="task-card q-pa-sm cursor-pointer glass-card" style="border-left: 4px solid #26A69A;">
@@ -175,8 +179,8 @@
                   <div class="q-mt-md">
                     <q-btn flat color="grey-5" label="查看全部呼出任务" class="full-width" icon-right="eva-arrow-right-outline" />
                   </div>
-                </div>
-              </div>
+                </q-tab-panel>
+              </q-tab-panels>
             </div>
           </section>
 
@@ -225,133 +229,8 @@
         </div>
       </div>
 
-      <!-- 新建任务模态框 -->
-      <q-dialog v-model="showNewTaskModal">
-        <q-card class="glass-card" style="min-width: 500px">
-          <q-card-section class="bg-grey-2 q-pb-sm border-bottom">
-            <div class="text-h6 text-dark">新建任务</div>
-            <q-space />
-            <q-btn icon="eva-close-outline" flat round dense v-close-popup class="absolute-top-right q-mt-sm q-mr-sm" color="grey-5" />
-          </q-card-section>
-
-          <q-card-section class="q-pt-md">
-            <!-- 任务类型和编号 -->
-            <div class="row q-col-gutter-md q-mb-md">
-              <div class="col-5">
-                <q-select 
-                  v-model="newTask.type" 
-                  :options="taskTypes" 
-                  label="任务类型" 
-                  outlined 
-                  dense 
-                  dark
-                  color="blue-6"
-                  bg-color="slate-800"
-                  class="dark-field"
-                />
-              </div>
-              <div class="col-7">
-                <q-input 
-                  v-model="newTask.id" 
-                  label="任务编号" 
-                  outlined 
-                  dense 
-                  dark
-                  color="blue-6"
-                  bg-color="slate-800"
-                  class="dark-field"
-                />
-              </div>
-            </div>
-
-            <q-input 
-              v-model="newTask.title" 
-              label="任务标题" 
-              outlined 
-              dense 
-              dark
-              color="blue-6"
-              bg-color="slate-800"
-              class="dark-field q-mb-md"
-            />
-
-            <!-- 关联文档 -->
-            <div class="q-mb-md">
-              <div class="row justify-between items-center q-mb-xs">
-                <div class="text-sm text-slate-300">关联文档</div>
-                <div class="text-xs text-slate-400">如需关联多个文档，请用逗号分隔</div>
-              </div>
-              
-              <div class="row q-gutter-sm q-mb-sm">
-                <q-checkbox
-                  v-model="newTask.docs.requirement"
-                  label="需求"
-                  class="doc-checkbox"
-                  dense
-                >
-                  <template v-slot:default>
-                    <span class="doc-label doc-requirement">需求</span>
-                  </template>
-                </q-checkbox>
-                
-                <q-checkbox
-                  v-model="newTask.docs.design"
-                  label="设计"
-                  class="doc-checkbox"
-                  dense
-                >
-                  <template v-slot:default>
-                    <span class="doc-label doc-design">设计</span>
-                  </template>
-                </q-checkbox>
-              </div>
-              
-              <!-- 动态显示文档名称输入字段 -->
-              <div class="q-gutter-y-sm">
-                <q-input 
-                  v-if="newTask.docs.requirement"
-                  v-model="newTask.docNames.requirement" 
-                  label="需求文档名称" 
-                  outlined 
-                  dense 
-                  dark
-                  color="blue-6"
-                  bg-color="slate-800"
-                  class="dark-field requirement-field"
-                />
-                
-                <q-input 
-                  v-if="newTask.docs.design"
-                  v-model="newTask.docNames.design" 
-                  label="设计文档名称" 
-                  outlined 
-                  dense 
-                  dark
-                  color="purple-6"
-                  bg-color="slate-800"
-                  class="dark-field design-field"
-                />
-              </div>
-            </div>
-
-            <q-input 
-              v-model="newTask.description" 
-              label="任务描述" 
-              type="textarea" 
-              outlined 
-              dark
-              color="blue-6"
-              bg-color="slate-800"
-              class="dark-field q-mb-md"
-            />
-          </q-card-section>
-
-          <q-card-actions align="right" class="q-pb-md q-pr-md">
-            <q-btn flat label="取消" color="grey-5" v-close-popup />
-            <q-btn flat label="创建" color="blue-6" @click="createTask" v-close-popup />
-          </q-card-actions>
-        </q-card>
-      </q-dialog>
+      <!-- 使用新的独立组件 -->
+      <NewTaskDialog v-model="showNewTaskModal" @create-task="handleCreateTask" />
     </q-page>
   </div>
 </template>
@@ -360,51 +239,17 @@
 import { ref } from 'vue'
 import WorkSidebar from './components/WorkSidebar.vue'
 import WorkLog from './components/WorkLog.vue'
+import NewTaskDialog from './components/NewTaskDialog.vue'
 
 // 新建任务模态框状态
 const showNewTaskModal = ref(false)
+// 任务列表活动标签
+const activeTaskTab = ref('incoming')
 
-// 新任务数据
-const newTask = ref({
-  title: '',
-  type: null,
-  id: '',
-  description: '',
-  docs: {
-    requirement: false,
-    design: false
-  },
-  docNames: {
-    requirement: '',
-    design: ''
-  }
-})
-
-// 任务类型选项
-const taskTypes = [
-  { label: '呼入任务', value: 'incoming' },
-  { label: '呼出任务', value: 'outgoing' }
-]
-
-// 创建任务方法
-const createTask = () => {
+// 处理创建任务
+const handleCreateTask = (task) => {
+  console.log('创建任务:', task)
   // 这里添加创建任务的逻辑
-  console.log('创建任务:', newTask.value)
-  // 重置表单
-  newTask.value = {
-    title: '',
-    type: null,
-    id: '',
-    description: '',
-    docs: {
-      requirement: false,
-      design: false
-    },
-    docNames: {
-      requirement: '',
-      design: ''
-    }
-  }
 }
 
 // 添加组件名称以解决ESLint警告
@@ -544,5 +389,49 @@ section {
 // 边框底部
 .border-bottom {
   border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+// 任务项样式
+.task-item {
+  padding: 16px;
+  border-radius: 8px;
+  border-left: 4px solid transparent;
+  background: rgba(255, 255, 255, 0.9);
+  margin-bottom: 12px;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  cursor: pointer;
+  
+  &:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+    background: rgba(255, 255, 255, 1);
+  }
+}
+
+// 任务点样式
+.task-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 8px;
+  
+  &.incoming-dot {
+    background: #1976D2;
+  }
+  
+  &.outgoing-dot {
+    background: #26A69A;
+  }
+}
+
+// 呼入任务项左边框
+.task-item:has(.incoming-dot) {
+  border-left-color: #1976D2;
+}
+
+// 呼出任务项左边框
+.task-item:has(.outgoing-dot) {
+  border-left-color: #26A69A;
 }
 </style>

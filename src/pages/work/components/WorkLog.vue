@@ -25,23 +25,6 @@
         />
       </div>
 
-      <!-- 标签选择 -->
-      <div class="q-mb-md">
-        <label class="text-subtitle1 text-weight-medium text-dark q-mb-sm block">添加标签</label>
-        <div class="row q-gutter-sm">
-          <q-badge
-            v-for="tag in availableTags"
-            :key="tag.name"
-            :color="tag.color"
-            :text-color="tag.textColor"
-            :label="tag.name"
-            class="q-pa-xs cursor-pointer"
-            @click="toggleTag(tag.name)"
-            :class="{ 'selected-tag': selectedTags.includes(tag.name) }"
-          />
-        </div>
-      </div>
-
       <!-- 操作按钮 -->
       <div class="row justify-end q-gutter-sm">
         <q-btn
@@ -79,15 +62,6 @@
             <div class="col">
               <div class="row items-center q-mb-sm">
                 <div class="text-caption text-grey-6 q-mr-md">{{ formatDate(log.date) }}</div>
-                <div class="row q-gutter-x-xs">
-                  <q-badge
-                    v-for="tag in log.tags"
-                    :key="tag"
-                    :color="getTagColor(tag).color"
-                    :text-color="getTagColor(tag).textColor"
-                    :label="tag"
-                  />
-                </div>
               </div>
               <p class="q-mb-sm text-grey-8">{{ log.content }}</p>
             </div>
@@ -145,42 +119,15 @@ const workLogApi = getWorkLog()
 const logContent = ref('')
 const characterCount = ref(0)
 const maxLength = 500
-const selectedTags = ref<string[]>([])
 const isLoading = ref(false)
 
 // 日志列表
 const logs = ref<WorkLogEntity[]>([])
 
-// 可用标签
-const availableTags = [
-  { name: '需求分析', color: 'blue-2', textColor: 'blue-8' },
-  { name: '开发', color: 'green-2', textColor: 'green-8' },
-  { name: '设计', color: 'purple-2', textColor: 'purple-8' },
-  { name: '测试', color: 'amber-2', textColor: 'amber-8' },
-  { name: 'Bug修复', color: 'red-2', textColor: 'red-8' },
-  { name: '会议', color: 'grey-5', textColor: 'white' }
-]
-
-// 获取标签颜色
-const getTagColor = (tagName: string) => {
-  const tag = availableTags.find(t => t.name === tagName)
-  return tag || { color: 'grey-5', textColor: 'white' }
-}
-
-// 切换标签选择
-const toggleTag = (tagName: string) => {
-  if (selectedTags.value.includes(tagName)) {
-    selectedTags.value = selectedTags.value.filter(t => t !== tagName)
-  } else {
-    selectedTags.value.push(tagName)
-  }
-}
-
 // 清空表单
 const clearForm = () => {
   logContent.value = ''
   characterCount.value = 0
-  selectedTags.value = []
 }
 
 // 提交日志
@@ -192,7 +139,6 @@ const submitLog = async () => {
   try {
     const newLog: WorkLogEntity = {
       content: logContent.value,
-      tags: selectedTags.value.length > 0 ? selectedTags.value.join(',') : '开发', // API可能需要字符串形式的标签
       // 其他必要的字段根据WorkLogEntity类型添加
     }
     
