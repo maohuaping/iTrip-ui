@@ -30,7 +30,7 @@ export default defineConfig((/* ctx */) => {
       // 'line-awesome',
       // 'roboto-font-latin-ext', // this or either 'roboto-font', NEVER both!
       'material-icons', // optional, you are not bound to it
-      
+
       'roboto-font', // optional, you are not bound to it
     ],
 
@@ -65,14 +65,17 @@ export default defineConfig((/* ctx */) => {
 
       // extendViteConf (viteConf) {},
       // viteVuePluginOptions: {},
-      
+
       vitePlugins: [
         ['vite-plugin-checker', {
           vueTsc: true,
           eslint: {
             lintCommand: 'eslint -c ./eslint.config.js "./src*/**/*.{ts,js,mjs,cjs,vue}"',
             useFlatConfig: true
-          }
+          },
+          overlay: {
+            initialIsOpen: false
+          },  // 即使有错误或警告，也不自动打开诊断面板（用户需要手动点击徽章才能查看）
         }, { server: false }]
       ]
     },
