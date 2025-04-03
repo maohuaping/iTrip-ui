@@ -1,10 +1,10 @@
 <template>
   <q-dialog :model-value="modelValue" @update:model-value="$emit('update:modelValue', $event)">
-    <q-card class="glass-card" style="min-width: 500px">
+    <q-card style="min-width: 500px; background: white;">
       <q-card-section class="bg-grey-2 q-pb-sm border-bottom">
         <div class="text-h6 text-dark">新建任务</div>
         <q-space />
-        <q-btn icon="eva-close-outline" flat round dense v-close-popup class="absolute-top-right q-mt-sm q-mr-sm" color="grey-5" />
+        <q-btn icon="close" flat round dense v-close-popup class="absolute-top-right q-mt-sm q-mr-sm" color="grey-7" />
       </q-card-section>
 
       <q-card-section class="q-pt-md">
@@ -31,7 +31,7 @@
           </div>
         </div>
 
-        <!-- 任务标题 - 确保这个字段可见 -->
+        <!-- 任务标题 -->
         <q-input 
           v-model="task.title" 
           label="任务标题" 
@@ -48,7 +48,7 @@
             <div class="text-caption text-grey-7">如需关联多个文档，请用逗号分隔</div>
           </div>
           
-          <div class="row q-gutter-sm q-mb-sm">
+          <div class="row q-gutter-sm q-mb-md">
             <div 
               class="doc-label doc-requirement cursor-pointer"
               :class="{ 'doc-active': task.docs.requirement }"
@@ -227,19 +227,6 @@ defineOptions({
 // 边框底部
 .border-bottom {
   border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-}
-
-// 玻璃卡片效果
-.glass-card {
-  background: white !important;
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-}
-
-// 确保对话框内容可见
-:deep(.q-dialog__inner) {
-  max-height: 90vh;
-  overflow-y: auto;
 }
 
 // 文本样式
