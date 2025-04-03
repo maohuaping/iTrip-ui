@@ -21,6 +21,14 @@ const routes: RouteRecordRaw[] = [
     component: () => import('pages/auth/LoginPage.vue'),
     meta: { requiresAuth: false }
   },
+  {
+    path: '/holiday',
+    component: () => import('layouts/HolidayLayout.vue'),
+    children: [
+      { path: '', component: () => import('pages/holiday/HolidayPage.vue') }
+    ]
+  },
+
 
   // Always leave this as last one,
   // but you can also remove it
