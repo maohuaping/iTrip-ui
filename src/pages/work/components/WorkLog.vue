@@ -43,71 +43,99 @@
 
     <!-- 日志列表 -->
     <div>
-      <div class="row items-center q-mb-md">
-        <q-icon name="eva-clock-outline" color="grey-5" size="sm" class="q-mr-xs" />
+      <div class="row items-center q-mb-sm">
+        <q-icon name="eva-clock-outline" color="primary" size="sm" class="q-mr-xs" />
         <h3 class="text-subtitle1 text-weight-medium text-dark q-my-none">工作日志记录</h3>
+        <q-space />
+        <q-btn flat dense round icon="eva-funnel-outline" color="grey-7">
+          <q-tooltip>筛选日志</q-tooltip>
+        </q-btn>
       </div>
 
-      <!-- 日志列表 -->
-      <div class="q-gutter-y-md">
+      <!-- 日志列表 - 更紧凑的设计 -->
+      <div class="q-gutter-y-sm">
         <q-card
           v-for="log in logs"
           :key="log.id"
           flat
           bordered
-          class="q-pa-md glass-card"
-          style="border-left: 4px solid #9e9e9e;"
+          class="q-py-sm q-px-md glass-card log-card"
+          :class="{'today-log': isToday(log.date)}"
         >
-          <div class="row justify-between items-start">
-            <div class="col">
-              <div class="row items-center q-mb-sm">
-                <div class="text-caption text-grey-6 q-mr-md">{{ formatDate(log.date) }}</div>
-              </div>
-              <p class="q-mb-sm text-grey-8">{{ log.content }}</p>
-            </div>
-            <div class="col-auto q-ml-md">
-              <div class="row q-gutter-x-xs">
-                <q-btn
-                  flat
-                  round
+          <div class="row justify-between items-center">
+            <div class="col-grow">
+              <div class="row items-center q-mb-xs">
+                <q-chip
                   dense
-                  color="grey-5"
-                  icon="eva-copy-outline"
-                  @click="copyLog(log.content)"
-                  title="复制日志"
-                />
-                <q-btn
-                  flat
-                  round
-                  dense
-                  color="grey-5"
-                  icon="eva-trash-2-outline"
-                  @click="deleteLog(log.id)"
-                  title="删除日志"
-                />
+                  size="sm"
+                  :color="isToday(log.date) ? 'blue-6' : 'grey-5'"
+                  text-color="white"
+                  class="q-mr-sm"
+                  style="min-width: 40px; height: 20px"
+                >
+                  {{ formatDateShort(log.date) }}
+                </q-chip>
+                <div class="text-caption text-grey-7">{{ formatTime(log.date) }}</div>
+                
+                <!-- 操作按钮 - 移到右侧 -->
+                <div class="row q-gutter-x-xs q-ml-md">
+                  <q-btn
+                    flat
+                    round
+                    dense
+                    size="xs"
+                    color="grey-7"
+                    icon="eva-copy-outline"
+                    @click="copyLog(log.content)"
+                  >
+                    <q-tooltip>复制日志</q-tooltip>
+                  </q-btn>
+                  <q-btn
+                    flat
+                    round
+                    dense
+                    size="xs"
+                    color="blue-7"
+                    icon="eva-edit-outline"
+                    @click="editLog(log)"
+                  >
+                    <q-tooltip>编辑日志</q-tooltip>
+                  </q-btn>
+                  <q-btn
+                    flat
+                    round
+                    dense
+                    size="xs"
+                    color="red-7"
+                    icon="eva-trash-2-outline"
+                    @click="confirmDelete(log.id)"
+                  >
+                    <q-tooltip>删除日志</q-tooltip>
+                  </q-btn>
+                </div>
               </div>
+              <p class="q-my-none text-grey-8 log-content text-body2">{{ log.content }}</p>
             </div>
           </div>
         </q-card>
       </div>
 
       <!-- 无日志时显示 -->
-      <div v-if="logs.length === 0" class="text-center q-py-xl">
-        <q-icon name="eva-file-text-outline" size="lg" color="grey-5" class="q-mb-md" />
-        <p class="text-grey-5 q-mb-xs">暂无工作日志记录</p>
-        <p class="text-caption text-grey-6">记录你的工作内容，帮助你更好地管理工作进度</p>
+      <div v-if="logs.length === 0" class="text-center q-py-md empty-state">
+        <q-icon name="eva-file-text-outline" size="md" color="grey-5" class="q-mb-sm" />
+        <p class="text-grey-5 q-mb-xs text-caption">暂无工作日志记录</p>
       </div>
 
       <!-- 加载更多按钮 -->
-      <div v-if="logs.length > 0" class="flex justify-center q-mt-md">
-        <q-btn flat color="grey-5" label="加载更多" />
+      <div v-if="logs.length > 0" class="flex justify-center q-mt-sm">
+        <q-btn flat dense color="primary" label="加载更多" :loading="isLoadingMore" @click="loadMore" />
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useQuasar } from 'quasar'
 import { getWorkLog } from 'src/api/work-log/work-log'
 import type { WorkLogEntity } from 'src/api/api.schemas'
@@ -120,14 +148,42 @@ const logContent = ref('')
 const characterCount = ref(0)
 const maxLength = 500
 const isLoading = ref(false)
+const isLoadingMore = ref(false)
+const editingLogId = ref<number | null>(null)
 
 // 日志列表
-const logs = ref<WorkLogEntity[]>([])
+const logs = ref<WorkLogEntity[]>([
+  {
+    id: 1,
+    content: '今天完成了首页的UI设计和交互优化，解决了移动端适配问题。明天计划开始后台管理系统的开发。',
+    date: new Date().toISOString(),
+    userId: 1
+  },
+  {
+    id: 2,
+    content: '参加了产品需求讨论会议，梳理了用户反馈的问题清单。修复了登录页面的验证码显示bug。',
+    date: new Date(Date.now() - 86400000).toISOString(), // 昨天
+    userId: 1
+  },
+  {
+    id: 3,
+    content: '完成了数据统计模块的开发，包括图表展示和数据导出功能。遇到的问题：大数据量下图表渲染性能较差，通过分批渲染解决。',
+    date: new Date(Date.now() - 86400000 * 2).toISOString(), // 前天
+    userId: 1
+  },
+  {
+    id: 4,
+    content: '进行了代码重构，优化了项目结构，提高了代码复用率。编写了单元测试用例，当前测试覆盖率达到85%。',
+    date: new Date(Date.now() - 86400000 * 3).toISOString(),
+    userId: 1
+  }
+])
 
 // 清空表单
 const clearForm = () => {
   logContent.value = ''
   characterCount.value = 0
+  editingLogId.value = null
 }
 
 // 提交日志
@@ -137,17 +193,37 @@ const submitLog = async () => {
   isLoading.value = true
   
   try {
-    const newLog: WorkLogEntity = {
-      content: logContent.value,
-      // 其他必要的字段根据WorkLogEntity类型添加
-    }
-    
-    const response = await workLogApi.workLogCreate(newLog)
-    
-    if (response.data.success) {
-      // 提交成功后重新获取日志列表
-      fetchLogs()
-      clearForm()
+    // 如果是编辑模式
+    if (editingLogId.value !== null) {
+      const logToUpdate = logs.value.find(log => log.id === editingLogId.value)
+      if (logToUpdate) {
+        // 调用更新API
+        // await workLogApi.workLogUpdate(editingLogId.value, { content: logContent.value })
+        
+        // 临时更新本地数据
+        logToUpdate.content = logContent.value
+        
+        $q.notify({
+          message: '日志更新成功',
+          color: 'positive',
+          position: 'bottom-right',
+          timeout: 2000
+        })
+      }
+    } else {
+      // 新建日志
+      const newLog: WorkLogEntity = {
+        id: Math.max(...logs.value.map(log => log.id || 0), 0) + 1,
+        content: logContent.value,
+        date: new Date().toISOString(),
+        userId: 1
+      }
+      
+      // const response = await workLogApi.workLogCreate(newLog)
+      
+      // 临时添加到本地数据
+      logs.value.unshift(newLog)
+      
       $q.notify({
         message: '日志提交成功',
         color: 'positive',
@@ -155,6 +231,8 @@ const submitLog = async () => {
         timeout: 2000
       })
     }
+    
+    clearForm()
   } catch (error) {
     console.error('提交日志失败:', error)
     $q.notify({
@@ -168,21 +246,42 @@ const submitLog = async () => {
   }
 }
 
+// 编辑日志
+const editLog = (log: WorkLogEntity) => {
+  logContent.value = log.content
+  characterCount.value = log.content.length
+  editingLogId.value = log.id
+  
+  // 滚动到表单位置
+  document.getElementById('logContent')?.scrollIntoView({ behavior: 'smooth' })
+}
+
+// 确认删除
+const confirmDelete = (id: number) => {
+  $q.dialog({
+    title: '确认删除',
+    message: '确定要删除这条工作日志吗？此操作不可撤销。',
+    cancel: true,
+    persistent: true
+  }).onOk(() => {
+    deleteLog(id)
+  })
+}
+
 // 删除日志
 const deleteLog = async (id: number) => {
   try {
-    const response = await workLogApi.workLogDelete(id)
+    // const response = await workLogApi.workLogDelete(id)
     
-    if (response.data.success) {
-      // 删除成功后更新日志列表
-      logs.value = logs.value.filter(log => log.id !== id)
-      $q.notify({
-        message: '日志已删除',
-        color: 'positive',
-        position: 'bottom-right',
-        timeout: 2000
-      })
-    }
+    // 临时从本地数据删除
+    logs.value = logs.value.filter(log => log.id !== id)
+    
+    $q.notify({
+      message: '日志已删除',
+      color: 'positive',
+      position: 'bottom-right',
+      timeout: 2000
+    })
   } catch (error) {
     console.error('删除日志失败:', error)
     $q.notify({
@@ -199,11 +298,14 @@ const fetchLogs = async () => {
   isLoading.value = true
   
   try {
-    const response = await workLogApi.workLogMeLogs()
+    // const response = await workLogApi.workLogMeLogs()
     
-    if (response.data.success && response.data.data) {
-      logs.value = response.data.data
-    }
+    // if (response.data.success && response.data.data) {
+    //   logs.value = response.data.data
+    // }
+    
+    // 使用示例数据，实际使用时注释掉
+    console.log('使用示例数据')
   } catch (error) {
     console.error('获取日志列表失败:', error)
     $q.notify({
@@ -214,6 +316,32 @@ const fetchLogs = async () => {
     })
   } finally {
     isLoading.value = false
+  }
+}
+
+// 加载更多日志
+const loadMore = async () => {
+  isLoadingMore.value = true
+  
+  try {
+    // 模拟加载更多
+    await new Promise(resolve => setTimeout(resolve, 1000))
+    
+    // 实际项目中应该调用API获取更多数据
+    // const response = await workLogApi.workLogMeLogs({ page: currentPage.value + 1 })
+    
+    // 这里只是示例，添加一条模拟数据
+    const lastId = Math.min(...logs.value.map(log => log.id || 0))
+    logs.value.push({
+      id: lastId - 1,
+      content: '参加了技术分享会，学习了最新的前端框架和性能优化技巧。',
+      date: new Date(Date.now() - 86400000 * 5).toISOString(),
+      userId: 1
+    })
+  } catch (error) {
+    console.error('加载更多日志失败:', error)
+  } finally {
+    isLoadingMore.value = false
   }
 }
 
@@ -233,7 +361,7 @@ const copyLog = (content: string) => {
     })
 }
 
-// 格式化日期 - 修改为处理API返回的日期格式
+// 格式化日期 - 完整格式
 const formatDate = (dateString: string) => {
   const date = new Date(dateString)
   return date.toLocaleDateString('zh-CN', {
@@ -242,6 +370,33 @@ const formatDate = (dateString: string) => {
     day: 'numeric',
     weekday: 'long'
   })
+}
+
+// 格式化日期 - 短格式
+const formatDateShort = (dateString: string) => {
+  const date = new Date(dateString)
+  return date.toLocaleDateString('zh-CN', {
+    month: 'numeric',
+    day: 'numeric'
+  })
+}
+
+// 格式化时间
+const formatTime = (dateString: string) => {
+  const date = new Date(dateString)
+  return date.toLocaleTimeString('zh-CN', {
+    hour: '2-digit',
+    minute: '2-digit'
+  })
+}
+
+// 判断是否为今天
+const isToday = (dateString: string) => {
+  const date = new Date(dateString)
+  const today = new Date()
+  return date.getDate() === today.getDate() &&
+    date.getMonth() === today.getMonth() &&
+    date.getFullYear() === today.getFullYear()
 }
 
 // 从API加载日志
@@ -271,5 +426,50 @@ defineOptions({
     opacity: 0.9;
     cursor: pointer;
   }
+}
+
+.log-card {
+  transition: all 0.2s ease;
+  
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    
+    .q-btn {
+      opacity: 1;
+    }
+  }
+  
+  &.today-log {
+    border-left: 3px solid #1976D2 !important;
+    background-color: rgba(25, 118, 210, 0.03);
+  }
+  
+  .q-btn {
+    opacity: 0.7;
+    transition: opacity 0.2s ease;
+    
+    &:hover {
+      opacity: 1;
+    }
+  }
+}
+
+.log-content {
+  white-space: pre-line;
+  line-height: 1.4;
+  max-height: 60px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.empty-state {
+  opacity: 0.8;
+  padding: 1rem;
+  border-radius: 8px;
+  background-color: rgba(0, 0, 0, 0.02);
 }
 </style> 

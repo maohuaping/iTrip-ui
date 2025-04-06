@@ -5,7 +5,6 @@
         <h2 class="text-h5 text-weight-bold text-dark q-my-none">任务列表</h2>
         <div class="row q-gutter-sm">
           <q-btn color="blue-6" size="sm" icon="add" label="新建任务" @click="$emit('open-new-task')" />
-          <q-btn flat color="grey-5" size="sm" label="筛选" icon="filter_list" />
         </div>
       </div>
 
@@ -207,6 +206,10 @@ defineOptions({
     &.outgoing-dot {
       background: #26A69A;
     }
+  }
+
+  .text-dark {
+    color: rgba(0, 0, 0, 0.87) !important;
   }
 }
 
