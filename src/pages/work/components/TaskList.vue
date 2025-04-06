@@ -35,19 +35,18 @@
               <q-card-section class="q-pa-none">
                 <div class="column q-gutter-y-md">
                   <div class="row items-center justify-between">
-                    <div class="row items-center q-gutter-x-md">
+                    <div class="row items-center q-gutter-x-md w-100">
                       <div class="row items-center">
                         <div class="task-dot q-mr-sm"></div>
                         <q-btn flat dense padding="none" no-caps class="text-caption text-grey-6">
                           {{ task.id }}
                         </q-btn>
                       </div>
-                      <q-badge color="blue-2" text-color="blue-8" label="呼入" />
+                      
+                      <div class="text-subtitle1 text-weight-medium text-dark ellipsis">
+                        {{ task.title }}
+                      </div>
                     </div>
-                  </div>
-
-                  <div class="text-subtitle1 text-weight-medium text-dark">
-                    {{ task.title }}
                   </div>
 
                   <div class="row items-center q-gutter-x-md">
@@ -84,19 +83,18 @@
               <q-card-section class="q-pa-none">
                 <div class="column q-gutter-y-md">
                   <div class="row items-center justify-between">
-                    <div class="row items-center q-gutter-x-md">
+                    <div class="row items-center q-gutter-x-md w-100">
                       <div class="row items-center">
                         <div class="task-dot outgoing-dot q-mr-sm"></div>
                         <q-btn flat dense padding="none" no-caps class="text-caption text-grey-6">
                           {{ task.id }}
                         </q-btn>
                       </div>
-                      <q-badge color="green-2" text-color="green-8" label="呼出" />
+                      
+                      <div class="text-subtitle1 text-weight-medium text-dark ellipsis">
+                        {{ task.title }}
+                      </div>
                     </div>
-                  </div>
-
-                  <div class="text-subtitle1 text-weight-medium text-dark">
-                    {{ task.title }}
                   </div>
 
                   <div class="row items-center q-gutter-x-md">
