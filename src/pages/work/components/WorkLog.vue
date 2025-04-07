@@ -24,11 +24,17 @@
             <q-card-section>
               <div class="row justify-between items-start">
                 <div class="col-9">
-                  <div class="text-subtitle1 text-weight-medium">{{ log.title }}</div>
+                  <!-- 使用日期作为标题，带有彩色条带样式 -->
+                  <div class="date-title">
+                    <span class="text-h6">{{ getRelativeDate(log.date) }}</span>
+                    <div class="date-line" :class="getDateLineClass(log.date)"></div>
+                  </div>
+                  
+                  <!-- 日志内容 -->
                   <div class="text-body2 q-mt-sm log-content">{{ log.content }}</div>
                 </div>
+                
                 <div class="col-3 text-right">
-                  <div class="text-caption text-grey">{{ formatDate(log.date) }}</div>
                   <div class="q-mt-sm">
                     <q-btn 
                       flat 
@@ -78,14 +84,6 @@
         
         <q-card-section class="q-pt-none">
           <q-form @submit="addNewLog" class="q-gutter-md">
-            <q-input
-              v-model="newLog.title"
-              label="日志标题"
-              outlined
-              dense
-              :rules="[val => !!val || '请输入标题']"
-            />
-            
             <!-- 需求类型与内容添加区域 -->
             <div>
               <div v-for="(item, index) in logItems" :key="index" class="q-mb-md">
@@ -213,13 +211,6 @@ const showNewLogDialog = ref(false)
 const showDeleteDialog = ref(false)
 const deleteIndex = ref(-1)
 
-// 新日志对象
-const newLog = reactive<WorkLogItem>({
-  title: '',
-  content: '',
-  date: formatDateForInput(new Date())
-})
-
 // 日志项目管理
 const logItems = ref<LogItemEntry[]>([
   { type: '', content: '' }
@@ -253,22 +244,57 @@ function deleteLog() {
   }
 }
 
+// 获取日期线条样式类
+function getDateLineClass(dateStr: string): string {
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  
+  const yesterday = new Date(today)
+  yesterday.setDate(yesterday.getDate() - 1)
+  
+  const dayBeforeYesterday = new Date(today)
+  dayBeforeYesterday.setDate(dayBeforeYesterday.getDate() - 2)
+  
+  const inputDate = new Date(dateStr)
+  inputDate.setHours(0, 0, 0, 0)
+  
+  if (inputDate.getTime() === today.getTime()) {
+    return 'today'
+  } else if (inputDate.getTime() === yesterday.getTime()) {
+    return 'yesterday'
+  } else if (inputDate.getTime() === dayBeforeYesterday.getTime()) {
+    return 'day-before-yesterday'
+  } else {
+    return 'older'
+  }
+}
+
 // 添加新日志
 function addNewLog() {
+  // 确保至少有一个有效的需求项
+  if (!logItems.value.some(item => item.type && item.content)) {
+    $q.notify({
+      color: 'negative',
+      message: '请至少添加一个需求项',
+      icon: 'error'
+    })
+    return
+  }
+  
   // 拼接所有需求内容
   const combinedContent = logItems.value
     .filter(item => item.type && item.content)
     .map(item => `【${item.type}】${item.content}`)
     .join('\n')
   
+  // 使用空字符串作为标题，因为我们现在使用日期作为标题显示
   logs.value.unshift({
-    title: newLog.title,
+    title: '',
     content: combinedContent,
     date: formatDateForInput(new Date())
   })
   
   // 重置表单
-  newLog.title = ''
   logItems.value = [{ type: '', content: '' }]
   
   // 关闭对话框
@@ -282,9 +308,57 @@ function addNewLog() {
   })
 }
 
+// 格式化日期显示 - 使用相对时间
+function getRelativeDate(dateStr: string): string {
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  
+  const yesterday = new Date(today)
+  yesterday.setDate(yesterday.getDate() - 1)
+  
+  const dayBeforeYesterday = new Date(today)
+  dayBeforeYesterday.setDate(dayBeforeYesterday.getDate() - 2)
+  
+  const inputDate = new Date(dateStr)
+  inputDate.setHours(0, 0, 0, 0)
+  
+  if (inputDate.getTime() === today.getTime()) {
+    return '今天'
+  } else if (inputDate.getTime() === yesterday.getTime()) {
+    return '昨天'
+  } else if (inputDate.getTime() === dayBeforeYesterday.getTime()) {
+    return '前天'
+  } else {
+    // 带星期几的日期格式
+    return formatDateWithWeekday(dateStr)
+  }
+}
+
+// 格式化带星期几的日期
+function formatDateWithWeekday(dateStr: string): string {
+  const date = new Date(dateStr)
+  const year = date.getFullYear()
+  const month = date.getMonth() + 1
+  const day = date.getDate()
+  
+  const weekdays = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六']
+  const weekday = weekdays[date.getDay()]
+  
+  return `${year}年${month}月${day}日 ${weekday}`
+}
+
+// 格式化日期为输入框格式 YYYY-MM-DD
+function formatDateForInput(date: Date): string {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  
+  return `${year}-${month}-${day}`
+}
+
 // 复制日志内容
 function copyLog(log: WorkLogItem) {
-  const textToCopy = `【${log.title}】\n${log.content}\n日期：${log.date}`
+  const textToCopy = `${log.content}\n日期：${formatDateWithWeekday(log.date)}`
   
   navigator.clipboard.writeText(textToCopy)
     .then(() => {
@@ -303,29 +377,8 @@ function copyLog(log: WorkLogItem) {
     })
 }
 
-// 格式化日期显示
-function formatDate(dateStr: string): string {
-  const date = new Date(dateStr)
-  return date.toLocaleDateString('zh-CN', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-    weekday: 'long'
-  })
-}
-
-// 格式化日期为输入框格式 YYYY-MM-DD
-function formatDateForInput(date: Date): string {
-  const year = date.getFullYear()
-  const month = String(date.getMonth() + 1).padStart(2, '0')
-  const day = String(date.getDate()).padStart(2, '0')
-  
-  return `${year}-${month}-${day}`
-}
-
 // 当打开新建对话框时重置表单
 function resetForm() {
-  newLog.title = ''
   logItems.value = [{ type: '', content: '' }]
 }
 
@@ -361,5 +414,36 @@ defineOptions({
 
 .section-header {
   border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.date-title {
+  position: relative;
+  padding-left: 12px;
+  margin-bottom: 8px;
+}
+
+.date-line {
+  position: absolute;
+  left: 0;
+  top: 2px;
+  bottom: 2px;
+  width: 4px;
+  border-radius: 2px;
+  
+  &.today {
+    background-color: #F44336; // 红色，今天
+  }
+  
+  &.yesterday {
+    background-color: #FF9800; // 橙色，昨天
+  }
+  
+  &.day-before-yesterday {
+    background-color: #FFC107; // 黄色，前天
+  }
+  
+  &.older {
+    background-color: #2196F3; // 蓝色，更早日期
+  }
 }
 </style> 
