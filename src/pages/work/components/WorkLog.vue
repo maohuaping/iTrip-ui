@@ -86,15 +86,56 @@
               :rules="[val => !!val || '请输入标题']"
             />
             
-            <q-input
-              v-model="newLog.content"
-              label="日志内容"
-              type="textarea"
-              outlined
-              autogrow
-              :rows="4"
-              :rules="[val => !!val || '请输入内容']"
-            />
+            <!-- 需求类型与内容添加区域 -->
+            <div>
+              <div v-for="(item, index) in logItems" :key="index" class="q-mb-md">
+                <div class="row q-col-gutter-sm">
+                  <div class="col-4">
+                    <q-select
+                      v-model="item.type"
+                      :options="requirementOptions"
+                      label="需求类型"
+                      outlined
+                      dense
+                      map-options
+                      emit-value
+                      :rules="[val => !!val || '请选择需求类型']"
+                    />
+                  </div>
+                  <div class="col-7">
+                    <q-input
+                      v-model="item.content"
+                      label="内容"
+                      outlined
+                      dense
+                      :rules="[val => !!val || '请输入内容']"
+                    />
+                  </div>
+                  <div class="col-1 flex items-center">
+                    <q-btn
+                      v-if="index > 0"
+                      flat
+                      round
+                      dense
+                      color="negative"
+                      icon="remove_circle"
+                      @click="removeLogItem(index)"
+                    />
+                  </div>
+                </div>
+              </div>
+              
+              <div class="q-mt-sm">
+                <q-btn
+                  outline
+                  color="primary"
+                  icon="add"
+                  label="添加需求项"
+                  size="sm"
+                  @click="addLogItem"
+                />
+              </div>
+            </div>
             
             <div class="row justify-end q-mt-md">
               <q-btn label="取消" flat v-close-popup />
@@ -123,7 +164,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
+import { ref, reactive, watch } from 'vue'
 import { useQuasar } from 'quasar'
 
 // 初始化通知
@@ -135,6 +176,21 @@ interface WorkLogItem {
   content: string
   date: string
 }
+
+// 定义需求项接口
+interface LogItemEntry {
+  type: string
+  content: string
+}
+
+// 需求类型选项
+const requirementOptions = [
+  { label: '功能需求', value: '功能需求' },
+  { label: '设计需求', value: '设计需求' },
+  { label: 'Bug修复', value: 'Bug修复' },
+  { label: '性能优化', value: '性能优化' },
+  { label: '其他任务', value: '其他任务' }
+]
 
 // 初始化日志列表
 const logs = ref<WorkLogItem[]>([
@@ -164,6 +220,21 @@ const newLog = reactive<WorkLogItem>({
   date: formatDateForInput(new Date())
 })
 
+// 日志项目管理
+const logItems = ref<LogItemEntry[]>([
+  { type: '', content: '' }
+])
+
+// 添加日志项
+function addLogItem() {
+  logItems.value.push({ type: '', content: '' })
+}
+
+// 移除日志项
+function removeLogItem(index: number) {
+  logItems.value.splice(index, 1)
+}
+
 // 确认删除
 function confirmDelete(index: number) {
   deleteIndex.value = index
@@ -184,15 +255,21 @@ function deleteLog() {
 
 // 添加新日志
 function addNewLog() {
+  // 拼接所有需求内容
+  const combinedContent = logItems.value
+    .filter(item => item.type && item.content)
+    .map(item => `【${item.type}】${item.content}`)
+    .join('\n')
+  
   logs.value.unshift({
     title: newLog.title,
-    content: newLog.content,
+    content: combinedContent,
     date: formatDateForInput(new Date())
   })
   
   // 重置表单
   newLog.title = ''
-  newLog.content = ''
+  logItems.value = [{ type: '', content: '' }]
   
   // 关闭对话框
   showNewLogDialog.value = false
@@ -245,6 +322,19 @@ function formatDateForInput(date: Date): string {
   
   return `${year}-${month}-${day}`
 }
+
+// 当打开新建对话框时重置表单
+function resetForm() {
+  newLog.title = ''
+  logItems.value = [{ type: '', content: '' }]
+}
+
+// 监听对话框打开
+watch(showNewLogDialog, (isOpen) => {
+  if (isOpen) {
+    resetForm()
+  }
+})
 
 // 组件选项
 defineOptions({
