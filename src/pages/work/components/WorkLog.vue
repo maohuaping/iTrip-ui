@@ -23,7 +23,7 @@
       <!-- 日志列表 -->
       <div class="work-logs q-mt-md" v-else-if="logs.length > 0">
         <div 
-          v-for="(log, index) in logs" 
+          v-for="(log, index) in visibleLogs" 
           :key="index" 
           class="work-log-item q-mb-md"
         >
@@ -69,6 +69,28 @@
               </div>
             </q-card-section>
           </q-card>
+        </div>
+        
+        <!-- 展示更多按钮 -->
+        <div v-if="logs.length > maxVisibleLogs && !showAllLogs" class="text-center q-mt-md">
+          <q-btn 
+            flat 
+            color="primary" 
+            label="查看更多" 
+            @click="showAllLogs = true" 
+            icon-right="expand_more"
+          />
+        </div>
+        
+        <!-- 收起按钮 -->
+        <div v-if="showAllLogs && logs.length > maxVisibleLogs" class="text-center q-mt-md">
+          <q-btn 
+            flat 
+            color="primary" 
+            label="收起" 
+            @click="showAllLogs = false" 
+            icon-right="expand_less"
+          />
         </div>
       </div>
       
@@ -169,7 +191,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, watch, onMounted } from 'vue'
+import { ref, reactive, watch, onMounted, computed } from 'vue'
 import { useQuasar } from 'quasar'
 import { getWorkLog } from '../../../api/work-log/work-log'
 
@@ -203,6 +225,8 @@ const requirementOptions = [
 // 初始化日志列表
 const logs = ref<WorkLogItem[]>([])
 const isLoading = ref(false)
+const maxVisibleLogs = ref(5) // 默认显示的日志数量
+const showAllLogs = ref(false) // 控制是否显示所有日志
 
 // 新增日志模态框状态
 const showNewLogDialog = ref(false)
@@ -220,8 +244,10 @@ const logItems = ref<LogItemEntry[]>([
 async function fetchLogs() {
   isLoading.value = true
   try {
+    // 假设后端API已经提供按日期降序排序的数据
     const response = await worklogApi.workLogMeLogs()
     if (response.data.success && response.data.payload) {
+      // 直接使用后端返回的已排序数据
       logs.value = response.data.payload.map(item => ({
         id: item.id,
         title: item.title || '',
@@ -246,6 +272,11 @@ async function fetchLogs() {
     isLoading.value = false
   }
 }
+
+// 获取要显示的日志列表
+const visibleLogs = computed(() => {
+  return showAllLogs.value ? logs.value : logs.value.slice(0, maxVisibleLogs.value)
+})
 
 // 添加日志项
 function addLogItem() {
