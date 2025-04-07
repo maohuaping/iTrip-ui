@@ -49,9 +49,11 @@
                     </div>
                   </div>
 
-                  <div class="row items-center q-gutter-x-md">
-                    <q-badge color="amber-2" text-color="amber-8" label="Gitee" />
-                    <div class="row q-gutter-x-xs">
+                  <div class="row items-center">
+                    <div class="q-ml-md">
+                      <q-badge color="amber-2" text-color="amber-8" label="Gitee" />
+                    </div>
+                    <div class="row q-gutter-x-xs q-ml-auto">
                       <q-badge v-for="tag in task.tags"
                               :key="tag.label"
                               :color="tag.color"
@@ -97,9 +99,11 @@
                     </div>
                   </div>
 
-                  <div class="row items-center q-gutter-x-md">
-                    <q-badge color="amber-2" text-color="amber-8" label="Gitee" />
-                    <div class="row q-gutter-x-xs">
+                  <div class="row items-center">
+                    <div class="q-ml-md">
+                      <q-badge color="amber-2" text-color="amber-8" label="Gitee" />
+                    </div>
+                    <div class="row q-gutter-x-xs q-ml-auto">
                       <q-badge v-for="tag in task.tags"
                               :key="tag.label"
                               :color="tag.color"

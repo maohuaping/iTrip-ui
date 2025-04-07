@@ -12,10 +12,8 @@
           <TaskList @open-new-task="showNewTaskModal = true" />
 
           <!-- 工作日志部分 -->
-          <section id="worklog" class="q-mb-xl glass rounded-xl overflow-hidden shadow-2xl">
-            <WorkLog />
-          </section>
-
+          <WorkLog />
+           
           <!-- 快速访问部分 -->
           <section id="quickaccess" class="q-mb-xl glass rounded-xl overflow-hidden shadow-2xl">
             <div class="q-pa-md">
@@ -65,9 +63,9 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import WorkSidebar from './components/WorkSidebar.vue'
-import WorkLog from './components/WorkLog.vue'
 import NewTaskDialog from './components/NewTaskDialog.vue'
 import TaskList from './components/TaskList.vue'
+import WorkLog from './components/WorkLog.vue'
 
 // 新建任务模态框状态
 const showNewTaskModal = ref(false)
