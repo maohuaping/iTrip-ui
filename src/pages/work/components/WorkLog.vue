@@ -96,22 +96,6 @@
               :rules="[val => !!val || '请输入内容']"
             />
             
-            <q-input
-              v-model="newLog.date"
-              label="日期"
-              outlined
-              dense
-              readonly
-            >
-              <template v-slot:append>
-                <q-icon name="event" class="cursor-pointer">
-                  <q-popup-proxy cover transition-show="scale" transition-hide="scale">
-                    <q-date v-model="newLog.date" mask="YYYY-MM-DD" today-btn />
-                  </q-popup-proxy>
-                </q-icon>
-              </template>
-            </q-input>
-            
             <div class="row justify-end q-mt-md">
               <q-btn label="取消" flat v-close-popup />
               <q-btn label="保存" type="submit" color="primary" />
@@ -203,13 +187,12 @@ function addNewLog() {
   logs.value.unshift({
     title: newLog.title,
     content: newLog.content,
-    date: newLog.date
+    date: formatDateForInput(new Date())
   })
   
   // 重置表单
   newLog.title = ''
   newLog.content = ''
-  newLog.date = formatDateForInput(new Date())
   
   // 关闭对话框
   showNewLogDialog.value = false
