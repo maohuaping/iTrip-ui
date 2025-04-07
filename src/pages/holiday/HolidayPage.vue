@@ -219,14 +219,14 @@ const fetchHolidays = () => {
   const holidayData: Holiday[] = [
     {
       name: '元旦',
-      startDate: new Date(thisYear, 0, 1),
-      endDate: new Date(thisYear, 0, 1),
+      startDate: new Date(thisYear, 0, 1),  // 1月1日
+      endDate: new Date(thisYear, 0, 1),    // 1月1日
       days: 1
     },
     {
       name: '春节',
-      startDate: new Date(thisYear, 1, 10), // 2月10日
-      endDate: new Date(thisYear, 1, 17),   // 2月17日
+      startDate: new Date(thisYear, 0, 28), // 1月28日
+      endDate: new Date(thisYear, 1, 4),    // 2月4日
       days: 8
     },
     {
@@ -243,21 +243,21 @@ const fetchHolidays = () => {
     },
     {
       name: '端午节',
-      startDate: new Date(thisYear, 5, 8),  // 6月8日
-      endDate: new Date(thisYear, 5, 10),   // 6月10日
+      startDate: new Date(thisYear, 4, 31), // 5月31日
+      endDate: new Date(thisYear, 5, 2),    // 6月2日
       days: 3
     },
     {
       name: '中秋节',
-      startDate: new Date(thisYear, 8, 15), // 9月15日
-      endDate: new Date(thisYear, 8, 17),   // 9月17日
-      days: 3
+      startDate: new Date(thisYear, 9, 1),  // 10月1日
+      endDate: new Date(thisYear, 9, 8),    // 10月8日
+      days: 8
     },
     {
       name: '国庆节',
       startDate: new Date(thisYear, 9, 1),  // 10月1日
-      endDate: new Date(thisYear, 9, 7),    // 10月7日
-      days: 7
+      endDate: new Date(thisYear, 9, 8),    // 10月8日
+      days: 8
     }
   ];
   

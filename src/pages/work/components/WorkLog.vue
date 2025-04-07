@@ -221,12 +221,12 @@ async function fetchLogs() {
   isLoading.value = true
   try {
     const response = await worklogApi.workLogMeLogs()
-    if (response.data.success && response.data.data) {
-      logs.value = response.data.data.map(item => ({
+    if (response.data.success && response.data.payload) {
+      logs.value = response.data.payload.map(item => ({
         id: item.id,
         title: item.title || '',
         content: item.content || '',
-        date: item.date || formatDateForInput(new Date())
+        date: item.logDate || formatDateForInput(new Date(item.createdAt))
       }))
     } else {
       $q.notify({

@@ -23,9 +23,7 @@ export const customInstance = <T>(config: AxiosRequestConfig): Promise<AxiosResp
       ...config.headers,
       // 如果有token，则添加到Authorization头
       ...(token ? { Authorization: `Bearer ${token}` } : {})
-    },
-    // 允许跨域请求携带凭证
-    withCredentials: true
+    }
   };
 
   return api(requestConfig)
