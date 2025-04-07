@@ -92,12 +92,12 @@
                     <q-select
                       v-model="item.type"
                       :options="requirementOptions"
-                      label="需求类型"
+                      label="需求"
                       outlined
                       dense
                       map-options
                       emit-value
-                      :rules="[val => !!val || '请选择需求类型']"
+                      :rules="[val => !!val || '请选择需求']"
                     />
                   </div>
                   <div class="col-7">
