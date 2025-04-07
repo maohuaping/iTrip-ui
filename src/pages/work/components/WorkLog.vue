@@ -10,11 +10,18 @@
           rounded 
           unelevated 
           @click="showNewLogDialog = true"
+          :disable="isLoading"
         />
       </div>
       
+      <!-- 加载状态 -->
+      <div v-if="isLoading" class="q-pa-lg flex flex-center">
+        <q-spinner color="primary" size="3em" />
+        <div class="q-ml-sm">加载中...</div>
+      </div>
+      
       <!-- 日志列表 -->
-      <div class="work-logs q-mt-md" v-if="logs.length > 0">
+      <div class="work-logs q-mt-md" v-else-if="logs.length > 0">
         <div 
           v-for="(log, index) in logs" 
           :key="index" 
@@ -162,14 +169,17 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, watch } from 'vue'
+import { ref, reactive, watch, onMounted } from 'vue'
 import { useQuasar } from 'quasar'
+import { getWorkLog } from '../../../api/work-log/work-log'
 
 // 初始化通知
 const $q = useQuasar()
+const worklogApi = getWorkLog()
 
 // 定义日志接口
 interface WorkLogItem {
+  id?: number
   title: string
   content: string
   date: string
@@ -191,18 +201,8 @@ const requirementOptions = [
 ]
 
 // 初始化日志列表
-const logs = ref<WorkLogItem[]>([
-  {
-    title: '系统架构设计',
-    content: '完成了API层和数据层的整体架构设计，明确了各模块间的交互方式和数据流向，并输出设计文档。',
-    date: '2023-09-15'
-  },
-  {
-    title: '前端框架搭建',
-    content: '基于Vue3和Quasar框架搭建了项目基础结构，完成了路由配置和全局样式定义。',
-    date: '2023-09-16'
-  }
-])
+const logs = ref<WorkLogItem[]>([])
+const isLoading = ref(false)
 
 // 新增日志模态框状态
 const showNewLogDialog = ref(false)
@@ -215,6 +215,37 @@ const deleteIndex = ref(-1)
 const logItems = ref<LogItemEntry[]>([
   { type: '', content: '' }
 ])
+
+// 获取日志列表
+async function fetchLogs() {
+  isLoading.value = true
+  try {
+    const response = await worklogApi.workLogMeLogs()
+    if (response.data.success && response.data.data) {
+      logs.value = response.data.data.map(item => ({
+        id: item.id,
+        title: item.title || '',
+        content: item.content || '',
+        date: item.date || formatDateForInput(new Date())
+      }))
+    } else {
+      $q.notify({
+        color: 'negative',
+        message: '获取日志列表失败',
+        icon: 'error'
+      })
+    }
+  } catch (error) {
+    console.error('获取日志列表出错:', error)
+    $q.notify({
+      color: 'negative',
+      message: '获取日志列表出错',
+      icon: 'error'
+    })
+  } finally {
+    isLoading.value = false
+  }
+}
 
 // 添加日志项
 function addLogItem() {
@@ -233,14 +264,43 @@ function confirmDelete(index: number) {
 }
 
 // 删除日志
-function deleteLog() {
+async function deleteLog() {
   if (deleteIndex.value > -1) {
-    logs.value.splice(deleteIndex.value, 1)
-    $q.notify({
-      color: 'positive',
-      message: '日志已删除',
-      icon: 'check_circle'
-    })
+    const logToDelete = logs.value[deleteIndex.value]
+    
+    if (!logToDelete.id) {
+      $q.notify({
+        color: 'negative',
+        message: '无法删除，日志ID不存在',
+        icon: 'error'
+      })
+      return
+    }
+    
+    try {
+      const response = await worklogApi.workLogDelete(logToDelete.id)
+      if (response.data.success) {
+        logs.value.splice(deleteIndex.value, 1)
+        $q.notify({
+          color: 'positive',
+          message: '日志已删除',
+          icon: 'check_circle'
+        })
+      } else {
+        $q.notify({
+          color: 'negative',
+          message: '删除失败: ' + (response.data.message || '未知错误'),
+          icon: 'error'
+        })
+      }
+    } catch (error) {
+      console.error('删除日志出错:', error)
+      $q.notify({
+        color: 'negative',
+        message: '删除日志出错',
+        icon: 'error'
+      })
+    }
   }
 }
 
@@ -270,7 +330,7 @@ function getDateLineClass(dateStr: string): string {
 }
 
 // 添加新日志
-function addNewLog() {
+async function addNewLog() {
   // 确保至少有一个有效的需求项
   if (!logItems.value.some(item => item.type && item.content)) {
     $q.notify({
@@ -287,25 +347,45 @@ function addNewLog() {
     .map(item => `【${item.type}】${item.content}`)
     .join('\n')
   
-  // 使用空字符串作为标题，因为我们现在使用日期作为标题显示
-  logs.value.unshift({
+  const newLog = {
     title: '',
     content: combinedContent,
     date: formatDateForInput(new Date())
-  })
+  }
   
-  // 重置表单
-  logItems.value = [{ type: '', content: '' }]
-  
-  // 关闭对话框
-  showNewLogDialog.value = false
-  
-  // 显示通知
-  $q.notify({
-    color: 'positive',
-    message: '工作日志已添加',
-    icon: 'check_circle'
-  })
+  try {
+    const response = await worklogApi.workLogCreate(newLog as any)
+    if (response.data.success) {
+      // 重新获取最新的日志列表
+      await fetchLogs()
+      
+      // 重置表单
+      logItems.value = [{ type: '', content: '' }]
+      
+      // 关闭对话框
+      showNewLogDialog.value = false
+      
+      // 显示通知
+      $q.notify({
+        color: 'positive',
+        message: '工作日志已添加',
+        icon: 'check_circle'
+      })
+    } else {
+      $q.notify({
+        color: 'negative',
+        message: '添加失败: ' + (response.data.message || '未知错误'),
+        icon: 'error'
+      })
+    }
+  } catch (error) {
+    console.error('添加日志出错:', error)
+    $q.notify({
+      color: 'negative',
+      message: '添加日志出错',
+      icon: 'error'
+    })
+  }
 }
 
 // 格式化日期显示 - 使用相对时间
@@ -387,6 +467,11 @@ watch(showNewLogDialog, (isOpen) => {
   if (isOpen) {
     resetForm()
   }
+})
+
+// 组件加载后获取日志列表
+onMounted(() => {
+  fetchLogs()
 })
 
 // 组件选项
