@@ -84,7 +84,15 @@ export default defineConfig((/* ctx */) => {
     // Full list of options: https://v2.quasar.dev/quasar-cli-vite/quasar-config-file#devserver
     devServer: {
       // https: true,
-      open: true // opens browser window automatically
+      // open: true // opens browser window automatically
+      proxy: {
+        // 将 /api 开头的请求代理到后端服务器
+        '/api': {
+          target: 'http://localhost:8080', // 后端服务地址
+          changeOrigin: true, // 修改请求头中的 Origin 和 Host 值，使其与目标服务器匹配
+          // pathRewrite: { '^/api': '' } // 在转发请求之前重写 URL 路径，移除 /api 前缀
+        }
+      }
     },
 
     // https://v2.quasar.dev/quasar-cli-vite/quasar-config-file#framework

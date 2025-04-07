@@ -12,7 +12,9 @@ export const customInstance = <T>(config: AxiosRequestConfig): Promise<AxiosResp
   });
 
   // 从localStorage或其他存储中获取token
-  const token = localStorage.getItem('auth_token');
+  // const token = localStorage.getItem('auth_token');
+  // 在登录注册没有做好之前，先尝试使用临时token
+  const token = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1aWQiOjE0LCJ1c2VybmFtZSI6IuWcn-aLqOm8oDIxMTUiLCJyb2xlIjoiUk9MRV9BRE1JTiIsImV4cCI6MTc0NDE3NTI5NTU1Mn0.HztvPIZZI8Bc4j0GUGQnCRx3zgmkXCKdr4gw58XOo0M';
   
   // 创建请求配置
   const requestConfig = {
@@ -21,7 +23,9 @@ export const customInstance = <T>(config: AxiosRequestConfig): Promise<AxiosResp
       ...config.headers,
       // 如果有token，则添加到Authorization头
       ...(token ? { Authorization: `Bearer ${token}` } : {})
-    }
+    },
+    // 允许跨域请求携带凭证
+    withCredentials: true
   };
 
   return api(requestConfig)
