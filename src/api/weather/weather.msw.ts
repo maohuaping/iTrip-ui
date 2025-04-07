@@ -14,9 +14,8 @@ import type { CmdWeatherResponseDTO } from '../api.schemas';
 export const getWeatherInfoResponseMock = (
   overrideResponse: Partial<CmdWeatherResponseDTO> = {},
 ): CmdWeatherResponseDTO => ({
-  code: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-  message: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-  data: faker.helpers.arrayElement([
+  success: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
+  payload: faker.helpers.arrayElement([
     {
       code: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
       updateTime: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),

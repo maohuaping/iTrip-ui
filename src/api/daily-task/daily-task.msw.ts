@@ -14,27 +14,24 @@ import type { CmdBoolean, CmdDailyTaskEntity, CmdListDailyTaskEntity } from '../
 export const getDailyTaskUpdateResponseMock = (
   overrideResponse: Partial<CmdBoolean> = {},
 ): CmdBoolean => ({
-  code: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-  message: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-  data: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
+  success: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
+  payload: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
   ...overrideResponse,
 });
 
 export const getDailyTaskCreateResponseMock = (
   overrideResponse: Partial<CmdBoolean> = {},
 ): CmdBoolean => ({
-  code: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-  message: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-  data: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
+  success: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
+  payload: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
   ...overrideResponse,
 });
 
 export const getDailyTaskGetByIdResponseMock = (
   overrideResponse: Partial<CmdDailyTaskEntity> = {},
 ): CmdDailyTaskEntity => ({
-  code: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-  message: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-  data: faker.helpers.arrayElement([
+  success: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
+  payload: faker.helpers.arrayElement([
     {
       id: faker.helpers.arrayElement([
         faker.number.int({ min: undefined, max: undefined }),
@@ -92,18 +89,16 @@ export const getDailyTaskGetByIdResponseMock = (
 export const getDailyTaskDeleteResponseMock = (
   overrideResponse: Partial<CmdBoolean> = {},
 ): CmdBoolean => ({
-  code: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-  message: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-  data: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
+  success: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
+  payload: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
   ...overrideResponse,
 });
 
 export const getDailyTaskMeTaskResponseMock = (
   overrideResponse: Partial<CmdListDailyTaskEntity> = {},
 ): CmdListDailyTaskEntity => ({
-  code: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-  message: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-  data: faker.helpers.arrayElement([
+  success: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
+  payload: faker.helpers.arrayElement([
     Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
       id: faker.helpers.arrayElement([
         faker.number.int({ min: undefined, max: undefined }),

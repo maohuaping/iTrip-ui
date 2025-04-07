@@ -14,18 +14,16 @@ import type { CmdBoolean } from '../api.schemas';
 export const getTravelPlanCreateResponseMock = (
   overrideResponse: Partial<CmdBoolean> = {},
 ): CmdBoolean => ({
-  code: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-  message: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-  data: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
+  success: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
+  payload: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
   ...overrideResponse,
 });
 
 export const getTravelPlanDeleteResponseMock = (
   overrideResponse: Partial<CmdBoolean> = {},
 ): CmdBoolean => ({
-  code: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-  message: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-  data: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
+  success: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
+  payload: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
   ...overrideResponse,
 });
 

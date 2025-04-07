@@ -14,18 +14,24 @@ import type { CmdString, CmdUserLoginResponseDTO } from '../api.schemas';
 export const getAuthPasswordResponseMock = (
   overrideResponse: Partial<CmdString> = {},
 ): CmdString => ({
-  code: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-  message: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-  data: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
+  success: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
+  payload: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
+  ...overrideResponse,
+});
+
+export const getAuthRegisterResponseMock = (
+  overrideResponse: Partial<CmdString> = {},
+): CmdString => ({
+  success: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
+  payload: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
   ...overrideResponse,
 });
 
 export const getAuthLoginResponseMock = (
   overrideResponse: Partial<CmdUserLoginResponseDTO> = {},
 ): CmdUserLoginResponseDTO => ({
-  code: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-  message: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-  data: faker.helpers.arrayElement([
+  success: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
+  payload: faker.helpers.arrayElement([
     {
       token: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
       user: faker.helpers.arrayElement([
@@ -48,21 +54,17 @@ export const getAuthLoginResponseMock = (
   ...overrideResponse,
 });
 
-export const getAuthPasswordCodeResponseMock = (
-  overrideResponse: Partial<CmdString> = {},
-): CmdString => ({
-  code: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-  message: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-  data: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-  ...overrideResponse,
-});
-
 export const getAuthVapidPublicKeyResponseMock = (
   overrideResponse: Partial<CmdString> = {},
 ): CmdString => ({
-  code: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-  message: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-  data: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
+  success: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
+  payload: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
+  ...overrideResponse,
+});
+
+export const getAuthCodeResponseMock = (overrideResponse: Partial<CmdString> = {}): CmdString => ({
+  success: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
+  payload: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
   ...overrideResponse,
 });
 
@@ -81,6 +83,27 @@ export const getAuthPasswordMockHandler = (
             ? await overrideResponse(info)
             : overrideResponse
           : getAuthPasswordResponseMock(),
+      ),
+      { status: 200, headers: { 'Content-Type': 'application/json' } },
+    );
+  });
+};
+
+export const getAuthRegisterMockHandler = (
+  overrideResponse?:
+    | CmdString
+    | ((info: Parameters<Parameters<typeof http.post>[1]>[0]) => Promise<CmdString> | CmdString),
+) => {
+  return http.post('*/api/auth/register', async (info) => {
+    await delay(1000);
+
+    return new HttpResponse(
+      JSON.stringify(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === 'function'
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getAuthRegisterResponseMock(),
       ),
       { status: 200, headers: { 'Content-Type': 'application/json' } },
     );
@@ -110,27 +133,6 @@ export const getAuthLoginMockHandler = (
   });
 };
 
-export const getAuthPasswordCodeMockHandler = (
-  overrideResponse?:
-    | CmdString
-    | ((info: Parameters<Parameters<typeof http.post>[1]>[0]) => Promise<CmdString> | CmdString),
-) => {
-  return http.post('*/api/auth/code', async (info) => {
-    await delay(1000);
-
-    return new HttpResponse(
-      JSON.stringify(
-        overrideResponse !== undefined
-          ? typeof overrideResponse === 'function'
-            ? await overrideResponse(info)
-            : overrideResponse
-          : getAuthPasswordCodeResponseMock(),
-      ),
-      { status: 200, headers: { 'Content-Type': 'application/json' } },
-    );
-  });
-};
-
 export const getAuthVapidPublicKeyMockHandler = (
   overrideResponse?:
     | CmdString
@@ -151,9 +153,31 @@ export const getAuthVapidPublicKeyMockHandler = (
     );
   });
 };
+
+export const getAuthCodeMockHandler = (
+  overrideResponse?:
+    | CmdString
+    | ((info: Parameters<Parameters<typeof http.get>[1]>[0]) => Promise<CmdString> | CmdString),
+) => {
+  return http.get('*/api/auth/code', async (info) => {
+    await delay(1000);
+
+    return new HttpResponse(
+      JSON.stringify(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === 'function'
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getAuthCodeResponseMock(),
+      ),
+      { status: 200, headers: { 'Content-Type': 'application/json' } },
+    );
+  });
+};
 export const getAuthMock = () => [
   getAuthPasswordMockHandler(),
+  getAuthRegisterMockHandler(),
   getAuthLoginMockHandler(),
-  getAuthPasswordCodeMockHandler(),
   getAuthVapidPublicKeyMockHandler(),
+  getAuthCodeMockHandler(),
 ];

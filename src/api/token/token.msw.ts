@@ -31,4 +31,4 @@ export const getGetTestTokenMockHandler = (
     );
   });
 };
-export const getTestMock = () => [getGetTestTokenMockHandler()];
+export const getTokenMock = () => [getGetTestTokenMockHandler()];

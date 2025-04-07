@@ -9,39 +9,37 @@ import { faker } from '@faker-js/faker';
 
 import { HttpResponse, delay, http } from 'msw';
 
-import type { CmdString, CmdVoid } from '../api.schemas';
+import type { CmdString } from '../api.schemas';
 
 export const getTestUploadResponseMock = (
   overrideResponse: Partial<CmdString> = {},
 ): CmdString => ({
-  code: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-  message: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-  data: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
+  success: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
+  payload: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
   ...overrideResponse,
 });
 
 export const getGetSignedUrlResponseMock = (
   overrideResponse: Partial<CmdString> = {},
 ): CmdString => ({
-  code: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-  message: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-  data: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
+  success: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
+  payload: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
   ...overrideResponse,
 });
 
 export const getGetPublicUrlResponseMock = (
   overrideResponse: Partial<CmdString> = {},
 ): CmdString => ({
-  code: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-  message: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-  data: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
+  success: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
+  payload: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
   ...overrideResponse,
 });
 
-export const getTestDeleteResponseMock = (overrideResponse: Partial<CmdVoid> = {}): CmdVoid => ({
-  code: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-  message: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-  data: faker.helpers.arrayElement([{}, undefined]),
+export const getTestDeleteResponseMock = (
+  overrideResponse: Partial<CmdString> = {},
+): CmdString => ({
+  success: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
+  payload: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
   ...overrideResponse,
 });
 
@@ -50,7 +48,7 @@ export const getTestUploadMockHandler = (
     | CmdString
     | ((info: Parameters<Parameters<typeof http.post>[1]>[0]) => Promise<CmdString> | CmdString),
 ) => {
-  return http.post('*/api/test/oss/upload/:directory', async (info) => {
+  return http.post('*/api/oss-test/upload/:directory', async (info) => {
     await delay(1000);
 
     return new HttpResponse(
@@ -71,7 +69,7 @@ export const getGetSignedUrlMockHandler = (
     | CmdString
     | ((info: Parameters<Parameters<typeof http.get>[1]>[0]) => Promise<CmdString> | CmdString),
 ) => {
-  return http.get('*/api/test/oss/url', async (info) => {
+  return http.get('*/api/oss-test/url', async (info) => {
     await delay(1000);
 
     return new HttpResponse(
@@ -92,7 +90,7 @@ export const getGetPublicUrlMockHandler = (
     | CmdString
     | ((info: Parameters<Parameters<typeof http.get>[1]>[0]) => Promise<CmdString> | CmdString),
 ) => {
-  return http.get('*/api/test/oss/public-url', async (info) => {
+  return http.get('*/api/oss-test/public-url', async (info) => {
     await delay(1000);
 
     return new HttpResponse(
@@ -110,10 +108,10 @@ export const getGetPublicUrlMockHandler = (
 
 export const getTestDeleteMockHandler = (
   overrideResponse?:
-    | CmdVoid
-    | ((info: Parameters<Parameters<typeof http.delete>[1]>[0]) => Promise<CmdVoid> | CmdVoid),
+    | CmdString
+    | ((info: Parameters<Parameters<typeof http.delete>[1]>[0]) => Promise<CmdString> | CmdString),
 ) => {
-  return http.delete('*/api/test/oss/delete', async (info) => {
+  return http.delete('*/api/oss-test/delete', async (info) => {
     await delay(1000);
 
     return new HttpResponse(

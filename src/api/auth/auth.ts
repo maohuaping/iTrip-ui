@@ -6,9 +6,10 @@
  * OpenAPI spec version: 1.0
  */
 import type {
+  AuthCodeParams,
   CmdString,
   CmdUserLoginResponseDTO,
-  SendVerificationCodeRequestDTO,
+  RegisterRequestDTO,
   UpdatePasswordRequestDTO,
   UserLoginRequestDTO,
 } from '../api.schemas';
@@ -28,6 +29,17 @@ export const getAuth = () => {
     });
   };
   /**
+   * @summary 注册
+   */
+  const authRegister = (registerRequestDTO: RegisterRequestDTO) => {
+    return customInstance<CmdString>({
+      url: `/api/auth/register`,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      data: registerRequestDTO,
+    });
+  };
+  /**
    * @summary 登录
    */
   const authLogin = (userLoginRequestDTO: UserLoginRequestDTO) => {
@@ -39,33 +51,31 @@ export const getAuth = () => {
     });
   };
   /**
-   * @summary 发送验证码
-   */
-  const authPasswordCode = (sendVerificationCodeRequestDTO: SendVerificationCodeRequestDTO) => {
-    return customInstance<CmdString>({
-      url: `/api/auth/code`,
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      data: sendVerificationCodeRequestDTO,
-    });
-  };
-  /**
    * @summary 获取VAPID公钥
    */
   const authVapidPublicKey = () => {
     return customInstance<CmdString>({ url: `/api/auth/vapidPublicKey`, method: 'GET' });
   };
-  return { authPassword, authLogin, authPasswordCode, authVapidPublicKey };
+  /**
+   * @summary 获取验证码
+   */
+  const authCode = (params: AuthCodeParams) => {
+    return customInstance<CmdString>({ url: `/api/auth/code`, method: 'GET', params });
+  };
+  return { authPassword, authRegister, authLogin, authVapidPublicKey, authCode };
 };
 export type AuthPasswordResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getAuth>['authPassword']>>
 >;
+export type AuthRegisterResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getAuth>['authRegister']>>
+>;
 export type AuthLoginResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getAuth>['authLogin']>>
 >;
-export type AuthPasswordCodeResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getAuth>['authPasswordCode']>>
->;
 export type AuthVapidPublicKeyResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getAuth>['authVapidPublicKey']>>
+>;
+export type AuthCodeResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getAuth>['authCode']>>
 >;

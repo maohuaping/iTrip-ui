@@ -14,27 +14,24 @@ import type { CmdBoolean, CmdListSystemConfigEntity, CmdSystemConfigEntity } fro
 export const getSystemConfigUpdateResponseMock = (
   overrideResponse: Partial<CmdBoolean> = {},
 ): CmdBoolean => ({
-  code: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-  message: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-  data: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
+  success: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
+  payload: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
   ...overrideResponse,
 });
 
 export const getSystemConfigCreateResponseMock = (
   overrideResponse: Partial<CmdBoolean> = {},
 ): CmdBoolean => ({
-  code: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-  message: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-  data: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
+  success: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
+  payload: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
   ...overrideResponse,
 });
 
 export const getSystemConfigGetByIdResponseMock = (
   overrideResponse: Partial<CmdSystemConfigEntity> = {},
 ): CmdSystemConfigEntity => ({
-  code: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-  message: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-  data: faker.helpers.arrayElement([
+  success: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
+  payload: faker.helpers.arrayElement([
     {
       id: faker.helpers.arrayElement([
         faker.number.int({ min: undefined, max: undefined }),
@@ -70,18 +67,16 @@ export const getSystemConfigGetByIdResponseMock = (
 export const getSystemConfigDeleteResponseMock = (
   overrideResponse: Partial<CmdBoolean> = {},
 ): CmdBoolean => ({
-  code: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-  message: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-  data: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
+  success: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
+  payload: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
   ...overrideResponse,
 });
 
 export const getSystemConfigListResponseMock = (
   overrideResponse: Partial<CmdListSystemConfigEntity> = {},
 ): CmdListSystemConfigEntity => ({
-  code: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-  message: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-  data: faker.helpers.arrayElement([
+  success: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
+  payload: faker.helpers.arrayElement([
     Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
       id: faker.helpers.arrayElement([
         faker.number.int({ min: undefined, max: undefined }),

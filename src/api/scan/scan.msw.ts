@@ -14,9 +14,8 @@ import type { CmdScanIdentifyResponseDTO } from '../api.schemas';
 export const getIdentifyQRCodeResponseMock = (
   overrideResponse: Partial<CmdScanIdentifyResponseDTO> = {},
 ): CmdScanIdentifyResponseDTO => ({
-  code: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-  message: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-  data: faker.helpers.arrayElement([
+  success: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
+  payload: faker.helpers.arrayElement([
     {
       type: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
       url: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),

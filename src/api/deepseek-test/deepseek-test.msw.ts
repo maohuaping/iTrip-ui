@@ -14,9 +14,8 @@ import type { CmdString } from '../api.schemas';
 export const getDeepseekTestResponseMock = (
   overrideResponse: Partial<CmdString> = {},
 ): CmdString => ({
-  code: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-  message: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-  data: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
+  success: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
+  payload: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
   ...overrideResponse,
 });
 

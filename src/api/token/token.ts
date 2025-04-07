@@ -9,12 +9,12 @@ import type { GetTestTokenParams } from '../api.schemas';
 
 import { customInstance } from '../../boot/orval-client';
 
-export const getTest = () => {
+export const getToken = () => {
   const getTestToken = (params?: GetTestTokenParams) => {
     return customInstance<string>({ url: `/api/test/token`, method: 'GET', params });
   };
   return { getTestToken };
 };
 export type GetTestTokenResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getTest>['getTestToken']>>
+  Awaited<ReturnType<ReturnType<typeof getToken>['getTestToken']>>
 >;

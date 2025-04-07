@@ -14,9 +14,8 @@ import type { CmdTravelGuideDTO } from '../api.schemas';
 export const getGetTravelGuideResponseMock = (
   overrideResponse: Partial<CmdTravelGuideDTO> = {},
 ): CmdTravelGuideDTO => ({
-  code: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-  message: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-  data: faker.helpers.arrayElement([
+  success: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
+  payload: faker.helpers.arrayElement([
     {
       destination: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
       introduction: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),

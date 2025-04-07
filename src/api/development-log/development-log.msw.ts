@@ -14,9 +14,8 @@ import type { CmdBoolean, CmdCustomPageObject, CmdDevelopmentLogEntity } from '.
 export const getDevelopmentLogListResponseMock = (
   overrideResponse: Partial<CmdCustomPageObject> = {},
 ): CmdCustomPageObject => ({
-  code: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-  message: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-  data: faker.helpers.arrayElement([
+  success: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
+  payload: faker.helpers.arrayElement([
     {
       records: faker.helpers.arrayElement([
         Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
@@ -64,27 +63,24 @@ export const getDevelopmentLogListResponseMock = (
 export const getDevelopmentLogUpdateResponseMock = (
   overrideResponse: Partial<CmdBoolean> = {},
 ): CmdBoolean => ({
-  code: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-  message: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-  data: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
+  success: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
+  payload: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
   ...overrideResponse,
 });
 
 export const getDevelopmentLogCreateResponseMock = (
   overrideResponse: Partial<CmdBoolean> = {},
 ): CmdBoolean => ({
-  code: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-  message: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-  data: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
+  success: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
+  payload: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
   ...overrideResponse,
 });
 
 export const getDevelopmentLogGetByIdResponseMock = (
   overrideResponse: Partial<CmdDevelopmentLogEntity> = {},
 ): CmdDevelopmentLogEntity => ({
-  code: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-  message: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-  data: faker.helpers.arrayElement([
+  success: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
+  payload: faker.helpers.arrayElement([
     {
       id: faker.helpers.arrayElement([
         faker.number.int({ min: undefined, max: undefined }),
@@ -120,9 +116,8 @@ export const getDevelopmentLogGetByIdResponseMock = (
 export const getDevelopmentLogDeleteResponseMock = (
   overrideResponse: Partial<CmdBoolean> = {},
 ): CmdBoolean => ({
-  code: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-  message: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-  data: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
+  success: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
+  payload: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
   ...overrideResponse,
 });
 

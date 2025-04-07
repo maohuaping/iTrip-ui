@@ -7,7 +7,6 @@
  */
 import type {
   CmdString,
-  CmdVoid,
   GetPublicUrlParams,
   GetSignedUrlParams,
   TestDeleteParams,
@@ -19,20 +18,20 @@ import { customInstance } from '../../boot/orval-client';
 export const getOssTest = () => {
   const testUpload = (directory: string, testUploadBody: TestUploadBody) => {
     return customInstance<CmdString>({
-      url: `/api/test/oss/upload/${directory}`,
+      url: `/api/oss-test/upload/${directory}`,
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       data: testUploadBody,
     });
   };
   const getSignedUrl = (params: GetSignedUrlParams) => {
-    return customInstance<CmdString>({ url: `/api/test/oss/url`, method: 'GET', params });
+    return customInstance<CmdString>({ url: `/api/oss-test/url`, method: 'GET', params });
   };
   const getPublicUrl = (params: GetPublicUrlParams) => {
-    return customInstance<CmdString>({ url: `/api/test/oss/public-url`, method: 'GET', params });
+    return customInstance<CmdString>({ url: `/api/oss-test/public-url`, method: 'GET', params });
   };
   const testDelete = (params: TestDeleteParams) => {
-    return customInstance<CmdVoid>({ url: `/api/test/oss/delete`, method: 'DELETE', params });
+    return customInstance<CmdString>({ url: `/api/oss-test/delete`, method: 'DELETE', params });
   };
   return { testUpload, getSignedUrl, getPublicUrl, testDelete };
 };

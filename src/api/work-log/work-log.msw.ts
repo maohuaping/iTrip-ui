@@ -14,27 +14,24 @@ import type { CmdBoolean, CmdListWorkLogEntity, CmdWorkLogEntity } from '../api.
 export const getWorkLogUpdateResponseMock = (
   overrideResponse: Partial<CmdBoolean> = {},
 ): CmdBoolean => ({
-  code: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-  message: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-  data: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
+  success: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
+  payload: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
   ...overrideResponse,
 });
 
 export const getWorkLogCreateResponseMock = (
   overrideResponse: Partial<CmdBoolean> = {},
 ): CmdBoolean => ({
-  code: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-  message: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-  data: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
+  success: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
+  payload: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
   ...overrideResponse,
 });
 
 export const getWorkLogGetByIdResponseMock = (
   overrideResponse: Partial<CmdWorkLogEntity> = {},
 ): CmdWorkLogEntity => ({
-  code: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-  message: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-  data: faker.helpers.arrayElement([
+  success: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
+  payload: faker.helpers.arrayElement([
     {
       id: faker.helpers.arrayElement([
         faker.number.int({ min: undefined, max: undefined }),
@@ -61,7 +58,6 @@ export const getWorkLogGetByIdResponseMock = (
         faker.date.past().toISOString().split('T')[0],
         undefined,
       ]),
-      tagType: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
       userId: faker.helpers.arrayElement([
         faker.number.int({ min: undefined, max: undefined }),
         undefined,
@@ -75,18 +71,16 @@ export const getWorkLogGetByIdResponseMock = (
 export const getWorkLogDeleteResponseMock = (
   overrideResponse: Partial<CmdBoolean> = {},
 ): CmdBoolean => ({
-  code: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-  message: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-  data: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
+  success: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
+  payload: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
   ...overrideResponse,
 });
 
 export const getWorkLogMeLogsResponseMock = (
   overrideResponse: Partial<CmdListWorkLogEntity> = {},
 ): CmdListWorkLogEntity => ({
-  code: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-  message: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-  data: faker.helpers.arrayElement([
+  success: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
+  payload: faker.helpers.arrayElement([
     Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
       id: faker.helpers.arrayElement([
         faker.number.int({ min: undefined, max: undefined }),
@@ -113,7 +107,6 @@ export const getWorkLogMeLogsResponseMock = (
         faker.date.past().toISOString().split('T')[0],
         undefined,
       ]),
-      tagType: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
       userId: faker.helpers.arrayElement([
         faker.number.int({ min: undefined, max: undefined }),
         undefined,

@@ -6,20 +6,13 @@
  * OpenAPI spec version: 1.0
  */
 /**
- * 返回数据
- */
-export type CmdVoidData = { [key: string]: unknown };
-
-/**
  * API 统一返回格式
  */
-export interface CmdVoid {
-  /** 状态码 */
-  code?: string;
-  /** 提示信息 */
-  message?: string;
-  /** 返回数据 */
-  data?: CmdVoidData;
+export interface CmdString {
+  /** 是否成功 */
+  success?: boolean;
+  /** 数据或错误信息 */
+  payload?: string;
 }
 
 /**
@@ -40,8 +33,6 @@ export interface WorkLogEntity {
   content?: string;
   /** 日志日期 */
   logDate?: string;
-  /** 标签类型 */
-  tagType?: string;
   /** 用户ID */
   userId?: number;
 }
@@ -50,12 +41,10 @@ export interface WorkLogEntity {
  * API 统一返回格式
  */
 export interface CmdBoolean {
-  /** 状态码 */
-  code?: string;
-  /** 提示信息 */
-  message?: string;
-  /** 返回数据 */
-  data?: boolean;
+  /** 是否成功 */
+  success?: boolean;
+  /** 数据或错误信息 */
+  payload?: boolean;
 }
 
 /**
@@ -114,18 +103,6 @@ export interface UpdatePasswordRequestDTO {
   newPassword: string;
   firstLoginUpdate?: boolean;
   forgetUpdate?: boolean;
-}
-
-/**
- * API 统一返回格式
- */
-export interface CmdString {
-  /** 状态码 */
-  code?: string;
-  /** 提示信息 */
-  message?: string;
-  /** 返回数据 */
-  data?: string;
 }
 
 /**
@@ -209,20 +186,18 @@ export interface DailyTaskEntity {
 }
 
 /**
- * 返回数据
+ * 数据或错误信息
  */
-export type CmdObjectData = { [key: string]: unknown };
+export type CmdObjectPayload = { [key: string]: unknown };
 
 /**
  * API 统一返回格式
  */
 export interface CmdObject {
-  /** 状态码 */
-  code?: string;
-  /** 提示信息 */
-  message?: string;
-  /** 返回数据 */
-  data?: CmdObjectData;
+  /** 是否成功 */
+  success?: boolean;
+  /** 数据或错误信息 */
+  payload?: CmdObjectPayload;
 }
 
 /**
@@ -269,11 +244,9 @@ export interface ScanIdentifyRequestDTO {
  * API 统一返回格式
  */
 export interface CmdScanIdentifyResponseDTO {
-  /** 状态码 */
-  code?: string;
-  /** 提示信息 */
-  message?: string;
-  data?: ScanIdentifyResponseDTO;
+  /** 是否成功 */
+  success?: boolean;
+  payload?: ScanIdentifyResponseDTO;
 }
 
 /**
@@ -311,6 +284,12 @@ export interface SubscriptionRequestDTO {
   expirationTime?: number;
 }
 
+export interface RegisterRequestDTO {
+  email?: string;
+  code?: string;
+  password?: string;
+}
+
 /**
  * 登录类型：PASSWORD-密码登录，CODE-验证码登录
  */
@@ -341,11 +320,9 @@ export interface UserLoginRequestDTO {
  * API 统一返回格式
  */
 export interface CmdUserLoginResponseDTO {
-  /** 状态码 */
-  code?: string;
-  /** 提示信息 */
-  message?: string;
-  data?: UserLoginResponseDTO;
+  /** 是否成功 */
+  success?: boolean;
+  payload?: UserLoginResponseDTO;
 }
 
 /**
@@ -376,59 +353,31 @@ export interface UserResponseDTO {
 }
 
 /**
- * 验证码类型：REGISTER-注册，FORGET-忘记密码
- */
-export type SendVerificationCodeRequestDTOType =
-  (typeof SendVerificationCodeRequestDTOType)[keyof typeof SendVerificationCodeRequestDTOType];
-
-// eslint-disable-next-line @typescript-eslint/no-redeclare
-export const SendVerificationCodeRequestDTOType = {
-  REGISTER: 'REGISTER',
-  FORGET: 'FORGET',
-} as const;
-
-/**
- * 发送验证码请求DTO
- */
-export interface SendVerificationCodeRequestDTO {
-  /** 验证码类型：REGISTER-注册，FORGET-忘记密码 */
-  type: SendVerificationCodeRequestDTOType;
-  /** 邮箱 */
-  email: string;
-}
-
-/**
  * API 统一返回格式
  */
 export interface CmdWorkLogEntity {
-  /** 状态码 */
-  code?: string;
-  /** 提示信息 */
-  message?: string;
-  data?: WorkLogEntity;
+  /** 是否成功 */
+  success?: boolean;
+  payload?: WorkLogEntity;
 }
 
 /**
  * API 统一返回格式
  */
 export interface CmdListWorkLogEntity {
-  /** 状态码 */
-  code?: string;
-  /** 提示信息 */
-  message?: string;
-  /** 返回数据 */
-  data?: WorkLogEntity[];
+  /** 是否成功 */
+  success?: boolean;
+  /** 数据或错误信息 */
+  payload?: WorkLogEntity[];
 }
 
 /**
  * API 统一返回格式
  */
 export interface CmdWeatherResponseDTO {
-  /** 状态码 */
-  code?: string;
-  /** 提示信息 */
-  message?: string;
-  data?: WeatherResponseDTO;
+  /** 是否成功 */
+  success?: boolean;
+  payload?: WeatherResponseDTO;
 }
 
 /**
@@ -495,22 +444,18 @@ export interface WeatherResponseDTO {
  * API 统一返回格式
  */
 export interface CmdUserSettingsEntity {
-  /** 状态码 */
-  code?: string;
-  /** 提示信息 */
-  message?: string;
-  data?: UserSettingsEntity;
+  /** 是否成功 */
+  success?: boolean;
+  payload?: UserSettingsEntity;
 }
 
 /**
  * API 统一返回格式
  */
 export interface CmdUserResponseDTO {
-  /** 状态码 */
-  code?: string;
-  /** 提示信息 */
-  message?: string;
-  data?: UserResponseDTO;
+  /** 是否成功 */
+  success?: boolean;
+  payload?: UserResponseDTO;
 }
 
 /**
@@ -531,11 +476,9 @@ export interface Attraction {
  * API 统一返回格式
  */
 export interface CmdTravelGuideDTO {
-  /** 状态码 */
-  code?: string;
-  /** 提示信息 */
-  message?: string;
-  data?: TravelGuideDTO;
+  /** 是否成功 */
+  success?: boolean;
+  payload?: TravelGuideDTO;
 }
 
 /**
@@ -556,34 +499,28 @@ export interface TravelGuideDTO {
  * API 统一返回格式
  */
 export interface CmdSystemConfigEntity {
-  /** 状态码 */
-  code?: string;
-  /** 提示信息 */
-  message?: string;
-  data?: SystemConfigEntity;
+  /** 是否成功 */
+  success?: boolean;
+  payload?: SystemConfigEntity;
 }
 
 /**
  * API 统一返回格式
  */
 export interface CmdListSystemConfigEntity {
-  /** 状态码 */
-  code?: string;
-  /** 提示信息 */
-  message?: string;
-  /** 返回数据 */
-  data?: SystemConfigEntity[];
+  /** 是否成功 */
+  success?: boolean;
+  /** 数据或错误信息 */
+  payload?: SystemConfigEntity[];
 }
 
 /**
  * API 统一返回格式
  */
 export interface CmdCustomPageObject {
-  /** 状态码 */
-  code?: string;
-  /** 提示信息 */
-  message?: string;
-  data?: CustomPageObject;
+  /** 是否成功 */
+  success?: boolean;
+  payload?: CustomPageObject;
 }
 
 export type CustomPageObjectRecordsItem = { [key: string]: unknown };
@@ -619,34 +556,28 @@ export interface OrderItem {
  * API 统一返回格式
  */
 export interface CmdDevelopmentLogEntity {
-  /** 状态码 */
-  code?: string;
-  /** 提示信息 */
-  message?: string;
-  data?: DevelopmentLogEntity;
+  /** 是否成功 */
+  success?: boolean;
+  payload?: DevelopmentLogEntity;
 }
 
 /**
  * API 统一返回格式
  */
 export interface CmdDailyTaskEntity {
-  /** 状态码 */
-  code?: string;
-  /** 提示信息 */
-  message?: string;
-  data?: DailyTaskEntity;
+  /** 是否成功 */
+  success?: boolean;
+  payload?: DailyTaskEntity;
 }
 
 /**
  * API 统一返回格式
  */
 export interface CmdListDailyTaskEntity {
-  /** 状态码 */
-  code?: string;
-  /** 提示信息 */
-  message?: string;
-  /** 返回数据 */
-  data?: DailyTaskEntity[];
+  /** 是否成功 */
+  success?: boolean;
+  /** 数据或错误信息 */
+  payload?: DailyTaskEntity[];
 }
 
 export type DevelopmentLogListParams = {
@@ -684,6 +615,13 @@ export type GetTestTokenParams = {
   hours?: number;
 };
 
+export type DeepseekTestParams = {
+  /**
+   * 提示词
+   */
+  prompt?: string;
+};
+
 export type GetSignedUrlParams = {
   objectName: string;
 };
@@ -692,11 +630,15 @@ export type GetPublicUrlParams = {
   objectName: string;
 };
 
-export type DeepseekTestParams = {
+export type AuthCodeParams = {
   /**
-   * 提示词
+   * 邮箱地址
    */
-  prompt?: string;
+  email: string;
+  /**
+   * 验证码类型
+   */
+  type: string;
 };
 
 export type TestDeleteParams = {
