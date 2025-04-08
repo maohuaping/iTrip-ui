@@ -94,52 +94,52 @@
         </q-tab-panel>
 
         <!-- 呼出任务面板 -->
-        <q-tab-panel name="outgoing" class="q-pa-none q-mt-md">
-          <div class="q-gutter-y-sm">
-            <q-card v-for="task in outgoingTasks" :key="task.id"
-                    flat
-                    bordered
-                    class="task-card q-pa-md cursor-pointer hover-effect"
-                    style="border-left: 4px solid #26A69A; background-color: white;"
+        <q-tab-panel name="outgoing" class="q-pa-none">
+          <div class="row q-col-gutter-md">
+            <div v-for="task in outgoingTasks" 
+                 :key="task.id" 
+                 class="col-12"
             >
-              <q-card-section class="q-pa-none">
-                <div class="column q-gutter-y-md">
-                  <div class="row items-center justify-between">
-                    <div class="row items-center q-gutter-x-md w-100">
-                      <div class="row items-center">
-                        <div class="task-dot outgoing-dot q-mr-sm"></div>
-                        <q-btn flat dense padding="none" no-caps class="text-caption text-grey-6">
-                          {{ task.id }}
-                        </q-btn>
-                      </div>
-                      
-                      <div class="text-subtitle1 text-weight-medium text-dark ellipsis">
-                        {{ task.title }}
+              <q-card flat bordered class="task-card">
+                <q-card-section>
+                  <div class="row items-center no-wrap">
+                    <div class="col">
+                      <div class="row items-center q-gutter-x-sm">
+                        <q-avatar size="32px" color="teal" text-color="white" icon="assignment" />
+                        <div class="column">
+                          <div class="text-subtitle1 text-weight-medium text-dark ellipsis">
+                            {{ task.title }}
+                          </div>
+                          <div class="text-caption text-grey-7">
+                            #{{ task.id }}
+                          </div>
+                        </div>
                       </div>
                     </div>
-                  </div>
-
-                  <div class="row items-center">
-                    <div class="q-ml-md">
-                      <q-badge color="amber-2" text-color="amber-8" label="Gitee" />
-                    </div>
-                    <div class="row q-gutter-x-xs q-ml-auto">
-                      <q-badge v-for="tag in task.tags"
-                              :key="tag.label"
-                              :color="tag.color"
-                              :text-color="tag.textColor"
-                              :label="tag.label"
-                              class="badge-link"
+                    
+                    <div class="row items-center q-gutter-x-sm q-ml-md">
+                      <q-chip
+                        dense
+                        size="sm"
+                        icon="source"
+                        color="amber-2"
+                        text-color="amber-8"
+                        label="Gitee"
+                      />
+                      <q-chip
+                        v-for="tag in task.tags"
+                        :key="tag.label"
+                        dense
+                        size="sm"
+                        :color="tag.color"
+                        :text-color="tag.textColor"
+                        :label="tag.label"
                       />
                     </div>
                   </div>
-                </div>
-              </q-card-section>
-            </q-card>
-          </div>
-
-          <div class="q-mt-md">
-            <q-btn flat class="full-width" color="grey-7" label="查看全部呼出任务" />
+                </q-card-section>
+              </q-card>
+            </div>
           </div>
         </q-tab-panel>
       </q-tab-panels>
