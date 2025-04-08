@@ -132,6 +132,34 @@ export interface SystemConfigEntity {
 }
 
 /**
+ * 需求
+ */
+export interface RequirementEntity {
+  /** 主键ID */
+  id?: number;
+  /** 创建人 */
+  createdBy?: number;
+  /** 创建时间 */
+  createdAt?: string;
+  /** 更新人 */
+  updatedBy?: number;
+  /** 更新时间 */
+  updatedAt?: string;
+  /** 需求号 */
+  requirementId?: string;
+  /** 需求名称 */
+  requirementName?: string;
+  /** 需求关联的需求文档名称。如果关联多个需求文档，会以;进行分隔 */
+  relatedRequirementDocs?: string;
+  /** 需求关联的设计文档名称。如果关联多个设计文档，会以;进行分隔 */
+  relatedDesignDocs?: string;
+  /** 需求所属的系统分类 */
+  systemCategory?: string;
+  /** 需求的归属用户ID */
+  userId?: number;
+}
+
+/**
  * 开发日志信息
  */
 export interface DevelopmentLogEntity {
@@ -512,6 +540,25 @@ export interface CmdListSystemConfigEntity {
   success?: boolean;
   /** 数据或错误信息 */
   payload?: SystemConfigEntity[];
+}
+
+/**
+ * API 统一返回格式
+ */
+export interface CmdRequirementEntity {
+  /** 是否成功 */
+  success?: boolean;
+  payload?: RequirementEntity;
+}
+
+/**
+ * API 统一返回格式
+ */
+export interface CmdListRequirementEntity {
+  /** 是否成功 */
+  success?: boolean;
+  /** 数据或错误信息 */
+  payload?: RequirementEntity[];
 }
 
 /**

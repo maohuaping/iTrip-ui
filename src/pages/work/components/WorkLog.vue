@@ -2,7 +2,10 @@
   <section id="worklog" class="q-mb-xl glass rounded-xl overflow-hidden shadow-2xl">
     <div class="q-pa-md">
       <div class="section-header q-pb-md flex justify-between items-center">
-        <h2 class="text-h5 text-weight-bold text-dark q-mb-none">工作日志</h2>
+        <h2 class="text-h5 text-weight-bold q-my-none">
+          <q-icon name="task_alt" size="28px" class="q-mr-sm" />
+          工作日志
+        </h2>
         <q-btn 
           color="primary" 
           label="添加日志" 
