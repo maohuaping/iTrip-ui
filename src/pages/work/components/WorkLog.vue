@@ -164,6 +164,11 @@
               </div>
             </div>
             
+            <!-- 字数统计显示 -->
+            <div class="text-caption text-grey-7 text-right">
+              当前字数: {{ totalCharCount }} 字
+            </div>
+            
             <div class="row justify-end q-mt-md">
               <q-btn label="取消" flat v-close-popup />
               <q-btn label="保存" type="submit" color="primary" />
@@ -239,6 +244,18 @@ const deleteIndex = ref(-1)
 const logItems = ref<LogItemEntry[]>([
   { type: '', content: '' }
 ])
+
+// 计算当前所有日志项总字数
+const totalCharCount = computed(() => {
+  return logItems.value
+    .map(item => {
+      // 计算每个日志项的字符数（包括类型和内容）
+      const typeChars = item.type ? item.type.length : 0;
+      const contentChars = item.content ? item.content.length : 0;
+      return typeChars + contentChars;
+    })
+    .reduce((sum, current) => sum + current, 0);
+});
 
 // 获取日志列表
 async function fetchLogs() {
