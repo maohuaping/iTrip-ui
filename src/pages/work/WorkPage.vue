@@ -1,9 +1,10 @@
 <template>
   <div class="work-page-container">
-    
+    <!-- 侧边菜单 -->
+    <WorkSideMenu />
+
     <!-- 主内容区域 -->
     <q-page class="work-page-content">
-      <!-- 主内容区域 -->
       <div class="q-pa-md">
         <div class="q-mx-auto" style="max-width: 1200px">
           <!-- 任务列表部分 -->
@@ -11,44 +12,6 @@
 
           <!-- 工作日志部分 -->
           <WorkLog />
-           
-          <!-- 快速访问部分 -->
-          <section id="quickaccess" class="q-mb-xl glass rounded-xl overflow-hidden shadow-2xl">
-            <div class="q-pa-md">
-              <h2 class="text-h5 text-weight-bold text-dark q-mb-md">快速访问</h2>
-              
-              <div class="row q-col-gutter-md">
-                <!-- 快速访问卡片 -->
-                <div class="col-12 col-sm-6 col-md-4 col-lg-3">
-                  <q-card flat bordered class="cursor-pointer quick-access-card glass-card">
-                    <q-card-section class="q-pa-md">
-                      <div class="row items-center no-wrap">
-                        <q-avatar color="blue-1" text-color="blue-8" icon="eva-code-outline" size="md" class="q-mr-sm" />
-                        <div>
-                          <div class="text-subtitle1 text-weight-medium text-dark">API 平台</div>
-                          <div class="text-caption text-grey-5">接口文档和测试</div>
-                        </div>
-                      </div>
-                    </q-card-section>
-                  </q-card>
-                </div>
-                
-                <div class="col-12 col-sm-6 col-md-4 col-lg-3">
-                  <q-card flat bordered class="cursor-pointer quick-access-card glass-card">
-                    <q-card-section class="q-pa-md">
-                      <div class="row items-center no-wrap">
-                        <q-avatar color="green-1" text-color="green-8" icon="eva-folder-outline" size="md" class="q-mr-sm" />
-                        <div>
-                          <div class="text-subtitle1 text-weight-medium text-dark">代码仓库</div>
-                          <div class="text-caption text-grey-5">项目源代码管理</div>
-                        </div>
-                      </div>
-                    </q-card-section>
-                  </q-card>
-                </div>
-              </div>
-            </div>
-          </section>
         </div>
       </div>
 
@@ -63,6 +26,7 @@ import { ref } from 'vue'
 import NewTaskDialog from './components/NewTaskDialog.vue'
 import TaskList from './components/TaskList.vue'
 import WorkLog from './components/WorkLog.vue'
+import WorkSideMenu from './components/WorkSideMenu.vue'
 
 // 新建任务模态框状态
 const showNewTaskModal = ref(false)
@@ -89,6 +53,8 @@ defineOptions({
 .work-page-content {
   flex: 1;
   margin-left: 0;
+  background: #f8fafc;
+  min-height: 100vh;
 }
 
 // 玻璃效果修改为适合白色背景的样式
@@ -109,7 +75,7 @@ defineOptions({
 .task-card {
   transition: all 0.3s ease;
   border-radius: 8px;
-  
+
   &:hover {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     transform: translateY(-2px);
@@ -121,7 +87,7 @@ defineOptions({
 .quick-access-card {
   transition: all 0.3s ease;
   border-radius: 8px;
-  
+
   &:hover {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     transform: translateY(-2px);
@@ -148,7 +114,7 @@ section {
 .badge-link {
   cursor: pointer;
   transition: all 0.2s ease;
-  
+
   &:hover {
     opacity: 0.8;
     transform: translateY(-1px);
@@ -174,20 +140,20 @@ section {
   font-size: 0.8rem;
   cursor: pointer;
   transition: all 0.2s ease;
-  
+
   &.doc-requirement {
     background: rgba(59, 130, 246, 0.2);
     color: #93c5fd;
-    
+
     &:hover {
       background: rgba(59, 130, 246, 0.3);
     }
   }
-  
+
   &.doc-design {
     background: rgba(168, 85, 247, 0.2);
     color: #d8b4fe;
-    
+
     &:hover {
       background: rgba(168, 85, 247, 0.3);
     }
@@ -222,7 +188,7 @@ section {
   transition: all 0.3s ease;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
   cursor: pointer;
-  
+
   &:hover {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     transform: translateY(-2px);
@@ -236,11 +202,11 @@ section {
   height: 8px;
   border-radius: 50%;
   margin-right: 8px;
-  
+
   &.incoming-dot {
     background: #1976D2;
   }
-  
+
   &.outgoing-dot {
     background: #26A69A;
   }
