@@ -554,6 +554,16 @@ export interface CmdRequirementEntity {
 /**
  * API 统一返回格式
  */
+export interface CmdListString {
+  /** 是否成功 */
+  success?: boolean;
+  /** 数据或错误信息 */
+  payload?: string[];
+}
+
+/**
+ * API 统一返回格式
+ */
 export interface CmdListRequirementEntity {
   /** 是否成功 */
   success?: boolean;

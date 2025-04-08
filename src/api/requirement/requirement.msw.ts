@@ -9,7 +9,12 @@ import { faker } from '@faker-js/faker';
 
 import { HttpResponse, delay, http } from 'msw';
 
-import type { CmdBoolean, CmdListRequirementEntity, CmdRequirementEntity } from '../api.schemas';
+import type {
+  CmdBoolean,
+  CmdListRequirementEntity,
+  CmdListString,
+  CmdRequirementEntity,
+} from '../api.schemas';
 
 export const getRequirementUpdateResponseMock = (
   overrideResponse: Partial<CmdBoolean> = {},
@@ -73,6 +78,19 @@ export const getRequirementDeleteResponseMock = (
 ): CmdBoolean => ({
   success: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
   payload: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
+  ...overrideResponse,
+});
+
+export const getRequirementNameAllResponseMock = (
+  overrideResponse: Partial<CmdListString> = {},
+): CmdListString => ({
+  success: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
+  payload: faker.helpers.arrayElement([
+    Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() =>
+      faker.string.alpha(20),
+    ),
+    undefined,
+  ]),
   ...overrideResponse,
 });
 
@@ -205,6 +223,29 @@ export const getRequirementDeleteMockHandler = (
   });
 };
 
+export const getRequirementNameAllMockHandler = (
+  overrideResponse?:
+    | CmdListString
+    | ((
+        info: Parameters<Parameters<typeof http.get>[1]>[0],
+      ) => Promise<CmdListString> | CmdListString),
+) => {
+  return http.get('*/api/requirement/name-all', async (info) => {
+    await delay(1000);
+
+    return new HttpResponse(
+      JSON.stringify(
+        overrideResponse !== undefined
+          ? typeof overrideResponse === 'function'
+            ? await overrideResponse(info)
+            : overrideResponse
+          : getRequirementNameAllResponseMock(),
+      ),
+      { status: 200, headers: { 'Content-Type': 'application/json' } },
+    );
+  });
+};
+
 export const getRequirementMeMockHandler = (
   overrideResponse?:
     | CmdListRequirementEntity
@@ -232,5 +273,6 @@ export const getRequirementMock = () => [
   getRequirementCreateMockHandler(),
   getRequirementGetByIdMockHandler(),
   getRequirementDeleteMockHandler(),
+  getRequirementNameAllMockHandler(),
   getRequirementMeMockHandler(),
 ];

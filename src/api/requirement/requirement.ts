@@ -8,6 +8,7 @@
 import type {
   CmdBoolean,
   CmdListRequirementEntity,
+  CmdListString,
   CmdRequirementEntity,
   RequirementEntity,
 } from '../api.schemas';
@@ -50,6 +51,12 @@ export const getRequirement = () => {
     return customInstance<CmdBoolean>({ url: `/api/requirement/${id}`, method: 'DELETE' });
   };
   /**
+   * @summary 获取所有需求的名称
+   */
+  const requirementNameAll = () => {
+    return customInstance<CmdListString>({ url: `/api/requirement/name-all`, method: 'GET' });
+  };
+  /**
    * @summary 获取当前用户的需求
    */
   const requirementMe = () => {
@@ -63,6 +70,7 @@ export const getRequirement = () => {
     requirementCreate,
     requirementGetById,
     requirementDelete,
+    requirementNameAll,
     requirementMe,
   };
 };
@@ -77,6 +85,9 @@ export type RequirementGetByIdResult = NonNullable<
 >;
 export type RequirementDeleteResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getRequirement>['requirementDelete']>>
+>;
+export type RequirementNameAllResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getRequirement>['requirementNameAll']>>
 >;
 export type RequirementMeResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getRequirement>['requirementMe']>>
