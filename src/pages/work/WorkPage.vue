@@ -1,7 +1,5 @@
 <template>
   <div class="work-page-container">
-    <!-- 引入侧边栏组件 -->
-    <WorkSidebar />
     
     <!-- 主内容区域 -->
     <q-page class="work-page-content">
@@ -62,7 +60,6 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import WorkSidebar from './components/WorkSidebar.vue'
 import NewTaskDialog from './components/NewTaskDialog.vue'
 import TaskList from './components/TaskList.vue'
 import WorkLog from './components/WorkLog.vue'
