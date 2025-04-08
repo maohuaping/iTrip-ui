@@ -6,28 +6,28 @@
           <q-icon name="task_alt" size="28px" class="q-mr-sm" />
           工作日志
         </h2>
-        <q-btn 
-          color="primary" 
-          label="添加日志" 
-          icon="add" 
-          rounded 
-          unelevated 
+        <q-btn
+          color="primary"
+          label="添加日志"
+          icon="add"
+          rounded
+          unelevated
           @click="showNewLogDialog = true"
           :disable="isLoading"
         />
       </div>
-      
+
       <!-- 加载状态 -->
       <div v-if="isLoading" class="q-pa-lg flex flex-center">
         <q-spinner color="primary" size="3em" />
         <div class="q-ml-sm">加载中...</div>
       </div>
-      
+
       <!-- 日志列表 -->
       <div class="work-logs q-mt-md" v-else-if="logs.length > 0">
-        <div 
-          v-for="(log, index) in visibleLogs" 
-          :key="index" 
+        <div
+          v-for="(log, index) in visibleLogs"
+          :key="index"
           class="work-log-item q-mb-md"
         >
           <q-card flat bordered class="log-card">
@@ -39,30 +39,30 @@
                     <span class="text-h6">{{ getRelativeDate(log.date) }}</span>
                     <div class="date-line" :class="getDateLineClass(log.date)"></div>
                   </div>
-                  
+
                   <!-- 日志内容 -->
                   <div class="text-body2 q-mt-sm log-content">{{ log.content }}</div>
                 </div>
-                
+
                 <div class="col-3 text-right">
                   <div class="q-mt-sm">
-                    <q-btn 
-                      flat 
-                      round 
-                      dense 
-                      color="blue-7" 
-                      icon="content_copy" 
+                    <q-btn
+                      flat
+                      round
+                      dense
+                      color="blue-7"
+                      icon="content_copy"
                       @click="copyLog(log)"
                       class="q-mr-xs"
                     >
                       <q-tooltip>复制内容</q-tooltip>
                     </q-btn>
-                    <q-btn 
-                      flat 
-                      round 
-                      dense 
-                      color="negative" 
-                      icon="delete" 
+                    <q-btn
+                      flat
+                      round
+                      dense
+                      color="negative"
+                      icon="delete"
                       @click="confirmDelete(index)"
                     >
                       <q-tooltip>删除日志</q-tooltip>
@@ -73,30 +73,30 @@
             </q-card-section>
           </q-card>
         </div>
-        
+
         <!-- 展示更多按钮 -->
         <div v-if="logs.length > maxVisibleLogs && !showAllLogs" class="text-center q-mt-md">
-          <q-btn 
-            flat 
-            color="primary" 
-            label="查看更多" 
-            @click="showAllLogs = true" 
+          <q-btn
+            flat
+            color="primary"
+            label="查看更多"
+            @click="showAllLogs = true"
             icon-right="expand_more"
           />
         </div>
-        
+
         <!-- 收起按钮 -->
         <div v-if="showAllLogs && logs.length > maxVisibleLogs" class="text-center q-mt-md">
-          <q-btn 
-            flat 
-            color="primary" 
-            label="收起" 
-            @click="showAllLogs = false" 
+          <q-btn
+            flat
+            color="primary"
+            label="收起"
+            @click="showAllLogs = false"
             icon-right="expand_less"
           />
         </div>
       </div>
-      
+
       <!-- 空状态 -->
       <div v-else class="q-pa-lg flex flex-center column">
         <q-icon name="description" size="64px" color="grey-4" />
@@ -104,7 +104,7 @@
         <div class="text-caption text-grey-6 q-mt-sm">点击"添加日志"记录您今天的工作内容</div>
       </div>
     </div>
-    
+
     <!-- 新建日志对话框 -->
     <q-dialog v-model="showNewLogDialog" persistent>
       <q-card style="min-width: 500px">
@@ -113,7 +113,7 @@
           <q-space />
           <q-btn icon="close" flat round dense v-close-popup />
         </q-card-section>
-        
+
         <q-card-section class="q-pt-none">
           <q-form @submit="addNewLog" class="q-gutter-md">
             <!-- 需求类型与内容添加区域 -->
@@ -154,7 +154,7 @@
                   </div>
                 </div>
               </div>
-              
+
               <div class="q-mt-sm">
                 <q-btn
                   outline
@@ -166,12 +166,12 @@
                 />
               </div>
             </div>
-            
+
             <!-- 字数统计显示 -->
             <div class="text-caption text-grey-7 text-right">
               当前字数: {{ totalCharCount }} 字
             </div>
-            
+
             <div class="row justify-end q-mt-md">
               <q-btn label="取消" flat v-close-popup />
               <q-btn label="保存" type="submit" color="primary" />
@@ -180,7 +180,7 @@
         </q-card-section>
       </q-card>
     </q-dialog>
-    
+
     <!-- 删除确认 -->
     <q-dialog v-model="showDeleteDialog" persistent>
       <q-card>
@@ -188,7 +188,7 @@
           <q-avatar icon="warning" color="negative" text-color="white" />
           <span class="q-ml-sm">确定要删除这条工作日志吗？</span>
         </q-card-section>
-        
+
         <q-card-actions align="right">
           <q-btn flat label="取消" v-close-popup />
           <q-btn flat label="删除" color="negative" @click="deleteLog" v-close-popup />
@@ -199,13 +199,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, watch, onMounted, computed } from 'vue'
+import { ref, watch, onMounted, computed } from 'vue'
 import { useQuasar } from 'quasar'
 import { getWorkLog } from '../../../api/work-log/work-log'
+import { getRequirement } from 'src/api/requirement/requirement';
 
 // 初始化通知
 const $q = useQuasar()
 const worklogApi = getWorkLog()
+const requirementApi = getRequirement()
 
 // 定义日志接口
 interface WorkLogItem {
@@ -222,13 +224,34 @@ interface LogItemEntry {
 }
 
 // 需求类型选项
-const requirementOptions = [
-  { label: '功能需求', value: '功能需求' },
-  { label: '设计需求', value: '设计需求' },
-  { label: 'Bug修复', value: 'Bug修复' },
-  { label: '性能优化', value: '性能优化' },
-  { label: '其他任务', value: '其他任务' }
-]
+const requirementOptions = ref<{ label: string; value: string }[]>([])
+
+// 获取需求类型列表
+async function fetchRequirementOptions() {
+  try {
+    const response = await requirementApi.requirementNameAll()
+    if (response.data.success && response.data.payload) {
+      // 将API返回的字符串数组转换为选项格式
+      requirementOptions.value = response.data.payload.map(name => ({
+        label: name,
+        value: name
+      }))
+    } else {
+      $q.notify({
+        color: 'negative',
+        message: '获取需求类型失败',
+        icon: 'error'
+      })
+    }
+  } catch (error) {
+    console.error('获取需求类型出错:', error)
+    $q.notify({
+      color: 'negative',
+      message: '获取需求类型出错',
+      icon: 'error'
+    })
+  }
+}
 
 // 初始化日志列表
 const logs = ref<WorkLogItem[]>([])
@@ -272,7 +295,7 @@ async function fetchLogs() {
         id: item.id,
         title: item.title || '',
         content: item.content || '',
-        date: item.logDate || formatDateForInput(new Date(item.createdAt))
+        date: item.logDate || formatDateForInput(new Date(item.createdAt || new Date()))
       }))
     } else {
       $q.notify({
@@ -316,9 +339,9 @@ function confirmDelete(index: number) {
 
 // 删除日志
 async function deleteLog() {
-  if (deleteIndex.value > -1) {
+  if (deleteIndex.value > -1 && deleteIndex.value < logs.value.length) {
     const logToDelete = logs.value[deleteIndex.value]
-    
+
     if (!logToDelete.id) {
       $q.notify({
         color: 'negative',
@@ -327,7 +350,7 @@ async function deleteLog() {
       })
       return
     }
-    
+
     try {
       const response = await worklogApi.workLogDelete(logToDelete.id)
       if (response.data.success) {
@@ -340,7 +363,7 @@ async function deleteLog() {
       } else {
         $q.notify({
           color: 'negative',
-          message: '删除失败: ' + (response.data.message || '未知错误'),
+          message: '删除失败: ' + (response.data.payload || '未知错误'),
           icon: 'error'
         })
       }
@@ -359,16 +382,16 @@ async function deleteLog() {
 function getDateLineClass(dateStr: string): string {
   const today = new Date()
   today.setHours(0, 0, 0, 0)
-  
+
   const yesterday = new Date(today)
   yesterday.setDate(yesterday.getDate() - 1)
-  
+
   const dayBeforeYesterday = new Date(today)
   dayBeforeYesterday.setDate(dayBeforeYesterday.getDate() - 2)
-  
+
   const inputDate = new Date(dateStr)
   inputDate.setHours(0, 0, 0, 0)
-  
+
   if (inputDate.getTime() === today.getTime()) {
     return 'today'
   } else if (inputDate.getTime() === yesterday.getTime()) {
@@ -391,31 +414,31 @@ async function addNewLog() {
     })
     return
   }
-  
+
   // 拼接所有需求内容
   const combinedContent = logItems.value
     .filter(item => item.type && item.content)
     .map(item => `【${item.type}】${item.content}`)
     .join('\n')
-  
+
   const newLog = {
     title: '',
     content: combinedContent,
     date: formatDateForInput(new Date())
   }
-  
+
   try {
     const response = await worklogApi.workLogCreate(newLog as any)
     if (response.data.success) {
       // 重新获取最新的日志列表
       await fetchLogs()
-      
+
       // 重置表单
       logItems.value = [{ type: '', content: '' }]
-      
+
       // 关闭对话框
       showNewLogDialog.value = false
-      
+
       // 显示通知
       $q.notify({
         color: 'positive',
@@ -425,7 +448,7 @@ async function addNewLog() {
     } else {
       $q.notify({
         color: 'negative',
-        message: '添加失败: ' + (response.data.message || '未知错误'),
+        message: '添加失败: ' + (response.data.payload || '未知错误'),
         icon: 'error'
       })
     }
@@ -443,16 +466,16 @@ async function addNewLog() {
 function getRelativeDate(dateStr: string): string {
   const today = new Date()
   today.setHours(0, 0, 0, 0)
-  
+
   const yesterday = new Date(today)
   yesterday.setDate(yesterday.getDate() - 1)
-  
+
   const dayBeforeYesterday = new Date(today)
   dayBeforeYesterday.setDate(dayBeforeYesterday.getDate() - 2)
-  
+
   const inputDate = new Date(dateStr)
   inputDate.setHours(0, 0, 0, 0)
-  
+
   if (inputDate.getTime() === today.getTime()) {
     return '今天'
   } else if (inputDate.getTime() === yesterday.getTime()) {
@@ -471,10 +494,10 @@ function formatDateWithWeekday(dateStr: string): string {
   const year = date.getFullYear()
   const month = date.getMonth() + 1
   const day = date.getDate()
-  
+
   const weekdays = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六']
   const weekday = weekdays[date.getDay()]
-  
+
   return `${year}年${month}月${day}日 ${weekday}`
 }
 
@@ -483,14 +506,14 @@ function formatDateForInput(date: Date): string {
   const year = date.getFullYear()
   const month = String(date.getMonth() + 1).padStart(2, '0')
   const day = String(date.getDate()).padStart(2, '0')
-  
+
   return `${year}-${month}-${day}`
 }
 
 // 复制日志内容
 function copyLog(log: WorkLogItem) {
   const textToCopy = `${log.content}\n日期：${formatDateWithWeekday(log.date)}`
-  
+
   navigator.clipboard.writeText(textToCopy)
     .then(() => {
       $q.notify({
@@ -520,9 +543,10 @@ watch(showNewLogDialog, (isOpen) => {
   }
 })
 
-// 组件加载后获取日志列表
+// 组件加载后获取日志列表和需求类型
 onMounted(() => {
   fetchLogs()
+  fetchRequirementOptions()
 })
 
 // 组件选项
@@ -535,7 +559,7 @@ defineOptions({
 .log-card {
   transition: all 0.3s ease;
   background: rgba(255, 255, 255, 0.9);
-  
+
   &:hover {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
     transform: translateY(-2px);
@@ -565,21 +589,21 @@ defineOptions({
   bottom: 2px;
   width: 4px;
   border-radius: 2px;
-  
+
   &.today {
     background-color: #F44336; // 红色，今天
   }
-  
+
   &.yesterday {
     background-color: #FF9800; // 橙色，昨天
   }
-  
+
   &.day-before-yesterday {
     background-color: #FFC107; // 黄色，前天
   }
-  
+
   &.older {
     background-color: #2196F3; // 蓝色，更早日期
   }
 }
-</style> 
+</style>
