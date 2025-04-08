@@ -15,6 +15,7 @@
           @click="$emit('open-new-task')"
           class="q-px-md"
           unelevated
+          rounded
         />
       </div>
 
