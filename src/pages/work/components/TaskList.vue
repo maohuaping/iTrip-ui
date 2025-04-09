@@ -198,7 +198,7 @@ const getTaskTags = (task: TaskItem) => {
   // 根据requirementId添加Gitee的标签，用于根据需求号跳转对应的Gitee仓库
   if (task.requirementId) {
     tags.push({
-      label: 'Gitee',
+      label: 'Git分支',
       color: 'blue-2',
       textColor: 'blue-8'
     })
