@@ -58,10 +58,18 @@
                       <div class="row items-center q-gutter-x-sm">
                         <q-avatar size="32px" color="primary" text-color="white" icon="assignment" />
                         <div class="column">
-                          <div class="text-subtitle1 text-weight-medium text-dark ellipsis">
+                          <div 
+                            class="text-subtitle1 text-weight-medium text-dark ellipsis cursor-pointer" 
+                            @click="copyToClipboard(task.requirementName)"
+                            title="点击复制任务名称"
+                          >
                             {{ task.requirementName }}
                           </div>
-                          <div class="text-caption text-grey-7">
+                          <div 
+                            class="text-caption text-grey-7 cursor-pointer"
+                            @click="copyToClipboard(task.requirementId)"
+                            title="点击复制需求编号"
+                          >
                             #{{ task.requirementId }}
                           </div>
                         </div>
@@ -101,10 +109,18 @@
                       <div class="row items-center q-gutter-x-sm">
                         <q-avatar size="32px" color="teal" text-color="white" icon="assignment" />
                         <div class="column">
-                          <div class="text-subtitle1 text-weight-medium text-dark ellipsis">
+                          <div 
+                            class="text-subtitle1 text-weight-medium text-dark ellipsis cursor-pointer" 
+                            @click="copyToClipboard(task.requirementName)"
+                            title="点击复制任务名称"
+                          >
                             {{ task.requirementName }}
                           </div>
-                          <div class="text-caption text-grey-7">
+                          <div 
+                            class="text-caption text-grey-7 cursor-pointer"
+                            @click="copyToClipboard(task.requirementId)"
+                            title="点击复制需求编号"
+                          >
                             #{{ task.requirementId }}
                           </div>
                         </div>
@@ -147,6 +163,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { getRequirement } from 'src/api/requirement/requirement'
+import { Notify } from 'quasar'
 
 // 定义响应数据接口
 interface TaskItem {
@@ -222,6 +239,23 @@ const getTaskTags = (task: TaskItem) => {
   }
   
   return tags
+}
+
+// 复制文本到剪贴板
+const copyToClipboard = (text: string) => {
+  navigator.clipboard.writeText(text)
+    .then(() => {
+      // 复制成功提示
+      Notify.create({
+        message: '已复制到剪贴板',
+        color: 'positive',
+        position: 'top',
+        timeout: 1000
+      })
+    })
+    .catch(err => {
+      console.error('复制失败:', err)
+    })
 }
 
 defineEmits(['open-new-task'])
