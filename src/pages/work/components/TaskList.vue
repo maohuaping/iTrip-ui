@@ -195,14 +195,14 @@ onMounted(fetchTasks)
 const getTaskTags = (task: TaskItem) => {
   const tags = []
   
-  // 根据requirementId添加标签
-  // if (task.requirementId) {
-  //   tags.push({
-  //     label: task.requirementId,
-  //     color: 'blue-2',
-  //     textColor: 'blue-8'
-  //   })
-  // }
+  // 根据requirementId添加Gitee的标签，用于根据需求号跳转对应的Gitee仓库
+  if (task.requirementId) {
+    tags.push({
+      label: 'Gitee',
+      color: 'blue-2',
+      textColor: 'blue-8'
+    })
+  }
   
   // 根据相关文档添加标签
   if (task.relatedRequirementDocs) {
