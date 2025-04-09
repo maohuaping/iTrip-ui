@@ -62,7 +62,7 @@
                             {{ task.requirementName }}
                           </div>
                           <div class="text-caption text-grey-7">
-                            #{{ task.id }}
+                            #{{ task.requirementId }}
                           </div>
                         </div>
                       </div>
@@ -70,18 +70,11 @@
                     
                     <div class="row items-center q-gutter-x-sm q-ml-md">
                       <q-chip
-                        dense
-                        size="sm"
-                        icon="source"
-                        color="amber-2"
-                        text-color="amber-8"
-                        label="Gitee"
-                      />
-                      <q-chip
                         v-for="tag in getTaskTags(task)"
                         :key="tag.label"
                         dense
                         size="sm"
+                        :icon="tag.icon"
                         :color="tag.color"
                         :text-color="tag.textColor"
                         :label="tag.label"
@@ -112,7 +105,7 @@
                             {{ task.requirementName }}
                           </div>
                           <div class="text-caption text-grey-7">
-                            #{{ task.id }}
+                            #{{ task.requirementId }}
                           </div>
                         </div>
                       </div>
@@ -120,18 +113,11 @@
                     
                     <div class="row items-center q-gutter-x-sm q-ml-md">
                       <q-chip
-                        dense
-                        size="sm"
-                        icon="source"
-                        color="amber-2"
-                        text-color="amber-8"
-                        label="Gitee"
-                      />
-                      <q-chip
                         v-for="tag in getTaskTags(task)"
                         :key="tag.label"
                         dense
                         size="sm"
+                        :icon="tag.icon"
                         :color="tag.color"
                         :text-color="tag.textColor"
                         :label="tag.label"
@@ -210,13 +196,13 @@ const getTaskTags = (task: TaskItem) => {
   const tags = []
   
   // 根据requirementId添加标签
-  if (task.requirementId) {
-    tags.push({
-      label: task.requirementId,
-      color: 'blue-2',
-      textColor: 'blue-8'
-    })
-  }
+  // if (task.requirementId) {
+  //   tags.push({
+  //     label: task.requirementId,
+  //     color: 'blue-2',
+  //     textColor: 'blue-8'
+  //   })
+  // }
   
   // 根据相关文档添加标签
   if (task.relatedRequirementDocs) {
