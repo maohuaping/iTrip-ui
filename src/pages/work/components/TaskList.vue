@@ -47,7 +47,7 @@
       <q-tab-panels v-model="activeTab" animated>
         <q-tab-panel name="incoming" class="q-pa-none">
           <div class="row q-col-gutter-md">
-            <div v-for="task in incomingTasks" 
+            <div v-for="task in visibleIncomingTasks" 
                  :key="task.id" 
                  class="col-12"
             >
@@ -93,12 +93,34 @@
               </q-card>
             </div>
           </div>
+          
+          <!-- 展示更多按钮 -->
+          <div v-if="incomingTasks.length > maxVisibleTasks && !showAllIncomingTasks" class="text-center q-mt-md">
+            <q-btn
+              flat
+              color="primary"
+              :label="`查看更多 (${incomingTasks.length - maxVisibleTasks})`"
+              @click="showAllIncomingTasks = true"
+              icon-right="expand_more"
+            />
+          </div>
+
+          <!-- 收起按钮 -->
+          <div v-if="showAllIncomingTasks && incomingTasks.length > maxVisibleTasks" class="text-center q-mt-md">
+            <q-btn
+              flat
+              color="primary"
+              label="收起"
+              @click="showAllIncomingTasks = false"
+              icon-right="expand_less"
+            />
+          </div>
         </q-tab-panel>
 
         <!-- 呼出任务面板 -->
         <q-tab-panel name="outgoing" class="q-pa-none">
           <div class="row q-col-gutter-md">
-            <div v-for="task in outgoingTasks" 
+            <div v-for="task in visibleOutgoingTasks" 
                  :key="task.id" 
                  class="col-12"
             >
@@ -144,24 +166,36 @@
               </q-card>
             </div>
           </div>
+          
+          <!-- 展示更多按钮 -->
+          <div v-if="outgoingTasks.length > maxVisibleTasks && !showAllOutgoingTasks" class="text-center q-mt-md">
+            <q-btn
+              flat
+              color="primary"
+              :label="`查看更多 (${outgoingTasks.length - maxVisibleTasks})`"
+              @click="showAllOutgoingTasks = true"
+              icon-right="expand_more"
+            />
+          </div>
+
+          <!-- 收起按钮 -->
+          <div v-if="showAllOutgoingTasks && outgoingTasks.length > maxVisibleTasks" class="text-center q-mt-md">
+            <q-btn
+              flat
+              color="primary"
+              label="收起"
+              @click="showAllOutgoingTasks = false"
+              icon-right="expand_less"
+            />
+          </div>
         </q-tab-panel>
       </q-tab-panels>
-      
-      <div class="text-center q-mt-lg">
-        <q-btn 
-          :label="`查看全部${activeTab === 'incoming' ? '呼入' : '呼出'}任务`" 
-          color="grey-7" 
-          flat 
-          class="full-width"
-          icon-right="chevron_right"
-        />
-      </div>
     </div>
   </section>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { getRequirement } from 'src/api/requirement/requirement'
 import { Notify } from 'quasar'
 
@@ -186,6 +220,24 @@ const activeTab = ref('incoming')
 // 任务数据
 const incomingTasks = ref<Array<TaskItem>>([])
 const outgoingTasks = ref<Array<TaskItem>>([])
+
+// 控制展开/收起状态
+const maxVisibleTasks = 4 // 默认显示的任务数量
+const showAllIncomingTasks = ref(false)
+const showAllOutgoingTasks = ref(false)
+
+// 计算要显示的任务列表
+const visibleIncomingTasks = computed(() => {
+  return showAllIncomingTasks.value 
+    ? incomingTasks.value 
+    : incomingTasks.value.slice(0, maxVisibleTasks)
+})
+
+const visibleOutgoingTasks = computed(() => {
+  return showAllOutgoingTasks.value 
+    ? outgoingTasks.value 
+    : outgoingTasks.value.slice(0, maxVisibleTasks)
+})
 
 // 获取任务数据
 const fetchTasks = async () => {
