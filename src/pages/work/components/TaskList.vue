@@ -300,6 +300,7 @@
 import { ref, onMounted, computed } from 'vue'
 import { getRequirement } from 'src/api/requirement/requirement'
 import { Notify } from 'quasar'
+import { useQuasar } from 'quasar'
 
 // 活动标签页
 const activeTab = ref('incoming')
@@ -352,6 +353,9 @@ onMounted(fetchTasks)
 
 // 添加 requirementBasePath 常量
 const requirementBasePath = '/Users/maohuaping/中科软/需求文档/'
+
+// 在 setup 中声明
+const $q = useQuasar()
 
 // 转换任务标签
 const getTaskTags = (task: TaskItem) => {
@@ -412,18 +416,18 @@ const handleRequirementClick = async (item: any, fileName: string) => {
       const result = await response.json()
       
       if (result.success) {
-        Notify.create({
+        $q.notify({
           message: '文件已打开',
           type: 'positive'
         })
       } else {
-        Notify.create({
+        $q.notify({
           message: result.message,
           type: 'negative'
         })
       }
     } catch (error) {
-      Notify.create({
+      $q.notify({
         message: '无法打开文件，请确保本地服务已启动',
         type: 'negative'
       })
