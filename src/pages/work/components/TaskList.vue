@@ -350,6 +350,9 @@ const fetchTasks = async () => {
 // 在组件挂载时获取数据
 onMounted(fetchTasks)
 
+// 添加 requirementBasePath 常量
+const requirementBasePath = '/Users/maohuaping/中科软/需求文档/'
+
 // 转换任务标签
 const getTaskTags = (task: TaskItem) => {
   const tags = []
@@ -370,7 +373,9 @@ const getTaskTags = (task: TaskItem) => {
     tags.push({
       label: '需求文档',
       color: 'green-2',
-      textColor: 'green-8'
+      textColor: 'green-8',
+      clickable: true,
+      onClick: () => handleRequirementClick(task, task.relatedRequirementDocs)
     })
   }
   
@@ -396,6 +401,34 @@ const handleSystemClick = (system: SystemType, branch: string) => {
   
   const url = `${baseUrls[system]}?search=${branch}`
   window.open(url, '_blank')
+}
+
+// 添加处理需求文档点击的方法
+const handleRequirementClick = async (item: any, fileName: string) => {
+  if (fileName) {
+    const fullPath = `${requirementBasePath}${fileName}`
+    try {
+      const response = await fetch(`http://localhost:8090/open?path=${encodeURIComponent(fullPath)}`)
+      const result = await response.json()
+      
+      if (result.success) {
+        Notify.create({
+          message: '文件已打开',
+          type: 'positive'
+        })
+      } else {
+        Notify.create({
+          message: result.message,
+          type: 'negative'
+        })
+      }
+    } catch (error) {
+      Notify.create({
+        message: '无法打开文件，请确保本地服务已启动',
+        type: 'negative'
+      })
+    }
+  }
 }
 
 // 确保SystemType类型定义正确
