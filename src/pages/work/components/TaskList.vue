@@ -86,6 +86,8 @@
                         :color="tag.color"
                         :text-color="tag.textColor"
                         :label="tag.label"
+                        :clickable="!!tag.clickable"
+                        @click="tag.onClick ? tag.onClick() : null"
                       />
                     </div>
                   </div>
@@ -159,6 +161,8 @@
                         :color="tag.color"
                         :text-color="tag.textColor"
                         :label="tag.label"
+                        :clickable="!!tag.clickable"
+                        @click="tag.onClick ? tag.onClick() : null"
                       />
                     </div>
                   </div>
@@ -264,12 +268,14 @@ onMounted(fetchTasks)
 const getTaskTags = (task: TaskItem) => {
   const tags = []
   
-  // 根据requirementId添加Gitee的标签，用于根据需求号跳转对应的Gitee仓库
+  // 根据requirementId添加Git分支标签，用于根据需求号跳转对应的Gitee仓库
   if (task.requirementId) {
     tags.push({
       label: 'Git分支',
       color: 'blue-2',
-      textColor: 'blue-8'
+      textColor: 'blue-8',
+      clickable: true,
+      onClick: () => handleSystemClick(task.systemCategory, task.requirementId)
     })
   }
   
@@ -292,6 +298,22 @@ const getTaskTags = (task: TaskItem) => {
   
   return tags
 }
+
+// 添加系统点击处理方法
+const handleSystemClick = (system: SystemType, branch: string) => {
+  if (system === 'other') return
+  
+  const baseUrls = {
+    callin: 'http://code.devops.piccnet/picc/_source/picc/picc__picc-life-ccin/Flex-Media/-/branches',
+    callout: 'http://code.devops.piccnet/picc/_source/picc/picc__picc-life-ccout/Flex-Callout/-/branches'
+  }
+  
+  const url = `${baseUrls[system]}?search=${branch}`
+  window.open(url, '_blank')
+}
+
+// 确保SystemType类型定义正确
+type SystemType = 'callin' | 'callout' | 'other'
 
 // 复制文本到剪贴板
 const copyToClipboard = (text: string) => {
