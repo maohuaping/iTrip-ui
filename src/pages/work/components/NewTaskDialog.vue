@@ -99,6 +99,8 @@
 
 <script setup lang="ts">
 import { ref, defineProps, defineEmits } from 'vue'
+import { getRequirement } from 'src/api/requirement/requirement'
+import { Notify } from 'quasar'
 
 const props = defineProps({
   modelValue: {
@@ -131,22 +133,64 @@ const task = ref({
 })
 
 // 创建任务方法
-const createTask = () => {
-  emit('create-task', { ...task.value })
-  
-  // 重置表单
-  task.value = {
-    title: '',
-    type: { label: '呼入任务', value: 'incoming' },
-    id: '',
-    docs: {
-      requirement: false,
-      design: false
-    },
-    docNames: {
-      requirement: '',
-      design: ''
+const createTask = async () => {
+  try {
+    const requirementApi = getRequirement()
+    
+    // 构造API需要的数据格式
+    const requirementEntity = {
+      requirementId: task.value.id,
+      requirementName: task.value.title,
+      systemCategory: task.value.type.value === 'incoming' ? 'callin' : 'callout',
+      relatedRequirementDocs: task.value.docs.requirement ? task.value.docNames.requirement : '',
+      relatedDesignDocs: task.value.docs.design ? task.value.docNames.design : ''
     }
+
+    const response = await requirementApi.requirementCreate(requirementEntity)
+    
+    if (response.data?.success) {
+      // 创建成功
+      Notify.create({
+        message: '任务创建成功',
+        color: 'positive',
+        position: 'top',
+        timeout: 1500
+      })
+      
+      // 通知父组件刷新任务列表
+      emit('create-task')
+      
+      // 重置表单
+      task.value = {
+        title: '',
+        type: { label: '呼入任务', value: 'incoming' },
+        id: '',
+        docs: {
+          requirement: false,
+          design: false
+        },
+        docNames: {
+          requirement: '',
+          design: ''
+        }
+      }
+    } else {
+      // 创建失败
+      Notify.create({
+        message: '任务创建失败: ' + (response.data?.payload || '未知错误'),
+        color: 'negative',
+        position: 'top',
+        timeout: 1500
+      })
+    }
+  } catch (error) {
+    console.error('创建任务出错:', error)
+    Notify.create({
+      message: '创建任务出错',
+      color: 'negative',
+      position: 'top',
+      timeout: 1500
+    })
   }
 }
 

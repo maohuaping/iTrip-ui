@@ -12,7 +12,7 @@
           size="md" 
           icon="add" 
           label="新建任务" 
-          @click="$emit('open-new-task')"
+          @click="openNewTaskDialog"
           class="q-px-md"
           unelevated
           rounded
@@ -196,12 +196,22 @@
       </q-tab-panels>
     </div>
   </section>
+
+  <q-dialog v-model="showNewTaskDialog">
+    <new-task-dialog 
+      :model-value="showNewTaskDialog"
+      @update:model-value="showNewTaskDialog = $event"
+      @create-task="handleTaskCreated" 
+    />
+  </q-dialog>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import { getRequirement } from 'src/api/requirement/requirement'
 import { Notify } from 'quasar'
+// 导入NewTaskDialog组件
+import NewTaskDialog from './NewTaskDialog.vue'
 
 // 定义响应数据接口
 interface TaskItem {
@@ -220,6 +230,9 @@ interface TaskItem {
 
 // 活动标签页
 const activeTab = ref('incoming')
+
+// 控制新建任务对话框的显示
+const showNewTaskDialog = ref(false)
 
 // 任务数据
 const incomingTasks = ref<Array<TaskItem>>([])
@@ -332,7 +345,21 @@ const copyToClipboard = (text: string) => {
     })
 }
 
-defineEmits(['open-new-task'])
+// 处理任务创建成功
+const handleTaskCreated = () => {
+  // 关闭对话框
+  showNewTaskDialog.value = false
+  // 重新获取任务列表
+  fetchTasks()
+}
+
+// 修改emit定义，添加open-new-task事件的处理
+const emit = defineEmits(['open-new-task'])
+
+// 添加打开新建任务对话框的方法
+const openNewTaskDialog = () => {
+  showNewTaskDialog.value = true
+}
 
 defineOptions({
   name: 'TaskList'
