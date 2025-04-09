@@ -59,7 +59,7 @@
                         <q-avatar size="32px" color="primary" text-color="white" icon="assignment" />
                         <div class="column">
                           <div class="text-subtitle1 text-weight-medium text-dark ellipsis">
-                            {{ task.title }}
+                            {{ task.requirementName }}
                           </div>
                           <div class="text-caption text-grey-7">
                             #{{ task.id }}
@@ -78,7 +78,7 @@
                         label="Gitee"
                       />
                       <q-chip
-                        v-for="tag in task.tags"
+                        v-for="tag in getTaskTags(task)"
                         :key="tag.label"
                         dense
                         size="sm"
@@ -109,7 +109,7 @@
                         <q-avatar size="32px" color="teal" text-color="white" icon="assignment" />
                         <div class="column">
                           <div class="text-subtitle1 text-weight-medium text-dark ellipsis">
-                            {{ task.title }}
+                            {{ task.requirementName }}
                           </div>
                           <div class="text-caption text-grey-7">
                             #{{ task.id }}
@@ -128,7 +128,7 @@
                         label="Gitee"
                       />
                       <q-chip
-                        v-for="tag in task.tags"
+                        v-for="tag in getTaskTags(task)"
                         :key="tag.label"
                         dense
                         size="sm"
@@ -159,65 +159,84 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
+import { getRequirement } from 'src/api/requirement/requirement'
+
+// 定义响应数据接口
+interface TaskItem {
+  id: number
+  createdBy: number
+  createdAt: string
+  updatedBy: number
+  updatedAt: string
+  requirementId: string
+  requirementName: string
+  relatedRequirementDocs: string
+  relatedDesignDocs: string
+  systemCategory: 'callin' | 'callout'
+  userId: number
+}
 
 // 活动标签页
 const activeTab = ref('incoming')
 
-// 模拟数据
-const incomingTasks = ref([
-  {
-    id: '28241226890',
-    title: '有广告信息需要发布广告位的服务',
-    tags: [
-      { label: '需求', color: 'blue-2', textColor: 'blue-8' },
-      { label: '设计', color: 'purple-2', textColor: 'purple-8' }
-    ]
-  },
-  {
-    id: '28241226892',
-    title: '数据分析平台的用户反馈优化需求',
-    tags: [
-      { label: '需求', color: 'blue-2', textColor: 'blue-8' },
-      { label: '设计', color: 'purple-2', textColor: 'purple-8' }
-    ]
-  },
-  {
-    id: '28241226894',
-    title: '客户端性能优化与崩溃问题修复',
-    tags: [
-      { label: '需求', color: 'blue-2', textColor: 'blue-8' },
-      { label: 'Bug', color: 'red-2', textColor: 'red-8' }
-    ]
-  }
-])
+// 任务数据
+const incomingTasks = ref<Array<TaskItem>>([])
+const outgoingTasks = ref<Array<TaskItem>>([])
 
-const outgoingTasks = ref([
-  {
-    id: '28241226891',
-    title: '智慧乡镇化的乡村村入户服务需求产品相关的需求反馈',
-    tags: [
-      { label: '需求', color: 'blue-2', textColor: 'blue-8' },
-      { label: '优化', color: 'orange-2', textColor: 'orange-8' }
-    ]
-  },
-  {
-    id: '28241226893',
-    title: '移动端应用界面交互体验改进建议',
-    tags: [
-      { label: '需求', color: 'blue-2', textColor: 'blue-8' },
-      { label: 'UI', color: 'purple-2', textColor: 'purple-8' }
-    ]
-  },
-  {
-    id: '28241226895',
-    title: '后台管理系统权限模块重构方案',
-    tags: [
-      { label: '需求', color: 'blue-2', textColor: 'blue-8' },
-      { label: '重构', color: 'yellow-2', textColor: 'yellow-8' }
-    ]
+// 获取任务数据
+const fetchTasks = async () => {
+  try {
+    const requirementApi = getRequirement()
+    const response = await requirementApi.requirementMe()
+    
+    if (response.data?.success && response.data.payload) {
+      // 根据systemCategory字段区分呼入和呼出任务
+      const allTasks = response.data.payload
+      
+      incomingTasks.value = allTasks.filter(task => task.systemCategory === 'callin')
+      outgoingTasks.value = allTasks.filter(task => task.systemCategory === 'callout')
+    }
+  } catch (error) {
+    console.error('获取任务列表失败:', error)
   }
-])
+}
+
+// 在组件挂载时获取数据
+onMounted(fetchTasks)
+
+// 转换任务标签
+const getTaskTags = (task: TaskItem) => {
+  const tags = []
+  
+  // 根据requirementId添加标签
+  if (task.requirementId) {
+    tags.push({
+      label: task.requirementId,
+      color: 'blue-2',
+      textColor: 'blue-8'
+    })
+  }
+  
+  // 根据相关文档添加标签
+  if (task.relatedRequirementDocs) {
+    tags.push({
+      label: '需求文档',
+      color: 'green-2',
+      textColor: 'green-8'
+    })
+  }
+  
+  if (task.relatedDesignDocs) {
+    tags.push({
+      label: '设计文档',
+      color: 'purple-2',
+      textColor: 'purple-8'
+    })
+  }
+  
+  return tags
+}
 
 defineEmits(['open-new-task'])
 
