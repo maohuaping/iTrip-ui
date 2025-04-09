@@ -8,34 +8,20 @@
       <div class="q-pa-md">
         <div class="q-mx-auto" style="max-width: 1200px">
           <!-- 任务列表部分 -->
-          <TaskList @open-new-task="showNewTaskModal = true" />
+          <TaskList />
 
           <!-- 工作日志部分 -->
           <WorkLog />
         </div>
       </div>
-
-      <!-- 使用新的独立组件 -->
-      <NewTaskDialog v-model="showNewTaskModal" @create-task="handleCreateTask" />
     </q-page>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import NewTaskDialog from './components/NewTaskDialog.vue'
 import TaskList from './components/TaskList.vue'
 import WorkLog from './components/WorkLog.vue'
 import WorkSideMenu from './components/WorkSideMenu.vue'
-
-// 新建任务模态框状态
-const showNewTaskModal = ref(false)
-
-// 处理创建任务
-const handleCreateTask = (task) => {
-  console.log('创建任务:', task)
-  // 这里添加创建任务的逻辑
-}
 
 // 添加组件名称以解决ESLint警告
 defineOptions({
