@@ -79,7 +79,7 @@
                     <div class="row items-center q-gutter-x-sm q-ml-md">
                       <q-chip
                         v-for="tag in getTaskTags(task)"
-                        :key="tag.label"
+                        :key="tag.label + (tag.index || '')"
                         dense
                         size="sm"
                         :icon="tag.icon"
@@ -154,7 +154,7 @@
                     <div class="row items-center q-gutter-x-sm q-ml-md">
                       <q-chip
                         v-for="tag in getTaskTags(task)"
-                        :key="tag.label"
+                        :key="tag.label + (tag.index || '')"
                         dense
                         size="sm"
                         :icon="tag.icon"
@@ -384,6 +384,16 @@ const fetchTasks = async () => {
       // 根据systemCategory字段区分呼入和呼出任务
       const allTasks = response.data.payload
       
+      // 添加日志，查看任务数据
+      console.log('所有任务数据:', allTasks)
+      
+      // 检查有多个文档的任务
+      allTasks.forEach(task => {
+        if (task.relatedRequirementDocs && task.relatedRequirementDocs.includes(',')) {
+          console.log('检测到多文档任务:', task.requirementName, '文档:', task.relatedRequirementDocs)
+        }
+      })
+      
       incomingTasks.value = allTasks.filter(task => task.systemCategory === 'callin')
       outgoingTasks.value = allTasks.filter(task => task.systemCategory === 'callout')
     }
@@ -401,11 +411,11 @@ const requirementBasePath = '/Users/maohuaping/中科软/需求文档/'
 // 在 setup 中声明
 const $q = useQuasar()
 
-// 转换任务标签
+// 转换任务标签 - 重构以更好处理多文档
 const getTaskTags = (task: TaskItem) => {
   const tags = []
   
-  // 根据requirementId添加Git分支标签，用于根据需求号跳转对应的Gitee仓库
+  // Git分支标签
   if (task.requirementId) {
     tags.push({
       label: 'Git分支',
@@ -416,26 +426,110 @@ const getTaskTags = (task: TaskItem) => {
     })
   }
   
-  // 根据相关文档添加标签
+  // 需求文档处理 - 特别注意分隔和空值处理
   if (task.relatedRequirementDocs) {
-    tags.push({
-      label: '需求文档',
-      color: 'green-2',
-      textColor: 'green-8',
-      clickable: true,
-      onClick: () => handleRequirementClick(task, task.relatedRequirementDocs)
-    })
+    // 打印原始文档字符串，帮助调试
+    console.log(`任务 ${task.requirementName} 的原始需求文档: "${task.relatedRequirementDocs}"`);
+    
+    let reqDocs = [];
+    try {
+      // 尝试多种分隔方式，确保能正确分割
+      if (task.relatedRequirementDocs.includes(',')) {
+        reqDocs = task.relatedRequirementDocs.split(',');
+      } else {
+        reqDocs = [task.relatedRequirementDocs];
+      }
+      
+      // 过滤空值
+      reqDocs = reqDocs.filter(doc => doc && doc.trim() !== '');
+      console.log(`分割后的需求文档列表(${reqDocs.length}个):`, reqDocs);
+    } catch (err) {
+      console.error('分割需求文档时出错:', err);
+      reqDocs = [task.relatedRequirementDocs]; // 出错时使用整个字符串
+    }
+    
+    // 判断文档数量并创建标签
+    if (reqDocs.length === 0) {
+      // 无有效文档
+      console.log('没有有效的需求文档');
+    } else if (reqDocs.length === 1) {
+      // 单个文档
+      tags.push({
+        label: '需求文档',
+        color: 'green-2',
+        textColor: 'green-8',
+        icon: 'description',
+        clickable: true,
+        onClick: () => handleRequirementClick(task, reqDocs[0].trim())
+      });
+    } else {
+      // 多个文档 - 为每个创建标签
+      reqDocs.forEach((doc, index) => {
+        const trimmedDoc = doc.trim();
+        if (trimmedDoc) {
+          tags.push({
+            label: `需求文档v${index + 1}`,
+            color: 'green-2',
+            textColor: 'green-8',
+            icon: 'description',
+            clickable: true,
+            index: index, // 确保key唯一
+            onClick: () => handleRequirementClick(task, trimmedDoc)
+          });
+        }
+      });
+    }
   }
   
+  // 同样处理设计文档
   if (task.relatedDesignDocs) {
-    tags.push({
-      label: '设计文档',
-      color: 'purple-2',
-      textColor: 'purple-8'
-    })
+    console.log(`任务 ${task.requirementName} 的原始设计文档: "${task.relatedDesignDocs}"`);
+    
+    let designDocs = [];
+    try {
+      if (task.relatedDesignDocs.includes(',')) {
+        designDocs = task.relatedDesignDocs.split(',');
+      } else {
+        designDocs = [task.relatedDesignDocs];
+      }
+      
+      designDocs = designDocs.filter(doc => doc && doc.trim() !== '');
+      console.log(`分割后的设计文档列表(${designDocs.length}个):`, designDocs);
+    } catch (err) {
+      console.error('分割设计文档时出错:', err);
+      designDocs = [task.relatedDesignDocs];
+    }
+    
+    if (designDocs.length === 0) {
+      console.log('没有有效的设计文档');
+    } else if (designDocs.length === 1) {
+      tags.push({
+        label: '设计文档',
+        color: 'purple-2',
+        textColor: 'purple-8',
+        icon: 'article',
+        clickable: true,
+        onClick: () => handleRequirementClick(task, designDocs[0].trim())
+      });
+    } else {
+      designDocs.forEach((doc, index) => {
+        const trimmedDoc = doc.trim();
+        if (trimmedDoc) {
+          tags.push({
+            label: `设计文档v${index + 1}`,
+            color: 'purple-2',
+            textColor: 'purple-8',
+            icon: 'article',
+            clickable: true,
+            index: index, // 确保key唯一
+            onClick: () => handleRequirementClick(task, trimmedDoc)
+          });
+        }
+      });
+    }
   }
   
-  return tags
+  return tags;
 }
 
 // 添加系统点击处理方法
@@ -451,17 +545,20 @@ const handleSystemClick = (system: SystemType, branch: string) => {
   window.open(url, '_blank')
 }
 
-// 添加处理需求文档点击的方法
+// 添加处理需求文档点击的方法 - 修改为处理单个文档
 const handleRequirementClick = async (item: any, fileName: string) => {
   if (fileName) {
-    const fullPath = `${requirementBasePath}${fileName}`
+    // 确保文件名被正确处理（去除可能的空格）
+    const trimmedFileName = fileName.trim();
+    const fullPath = `${requirementBasePath}${trimmedFileName}`
+    
     try {
       const response = await fetch(`http://localhost:8090/open?path=${encodeURIComponent(fullPath)}`)
       const result = await response.json()
       
       if (result.success) {
         $q.notify({
-          message: '文件已打开',
+          message: `文件 "${trimmedFileName}" 已打开`,
           type: 'positive'
         })
       } else {
@@ -591,18 +688,27 @@ const removeDoc = (type: 'requirement' | 'design', index: number) => {
   updateDocNamesFromList(type)
 }
 
-// 修改创建任务方法，恢复表单时清空文档列表
+// 修改创建任务方法，确保正确传递文档信息
 const createTask = async () => {
   try {
     const requirementApi = getRequirement()
     
+    // 修改此处 - 检查文档列表而不是文档标志
     const requirementEntity = {
       requirementId: newTask.value.id,
       requirementName: newTask.value.title,
       systemCategory: newTask.value.type.value === 'incoming' ? 'callin' : 'callout',
-      relatedRequirementDocs: newTask.value.docs.requirement ? newTask.value.docNames.requirement : '',
-      relatedDesignDocs: newTask.value.docs.design ? newTask.value.docNames.design : ''
+      // 使用文档列表而不是标志来判断是否有文档
+      relatedRequirementDocs: newTask.value.docsList.requirement.length > 0 
+                              ? newTask.value.docsList.requirement.join(',') 
+                              : '',
+      relatedDesignDocs: newTask.value.docsList.design.length > 0 
+                         ? newTask.value.docsList.design.join(',') 
+                         : ''
     }
+    
+    // 在提交前记录将要发送的数据，帮助调试
+    console.log('提交的任务数据:', requirementEntity);
 
     const response = await requirementApi.requirementCreate(requirementEntity)
     
