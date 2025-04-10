@@ -265,25 +265,67 @@
             </div>
           </div>
           
-          <!-- 动态显示文档名称输入字段 -->
+          <!-- 动态显示文档名称输入字段，并添加文件上传按钮 -->
           <div class="q-gutter-y-sm">
-            <q-input 
-              v-if="newTask.docs.requirement"
-              v-model="newTask.docNames.requirement" 
-              label="需求文档名称" 
-              outlined 
-              dense 
-              class="light-field requirement-field"
-            />
+            <div v-if="newTask.docs.requirement" class="row q-col-gutter-sm">
+              <div class="col">
+                <q-input 
+                  v-model="newTask.docNames.requirement" 
+                  label="需求文档名称" 
+                  outlined 
+                  dense 
+                  class="light-field requirement-field"
+                />
+              </div>
+              <div class="col-auto self-center">
+                <q-btn
+                  icon="upload_file"
+                  color="primary"
+                  dense
+                  flat
+                  round
+                  @click="triggerFileUpload('requirement')"
+                >
+                  <q-tooltip>上传需求文档</q-tooltip>
+                </q-btn>
+                <input
+                  type="file"
+                  ref="requirementFileInput"
+                  @change="handleFileUpload('requirement', $event)"
+                  style="display: none"
+                />
+              </div>
+            </div>
             
-            <q-input 
-              v-if="newTask.docs.design"
-              v-model="newTask.docNames.design" 
-              label="设计文档名称" 
-              outlined 
-              dense 
-              class="light-field design-field"
-            />
+            <div v-if="newTask.docs.design" class="row q-col-gutter-sm">
+              <div class="col">
+                <q-input 
+                  v-model="newTask.docNames.design" 
+                  label="设计文档名称" 
+                  outlined 
+                  dense 
+                  class="light-field design-field"
+                />
+              </div>
+              <div class="col-auto self-center">
+                <q-btn
+                  icon="upload_file"
+                  color="primary"
+                  dense
+                  flat
+                  round
+                  @click="triggerFileUpload('design')"
+                >
+                  <q-tooltip>上传设计文档</q-tooltip>
+                </q-btn>
+                <input
+                  type="file"
+                  ref="designFileInput"
+                  @change="handleFileUpload('design', $event)"
+                  style="display: none"
+                />
+              </div>
+            </div>
           </div>
         </div>
       </q-card-section>
@@ -540,6 +582,48 @@ const emit = defineEmits(['open-new-task'])
 // 添加打开新建任务对话框的方法
 const openNewTaskDialog = () => {
   showNewTaskDialog.value = true
+}
+
+// 添加文件上传相关的ref
+const requirementFileInput = ref<HTMLInputElement | null>(null)
+const designFileInput = ref<HTMLInputElement | null>(null)
+
+// 触发文件上传点击事件
+const triggerFileUpload = (type: 'requirement' | 'design') => {
+  if (type === 'requirement' && requirementFileInput.value) {
+    requirementFileInput.value.click()
+  } else if (type === 'design' && designFileInput.value) {
+    designFileInput.value.click()
+  }
+}
+
+// 处理文件上传
+const handleFileUpload = (type: 'requirement' | 'design', event: Event) => {
+  const target = event.target as HTMLInputElement
+  const files = target.files
+  
+  if (files && files.length > 0) {
+    const file = files[0]
+    const fileName = file.name
+    
+    // 获取文件名和后缀
+    if (type === 'requirement') {
+      newTask.value.docNames.requirement = fileName
+    } else if (type === 'design') {
+      newTask.value.docNames.design = fileName
+    }
+    
+    // 清空文件输入框，方便下次选择同一个文件
+    target.value = ''
+    
+    // 提示用户文件名已获取
+    Notify.create({
+      message: `文件名 "${fileName}" 已获取`,
+      color: 'positive',
+      position: 'top',
+      timeout: 1500
+    })
+  }
 }
 
 defineOptions({
