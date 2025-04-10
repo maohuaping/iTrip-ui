@@ -345,7 +345,6 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import { getRequirement } from 'src/api/requirement/requirement'
-import { Notify } from 'quasar'
 import { useQuasar } from 'quasar'
 
 // 活动标签页
