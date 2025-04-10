@@ -244,39 +244,75 @@
         <div class="q-mb-md">
           <div class="row justify-between items-center q-mb-xs">
             <div class="text-subtitle2 text-dark">关联文档</div>
-            <div class="text-caption text-grey-7">可上传相关文档</div>
+            <div class="text-caption text-grey-7">点击标签上传相关文档</div>
           </div>
           
           <div class="row q-gutter-sm q-mb-md">
             <div 
               class="doc-label doc-requirement cursor-pointer"
-              :class="{ 'doc-active': newTask.docs.requirement }"
-              @click="selectDocType('requirement')"
+              :class="{ 'doc-active': hasRequirementDocs }"
+              @click="triggerFileUpload('requirement')"
             >
               需求
             </div>
             
             <div 
               class="doc-label doc-design cursor-pointer"
-              :class="{ 'doc-active': newTask.docs.design }"
-              @click="selectDocType('design')"
+              :class="{ 'doc-active': hasDesignDocs }"
+              @click="triggerFileUpload('design')"
             >
               设计
             </div>
           </div>
           
-          <!-- 显示已上传的文档 -->
-          <div class="q-gutter-y-sm">
-            <div v-if="newTask.docs.requirement && newTask.docNames.requirement" class="uploaded-doc requirement-doc">
-              <q-icon name="description" size="18px" class="q-mr-xs" /> 
-              <span class="ellipsis">{{ newTask.docNames.requirement }}</span>
-              <q-btn flat round dense icon="close" size="xs" @click="removeDoc('requirement')" class="q-ml-xs" />
+          <!-- 显示已上传的文档列表 -->
+          <div class="q-mt-md">
+            <!-- 需求文档列表 -->
+            <div v-if="newTask.docsList.requirement.length > 0">
+              <div class="text-caption text-weight-medium q-mb-xs">需求文档:</div>
+              <div class="q-gutter-y-sm">
+                <div 
+                  v-for="(doc, index) in newTask.docsList.requirement" 
+                  :key="index"
+                  class="uploaded-doc requirement-doc"
+                >
+                  <q-icon name="description" size="18px" class="q-mr-xs" /> 
+                  <span class="ellipsis">{{ doc }}</span>
+                  <q-btn 
+                    flat 
+                    round 
+                    dense 
+                    icon="close" 
+                    size="xs" 
+                    @click="removeDoc('requirement', index)" 
+                    class="q-ml-xs" 
+                  />
+                </div>
+              </div>
             </div>
             
-            <div v-if="newTask.docs.design && newTask.docNames.design" class="uploaded-doc design-doc">
-              <q-icon name="description" size="18px" class="q-mr-xs" /> 
-              <span class="ellipsis">{{ newTask.docNames.design }}</span>
-              <q-btn flat round dense icon="close" size="xs" @click="removeDoc('design')" class="q-ml-xs" />
+            <!-- 设计文档列表 -->
+            <div v-if="newTask.docsList.design.length > 0" class="q-mt-sm">
+              <div class="text-caption text-weight-medium q-mb-xs">设计文档:</div>
+              <div class="q-gutter-y-sm">
+                <div 
+                  v-for="(doc, index) in newTask.docsList.design" 
+                  :key="index"
+                  class="uploaded-doc design-doc"
+                >
+                  <q-icon name="description" size="18px" class="q-mr-xs" /> 
+                  <span class="ellipsis">{{ doc }}</span>
+                  <q-btn 
+                    flat 
+                    round 
+                    dense 
+                    icon="close" 
+                    size="xs" 
+                    @click="removeDoc('design', index)" 
+                    class="q-ml-xs" 
+                  />
+                </div>
+              </div>
             </div>
           </div>
           
@@ -469,6 +505,7 @@ const taskTypes = [
   { label: '呼出任务', value: 'outgoing' }
 ]
 
+// 修改任务数据结构，使用数组存储多个文档
 const newTask = ref({
   title: '',
   type: { label: '呼入任务', value: 'incoming' },
@@ -480,10 +517,81 @@ const newTask = ref({
   docNames: {
     requirement: '',
     design: ''
+  },
+  // 添加文档列表数组
+  docsList: {
+    requirement: [],
+    design: []
   }
 })
 
-// 添加创建任务方法
+// 判断是否有文档的计算属性
+const hasRequirementDocs = computed(() => newTask.value.docsList.requirement.length > 0)
+const hasDesignDocs = computed(() => newTask.value.docsList.design.length > 0)
+
+// 触发文件上传点击事件
+const triggerFileUpload = (type: 'requirement' | 'design') => {
+  if (type === 'requirement' && requirementFileInput.value) {
+    requirementFileInput.value.click()
+  } else if (type === 'design' && designFileInput.value) {
+    designFileInput.value.click()
+  }
+}
+
+// 修改处理文件上传，添加到文档数组而不是替换
+const handleFileUpload = (type: 'requirement' | 'design', event: Event) => {
+  const target = event.target as HTMLInputElement
+  const files = target.files
+  
+  if (files && files.length > 0) {
+    const file = files[0]
+    const fileName = file.name
+    
+    // 添加文件名到对应的文档数组
+    if (type === 'requirement') {
+      newTask.value.docsList.requirement.push(fileName)
+    } else if (type === 'design') {
+      newTask.value.docsList.design.push(fileName)
+    }
+    
+    // 同时更新单文档字段，用逗号分隔的文件名列表
+    updateDocNamesFromList(type)
+    
+    // 清空文件输入框，方便下次选择同一个文件
+    target.value = ''
+    
+    // 提示用户文件名已获取
+    Notify.create({
+      message: `已添加文件: ${fileName}`,
+      color: 'positive',
+      position: 'top',
+      timeout: 1500
+    })
+  }
+}
+
+// 从数组更新到字符串
+const updateDocNamesFromList = (type: 'requirement' | 'design') => {
+  if (type === 'requirement') {
+    newTask.value.docNames.requirement = newTask.value.docsList.requirement.join(',')
+  } else if (type === 'design') {
+    newTask.value.docNames.design = newTask.value.docsList.design.join(',')
+  }
+}
+
+// 修改移除文档方法，现在需要指定索引
+const removeDoc = (type: 'requirement' | 'design', index: number) => {
+  if (type === 'requirement') {
+    newTask.value.docsList.requirement.splice(index, 1)
+  } else if (type === 'design') {
+    newTask.value.docsList.design.splice(index, 1)
+  }
+  
+  // 更新字符串形式的文档名
+  updateDocNamesFromList(type)
+}
+
+// 修改创建任务方法，恢复表单时清空文档列表
 const createTask = async () => {
   try {
     const requirementApi = getRequirement()
@@ -509,7 +617,7 @@ const createTask = async () => {
       // 重新获取任务列表
       fetchTasks()
       
-      // 重置表单
+      // 重置表单，现在也重置文档列表
       newTask.value = {
         title: '',
         type: { label: '呼入任务', value: 'incoming' },
@@ -521,6 +629,10 @@ const createTask = async () => {
         docNames: {
           requirement: '',
           design: ''
+        },
+        docsList: {
+          requirement: [],
+          design: []
         }
       }
     } else {
@@ -553,74 +665,6 @@ const openNewTaskDialog = () => {
 // 添加文件上传相关的ref
 const requirementFileInput = ref<HTMLInputElement | null>(null)
 const designFileInput = ref<HTMLInputElement | null>(null)
-
-// 触发文件上传点击事件
-const triggerFileUpload = (type: 'requirement' | 'design') => {
-  if (type === 'requirement' && requirementFileInput.value) {
-    requirementFileInput.value.click()
-  } else if (type === 'design' && designFileInput.value) {
-    designFileInput.value.click()
-  }
-}
-
-// 修改处理文档类型选择逻辑
-const selectDocType = (type: 'requirement' | 'design') => {
-  if (!newTask.value.docs[type]) {
-    // 如果当前未选择该类型，则标记为选择并触发文件上传
-    newTask.value.docs[type] = true;
-    
-    // 如果已经有文件名，则不重新上传
-    if (!newTask.value.docNames[type]) {
-      // 触发文件上传
-      setTimeout(() => {
-        triggerFileUpload(type);
-      }, 100);
-    }
-  } else if (!newTask.value.docNames[type]) {
-    // 如果已选择但没有文件，触发文件上传
-    triggerFileUpload(type);
-  } else {
-    // 如果已选择且已有文件，用户可能想更换文件，也触发上传
-    triggerFileUpload(type);
-  }
-}
-
-// 添加移除文档的方法
-const removeDoc = (type: 'requirement' | 'design') => {
-  newTask.value.docNames[type] = '';
-  newTask.value.docs[type] = false;
-}
-
-// 处理文件上传 - 优化提示消息
-const handleFileUpload = (type: 'requirement' | 'design', event: Event) => {
-  const target = event.target as HTMLInputElement;
-  const files = target.files;
-  
-  if (files && files.length > 0) {
-    const file = files[0];
-    const fileName = file.name;
-    
-    // 获取文件名和后缀
-    if (type === 'requirement') {
-      newTask.value.docNames.requirement = fileName;
-      newTask.value.docs.requirement = true;
-    } else if (type === 'design') {
-      newTask.value.docNames.design = fileName;
-      newTask.value.docs.design = true;
-    }
-    
-    // 清空文件输入框，方便下次选择同一个文件
-    target.value = '';
-    
-    // 提示用户文件名已获取
-    Notify.create({
-      message: `已选择文件: ${fileName}`,
-      color: 'positive',
-      position: 'top',
-      timeout: 1500
-    });
-  }
-}
 
 defineOptions({
   name: 'TaskList'
