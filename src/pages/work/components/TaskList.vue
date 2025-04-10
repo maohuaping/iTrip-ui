@@ -81,13 +81,14 @@
                         v-for="tag in getTaskTags(task)"
                         :key="tag.label + (tag.index || '')"
                         dense
-                        size="sm"
+                        size="md"
                         :icon="tag.icon"
                         :color="tag.color"
                         :text-color="tag.textColor"
                         :label="tag.label"
                         :clickable="!!tag.clickable"
                         @click="tag.onClick ? tag.onClick() : null"
+                        class="task-tag"
                       />
                     </div>
                   </div>
@@ -156,13 +157,14 @@
                         v-for="tag in getTaskTags(task)"
                         :key="tag.label + (tag.index || '')"
                         dense
-                        size="sm"
+                        size="md"
                         :icon="tag.icon"
                         :color="tag.color"
                         :text-color="tag.textColor"
                         :label="tag.label"
                         :clickable="!!tag.clickable"
                         @click="tag.onClick ? tag.onClick() : null"
+                        class="task-tag"
                       />
                     </div>
                   </div>
@@ -384,16 +386,6 @@ const fetchTasks = async () => {
       // 根据systemCategory字段区分呼入和呼出任务
       const allTasks = response.data.payload
       
-      // 添加日志，查看任务数据
-      console.log('所有任务数据:', allTasks)
-      
-      // 检查有多个文档的任务
-      allTasks.forEach(task => {
-        if (task.relatedRequirementDocs && task.relatedRequirementDocs.includes(',')) {
-          console.log('检测到多文档任务:', task.requirementName, '文档:', task.relatedRequirementDocs)
-        }
-      })
-      
       incomingTasks.value = allTasks.filter(task => task.systemCategory === 'callin')
       outgoingTasks.value = allTasks.filter(task => task.systemCategory === 'callout')
     }
@@ -411,26 +403,24 @@ const requirementBasePath = '/Users/maohuaping/中科软/需求文档/'
 // 在 setup 中声明
 const $q = useQuasar()
 
-// 转换任务标签 - 重构以更好处理多文档
+// 转换任务标签 - 添加Git分支图标
 const getTaskTags = (task: TaskItem) => {
   const tags = []
   
-  // Git分支标签
+  // Git分支标签 - 添加图标
   if (task.requirementId) {
     tags.push({
       label: 'Git分支',
       color: 'blue-2',
       textColor: 'blue-8',
+      icon: 'call_split',
       clickable: true,
       onClick: () => handleSystemClick(task.systemCategory, task.requirementId)
     })
   }
   
-  // 需求文档处理 - 特别注意分隔和空值处理
+  // 需求文档处理
   if (task.relatedRequirementDocs) {
-    // 打印原始文档字符串，帮助调试
-    console.log(`任务 ${task.requirementName} 的原始需求文档: "${task.relatedRequirementDocs}"`);
-    
     let reqDocs = [];
     try {
       // 尝试多种分隔方式，确保能正确分割
@@ -442,17 +432,12 @@ const getTaskTags = (task: TaskItem) => {
       
       // 过滤空值
       reqDocs = reqDocs.filter(doc => doc && doc.trim() !== '');
-      console.log(`分割后的需求文档列表(${reqDocs.length}个):`, reqDocs);
     } catch (err) {
-      console.error('分割需求文档时出错:', err);
       reqDocs = [task.relatedRequirementDocs]; // 出错时使用整个字符串
     }
     
     // 判断文档数量并创建标签
-    if (reqDocs.length === 0) {
-      // 无有效文档
-      console.log('没有有效的需求文档');
-    } else if (reqDocs.length === 1) {
+    if (reqDocs.length === 1) {
       // 单个文档
       tags.push({
         label: '需求文档',
@@ -462,7 +447,7 @@ const getTaskTags = (task: TaskItem) => {
         clickable: true,
         onClick: () => handleRequirementClick(task, reqDocs[0].trim())
       });
-    } else {
+    } else if (reqDocs.length > 1) {
       // 多个文档 - 为每个创建标签
       reqDocs.forEach((doc, index) => {
         const trimmedDoc = doc.trim();
@@ -483,8 +468,6 @@ const getTaskTags = (task: TaskItem) => {
   
   // 同样处理设计文档
   if (task.relatedDesignDocs) {
-    console.log(`任务 ${task.requirementName} 的原始设计文档: "${task.relatedDesignDocs}"`);
-    
     let designDocs = [];
     try {
       if (task.relatedDesignDocs.includes(',')) {
@@ -494,15 +477,11 @@ const getTaskTags = (task: TaskItem) => {
       }
       
       designDocs = designDocs.filter(doc => doc && doc.trim() !== '');
-      console.log(`分割后的设计文档列表(${designDocs.length}个):`, designDocs);
     } catch (err) {
-      console.error('分割设计文档时出错:', err);
       designDocs = [task.relatedDesignDocs];
     }
     
-    if (designDocs.length === 0) {
-      console.log('没有有效的设计文档');
-    } else if (designDocs.length === 1) {
+    if (designDocs.length === 1) {
       tags.push({
         label: '设计文档',
         color: 'purple-2',
@@ -511,7 +490,7 @@ const getTaskTags = (task: TaskItem) => {
         clickable: true,
         onClick: () => handleRequirementClick(task, designDocs[0].trim())
       });
-    } else {
+    } else if (designDocs.length > 1) {
       designDocs.forEach((doc, index) => {
         const trimmedDoc = doc.trim();
         if (trimmedDoc) {
@@ -584,7 +563,7 @@ const copyToClipboard = (text: string) => {
   navigator.clipboard.writeText(text)
     .then(() => {
       // 复制成功提示
-      Notify.create({
+      $q.notify({
         message: '已复制到剪贴板',
         color: 'positive',
         position: 'top',
@@ -658,7 +637,7 @@ const handleFileUpload = (type: 'requirement' | 'design', event: Event) => {
     target.value = ''
     
     // 提示用户文件名已获取
-    Notify.create({
+    $q.notify({
       message: `已添加文件: ${fileName}`,
       color: 'positive',
       position: 'top',
@@ -706,14 +685,11 @@ const createTask = async () => {
                          ? newTask.value.docsList.design.join(',') 
                          : ''
     }
-    
-    // 在提交前记录将要发送的数据，帮助调试
-    console.log('提交的任务数据:', requirementEntity);
 
     const response = await requirementApi.requirementCreate(requirementEntity)
     
     if (response.data?.success) {
-      Notify.create({
+      $q.notify({
         message: '任务创建成功',
         color: 'positive',
         position: 'top',
@@ -742,7 +718,7 @@ const createTask = async () => {
         }
       }
     } else {
-      Notify.create({
+      $q.notify({
         message: '任务创建失败: ' + (response.data?.payload || '未知错误'),
         color: 'negative',
         position: 'top',
@@ -751,7 +727,7 @@ const createTask = async () => {
     }
   } catch (error) {
     console.error('创建任务出错:', error)
-    Notify.create({
+    $q.notify({
       message: '创建任务出错',
       color: 'negative',
       position: 'top',
@@ -932,6 +908,22 @@ defineOptions({
     overflow: hidden;
     text-overflow: ellipsis;
     flex: 1;
+  }
+}
+
+// 自定义任务标签样式
+.task-tag {
+  font-size: 0.9rem;
+  padding: 4px 8px;
+  height: 28px;
+  
+  :deep(.q-chip__icon) {
+    font-size: 1.1rem;
+    padding-right: 6px;
+  }
+  
+  :deep(.q-chip__content) {
+    padding: 0 4px;
   }
 }
 </style>
