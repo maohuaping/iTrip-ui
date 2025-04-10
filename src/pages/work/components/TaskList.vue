@@ -244,14 +244,14 @@
         <div class="q-mb-md">
           <div class="row justify-between items-center q-mb-xs">
             <div class="text-subtitle2 text-dark">关联文档</div>
-            <div class="text-caption text-grey-7">如需关联多个文档，请用逗号分隔</div>
+            <div class="text-caption text-grey-7">可上传相关文档</div>
           </div>
           
           <div class="row q-gutter-sm q-mb-md">
             <div 
               class="doc-label doc-requirement cursor-pointer"
               :class="{ 'doc-active': newTask.docs.requirement }"
-              @click="newTask.docs.requirement = !newTask.docs.requirement"
+              @click="selectDocType('requirement')"
             >
               需求
             </div>
@@ -259,74 +259,40 @@
             <div 
               class="doc-label doc-design cursor-pointer"
               :class="{ 'doc-active': newTask.docs.design }"
-              @click="newTask.docs.design = !newTask.docs.design"
+              @click="selectDocType('design')"
             >
               设计
             </div>
           </div>
           
-          <!-- 动态显示文档名称输入字段，并添加文件上传按钮 -->
+          <!-- 显示已上传的文档 -->
           <div class="q-gutter-y-sm">
-            <div v-if="newTask.docs.requirement" class="row q-col-gutter-sm">
-              <div class="col">
-                <q-input 
-                  v-model="newTask.docNames.requirement" 
-                  label="需求文档名称" 
-                  outlined 
-                  dense 
-                  class="light-field requirement-field"
-                />
-              </div>
-              <div class="col-auto self-center">
-                <q-btn
-                  icon="upload_file"
-                  color="primary"
-                  dense
-                  flat
-                  round
-                  @click="triggerFileUpload('requirement')"
-                >
-                  <q-tooltip>上传需求文档</q-tooltip>
-                </q-btn>
-                <input
-                  type="file"
-                  ref="requirementFileInput"
-                  @change="handleFileUpload('requirement', $event)"
-                  style="display: none"
-                />
-              </div>
+            <div v-if="newTask.docs.requirement && newTask.docNames.requirement" class="uploaded-doc requirement-doc">
+              <q-icon name="description" size="18px" class="q-mr-xs" /> 
+              <span class="ellipsis">{{ newTask.docNames.requirement }}</span>
+              <q-btn flat round dense icon="close" size="xs" @click="removeDoc('requirement')" class="q-ml-xs" />
             </div>
             
-            <div v-if="newTask.docs.design" class="row q-col-gutter-sm">
-              <div class="col">
-                <q-input 
-                  v-model="newTask.docNames.design" 
-                  label="设计文档名称" 
-                  outlined 
-                  dense 
-                  class="light-field design-field"
-                />
-              </div>
-              <div class="col-auto self-center">
-                <q-btn
-                  icon="upload_file"
-                  color="primary"
-                  dense
-                  flat
-                  round
-                  @click="triggerFileUpload('design')"
-                >
-                  <q-tooltip>上传设计文档</q-tooltip>
-                </q-btn>
-                <input
-                  type="file"
-                  ref="designFileInput"
-                  @change="handleFileUpload('design', $event)"
-                  style="display: none"
-                />
-              </div>
+            <div v-if="newTask.docs.design && newTask.docNames.design" class="uploaded-doc design-doc">
+              <q-icon name="description" size="18px" class="q-mr-xs" /> 
+              <span class="ellipsis">{{ newTask.docNames.design }}</span>
+              <q-btn flat round dense icon="close" size="xs" @click="removeDoc('design')" class="q-ml-xs" />
             </div>
           </div>
+          
+          <!-- 隐藏的文件上传输入框 -->
+          <input
+            type="file"
+            ref="requirementFileInput"
+            @change="handleFileUpload('requirement', $event)"
+            style="display: none"
+          />
+          <input
+            type="file"
+            ref="designFileInput"
+            @change="handleFileUpload('design', $event)"
+            style="display: none"
+          />
         </div>
       </q-card-section>
 
@@ -597,32 +563,62 @@ const triggerFileUpload = (type: 'requirement' | 'design') => {
   }
 }
 
-// 处理文件上传
+// 修改处理文档类型选择逻辑
+const selectDocType = (type: 'requirement' | 'design') => {
+  if (!newTask.value.docs[type]) {
+    // 如果当前未选择该类型，则标记为选择并触发文件上传
+    newTask.value.docs[type] = true;
+    
+    // 如果已经有文件名，则不重新上传
+    if (!newTask.value.docNames[type]) {
+      // 触发文件上传
+      setTimeout(() => {
+        triggerFileUpload(type);
+      }, 100);
+    }
+  } else if (!newTask.value.docNames[type]) {
+    // 如果已选择但没有文件，触发文件上传
+    triggerFileUpload(type);
+  } else {
+    // 如果已选择且已有文件，用户可能想更换文件，也触发上传
+    triggerFileUpload(type);
+  }
+}
+
+// 添加移除文档的方法
+const removeDoc = (type: 'requirement' | 'design') => {
+  newTask.value.docNames[type] = '';
+  newTask.value.docs[type] = false;
+}
+
+// 处理文件上传 - 优化提示消息
 const handleFileUpload = (type: 'requirement' | 'design', event: Event) => {
-  const target = event.target as HTMLInputElement
-  const files = target.files
+  const target = event.target as HTMLInputElement;
+  const files = target.files;
   
   if (files && files.length > 0) {
-    const file = files[0]
-    const fileName = file.name
+    const file = files[0];
+    const fileName = file.name;
     
     // 获取文件名和后缀
     if (type === 'requirement') {
-      newTask.value.docNames.requirement = fileName
+      newTask.value.docNames.requirement = fileName;
+      newTask.value.docs.requirement = true;
     } else if (type === 'design') {
-      newTask.value.docNames.design = fileName
+      newTask.value.docNames.design = fileName;
+      newTask.value.docs.design = true;
     }
     
     // 清空文件输入框，方便下次选择同一个文件
-    target.value = ''
+    target.value = '';
     
     // 提示用户文件名已获取
     Notify.create({
-      message: `文件名 "${fileName}" 已获取`,
+      message: `已选择文件: ${fileName}`,
       color: 'positive',
       position: 'top',
       timeout: 1500
-    })
+    });
   }
 }
 
@@ -759,5 +755,33 @@ defineOptions({
 
 .border-bottom {
   border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.uploaded-doc {
+  display: flex;
+  align-items: center;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  background-color: rgba(0, 0, 0, 0.05);
+  margin-top: 8px;
+  max-width: 100%;
+  
+  &.requirement-doc {
+    color: #1e40af;
+    background-color: rgba(59, 130, 246, 0.1);
+  }
+  
+  &.design-doc {
+    color: #6b21a8;
+    background-color: rgba(168, 85, 247, 0.1);
+  }
+  
+  .ellipsis {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex: 1;
+  }
 }
 </style>
