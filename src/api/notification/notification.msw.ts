@@ -9,19 +9,19 @@ import { faker } from '@faker-js/faker';
 
 import { HttpResponse, delay, http } from 'msw';
 
-import type { CmdString } from '../api.schemas';
+import type { ResultString } from '../api.schemas';
 
 export const getNotificationSubscribeResponseMock = (
-  overrideResponse: Partial<CmdString> = {},
-): CmdString => ({
+  overrideResponse: Partial<ResultString> = {},
+): ResultString => ({
   success: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
   payload: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
   ...overrideResponse,
 });
 
 export const getNotificationPushResponseMock = (
-  overrideResponse: Partial<CmdString> = {},
-): CmdString => ({
+  overrideResponse: Partial<ResultString> = {},
+): ResultString => ({
   success: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
   payload: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
   ...overrideResponse,
@@ -29,8 +29,10 @@ export const getNotificationPushResponseMock = (
 
 export const getNotificationSubscribeMockHandler = (
   overrideResponse?:
-    | CmdString
-    | ((info: Parameters<Parameters<typeof http.post>[1]>[0]) => Promise<CmdString> | CmdString),
+    | ResultString
+    | ((
+        info: Parameters<Parameters<typeof http.post>[1]>[0],
+      ) => Promise<ResultString> | ResultString),
 ) => {
   return http.post('*/api/notification/subscribe', async (info) => {
     await delay(1000);
@@ -50,8 +52,10 @@ export const getNotificationSubscribeMockHandler = (
 
 export const getNotificationPushMockHandler = (
   overrideResponse?:
-    | CmdString
-    | ((info: Parameters<Parameters<typeof http.post>[1]>[0]) => Promise<CmdString> | CmdString),
+    | ResultString
+    | ((
+        info: Parameters<Parameters<typeof http.post>[1]>[0],
+      ) => Promise<ResultString> | ResultString),
 ) => {
   return http.post('*/api/notification/push', async (info) => {
     await delay(1000);

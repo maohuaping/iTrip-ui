@@ -9,11 +9,11 @@ import { faker } from '@faker-js/faker';
 
 import { HttpResponse, delay, http } from 'msw';
 
-import type { CmdString } from '../api.schemas';
+import type { ResultString } from '../api.schemas';
 
 export const getDeepseekTestResponseMock = (
-  overrideResponse: Partial<CmdString> = {},
-): CmdString => ({
+  overrideResponse: Partial<ResultString> = {},
+): ResultString => ({
   success: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
   payload: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
   ...overrideResponse,
@@ -21,8 +21,10 @@ export const getDeepseekTestResponseMock = (
 
 export const getDeepseekTestMockHandler = (
   overrideResponse?:
-    | CmdString
-    | ((info: Parameters<Parameters<typeof http.get>[1]>[0]) => Promise<CmdString> | CmdString),
+    | ResultString
+    | ((
+        info: Parameters<Parameters<typeof http.get>[1]>[0],
+      ) => Promise<ResultString> | ResultString),
 ) => {
   return http.get('*/api/test/deepseek', async (info) => {
     await delay(1000);

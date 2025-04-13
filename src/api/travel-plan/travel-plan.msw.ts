@@ -9,19 +9,19 @@ import { faker } from '@faker-js/faker';
 
 import { HttpResponse, delay, http } from 'msw';
 
-import type { CmdBoolean } from '../api.schemas';
+import type { ResultBoolean } from '../api.schemas';
 
 export const getTravelPlanCreateResponseMock = (
-  overrideResponse: Partial<CmdBoolean> = {},
-): CmdBoolean => ({
+  overrideResponse: Partial<ResultBoolean> = {},
+): ResultBoolean => ({
   success: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
   payload: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
   ...overrideResponse,
 });
 
 export const getTravelPlanDeleteResponseMock = (
-  overrideResponse: Partial<CmdBoolean> = {},
-): CmdBoolean => ({
+  overrideResponse: Partial<ResultBoolean> = {},
+): ResultBoolean => ({
   success: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
   payload: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
   ...overrideResponse,
@@ -29,8 +29,10 @@ export const getTravelPlanDeleteResponseMock = (
 
 export const getTravelPlanCreateMockHandler = (
   overrideResponse?:
-    | CmdBoolean
-    | ((info: Parameters<Parameters<typeof http.post>[1]>[0]) => Promise<CmdBoolean> | CmdBoolean),
+    | ResultBoolean
+    | ((
+        info: Parameters<Parameters<typeof http.post>[1]>[0],
+      ) => Promise<ResultBoolean> | ResultBoolean),
 ) => {
   return http.post('*/api/travelPlan', async (info) => {
     await delay(1000);
@@ -50,10 +52,10 @@ export const getTravelPlanCreateMockHandler = (
 
 export const getTravelPlanDeleteMockHandler = (
   overrideResponse?:
-    | CmdBoolean
+    | ResultBoolean
     | ((
         info: Parameters<Parameters<typeof http.delete>[1]>[0],
-      ) => Promise<CmdBoolean> | CmdBoolean),
+      ) => Promise<ResultBoolean> | ResultBoolean),
 ) => {
   return http.delete('*/api/travelPlan/:id', async (info) => {
     await delay(1000);

@@ -6,12 +6,13 @@
  * OpenAPI spec version: 1.0
  */
 import type {
-  AuthCodeParams,
-  CmdString,
-  CmdUserLoginResponseDTO,
   RegisterRequestDTO,
+  ResultBoolean,
+  ResultString,
+  ResultUserLoginResponseDTO,
   UpdatePasswordRequestDTO,
   UserLoginRequestDTO,
+  VerifyCodeRequestDTO,
 } from '../api.schemas';
 
 import { customInstance } from '../../boot/orval-client';
@@ -21,7 +22,7 @@ export const getAuth = () => {
    * @summary 忘记密码-修改密码
    */
   const authPassword = (updatePasswordRequestDTO: UpdatePasswordRequestDTO) => {
-    return customInstance<CmdString>({
+    return customInstance<ResultBoolean>({
       url: `/api/auth/password`,
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
@@ -32,7 +33,7 @@ export const getAuth = () => {
    * @summary 注册
    */
   const authRegister = (registerRequestDTO: RegisterRequestDTO) => {
-    return customInstance<CmdString>({
+    return customInstance<ResultBoolean>({
       url: `/api/auth/register`,
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -43,7 +44,7 @@ export const getAuth = () => {
    * @summary 登录
    */
   const authLogin = (userLoginRequestDTO: UserLoginRequestDTO) => {
-    return customInstance<CmdUserLoginResponseDTO>({
+    return customInstance<ResultUserLoginResponseDTO>({
       url: `/api/auth/login`,
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -51,18 +52,23 @@ export const getAuth = () => {
     });
   };
   /**
+   * @summary 获取验证码
+   */
+  const authCode = (verifyCodeRequestDTO: VerifyCodeRequestDTO) => {
+    return customInstance<ResultBoolean>({
+      url: `/api/auth/code`,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      data: verifyCodeRequestDTO,
+    });
+  };
+  /**
    * @summary 获取VAPID公钥
    */
   const authVapidPublicKey = () => {
-    return customInstance<CmdString>({ url: `/api/auth/vapidPublicKey`, method: 'GET' });
+    return customInstance<ResultString>({ url: `/api/auth/vapidPublicKey`, method: 'GET' });
   };
-  /**
-   * @summary 获取验证码
-   */
-  const authCode = (params: AuthCodeParams) => {
-    return customInstance<CmdString>({ url: `/api/auth/code`, method: 'GET', params });
-  };
-  return { authPassword, authRegister, authLogin, authVapidPublicKey, authCode };
+  return { authPassword, authRegister, authLogin, authCode, authVapidPublicKey };
 };
 export type AuthPasswordResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getAuth>['authPassword']>>
@@ -73,9 +79,9 @@ export type AuthRegisterResult = NonNullable<
 export type AuthLoginResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getAuth>['authLogin']>>
 >;
-export type AuthVapidPublicKeyResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getAuth>['authVapidPublicKey']>>
->;
 export type AuthCodeResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getAuth>['authCode']>>
+>;
+export type AuthVapidPublicKeyResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getAuth>['authVapidPublicKey']>>
 >;

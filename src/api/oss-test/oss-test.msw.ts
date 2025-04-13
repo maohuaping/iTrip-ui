@@ -9,35 +9,35 @@ import { faker } from '@faker-js/faker';
 
 import { HttpResponse, delay, http } from 'msw';
 
-import type { CmdString } from '../api.schemas';
+import type { ResultString } from '../api.schemas';
 
 export const getTestUploadResponseMock = (
-  overrideResponse: Partial<CmdString> = {},
-): CmdString => ({
+  overrideResponse: Partial<ResultString> = {},
+): ResultString => ({
   success: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
   payload: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
   ...overrideResponse,
 });
 
 export const getGetSignedUrlResponseMock = (
-  overrideResponse: Partial<CmdString> = {},
-): CmdString => ({
+  overrideResponse: Partial<ResultString> = {},
+): ResultString => ({
   success: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
   payload: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
   ...overrideResponse,
 });
 
 export const getGetPublicUrlResponseMock = (
-  overrideResponse: Partial<CmdString> = {},
-): CmdString => ({
+  overrideResponse: Partial<ResultString> = {},
+): ResultString => ({
   success: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
   payload: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
   ...overrideResponse,
 });
 
 export const getTestDeleteResponseMock = (
-  overrideResponse: Partial<CmdString> = {},
-): CmdString => ({
+  overrideResponse: Partial<ResultString> = {},
+): ResultString => ({
   success: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
   payload: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
   ...overrideResponse,
@@ -45,8 +45,10 @@ export const getTestDeleteResponseMock = (
 
 export const getTestUploadMockHandler = (
   overrideResponse?:
-    | CmdString
-    | ((info: Parameters<Parameters<typeof http.post>[1]>[0]) => Promise<CmdString> | CmdString),
+    | ResultString
+    | ((
+        info: Parameters<Parameters<typeof http.post>[1]>[0],
+      ) => Promise<ResultString> | ResultString),
 ) => {
   return http.post('*/api/oss-test/upload/:directory', async (info) => {
     await delay(1000);
@@ -66,8 +68,10 @@ export const getTestUploadMockHandler = (
 
 export const getGetSignedUrlMockHandler = (
   overrideResponse?:
-    | CmdString
-    | ((info: Parameters<Parameters<typeof http.get>[1]>[0]) => Promise<CmdString> | CmdString),
+    | ResultString
+    | ((
+        info: Parameters<Parameters<typeof http.get>[1]>[0],
+      ) => Promise<ResultString> | ResultString),
 ) => {
   return http.get('*/api/oss-test/url', async (info) => {
     await delay(1000);
@@ -87,8 +91,10 @@ export const getGetSignedUrlMockHandler = (
 
 export const getGetPublicUrlMockHandler = (
   overrideResponse?:
-    | CmdString
-    | ((info: Parameters<Parameters<typeof http.get>[1]>[0]) => Promise<CmdString> | CmdString),
+    | ResultString
+    | ((
+        info: Parameters<Parameters<typeof http.get>[1]>[0],
+      ) => Promise<ResultString> | ResultString),
 ) => {
   return http.get('*/api/oss-test/public-url', async (info) => {
     await delay(1000);
@@ -108,8 +114,10 @@ export const getGetPublicUrlMockHandler = (
 
 export const getTestDeleteMockHandler = (
   overrideResponse?:
-    | CmdString
-    | ((info: Parameters<Parameters<typeof http.delete>[1]>[0]) => Promise<CmdString> | CmdString),
+    | ResultString
+    | ((
+        info: Parameters<Parameters<typeof http.delete>[1]>[0],
+      ) => Promise<ResultString> | ResultString),
 ) => {
   return http.delete('*/api/oss-test/delete', async (info) => {
     await delay(1000);

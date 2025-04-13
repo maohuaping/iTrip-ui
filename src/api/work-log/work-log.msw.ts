@@ -9,27 +9,27 @@ import { faker } from '@faker-js/faker';
 
 import { HttpResponse, delay, http } from 'msw';
 
-import type { CmdBoolean, CmdListWorkLogEntity, CmdWorkLogEntity } from '../api.schemas';
+import type { ResultBoolean, ResultListWorkLogEntity, ResultWorkLogEntity } from '../api.schemas';
 
 export const getWorkLogUpdateResponseMock = (
-  overrideResponse: Partial<CmdBoolean> = {},
-): CmdBoolean => ({
+  overrideResponse: Partial<ResultBoolean> = {},
+): ResultBoolean => ({
   success: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
   payload: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
   ...overrideResponse,
 });
 
 export const getWorkLogCreateResponseMock = (
-  overrideResponse: Partial<CmdBoolean> = {},
-): CmdBoolean => ({
+  overrideResponse: Partial<ResultBoolean> = {},
+): ResultBoolean => ({
   success: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
   payload: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
   ...overrideResponse,
 });
 
 export const getWorkLogGetByIdResponseMock = (
-  overrideResponse: Partial<CmdWorkLogEntity> = {},
-): CmdWorkLogEntity => ({
+  overrideResponse: Partial<ResultWorkLogEntity> = {},
+): ResultWorkLogEntity => ({
   success: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
   payload: faker.helpers.arrayElement([
     {
@@ -69,16 +69,16 @@ export const getWorkLogGetByIdResponseMock = (
 });
 
 export const getWorkLogDeleteResponseMock = (
-  overrideResponse: Partial<CmdBoolean> = {},
-): CmdBoolean => ({
+  overrideResponse: Partial<ResultBoolean> = {},
+): ResultBoolean => ({
   success: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
   payload: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
   ...overrideResponse,
 });
 
 export const getWorkLogMeLogsResponseMock = (
-  overrideResponse: Partial<CmdListWorkLogEntity> = {},
-): CmdListWorkLogEntity => ({
+  overrideResponse: Partial<ResultListWorkLogEntity> = {},
+): ResultListWorkLogEntity => ({
   success: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
   payload: faker.helpers.arrayElement([
     Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
@@ -119,8 +119,10 @@ export const getWorkLogMeLogsResponseMock = (
 
 export const getWorkLogUpdateMockHandler = (
   overrideResponse?:
-    | CmdBoolean
-    | ((info: Parameters<Parameters<typeof http.put>[1]>[0]) => Promise<CmdBoolean> | CmdBoolean),
+    | ResultBoolean
+    | ((
+        info: Parameters<Parameters<typeof http.put>[1]>[0],
+      ) => Promise<ResultBoolean> | ResultBoolean),
 ) => {
   return http.put('*/api/work-log', async (info) => {
     await delay(1000);
@@ -140,8 +142,10 @@ export const getWorkLogUpdateMockHandler = (
 
 export const getWorkLogCreateMockHandler = (
   overrideResponse?:
-    | CmdBoolean
-    | ((info: Parameters<Parameters<typeof http.post>[1]>[0]) => Promise<CmdBoolean> | CmdBoolean),
+    | ResultBoolean
+    | ((
+        info: Parameters<Parameters<typeof http.post>[1]>[0],
+      ) => Promise<ResultBoolean> | ResultBoolean),
 ) => {
   return http.post('*/api/work-log', async (info) => {
     await delay(1000);
@@ -161,10 +165,10 @@ export const getWorkLogCreateMockHandler = (
 
 export const getWorkLogGetByIdMockHandler = (
   overrideResponse?:
-    | CmdWorkLogEntity
+    | ResultWorkLogEntity
     | ((
         info: Parameters<Parameters<typeof http.get>[1]>[0],
-      ) => Promise<CmdWorkLogEntity> | CmdWorkLogEntity),
+      ) => Promise<ResultWorkLogEntity> | ResultWorkLogEntity),
 ) => {
   return http.get('*/api/work-log/:id', async (info) => {
     await delay(1000);
@@ -184,10 +188,10 @@ export const getWorkLogGetByIdMockHandler = (
 
 export const getWorkLogDeleteMockHandler = (
   overrideResponse?:
-    | CmdBoolean
+    | ResultBoolean
     | ((
         info: Parameters<Parameters<typeof http.delete>[1]>[0],
-      ) => Promise<CmdBoolean> | CmdBoolean),
+      ) => Promise<ResultBoolean> | ResultBoolean),
 ) => {
   return http.delete('*/api/work-log/:id', async (info) => {
     await delay(1000);
@@ -207,10 +211,10 @@ export const getWorkLogDeleteMockHandler = (
 
 export const getWorkLogMeLogsMockHandler = (
   overrideResponse?:
-    | CmdListWorkLogEntity
+    | ResultListWorkLogEntity
     | ((
         info: Parameters<Parameters<typeof http.get>[1]>[0],
-      ) => Promise<CmdListWorkLogEntity> | CmdListWorkLogEntity),
+      ) => Promise<ResultListWorkLogEntity> | ResultListWorkLogEntity),
 ) => {
   return http.get('*/api/work-log/list', async (info) => {
     await delay(1000);

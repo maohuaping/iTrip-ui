@@ -6,9 +6,9 @@
  * OpenAPI spec version: 1.0
  */
 import type {
-  CmdBoolean,
-  CmdObject,
-  CmdUserSettingsEntity,
+  ResultBoolean,
+  ResultObject,
+  ResultUserSettingsEntity,
   UpdateShowTicketsBody,
   UpdateShowTicketsParams,
   UserSettingsEntity,
@@ -21,7 +21,7 @@ export const getUserSettings = () => {
    * @summary 更新用户设置
    */
   const update = (userSettingsEntity: UserSettingsEntity) => {
-    return customInstance<CmdBoolean>({
+    return customInstance<ResultBoolean>({
       url: `/api/user/settings`,
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
@@ -32,7 +32,7 @@ export const getUserSettings = () => {
    * @summary 保存用户设置
    */
   const save = (userSettingsEntity: UserSettingsEntity) => {
-    return customInstance<CmdBoolean>({
+    return customInstance<ResultBoolean>({
       url: `/api/user/settings`,
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -46,7 +46,7 @@ export const getUserSettings = () => {
     updateShowTicketsBody: UpdateShowTicketsBody,
     params: UpdateShowTicketsParams,
   ) => {
-    return customInstance<CmdObject>({
+    return customInstance<ResultObject>({
       url: `/api/user/settings/show-tickets`,
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -58,7 +58,7 @@ export const getUserSettings = () => {
    * @summary 根据ID获取用户设置
    */
   const getById = (id: number) => {
-    return customInstance<CmdUserSettingsEntity>({
+    return customInstance<ResultUserSettingsEntity>({
       url: `/api/user/settings/${id}`,
       method: 'GET',
     });
@@ -67,7 +67,7 @@ export const getUserSettings = () => {
    * @summary 删除用户设置
    */
   const _delete = (id: number) => {
-    return customInstance<CmdBoolean>({ url: `/api/user/settings/${id}`, method: 'DELETE' });
+    return customInstance<ResultBoolean>({ url: `/api/user/settings/${id}`, method: 'DELETE' });
   };
   return { update, save, updateShowTickets, getById, _delete };
 };

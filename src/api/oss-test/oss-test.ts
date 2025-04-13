@@ -6,9 +6,9 @@
  * OpenAPI spec version: 1.0
  */
 import type {
-  CmdString,
   GetPublicUrlParams,
   GetSignedUrlParams,
+  ResultString,
   TestDeleteParams,
   TestUploadBody,
 } from '../api.schemas';
@@ -17,7 +17,7 @@ import { customInstance } from '../../boot/orval-client';
 
 export const getOssTest = () => {
   const testUpload = (directory: string, testUploadBody: TestUploadBody) => {
-    return customInstance<CmdString>({
+    return customInstance<ResultString>({
       url: `/api/oss-test/upload/${directory}`,
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -25,13 +25,13 @@ export const getOssTest = () => {
     });
   };
   const getSignedUrl = (params: GetSignedUrlParams) => {
-    return customInstance<CmdString>({ url: `/api/oss-test/url`, method: 'GET', params });
+    return customInstance<ResultString>({ url: `/api/oss-test/url`, method: 'GET', params });
   };
   const getPublicUrl = (params: GetPublicUrlParams) => {
-    return customInstance<CmdString>({ url: `/api/oss-test/public-url`, method: 'GET', params });
+    return customInstance<ResultString>({ url: `/api/oss-test/public-url`, method: 'GET', params });
   };
   const testDelete = (params: TestDeleteParams) => {
-    return customInstance<CmdString>({ url: `/api/oss-test/delete`, method: 'DELETE', params });
+    return customInstance<ResultString>({ url: `/api/oss-test/delete`, method: 'DELETE', params });
   };
   return { testUpload, getSignedUrl, getPublicUrl, testDelete };
 };

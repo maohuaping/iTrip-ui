@@ -5,7 +5,7 @@
  * 前端提供UI，后端提供API
  * OpenAPI spec version: 1.0
  */
-import type { CmdTravelGuideDTO, GetTravelGuideParams } from '../api.schemas';
+import type { GetTravelGuideParams, ResultTravelGuideDTO } from '../api.schemas';
 
 import { customInstance } from '../../boot/orval-client';
 
@@ -14,7 +14,11 @@ export const getTravelGuide = () => {
    * @summary 获取旅游攻略
    */
   const getTravelGuide = (params?: GetTravelGuideParams) => {
-    return customInstance<CmdTravelGuideDTO>({ url: `/api/travel-guide`, method: 'GET', params });
+    return customInstance<ResultTravelGuideDTO>({
+      url: `/api/travel-guide`,
+      method: 'GET',
+      params,
+    });
   };
   return { getTravelGuide };
 };

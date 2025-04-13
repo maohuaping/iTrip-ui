@@ -9,27 +9,19 @@ import { faker } from '@faker-js/faker';
 
 import { HttpResponse, delay, http } from 'msw';
 
-import type { CmdString, CmdUserResponseDTO } from '../api.schemas';
-
-export const getUserPasswordResponseMock = (
-  overrideResponse: Partial<CmdString> = {},
-): CmdString => ({
-  success: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
-  payload: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-  ...overrideResponse,
-});
+import type { ResultBoolean, ResultUserResponseDTO } from '../api.schemas';
 
 export const getUserLogoutResponseMock = (
-  overrideResponse: Partial<CmdString> = {},
-): CmdString => ({
+  overrideResponse: Partial<ResultBoolean> = {},
+): ResultBoolean => ({
   success: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
-  payload: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
+  payload: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
   ...overrideResponse,
 });
 
 export const getUserMeResponseMock = (
-  overrideResponse: Partial<CmdUserResponseDTO> = {},
-): CmdUserResponseDTO => ({
+  overrideResponse: Partial<ResultUserResponseDTO> = {},
+): ResultUserResponseDTO => ({
   success: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
   payload: faker.helpers.arrayElement([
     {
@@ -39,7 +31,6 @@ export const getUserMeResponseMock = (
       ]),
       username: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
       email: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
-      needResetPassword: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
       role: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
       avatarUrl: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
     },
@@ -48,31 +39,12 @@ export const getUserMeResponseMock = (
   ...overrideResponse,
 });
 
-export const getUserPasswordMockHandler = (
-  overrideResponse?:
-    | CmdString
-    | ((info: Parameters<Parameters<typeof http.put>[1]>[0]) => Promise<CmdString> | CmdString),
-) => {
-  return http.put('*/api/user/password', async (info) => {
-    await delay(1000);
-
-    return new HttpResponse(
-      JSON.stringify(
-        overrideResponse !== undefined
-          ? typeof overrideResponse === 'function'
-            ? await overrideResponse(info)
-            : overrideResponse
-          : getUserPasswordResponseMock(),
-      ),
-      { status: 200, headers: { 'Content-Type': 'application/json' } },
-    );
-  });
-};
-
 export const getUserLogoutMockHandler = (
   overrideResponse?:
-    | CmdString
-    | ((info: Parameters<Parameters<typeof http.post>[1]>[0]) => Promise<CmdString> | CmdString),
+    | ResultBoolean
+    | ((
+        info: Parameters<Parameters<typeof http.post>[1]>[0],
+      ) => Promise<ResultBoolean> | ResultBoolean),
 ) => {
   return http.post('*/api/user/logout', async (info) => {
     await delay(1000);
@@ -92,10 +64,10 @@ export const getUserLogoutMockHandler = (
 
 export const getUserMeMockHandler = (
   overrideResponse?:
-    | CmdUserResponseDTO
+    | ResultUserResponseDTO
     | ((
         info: Parameters<Parameters<typeof http.get>[1]>[0],
-      ) => Promise<CmdUserResponseDTO> | CmdUserResponseDTO),
+      ) => Promise<ResultUserResponseDTO> | ResultUserResponseDTO),
 ) => {
   return http.get('*/api/user/me', async (info) => {
     await delay(1000);
@@ -112,8 +84,4 @@ export const getUserMeMockHandler = (
     );
   });
 };
-export const getUserMock = () => [
-  getUserPasswordMockHandler(),
-  getUserLogoutMockHandler(),
-  getUserMeMockHandler(),
-];
+export const getUserMock = () => [getUserLogoutMockHandler(), getUserMeMockHandler()];

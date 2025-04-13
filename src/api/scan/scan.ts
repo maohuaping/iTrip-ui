@@ -5,7 +5,7 @@
  * 前端提供UI，后端提供API
  * OpenAPI spec version: 1.0
  */
-import type { CmdScanIdentifyResponseDTO, ScanIdentifyRequestDTO } from '../api.schemas';
+import type { ResultScanIdentifyResponseDTO, ScanIdentifyRequestDTO } from '../api.schemas';
 
 import { customInstance } from '../../boot/orval-client';
 
@@ -14,7 +14,7 @@ export const getScan = () => {
    * @summary 识别二维码类型
    */
   const identifyQRCode = (scanIdentifyRequestDTO: ScanIdentifyRequestDTO) => {
-    return customInstance<CmdScanIdentifyResponseDTO>({
+    return customInstance<ResultScanIdentifyResponseDTO>({
       url: `/api/scan/identify`,
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

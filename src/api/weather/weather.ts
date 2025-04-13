@@ -5,7 +5,7 @@
  * 前端提供UI，后端提供API
  * OpenAPI spec version: 1.0
  */
-import type { CmdWeatherResponseDTO } from '../api.schemas';
+import type { ResultWeatherResponseDTO } from '../api.schemas';
 
 import { customInstance } from '../../boot/orval-client';
 
@@ -14,7 +14,7 @@ export const getWeather = () => {
    * @summary 获取天气信息
    */
   const weatherInfo = () => {
-    return customInstance<CmdWeatherResponseDTO>({ url: `/api/weather`, method: 'GET' });
+    return customInstance<ResultWeatherResponseDTO>({ url: `/api/weather`, method: 'GET' });
   };
   return { weatherInfo };
 };

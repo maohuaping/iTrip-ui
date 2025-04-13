@@ -6,10 +6,10 @@
  * OpenAPI spec version: 1.0
  */
 import type {
-  CmdBoolean,
-  CmdDailyTaskEntity,
-  CmdListDailyTaskEntity,
   DailyTaskEntity,
+  ResultBoolean,
+  ResultDailyTaskEntity,
+  ResultListDailyTaskEntity,
 } from '../api.schemas';
 
 import { customInstance } from '../../boot/orval-client';
@@ -19,7 +19,7 @@ export const getDailyTask = () => {
    * @summary 更新
    */
   const dailyTaskUpdate = (dailyTaskEntity: DailyTaskEntity) => {
-    return customInstance<CmdBoolean>({
+    return customInstance<ResultBoolean>({
       url: `/api/dailyTask`,
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
@@ -30,7 +30,7 @@ export const getDailyTask = () => {
    * @summary 新增
    */
   const dailyTaskCreate = (dailyTaskEntity: DailyTaskEntity) => {
-    return customInstance<CmdBoolean>({
+    return customInstance<ResultBoolean>({
       url: `/api/dailyTask`,
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -41,21 +41,27 @@ export const getDailyTask = () => {
    * @summary 根据ID获取
    */
   const dailyTaskGetById = (id: number) => {
-    return customInstance<CmdDailyTaskEntity>({ url: `/api/dailyTask/${id}`, method: 'GET' });
+    return customInstance<ResultDailyTaskEntity>({ url: `/api/dailyTask/${id}`, method: 'GET' });
   };
   /**
-   * @summary 删除
+   * @summary 根据ID删除
    */
-  const dailyTaskDelete = (id: number) => {
-    return customInstance<CmdBoolean>({ url: `/api/dailyTask/${id}`, method: 'DELETE' });
+  const dailyTaskDeleteById = (id: number) => {
+    return customInstance<ResultBoolean>({ url: `/api/dailyTask/${id}`, method: 'DELETE' });
   };
   /**
    * @summary 获取当前用户的任务
    */
   const dailyTaskMeTask = () => {
-    return customInstance<CmdListDailyTaskEntity>({ url: `/api/dailyTask/list`, method: 'GET' });
+    return customInstance<ResultListDailyTaskEntity>({ url: `/api/dailyTask/list`, method: 'GET' });
   };
-  return { dailyTaskUpdate, dailyTaskCreate, dailyTaskGetById, dailyTaskDelete, dailyTaskMeTask };
+  return {
+    dailyTaskUpdate,
+    dailyTaskCreate,
+    dailyTaskGetById,
+    dailyTaskDeleteById,
+    dailyTaskMeTask,
+  };
 };
 export type DailyTaskUpdateResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getDailyTask>['dailyTaskUpdate']>>
@@ -66,8 +72,8 @@ export type DailyTaskCreateResult = NonNullable<
 export type DailyTaskGetByIdResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getDailyTask>['dailyTaskGetById']>>
 >;
-export type DailyTaskDeleteResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getDailyTask>['dailyTaskDelete']>>
+export type DailyTaskDeleteByIdResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getDailyTask>['dailyTaskDeleteById']>>
 >;
 export type DailyTaskMeTaskResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getDailyTask>['dailyTaskMeTask']>>

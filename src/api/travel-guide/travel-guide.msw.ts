@@ -9,11 +9,11 @@ import { faker } from '@faker-js/faker';
 
 import { HttpResponse, delay, http } from 'msw';
 
-import type { CmdTravelGuideDTO } from '../api.schemas';
+import type { ResultTravelGuideDTO } from '../api.schemas';
 
 export const getGetTravelGuideResponseMock = (
-  overrideResponse: Partial<CmdTravelGuideDTO> = {},
-): CmdTravelGuideDTO => ({
+  overrideResponse: Partial<ResultTravelGuideDTO> = {},
+): ResultTravelGuideDTO => ({
   success: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
   payload: faker.helpers.arrayElement([
     {
@@ -37,10 +37,10 @@ export const getGetTravelGuideResponseMock = (
 
 export const getGetTravelGuideMockHandler = (
   overrideResponse?:
-    | CmdTravelGuideDTO
+    | ResultTravelGuideDTO
     | ((
         info: Parameters<Parameters<typeof http.get>[1]>[0],
-      ) => Promise<CmdTravelGuideDTO> | CmdTravelGuideDTO),
+      ) => Promise<ResultTravelGuideDTO> | ResultTravelGuideDTO),
 ) => {
   return http.get('*/api/travel-guide', async (info) => {
     await delay(1000);

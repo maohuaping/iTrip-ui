@@ -9,11 +9,11 @@ import { faker } from '@faker-js/faker';
 
 import { HttpResponse, delay, http } from 'msw';
 
-import type { CmdScanIdentifyResponseDTO } from '../api.schemas';
+import type { ResultScanIdentifyResponseDTO } from '../api.schemas';
 
 export const getIdentifyQRCodeResponseMock = (
-  overrideResponse: Partial<CmdScanIdentifyResponseDTO> = {},
-): CmdScanIdentifyResponseDTO => ({
+  overrideResponse: Partial<ResultScanIdentifyResponseDTO> = {},
+): ResultScanIdentifyResponseDTO => ({
   success: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
   payload: faker.helpers.arrayElement([
     {
@@ -28,10 +28,10 @@ export const getIdentifyQRCodeResponseMock = (
 
 export const getIdentifyQRCodeMockHandler = (
   overrideResponse?:
-    | CmdScanIdentifyResponseDTO
+    | ResultScanIdentifyResponseDTO
     | ((
         info: Parameters<Parameters<typeof http.post>[1]>[0],
-      ) => Promise<CmdScanIdentifyResponseDTO> | CmdScanIdentifyResponseDTO),
+      ) => Promise<ResultScanIdentifyResponseDTO> | ResultScanIdentifyResponseDTO),
 ) => {
   return http.post('*/api/scan/identify', async (info) => {
     await delay(1000);

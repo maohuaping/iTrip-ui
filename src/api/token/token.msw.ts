@@ -9,12 +9,22 @@ import { faker } from '@faker-js/faker';
 
 import { HttpResponse, delay, http } from 'msw';
 
-export const getGetTestTokenResponseMock = (): string => faker.word.sample();
+import type { ResultString } from '../api.schemas';
 
-export const getGetTestTokenMockHandler = (
+export const getTestTokenResponseMock = (
+  overrideResponse: Partial<ResultString> = {},
+): ResultString => ({
+  success: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
+  payload: faker.helpers.arrayElement([faker.string.alpha(20), undefined]),
+  ...overrideResponse,
+});
+
+export const getTestTokenMockHandler = (
   overrideResponse?:
-    | string
-    | ((info: Parameters<Parameters<typeof http.get>[1]>[0]) => Promise<string> | string),
+    | ResultString
+    | ((
+        info: Parameters<Parameters<typeof http.get>[1]>[0],
+      ) => Promise<ResultString> | ResultString),
 ) => {
   return http.get('*/api/test/token', async (info) => {
     await delay(1000);
@@ -25,10 +35,10 @@ export const getGetTestTokenMockHandler = (
           ? typeof overrideResponse === 'function'
             ? await overrideResponse(info)
             : overrideResponse
-          : getGetTestTokenResponseMock(),
+          : getTestTokenResponseMock(),
       ),
       { status: 200, headers: { 'Content-Type': 'application/json' } },
     );
   });
 };
-export const getTokenMock = () => [getGetTestTokenMockHandler()];
+export const getTokenMock = () => [getTestTokenMockHandler()];

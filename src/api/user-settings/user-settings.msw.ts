@@ -9,31 +9,35 @@ import { faker } from '@faker-js/faker';
 
 import { HttpResponse, delay, http } from 'msw';
 
-import type { CmdBoolean, CmdObject, CmdUserSettingsEntity } from '../api.schemas';
+import type { ResultBoolean, ResultObject, ResultUserSettingsEntity } from '../api.schemas';
 
-export const getUpdateResponseMock = (overrideResponse: Partial<CmdBoolean> = {}): CmdBoolean => ({
+export const getUpdateResponseMock = (
+  overrideResponse: Partial<ResultBoolean> = {},
+): ResultBoolean => ({
   success: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
   payload: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
   ...overrideResponse,
 });
 
-export const getSaveResponseMock = (overrideResponse: Partial<CmdBoolean> = {}): CmdBoolean => ({
+export const getSaveResponseMock = (
+  overrideResponse: Partial<ResultBoolean> = {},
+): ResultBoolean => ({
   success: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
   payload: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
   ...overrideResponse,
 });
 
 export const getUpdateShowTicketsResponseMock = (
-  overrideResponse: Partial<CmdObject> = {},
-): CmdObject => ({
+  overrideResponse: Partial<ResultObject> = {},
+): ResultObject => ({
   success: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
   payload: faker.helpers.arrayElement([{}, undefined]),
   ...overrideResponse,
 });
 
 export const getGetByIdResponseMock = (
-  overrideResponse: Partial<CmdUserSettingsEntity> = {},
-): CmdUserSettingsEntity => ({
+  overrideResponse: Partial<ResultUserSettingsEntity> = {},
+): ResultUserSettingsEntity => ({
   success: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
   payload: faker.helpers.arrayElement([
     {
@@ -66,7 +70,9 @@ export const getGetByIdResponseMock = (
   ...overrideResponse,
 });
 
-export const getDeleteResponseMock = (overrideResponse: Partial<CmdBoolean> = {}): CmdBoolean => ({
+export const getDeleteResponseMock = (
+  overrideResponse: Partial<ResultBoolean> = {},
+): ResultBoolean => ({
   success: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
   payload: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
   ...overrideResponse,
@@ -74,8 +80,10 @@ export const getDeleteResponseMock = (overrideResponse: Partial<CmdBoolean> = {}
 
 export const getUpdateMockHandler = (
   overrideResponse?:
-    | CmdBoolean
-    | ((info: Parameters<Parameters<typeof http.put>[1]>[0]) => Promise<CmdBoolean> | CmdBoolean),
+    | ResultBoolean
+    | ((
+        info: Parameters<Parameters<typeof http.put>[1]>[0],
+      ) => Promise<ResultBoolean> | ResultBoolean),
 ) => {
   return http.put('*/api/user/settings', async (info) => {
     await delay(1000);
@@ -95,8 +103,10 @@ export const getUpdateMockHandler = (
 
 export const getSaveMockHandler = (
   overrideResponse?:
-    | CmdBoolean
-    | ((info: Parameters<Parameters<typeof http.post>[1]>[0]) => Promise<CmdBoolean> | CmdBoolean),
+    | ResultBoolean
+    | ((
+        info: Parameters<Parameters<typeof http.post>[1]>[0],
+      ) => Promise<ResultBoolean> | ResultBoolean),
 ) => {
   return http.post('*/api/user/settings', async (info) => {
     await delay(1000);
@@ -116,8 +126,10 @@ export const getSaveMockHandler = (
 
 export const getUpdateShowTicketsMockHandler = (
   overrideResponse?:
-    | CmdObject
-    | ((info: Parameters<Parameters<typeof http.post>[1]>[0]) => Promise<CmdObject> | CmdObject),
+    | ResultObject
+    | ((
+        info: Parameters<Parameters<typeof http.post>[1]>[0],
+      ) => Promise<ResultObject> | ResultObject),
 ) => {
   return http.post('*/api/user/settings/show-tickets', async (info) => {
     await delay(1000);
@@ -137,10 +149,10 @@ export const getUpdateShowTicketsMockHandler = (
 
 export const getGetByIdMockHandler = (
   overrideResponse?:
-    | CmdUserSettingsEntity
+    | ResultUserSettingsEntity
     | ((
         info: Parameters<Parameters<typeof http.get>[1]>[0],
-      ) => Promise<CmdUserSettingsEntity> | CmdUserSettingsEntity),
+      ) => Promise<ResultUserSettingsEntity> | ResultUserSettingsEntity),
 ) => {
   return http.get('*/api/user/settings/:id', async (info) => {
     await delay(1000);
@@ -160,10 +172,10 @@ export const getGetByIdMockHandler = (
 
 export const getDeleteMockHandler = (
   overrideResponse?:
-    | CmdBoolean
+    | ResultBoolean
     | ((
         info: Parameters<Parameters<typeof http.delete>[1]>[0],
-      ) => Promise<CmdBoolean> | CmdBoolean),
+      ) => Promise<ResultBoolean> | ResultBoolean),
 ) => {
   return http.delete('*/api/user/settings/:id', async (info) => {
     await delay(1000);

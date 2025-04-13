@@ -10,31 +10,31 @@ import { faker } from '@faker-js/faker';
 import { HttpResponse, delay, http } from 'msw';
 
 import type {
-  CmdBoolean,
-  CmdListRequirementEntity,
-  CmdListString,
-  CmdRequirementEntity,
+  ResultBoolean,
+  ResultListRequirementEntity,
+  ResultListString,
+  ResultRequirementEntity,
 } from '../api.schemas';
 
 export const getRequirementUpdateResponseMock = (
-  overrideResponse: Partial<CmdBoolean> = {},
-): CmdBoolean => ({
+  overrideResponse: Partial<ResultBoolean> = {},
+): ResultBoolean => ({
   success: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
   payload: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
   ...overrideResponse,
 });
 
 export const getRequirementCreateResponseMock = (
-  overrideResponse: Partial<CmdBoolean> = {},
-): CmdBoolean => ({
+  overrideResponse: Partial<ResultBoolean> = {},
+): ResultBoolean => ({
   success: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
   payload: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
   ...overrideResponse,
 });
 
 export const getRequirementGetByIdResponseMock = (
-  overrideResponse: Partial<CmdRequirementEntity> = {},
-): CmdRequirementEntity => ({
+  overrideResponse: Partial<ResultRequirementEntity> = {},
+): ResultRequirementEntity => ({
   success: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
   payload: faker.helpers.arrayElement([
     {
@@ -74,16 +74,16 @@ export const getRequirementGetByIdResponseMock = (
 });
 
 export const getRequirementDeleteResponseMock = (
-  overrideResponse: Partial<CmdBoolean> = {},
-): CmdBoolean => ({
+  overrideResponse: Partial<ResultBoolean> = {},
+): ResultBoolean => ({
   success: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
   payload: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
   ...overrideResponse,
 });
 
 export const getRequirementNameAllResponseMock = (
-  overrideResponse: Partial<CmdListString> = {},
-): CmdListString => ({
+  overrideResponse: Partial<ResultListString> = {},
+): ResultListString => ({
   success: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
   payload: faker.helpers.arrayElement([
     Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() =>
@@ -95,8 +95,8 @@ export const getRequirementNameAllResponseMock = (
 });
 
 export const getRequirementMeResponseMock = (
-  overrideResponse: Partial<CmdListRequirementEntity> = {},
-): CmdListRequirementEntity => ({
+  overrideResponse: Partial<ResultListRequirementEntity> = {},
+): ResultListRequirementEntity => ({
   success: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
   payload: faker.helpers.arrayElement([
     Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
@@ -137,8 +137,10 @@ export const getRequirementMeResponseMock = (
 
 export const getRequirementUpdateMockHandler = (
   overrideResponse?:
-    | CmdBoolean
-    | ((info: Parameters<Parameters<typeof http.put>[1]>[0]) => Promise<CmdBoolean> | CmdBoolean),
+    | ResultBoolean
+    | ((
+        info: Parameters<Parameters<typeof http.put>[1]>[0],
+      ) => Promise<ResultBoolean> | ResultBoolean),
 ) => {
   return http.put('*/api/requirement', async (info) => {
     await delay(1000);
@@ -158,8 +160,10 @@ export const getRequirementUpdateMockHandler = (
 
 export const getRequirementCreateMockHandler = (
   overrideResponse?:
-    | CmdBoolean
-    | ((info: Parameters<Parameters<typeof http.post>[1]>[0]) => Promise<CmdBoolean> | CmdBoolean),
+    | ResultBoolean
+    | ((
+        info: Parameters<Parameters<typeof http.post>[1]>[0],
+      ) => Promise<ResultBoolean> | ResultBoolean),
 ) => {
   return http.post('*/api/requirement', async (info) => {
     await delay(1000);
@@ -179,10 +183,10 @@ export const getRequirementCreateMockHandler = (
 
 export const getRequirementGetByIdMockHandler = (
   overrideResponse?:
-    | CmdRequirementEntity
+    | ResultRequirementEntity
     | ((
         info: Parameters<Parameters<typeof http.get>[1]>[0],
-      ) => Promise<CmdRequirementEntity> | CmdRequirementEntity),
+      ) => Promise<ResultRequirementEntity> | ResultRequirementEntity),
 ) => {
   return http.get('*/api/requirement/:id', async (info) => {
     await delay(1000);
@@ -202,10 +206,10 @@ export const getRequirementGetByIdMockHandler = (
 
 export const getRequirementDeleteMockHandler = (
   overrideResponse?:
-    | CmdBoolean
+    | ResultBoolean
     | ((
         info: Parameters<Parameters<typeof http.delete>[1]>[0],
-      ) => Promise<CmdBoolean> | CmdBoolean),
+      ) => Promise<ResultBoolean> | ResultBoolean),
 ) => {
   return http.delete('*/api/requirement/:id', async (info) => {
     await delay(1000);
@@ -225,10 +229,10 @@ export const getRequirementDeleteMockHandler = (
 
 export const getRequirementNameAllMockHandler = (
   overrideResponse?:
-    | CmdListString
+    | ResultListString
     | ((
         info: Parameters<Parameters<typeof http.get>[1]>[0],
-      ) => Promise<CmdListString> | CmdListString),
+      ) => Promise<ResultListString> | ResultListString),
 ) => {
   return http.get('*/api/requirement/name-all', async (info) => {
     await delay(1000);
@@ -248,10 +252,10 @@ export const getRequirementNameAllMockHandler = (
 
 export const getRequirementMeMockHandler = (
   overrideResponse?:
-    | CmdListRequirementEntity
+    | ResultListRequirementEntity
     | ((
         info: Parameters<Parameters<typeof http.get>[1]>[0],
-      ) => Promise<CmdListRequirementEntity> | CmdListRequirementEntity),
+      ) => Promise<ResultListRequirementEntity> | ResultListRequirementEntity),
 ) => {
   return http.get('*/api/requirement/list', async (info) => {
     await delay(1000);

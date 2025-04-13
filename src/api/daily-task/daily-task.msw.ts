@@ -9,27 +9,31 @@ import { faker } from '@faker-js/faker';
 
 import { HttpResponse, delay, http } from 'msw';
 
-import type { CmdBoolean, CmdDailyTaskEntity, CmdListDailyTaskEntity } from '../api.schemas';
+import type {
+  ResultBoolean,
+  ResultDailyTaskEntity,
+  ResultListDailyTaskEntity,
+} from '../api.schemas';
 
 export const getDailyTaskUpdateResponseMock = (
-  overrideResponse: Partial<CmdBoolean> = {},
-): CmdBoolean => ({
+  overrideResponse: Partial<ResultBoolean> = {},
+): ResultBoolean => ({
   success: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
   payload: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
   ...overrideResponse,
 });
 
 export const getDailyTaskCreateResponseMock = (
-  overrideResponse: Partial<CmdBoolean> = {},
-): CmdBoolean => ({
+  overrideResponse: Partial<ResultBoolean> = {},
+): ResultBoolean => ({
   success: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
   payload: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
   ...overrideResponse,
 });
 
 export const getDailyTaskGetByIdResponseMock = (
-  overrideResponse: Partial<CmdDailyTaskEntity> = {},
-): CmdDailyTaskEntity => ({
+  overrideResponse: Partial<ResultDailyTaskEntity> = {},
+): ResultDailyTaskEntity => ({
   success: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
   payload: faker.helpers.arrayElement([
     {
@@ -86,17 +90,17 @@ export const getDailyTaskGetByIdResponseMock = (
   ...overrideResponse,
 });
 
-export const getDailyTaskDeleteResponseMock = (
-  overrideResponse: Partial<CmdBoolean> = {},
-): CmdBoolean => ({
+export const getDailyTaskDeleteByIdResponseMock = (
+  overrideResponse: Partial<ResultBoolean> = {},
+): ResultBoolean => ({
   success: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
   payload: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
   ...overrideResponse,
 });
 
 export const getDailyTaskMeTaskResponseMock = (
-  overrideResponse: Partial<CmdListDailyTaskEntity> = {},
-): CmdListDailyTaskEntity => ({
+  overrideResponse: Partial<ResultListDailyTaskEntity> = {},
+): ResultListDailyTaskEntity => ({
   success: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
   payload: faker.helpers.arrayElement([
     Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
@@ -155,8 +159,10 @@ export const getDailyTaskMeTaskResponseMock = (
 
 export const getDailyTaskUpdateMockHandler = (
   overrideResponse?:
-    | CmdBoolean
-    | ((info: Parameters<Parameters<typeof http.put>[1]>[0]) => Promise<CmdBoolean> | CmdBoolean),
+    | ResultBoolean
+    | ((
+        info: Parameters<Parameters<typeof http.put>[1]>[0],
+      ) => Promise<ResultBoolean> | ResultBoolean),
 ) => {
   return http.put('*/api/dailyTask', async (info) => {
     await delay(1000);
@@ -176,8 +182,10 @@ export const getDailyTaskUpdateMockHandler = (
 
 export const getDailyTaskCreateMockHandler = (
   overrideResponse?:
-    | CmdBoolean
-    | ((info: Parameters<Parameters<typeof http.post>[1]>[0]) => Promise<CmdBoolean> | CmdBoolean),
+    | ResultBoolean
+    | ((
+        info: Parameters<Parameters<typeof http.post>[1]>[0],
+      ) => Promise<ResultBoolean> | ResultBoolean),
 ) => {
   return http.post('*/api/dailyTask', async (info) => {
     await delay(1000);
@@ -197,10 +205,10 @@ export const getDailyTaskCreateMockHandler = (
 
 export const getDailyTaskGetByIdMockHandler = (
   overrideResponse?:
-    | CmdDailyTaskEntity
+    | ResultDailyTaskEntity
     | ((
         info: Parameters<Parameters<typeof http.get>[1]>[0],
-      ) => Promise<CmdDailyTaskEntity> | CmdDailyTaskEntity),
+      ) => Promise<ResultDailyTaskEntity> | ResultDailyTaskEntity),
 ) => {
   return http.get('*/api/dailyTask/:id', async (info) => {
     await delay(1000);
@@ -218,12 +226,12 @@ export const getDailyTaskGetByIdMockHandler = (
   });
 };
 
-export const getDailyTaskDeleteMockHandler = (
+export const getDailyTaskDeleteByIdMockHandler = (
   overrideResponse?:
-    | CmdBoolean
+    | ResultBoolean
     | ((
         info: Parameters<Parameters<typeof http.delete>[1]>[0],
-      ) => Promise<CmdBoolean> | CmdBoolean),
+      ) => Promise<ResultBoolean> | ResultBoolean),
 ) => {
   return http.delete('*/api/dailyTask/:id', async (info) => {
     await delay(1000);
@@ -234,7 +242,7 @@ export const getDailyTaskDeleteMockHandler = (
           ? typeof overrideResponse === 'function'
             ? await overrideResponse(info)
             : overrideResponse
-          : getDailyTaskDeleteResponseMock(),
+          : getDailyTaskDeleteByIdResponseMock(),
       ),
       { status: 200, headers: { 'Content-Type': 'application/json' } },
     );
@@ -243,10 +251,10 @@ export const getDailyTaskDeleteMockHandler = (
 
 export const getDailyTaskMeTaskMockHandler = (
   overrideResponse?:
-    | CmdListDailyTaskEntity
+    | ResultListDailyTaskEntity
     | ((
         info: Parameters<Parameters<typeof http.get>[1]>[0],
-      ) => Promise<CmdListDailyTaskEntity> | CmdListDailyTaskEntity),
+      ) => Promise<ResultListDailyTaskEntity> | ResultListDailyTaskEntity),
 ) => {
   return http.get('*/api/dailyTask/list', async (info) => {
     await delay(1000);
@@ -267,6 +275,6 @@ export const getDailyTaskMock = () => [
   getDailyTaskUpdateMockHandler(),
   getDailyTaskCreateMockHandler(),
   getDailyTaskGetByIdMockHandler(),
-  getDailyTaskDeleteMockHandler(),
+  getDailyTaskDeleteByIdMockHandler(),
   getDailyTaskMeTaskMockHandler(),
 ];

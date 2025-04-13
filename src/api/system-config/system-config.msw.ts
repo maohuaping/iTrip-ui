@@ -9,27 +9,31 @@ import { faker } from '@faker-js/faker';
 
 import { HttpResponse, delay, http } from 'msw';
 
-import type { CmdBoolean, CmdListSystemConfigEntity, CmdSystemConfigEntity } from '../api.schemas';
+import type {
+  ResultBoolean,
+  ResultListSystemConfigEntity,
+  ResultSystemConfigEntity,
+} from '../api.schemas';
 
 export const getSystemConfigUpdateResponseMock = (
-  overrideResponse: Partial<CmdBoolean> = {},
-): CmdBoolean => ({
+  overrideResponse: Partial<ResultBoolean> = {},
+): ResultBoolean => ({
   success: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
   payload: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
   ...overrideResponse,
 });
 
 export const getSystemConfigCreateResponseMock = (
-  overrideResponse: Partial<CmdBoolean> = {},
-): CmdBoolean => ({
+  overrideResponse: Partial<ResultBoolean> = {},
+): ResultBoolean => ({
   success: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
   payload: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
   ...overrideResponse,
 });
 
 export const getSystemConfigGetByIdResponseMock = (
-  overrideResponse: Partial<CmdSystemConfigEntity> = {},
-): CmdSystemConfigEntity => ({
+  overrideResponse: Partial<ResultSystemConfigEntity> = {},
+): ResultSystemConfigEntity => ({
   success: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
   payload: faker.helpers.arrayElement([
     {
@@ -65,16 +69,16 @@ export const getSystemConfigGetByIdResponseMock = (
 });
 
 export const getSystemConfigDeleteResponseMock = (
-  overrideResponse: Partial<CmdBoolean> = {},
-): CmdBoolean => ({
+  overrideResponse: Partial<ResultBoolean> = {},
+): ResultBoolean => ({
   success: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
   payload: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
   ...overrideResponse,
 });
 
 export const getSystemConfigListResponseMock = (
-  overrideResponse: Partial<CmdListSystemConfigEntity> = {},
-): CmdListSystemConfigEntity => ({
+  overrideResponse: Partial<ResultListSystemConfigEntity> = {},
+): ResultListSystemConfigEntity => ({
   success: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
   payload: faker.helpers.arrayElement([
     Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
@@ -111,8 +115,10 @@ export const getSystemConfigListResponseMock = (
 
 export const getSystemConfigUpdateMockHandler = (
   overrideResponse?:
-    | CmdBoolean
-    | ((info: Parameters<Parameters<typeof http.put>[1]>[0]) => Promise<CmdBoolean> | CmdBoolean),
+    | ResultBoolean
+    | ((
+        info: Parameters<Parameters<typeof http.put>[1]>[0],
+      ) => Promise<ResultBoolean> | ResultBoolean),
 ) => {
   return http.put('*/api/systemConfig', async (info) => {
     await delay(1000);
@@ -132,8 +138,10 @@ export const getSystemConfigUpdateMockHandler = (
 
 export const getSystemConfigCreateMockHandler = (
   overrideResponse?:
-    | CmdBoolean
-    | ((info: Parameters<Parameters<typeof http.post>[1]>[0]) => Promise<CmdBoolean> | CmdBoolean),
+    | ResultBoolean
+    | ((
+        info: Parameters<Parameters<typeof http.post>[1]>[0],
+      ) => Promise<ResultBoolean> | ResultBoolean),
 ) => {
   return http.post('*/api/systemConfig', async (info) => {
     await delay(1000);
@@ -153,10 +161,10 @@ export const getSystemConfigCreateMockHandler = (
 
 export const getSystemConfigGetByIdMockHandler = (
   overrideResponse?:
-    | CmdSystemConfigEntity
+    | ResultSystemConfigEntity
     | ((
         info: Parameters<Parameters<typeof http.get>[1]>[0],
-      ) => Promise<CmdSystemConfigEntity> | CmdSystemConfigEntity),
+      ) => Promise<ResultSystemConfigEntity> | ResultSystemConfigEntity),
 ) => {
   return http.get('*/api/systemConfig/:id', async (info) => {
     await delay(1000);
@@ -176,10 +184,10 @@ export const getSystemConfigGetByIdMockHandler = (
 
 export const getSystemConfigDeleteMockHandler = (
   overrideResponse?:
-    | CmdBoolean
+    | ResultBoolean
     | ((
         info: Parameters<Parameters<typeof http.delete>[1]>[0],
-      ) => Promise<CmdBoolean> | CmdBoolean),
+      ) => Promise<ResultBoolean> | ResultBoolean),
 ) => {
   return http.delete('*/api/systemConfig/:id', async (info) => {
     await delay(1000);
@@ -199,10 +207,10 @@ export const getSystemConfigDeleteMockHandler = (
 
 export const getSystemConfigListMockHandler = (
   overrideResponse?:
-    | CmdListSystemConfigEntity
+    | ResultListSystemConfigEntity
     | ((
         info: Parameters<Parameters<typeof http.get>[1]>[0],
-      ) => Promise<CmdListSystemConfigEntity> | CmdListSystemConfigEntity),
+      ) => Promise<ResultListSystemConfigEntity> | ResultListSystemConfigEntity),
 ) => {
   return http.get('*/api/systemConfig/list', async (info) => {
     await delay(1000);

@@ -6,11 +6,11 @@
  * OpenAPI spec version: 1.0
  */
 import type {
-  CmdBoolean,
-  CmdListRequirementEntity,
-  CmdListString,
-  CmdRequirementEntity,
   RequirementEntity,
+  ResultBoolean,
+  ResultListRequirementEntity,
+  ResultListString,
+  ResultRequirementEntity,
 } from '../api.schemas';
 
 import { customInstance } from '../../boot/orval-client';
@@ -20,7 +20,7 @@ export const getRequirement = () => {
    * @summary 更新
    */
   const requirementUpdate = (requirementEntity: RequirementEntity) => {
-    return customInstance<CmdBoolean>({
+    return customInstance<ResultBoolean>({
       url: `/api/requirement`,
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
@@ -31,7 +31,7 @@ export const getRequirement = () => {
    * @summary 新增
    */
   const requirementCreate = (requirementEntity: RequirementEntity) => {
-    return customInstance<CmdBoolean>({
+    return customInstance<ResultBoolean>({
       url: `/api/requirement`,
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -42,25 +42,28 @@ export const getRequirement = () => {
    * @summary 根据ID获取
    */
   const requirementGetById = (id: number) => {
-    return customInstance<CmdRequirementEntity>({ url: `/api/requirement/${id}`, method: 'GET' });
+    return customInstance<ResultRequirementEntity>({
+      url: `/api/requirement/${id}`,
+      method: 'GET',
+    });
   };
   /**
    * @summary 删除
    */
   const requirementDelete = (id: number) => {
-    return customInstance<CmdBoolean>({ url: `/api/requirement/${id}`, method: 'DELETE' });
+    return customInstance<ResultBoolean>({ url: `/api/requirement/${id}`, method: 'DELETE' });
   };
   /**
    * @summary 获取所有需求的名称
    */
   const requirementNameAll = () => {
-    return customInstance<CmdListString>({ url: `/api/requirement/name-all`, method: 'GET' });
+    return customInstance<ResultListString>({ url: `/api/requirement/name-all`, method: 'GET' });
   };
   /**
    * @summary 获取当前用户的需求
    */
   const requirementMe = () => {
-    return customInstance<CmdListRequirementEntity>({
+    return customInstance<ResultListRequirementEntity>({
       url: `/api/requirement/list`,
       method: 'GET',
     });

@@ -8,7 +8,7 @@
 /**
  * API 统一返回格式
  */
-export interface CmdString {
+export interface ResultString {
   /** 是否成功 */
   success?: boolean;
   /** 数据或错误信息 */
@@ -40,7 +40,7 @@ export interface WorkLogEntity {
 /**
  * API 统一返回格式
  */
-export interface CmdBoolean {
+export interface ResultBoolean {
   /** 是否成功 */
   success?: boolean;
   /** 数据或错误信息 */
@@ -67,42 +67,6 @@ export interface UserSettingsEntity {
   settingKey: string;
   /** 设置值 */
   settingValue: string;
-}
-
-/**
- * 密码修改类型：FORGET-忘记密码，FIRST_LOGIN-首次登录
- */
-export type UpdatePasswordRequestDTOType =
-  (typeof UpdatePasswordRequestDTOType)[keyof typeof UpdatePasswordRequestDTOType];
-
-// eslint-disable-next-line @typescript-eslint/no-redeclare
-export const UpdatePasswordRequestDTOType = {
-  FORGET: 'FORGET',
-  FIRST_LOGIN: 'FIRST_LOGIN',
-} as const;
-
-/**
- * 修改密码请求
- */
-export interface UpdatePasswordRequestDTO {
-  /** 密码修改类型：FORGET-忘记密码，FIRST_LOGIN-首次登录 */
-  type: UpdatePasswordRequestDTOType;
-  /** 邮箱，忘记密码时必填 */
-  email?: string;
-  /**
-   * 验证码，忘记密码时必填
-   * @minLength 6
-   * @maxLength 6
-   */
-  verificationCode?: string;
-  /**
-   * 新密码
-   * @minLength 6
-   * @maxLength 20
-   */
-  newPassword: string;
-  firstLoginUpdate?: boolean;
-  forgetUpdate?: boolean;
 }
 
 /**
@@ -213,19 +177,33 @@ export interface DailyTaskEntity {
   remarks?: string;
 }
 
+export interface UpdatePasswordRequestDTO {
+  email?: string;
+  /**
+   * @minLength 6
+   * @maxLength 6
+   */
+  code?: string;
+  /**
+   * @minLength 6
+   * @maxLength 20
+   */
+  newPwd: string;
+}
+
 /**
  * 数据或错误信息
  */
-export type CmdObjectPayload = { [key: string]: unknown };
+export type ResultObjectPayload = { [key: string]: unknown };
 
 /**
  * API 统一返回格式
  */
-export interface CmdObject {
+export interface ResultObject {
   /** 是否成功 */
   success?: boolean;
   /** 数据或错误信息 */
-  payload?: CmdObjectPayload;
+  payload?: ResultObjectPayload;
 }
 
 /**
@@ -271,7 +249,7 @@ export interface ScanIdentifyRequestDTO {
 /**
  * API 统一返回格式
  */
-export interface CmdScanIdentifyResponseDTO {
+export interface ResultScanIdentifyResponseDTO {
   /** 是否成功 */
   success?: boolean;
   payload?: ScanIdentifyResponseDTO;
@@ -318,36 +296,15 @@ export interface RegisterRequestDTO {
   password?: string;
 }
 
-/**
- * 登录类型：PASSWORD-密码登录，CODE-验证码登录
- */
-export type UserLoginRequestDTOType =
-  (typeof UserLoginRequestDTOType)[keyof typeof UserLoginRequestDTOType];
-
-// eslint-disable-next-line @typescript-eslint/no-redeclare
-export const UserLoginRequestDTOType = {
-  PASSWORD: 'PASSWORD',
-  CODE: 'CODE',
-} as const;
-
-/**
- * 用户登录请求
- */
 export interface UserLoginRequestDTO {
-  /** 登录类型：PASSWORD-密码登录，CODE-验证码登录 */
-  type: UserLoginRequestDTOType;
-  /** 邮箱 */
   email: string;
-  /** 密码，密码登录时必填 */
-  password?: string;
-  /** 验证码，验证码登录时必填 */
-  verificationCode?: string;
+  password: string;
 }
 
 /**
  * API 统一返回格式
  */
-export interface CmdUserLoginResponseDTO {
+export interface ResultUserLoginResponseDTO {
   /** 是否成功 */
   success?: boolean;
   payload?: UserLoginResponseDTO;
@@ -363,27 +320,25 @@ export interface UserLoginResponseDTO {
 }
 
 /**
- * 用户信息响应
+ * 用户信息
  */
 export interface UserResponseDTO {
-  /** 用户ID */
   id?: number;
-  /** 用户名 */
   username?: string;
-  /** 邮箱 */
   email?: string;
-  /** 是否需要重置密码 */
-  needResetPassword?: boolean;
-  /** 用户角色 */
   role?: string;
-  /** 用户头像URL */
   avatarUrl?: string;
+}
+
+export interface VerifyCodeRequestDTO {
+  type: string;
+  email: string;
 }
 
 /**
  * API 统一返回格式
  */
-export interface CmdWorkLogEntity {
+export interface ResultWorkLogEntity {
   /** 是否成功 */
   success?: boolean;
   payload?: WorkLogEntity;
@@ -392,20 +347,11 @@ export interface CmdWorkLogEntity {
 /**
  * API 统一返回格式
  */
-export interface CmdListWorkLogEntity {
+export interface ResultListWorkLogEntity {
   /** 是否成功 */
   success?: boolean;
   /** 数据或错误信息 */
   payload?: WorkLogEntity[];
-}
-
-/**
- * API 统一返回格式
- */
-export interface CmdWeatherResponseDTO {
-  /** 是否成功 */
-  success?: boolean;
-  payload?: WeatherResponseDTO;
 }
 
 /**
@@ -455,6 +401,15 @@ export interface Refer {
 }
 
 /**
+ * API 统一返回格式
+ */
+export interface ResultWeatherResponseDTO {
+  /** 是否成功 */
+  success?: boolean;
+  payload?: WeatherResponseDTO;
+}
+
+/**
  * 天气信息响应
  */
 export interface WeatherResponseDTO {
@@ -471,7 +426,7 @@ export interface WeatherResponseDTO {
 /**
  * API 统一返回格式
  */
-export interface CmdUserSettingsEntity {
+export interface ResultUserSettingsEntity {
   /** 是否成功 */
   success?: boolean;
   payload?: UserSettingsEntity;
@@ -480,7 +435,7 @@ export interface CmdUserSettingsEntity {
 /**
  * API 统一返回格式
  */
-export interface CmdUserResponseDTO {
+export interface ResultUserResponseDTO {
   /** 是否成功 */
   success?: boolean;
   payload?: UserResponseDTO;
@@ -503,7 +458,7 @@ export interface Attraction {
 /**
  * API 统一返回格式
  */
-export interface CmdTravelGuideDTO {
+export interface ResultTravelGuideDTO {
   /** 是否成功 */
   success?: boolean;
   payload?: TravelGuideDTO;
@@ -526,7 +481,7 @@ export interface TravelGuideDTO {
 /**
  * API 统一返回格式
  */
-export interface CmdSystemConfigEntity {
+export interface ResultSystemConfigEntity {
   /** 是否成功 */
   success?: boolean;
   payload?: SystemConfigEntity;
@@ -535,7 +490,7 @@ export interface CmdSystemConfigEntity {
 /**
  * API 统一返回格式
  */
-export interface CmdListSystemConfigEntity {
+export interface ResultListSystemConfigEntity {
   /** 是否成功 */
   success?: boolean;
   /** 数据或错误信息 */
@@ -545,7 +500,7 @@ export interface CmdListSystemConfigEntity {
 /**
  * API 统一返回格式
  */
-export interface CmdRequirementEntity {
+export interface ResultRequirementEntity {
   /** 是否成功 */
   success?: boolean;
   payload?: RequirementEntity;
@@ -554,7 +509,7 @@ export interface CmdRequirementEntity {
 /**
  * API 统一返回格式
  */
-export interface CmdListString {
+export interface ResultListString {
   /** 是否成功 */
   success?: boolean;
   /** 数据或错误信息 */
@@ -564,20 +519,11 @@ export interface CmdListString {
 /**
  * API 统一返回格式
  */
-export interface CmdListRequirementEntity {
+export interface ResultListRequirementEntity {
   /** 是否成功 */
   success?: boolean;
   /** 数据或错误信息 */
   payload?: RequirementEntity[];
-}
-
-/**
- * API 统一返回格式
- */
-export interface CmdCustomPageObject {
-  /** 是否成功 */
-  success?: boolean;
-  payload?: CustomPageObject;
 }
 
 export type CustomPageObjectRecordsItem = { [key: string]: unknown };
@@ -612,7 +558,16 @@ export interface OrderItem {
 /**
  * API 统一返回格式
  */
-export interface CmdDevelopmentLogEntity {
+export interface ResultCustomPageObject {
+  /** 是否成功 */
+  success?: boolean;
+  payload?: CustomPageObject;
+}
+
+/**
+ * API 统一返回格式
+ */
+export interface ResultDevelopmentLogEntity {
   /** 是否成功 */
   success?: boolean;
   payload?: DevelopmentLogEntity;
@@ -621,7 +576,7 @@ export interface CmdDevelopmentLogEntity {
 /**
  * API 统一返回格式
  */
-export interface CmdDailyTaskEntity {
+export interface ResultDailyTaskEntity {
   /** 是否成功 */
   success?: boolean;
   payload?: DailyTaskEntity;
@@ -630,7 +585,7 @@ export interface CmdDailyTaskEntity {
 /**
  * API 统一返回格式
  */
-export interface CmdListDailyTaskEntity {
+export interface ResultListDailyTaskEntity {
   /** 是否成功 */
   success?: boolean;
   /** 数据或错误信息 */
@@ -668,7 +623,7 @@ export type GetTravelGuideParams = {
   destination?: string;
 };
 
-export type GetTestTokenParams = {
+export type TestTokenParams = {
   hours?: number;
 };
 
@@ -685,17 +640,6 @@ export type GetSignedUrlParams = {
 
 export type GetPublicUrlParams = {
   objectName: string;
-};
-
-export type AuthCodeParams = {
-  /**
-   * 邮箱地址
-   */
-  email: string;
-  /**
-   * 验证码类型
-   */
-  type: string;
 };
 
 export type TestDeleteParams = {

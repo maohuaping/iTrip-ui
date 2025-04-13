@@ -5,7 +5,7 @@
  * 前端提供UI，后端提供API
  * OpenAPI spec version: 1.0
  */
-import type { CmdBoolean, TravelPlanEntity } from '../api.schemas';
+import type { ResultBoolean, TravelPlanEntity } from '../api.schemas';
 
 import { customInstance } from '../../boot/orval-client';
 
@@ -14,7 +14,7 @@ export const getTravelPlan = () => {
    * @summary 新增
    */
   const travelPlanCreate = (travelPlanEntity: TravelPlanEntity) => {
-    return customInstance<CmdBoolean>({
+    return customInstance<ResultBoolean>({
       url: `/api/travelPlan`,
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -25,7 +25,7 @@ export const getTravelPlan = () => {
    * @summary 删除
    */
   const travelPlanDelete = (id: number) => {
-    return customInstance<CmdBoolean>({ url: `/api/travelPlan/${id}`, method: 'DELETE' });
+    return customInstance<ResultBoolean>({ url: `/api/travelPlan/${id}`, method: 'DELETE' });
   };
   return { travelPlanCreate, travelPlanDelete };
 };

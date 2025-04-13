@@ -5,7 +5,7 @@
  * 前端提供UI，后端提供API
  * OpenAPI spec version: 1.0
  */
-import type { CmdString, SubscriptionRequestDTO } from '../api.schemas';
+import type { ResultString, SubscriptionRequestDTO } from '../api.schemas';
 
 import { customInstance } from '../../boot/orval-client';
 
@@ -14,7 +14,7 @@ export const getNotification = () => {
    * @summary 订阅通知
    */
   const notificationSubscribe = (subscriptionRequestDTO: SubscriptionRequestDTO) => {
-    return customInstance<CmdString>({
+    return customInstance<ResultString>({
       url: `/api/notification/subscribe`,
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -25,7 +25,7 @@ export const getNotification = () => {
    * @summary 推送通知
    */
   const notificationPush = (subscriptionRequestDTO: SubscriptionRequestDTO) => {
-    return customInstance<CmdString>({
+    return customInstance<ResultString>({
       url: `/api/notification/push`,
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

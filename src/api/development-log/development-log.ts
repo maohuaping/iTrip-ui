@@ -6,11 +6,11 @@
  * OpenAPI spec version: 1.0
  */
 import type {
-  CmdBoolean,
-  CmdCustomPageObject,
-  CmdDevelopmentLogEntity,
   DevelopmentLogEntity,
   DevelopmentLogListParams,
+  ResultBoolean,
+  ResultCustomPageObject,
+  ResultDevelopmentLogEntity,
 } from '../api.schemas';
 
 import { customInstance } from '../../boot/orval-client';
@@ -20,7 +20,7 @@ export const getDevelopmentLog = () => {
    * @summary 获取日志列表
    */
   const developmentLogList = (params?: DevelopmentLogListParams) => {
-    return customInstance<CmdCustomPageObject>({
+    return customInstance<ResultCustomPageObject>({
       url: `/api/developmentLog`,
       method: 'GET',
       params,
@@ -30,7 +30,7 @@ export const getDevelopmentLog = () => {
    * @summary 更新
    */
   const developmentLogUpdate = (developmentLogEntity: DevelopmentLogEntity) => {
-    return customInstance<CmdBoolean>({
+    return customInstance<ResultBoolean>({
       url: `/api/developmentLog`,
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
@@ -41,7 +41,7 @@ export const getDevelopmentLog = () => {
    * @summary 新增
    */
   const developmentLogCreate = (developmentLogEntity: DevelopmentLogEntity) => {
-    return customInstance<CmdBoolean>({
+    return customInstance<ResultBoolean>({
       url: `/api/developmentLog`,
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -52,7 +52,7 @@ export const getDevelopmentLog = () => {
    * @summary 根据ID获取
    */
   const developmentLogGetById = (id: number) => {
-    return customInstance<CmdDevelopmentLogEntity>({
+    return customInstance<ResultDevelopmentLogEntity>({
       url: `/api/developmentLog/${id}`,
       method: 'GET',
     });
@@ -61,7 +61,7 @@ export const getDevelopmentLog = () => {
    * @summary 删除
    */
   const developmentLogDelete = (id: number) => {
-    return customInstance<CmdBoolean>({ url: `/api/developmentLog/${id}`, method: 'DELETE' });
+    return customInstance<ResultBoolean>({ url: `/api/developmentLog/${id}`, method: 'DELETE' });
   };
   return {
     developmentLogList,

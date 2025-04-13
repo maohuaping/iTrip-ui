@@ -6,9 +6,9 @@
  * OpenAPI spec version: 1.0
  */
 import type {
-  CmdBoolean,
-  CmdListSystemConfigEntity,
-  CmdSystemConfigEntity,
+  ResultBoolean,
+  ResultListSystemConfigEntity,
+  ResultSystemConfigEntity,
   SystemConfigEntity,
 } from '../api.schemas';
 
@@ -19,7 +19,7 @@ export const getSystemConfig = () => {
    * @summary 更新
    */
   const systemConfigUpdate = (systemConfigEntity: SystemConfigEntity) => {
-    return customInstance<CmdBoolean>({
+    return customInstance<ResultBoolean>({
       url: `/api/systemConfig`,
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
@@ -30,7 +30,7 @@ export const getSystemConfig = () => {
    * @summary 新增
    */
   const systemConfigCreate = (systemConfigEntity: SystemConfigEntity) => {
-    return customInstance<CmdBoolean>({
+    return customInstance<ResultBoolean>({
       url: `/api/systemConfig`,
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -41,19 +41,22 @@ export const getSystemConfig = () => {
    * @summary 根据ID获取
    */
   const systemConfigGetById = (id: number) => {
-    return customInstance<CmdSystemConfigEntity>({ url: `/api/systemConfig/${id}`, method: 'GET' });
+    return customInstance<ResultSystemConfigEntity>({
+      url: `/api/systemConfig/${id}`,
+      method: 'GET',
+    });
   };
   /**
    * @summary 删除
    */
   const systemConfigDelete = (id: number) => {
-    return customInstance<CmdBoolean>({ url: `/api/systemConfig/${id}`, method: 'DELETE' });
+    return customInstance<ResultBoolean>({ url: `/api/systemConfig/${id}`, method: 'DELETE' });
   };
   /**
    * @summary 获取所有系统配置
    */
   const systemConfigList = () => {
-    return customInstance<CmdListSystemConfigEntity>({
+    return customInstance<ResultListSystemConfigEntity>({
       url: `/api/systemConfig/list`,
       method: 'GET',
     });

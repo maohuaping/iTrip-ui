@@ -5,7 +5,7 @@
  * 前端提供UI，后端提供API
  * OpenAPI spec version: 1.0
  */
-import type { CmdString, DeepseekTestParams } from '../api.schemas';
+import type { DeepseekTestParams, ResultString } from '../api.schemas';
 
 import { customInstance } from '../../boot/orval-client';
 
@@ -14,7 +14,7 @@ export const getDeepseekTest = () => {
    * @summary 测试DeepSeek API
    */
   const deepseekTest = (params?: DeepseekTestParams) => {
-    return customInstance<CmdString>({ url: `/api/test/deepseek`, method: 'GET', params });
+    return customInstance<ResultString>({ url: `/api/test/deepseek`, method: 'GET', params });
   };
   return { deepseekTest };
 };

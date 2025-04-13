@@ -6,9 +6,9 @@
  * OpenAPI spec version: 1.0
  */
 import type {
-  CmdBoolean,
-  CmdListWorkLogEntity,
-  CmdWorkLogEntity,
+  ResultBoolean,
+  ResultListWorkLogEntity,
+  ResultWorkLogEntity,
   WorkLogEntity,
 } from '../api.schemas';
 
@@ -19,7 +19,7 @@ export const getWorkLog = () => {
    * @summary 更新
    */
   const workLogUpdate = (workLogEntity: WorkLogEntity) => {
-    return customInstance<CmdBoolean>({
+    return customInstance<ResultBoolean>({
       url: `/api/work-log`,
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
@@ -30,7 +30,7 @@ export const getWorkLog = () => {
    * @summary 新增
    */
   const workLogCreate = (workLogEntity: WorkLogEntity) => {
-    return customInstance<CmdBoolean>({
+    return customInstance<ResultBoolean>({
       url: `/api/work-log`,
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -41,19 +41,19 @@ export const getWorkLog = () => {
    * @summary 根据ID获取
    */
   const workLogGetById = (id: number) => {
-    return customInstance<CmdWorkLogEntity>({ url: `/api/work-log/${id}`, method: 'GET' });
+    return customInstance<ResultWorkLogEntity>({ url: `/api/work-log/${id}`, method: 'GET' });
   };
   /**
    * @summary 删除
    */
   const workLogDelete = (id: number) => {
-    return customInstance<CmdBoolean>({ url: `/api/work-log/${id}`, method: 'DELETE' });
+    return customInstance<ResultBoolean>({ url: `/api/work-log/${id}`, method: 'DELETE' });
   };
   /**
    * @summary 获取当前用户的工作日志
    */
   const workLogMeLogs = () => {
-    return customInstance<CmdListWorkLogEntity>({ url: `/api/work-log/list`, method: 'GET' });
+    return customInstance<ResultListWorkLogEntity>({ url: `/api/work-log/list`, method: 'GET' });
   };
   return { workLogUpdate, workLogCreate, workLogGetById, workLogDelete, workLogMeLogs };
 };

@@ -9,11 +9,11 @@ import { faker } from '@faker-js/faker';
 
 import { HttpResponse, delay, http } from 'msw';
 
-import type { CmdWeatherResponseDTO } from '../api.schemas';
+import type { ResultWeatherResponseDTO } from '../api.schemas';
 
 export const getWeatherInfoResponseMock = (
-  overrideResponse: Partial<CmdWeatherResponseDTO> = {},
-): CmdWeatherResponseDTO => ({
+  overrideResponse: Partial<ResultWeatherResponseDTO> = {},
+): ResultWeatherResponseDTO => ({
   success: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
   payload: faker.helpers.arrayElement([
     {
@@ -65,10 +65,10 @@ export const getWeatherInfoResponseMock = (
 
 export const getWeatherInfoMockHandler = (
   overrideResponse?:
-    | CmdWeatherResponseDTO
+    | ResultWeatherResponseDTO
     | ((
         info: Parameters<Parameters<typeof http.get>[1]>[0],
-      ) => Promise<CmdWeatherResponseDTO> | CmdWeatherResponseDTO),
+      ) => Promise<ResultWeatherResponseDTO> | ResultWeatherResponseDTO),
 ) => {
   return http.get('*/api/weather', async (info) => {
     await delay(1000);

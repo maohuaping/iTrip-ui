@@ -5,16 +5,19 @@
  * 前端提供UI，后端提供API
  * OpenAPI spec version: 1.0
  */
-import type { GetTestTokenParams } from '../api.schemas';
+import type { ResultString, TestTokenParams } from '../api.schemas';
 
 import { customInstance } from '../../boot/orval-client';
 
 export const getToken = () => {
-  const getTestToken = (params?: GetTestTokenParams) => {
-    return customInstance<string>({ url: `/api/test/token`, method: 'GET', params });
+  /**
+   * @summary 获取测试用token
+   */
+  const testToken = (params?: TestTokenParams) => {
+    return customInstance<ResultString>({ url: `/api/test/token`, method: 'GET', params });
   };
-  return { getTestToken };
+  return { testToken };
 };
-export type GetTestTokenResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getToken>['getTestToken']>>
+export type TestTokenResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getToken>['testToken']>>
 >;

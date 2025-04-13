@@ -9,11 +9,15 @@ import { faker } from '@faker-js/faker';
 
 import { HttpResponse, delay, http } from 'msw';
 
-import type { CmdBoolean, CmdCustomPageObject, CmdDevelopmentLogEntity } from '../api.schemas';
+import type {
+  ResultBoolean,
+  ResultCustomPageObject,
+  ResultDevelopmentLogEntity,
+} from '../api.schemas';
 
 export const getDevelopmentLogListResponseMock = (
-  overrideResponse: Partial<CmdCustomPageObject> = {},
-): CmdCustomPageObject => ({
+  overrideResponse: Partial<ResultCustomPageObject> = {},
+): ResultCustomPageObject => ({
   success: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
   payload: faker.helpers.arrayElement([
     {
@@ -61,24 +65,24 @@ export const getDevelopmentLogListResponseMock = (
 });
 
 export const getDevelopmentLogUpdateResponseMock = (
-  overrideResponse: Partial<CmdBoolean> = {},
-): CmdBoolean => ({
+  overrideResponse: Partial<ResultBoolean> = {},
+): ResultBoolean => ({
   success: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
   payload: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
   ...overrideResponse,
 });
 
 export const getDevelopmentLogCreateResponseMock = (
-  overrideResponse: Partial<CmdBoolean> = {},
-): CmdBoolean => ({
+  overrideResponse: Partial<ResultBoolean> = {},
+): ResultBoolean => ({
   success: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
   payload: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
   ...overrideResponse,
 });
 
 export const getDevelopmentLogGetByIdResponseMock = (
-  overrideResponse: Partial<CmdDevelopmentLogEntity> = {},
-): CmdDevelopmentLogEntity => ({
+  overrideResponse: Partial<ResultDevelopmentLogEntity> = {},
+): ResultDevelopmentLogEntity => ({
   success: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
   payload: faker.helpers.arrayElement([
     {
@@ -114,8 +118,8 @@ export const getDevelopmentLogGetByIdResponseMock = (
 });
 
 export const getDevelopmentLogDeleteResponseMock = (
-  overrideResponse: Partial<CmdBoolean> = {},
-): CmdBoolean => ({
+  overrideResponse: Partial<ResultBoolean> = {},
+): ResultBoolean => ({
   success: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
   payload: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
   ...overrideResponse,
@@ -123,10 +127,10 @@ export const getDevelopmentLogDeleteResponseMock = (
 
 export const getDevelopmentLogListMockHandler = (
   overrideResponse?:
-    | CmdCustomPageObject
+    | ResultCustomPageObject
     | ((
         info: Parameters<Parameters<typeof http.get>[1]>[0],
-      ) => Promise<CmdCustomPageObject> | CmdCustomPageObject),
+      ) => Promise<ResultCustomPageObject> | ResultCustomPageObject),
 ) => {
   return http.get('*/api/developmentLog', async (info) => {
     await delay(1000);
@@ -146,8 +150,10 @@ export const getDevelopmentLogListMockHandler = (
 
 export const getDevelopmentLogUpdateMockHandler = (
   overrideResponse?:
-    | CmdBoolean
-    | ((info: Parameters<Parameters<typeof http.put>[1]>[0]) => Promise<CmdBoolean> | CmdBoolean),
+    | ResultBoolean
+    | ((
+        info: Parameters<Parameters<typeof http.put>[1]>[0],
+      ) => Promise<ResultBoolean> | ResultBoolean),
 ) => {
   return http.put('*/api/developmentLog', async (info) => {
     await delay(1000);
@@ -167,8 +173,10 @@ export const getDevelopmentLogUpdateMockHandler = (
 
 export const getDevelopmentLogCreateMockHandler = (
   overrideResponse?:
-    | CmdBoolean
-    | ((info: Parameters<Parameters<typeof http.post>[1]>[0]) => Promise<CmdBoolean> | CmdBoolean),
+    | ResultBoolean
+    | ((
+        info: Parameters<Parameters<typeof http.post>[1]>[0],
+      ) => Promise<ResultBoolean> | ResultBoolean),
 ) => {
   return http.post('*/api/developmentLog', async (info) => {
     await delay(1000);
@@ -188,10 +196,10 @@ export const getDevelopmentLogCreateMockHandler = (
 
 export const getDevelopmentLogGetByIdMockHandler = (
   overrideResponse?:
-    | CmdDevelopmentLogEntity
+    | ResultDevelopmentLogEntity
     | ((
         info: Parameters<Parameters<typeof http.get>[1]>[0],
-      ) => Promise<CmdDevelopmentLogEntity> | CmdDevelopmentLogEntity),
+      ) => Promise<ResultDevelopmentLogEntity> | ResultDevelopmentLogEntity),
 ) => {
   return http.get('*/api/developmentLog/:id', async (info) => {
     await delay(1000);
@@ -211,10 +219,10 @@ export const getDevelopmentLogGetByIdMockHandler = (
 
 export const getDevelopmentLogDeleteMockHandler = (
   overrideResponse?:
-    | CmdBoolean
+    | ResultBoolean
     | ((
         info: Parameters<Parameters<typeof http.delete>[1]>[0],
-      ) => Promise<CmdBoolean> | CmdBoolean),
+      ) => Promise<ResultBoolean> | ResultBoolean),
 ) => {
   return http.delete('*/api/developmentLog/:id', async (info) => {
     await delay(1000);

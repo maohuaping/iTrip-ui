@@ -5,39 +5,25 @@
  * 前端提供UI，后端提供API
  * OpenAPI spec version: 1.0
  */
-import type { CmdString, CmdUserResponseDTO, UpdatePasswordRequestDTO } from '../api.schemas';
+import type { ResultBoolean, ResultUserResponseDTO } from '../api.schemas';
 
 import { customInstance } from '../../boot/orval-client';
 
 export const getUser = () => {
   /**
-   * @summary 首次登录-修改密码
-   */
-  const userPassword = (updatePasswordRequestDTO: UpdatePasswordRequestDTO) => {
-    return customInstance<CmdString>({
-      url: `/api/user/password`,
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      data: updatePasswordRequestDTO,
-    });
-  };
-  /**
    * @summary 退出登录
    */
   const userLogout = () => {
-    return customInstance<CmdString>({ url: `/api/user/logout`, method: 'POST' });
+    return customInstance<ResultBoolean>({ url: `/api/user/logout`, method: 'POST' });
   };
   /**
    * @summary 获取当前用户信息
    */
   const userMe = () => {
-    return customInstance<CmdUserResponseDTO>({ url: `/api/user/me`, method: 'GET' });
+    return customInstance<ResultUserResponseDTO>({ url: `/api/user/me`, method: 'GET' });
   };
-  return { userPassword, userLogout, userMe };
+  return { userLogout, userMe };
 };
-export type UserPasswordResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getUser>['userPassword']>>
->;
 export type UserLogoutResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getUser>['userLogout']>>
 >;
