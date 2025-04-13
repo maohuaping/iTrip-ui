@@ -60,15 +60,10 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useQuasar } from 'quasar';
-import { useRouter } from 'vue-router';
 import { getAuth } from 'src/api/auth/auth';
-import { UserLoginRequestDTOType } from 'src/api/api.schemas';
 
 const $q = useQuasar();
-const router = useRouter();
 const authApi = getAuth();
-
-const emit = defineEmits(['forget-password']);
 
 // 密码可见性
 const isPwdVisible = ref(false);
@@ -96,36 +91,28 @@ const handleLogin = async () => {
   try {
     isLoading.value = true;
     const response = await authApi.authLogin({
-      type: UserLoginRequestDTOType.PASSWORD,
       email: form.value.email,
       password: form.value.password
     });
 
-    if (response.data.success && response.data.data) {
-      const { token, user } = response.data.data;
-      
+    if (response.data.success && response.data.payload) {
+      const { token, user } = response.data.payload;
+
       // 保存token到localStorage或sessionStorage
       if (rememberMe.value) {
         localStorage.setItem('token', token || '');
       } else {
         sessionStorage.setItem('token', token || '');
       }
-      
+
       // 保存用户信息
       localStorage.setItem('user', JSON.stringify(user));
-      
+
       $q.notify({
         message: '登录成功',
         color: 'positive',
         position: 'top'
       });
-      
-      // 检查是否需要重置密码
-      if (user?.needResetPassword) {
-        router.push('/reset-password');
-      } else {
-        router.push('/');
-      }
     }
   } catch (error) {
     console.error('登录失败:', error);
@@ -138,4 +125,4 @@ const handleLogin = async () => {
     isLoading.value = false;
   }
 };
-</script> 
+</script>

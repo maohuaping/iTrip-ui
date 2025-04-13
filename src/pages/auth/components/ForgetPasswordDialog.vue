@@ -118,7 +118,6 @@
 import { ref, watch } from 'vue';
 import { useQuasar } from 'quasar';
 import { getAuth } from 'src/api/auth/auth';
-import { SendVerificationCodeRequestDTOType, UpdatePasswordRequestDTOType } from 'src/api/api.schemas';
 
 const props = defineProps({
   modelValue: {
@@ -182,17 +181,17 @@ const sendForgetPasswordCode = async () => {
 
   try {
     codeSending.value = true;
-    await authApi.authPasswordCode({
-      type: SendVerificationCodeRequestDTOType.FORGET,
+    await authApi.authCode({
+      type: 'forget',
       email: form.value.email
     });
-    
+
     $q.notify({
       message: '验证码已发送，请查收邮件',
       color: 'positive',
       position: 'top'
     });
-    
+
     // 开始倒计时
     codeCountdown.value = 60;
     const timer = setInterval(() => {
@@ -227,22 +226,20 @@ const handleForgetPassword = async () => {
   try {
     isLoading.value = true;
     await authApi.authPassword({
-      type: UpdatePasswordRequestDTOType.FORGET,
       email: form.value.email,
-      verificationCode: form.value.verificationCode,
-      newPassword: form.value.newPassword,
-      forgetUpdate: true
+      code: form.value.verificationCode,
+      newPwd: form.value.newPassword,
     });
-    
+
     $q.notify({
       message: '密码重置成功，请使用新密码登录',
       color: 'positive',
       position: 'top'
     });
-    
+
     // 关闭对话框并清空表单
     closeDialog();
-    
+
     // 通知父组件密码已重置
     emit('password-reset');
   } catch (error) {
@@ -268,4 +265,4 @@ const closeDialog = () => {
     confirmPassword: ''
   };
 };
-</script> 
+</script>

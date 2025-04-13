@@ -106,7 +106,6 @@
 import { ref } from 'vue';
 import { useQuasar } from 'quasar';
 import { getAuth } from 'src/api/auth/auth';
-import { SendVerificationCodeRequestDTOType } from 'src/api/api.schemas';
 
 const $q = useQuasar();
 const authApi = getAuth();
@@ -148,17 +147,17 @@ const sendVerificationCode = async () => {
 
   try {
     codeSending.value = true;
-    await authApi.authPasswordCode({
-      type: SendVerificationCodeRequestDTOType.REGISTER,
+    await authApi.authCode({
+      type: "register",
       email: form.value.email
     });
-    
+
     $q.notify({
       message: '验证码已发送，请查收邮件',
       color: 'positive',
       position: 'top'
     });
-    
+
     // 开始倒计时
     codeCountdown.value = 60;
     const timer = setInterval(() => {
@@ -188,10 +187,10 @@ const handleRegister = async () => {
     color: 'warning',
     position: 'top'
   });
-  
+
   // 通知父组件切换到登录页面
   emit('switch-to-login');
 };
 
 const emit = defineEmits(['switch-to-login']);
-</script> 
+</script>
