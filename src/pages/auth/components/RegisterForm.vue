@@ -147,7 +147,7 @@ const sendVerificationCode = async () => {
 
   try {
     codeSending.value = true;
-    await authApi.authCode({
+    await authApi.sendVerifyCode({
       type: "register",
       email: form.value.email
     });

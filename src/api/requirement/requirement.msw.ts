@@ -16,7 +16,7 @@ import type {
   ResultRequirementEntity,
 } from '../api.schemas';
 
-export const getRequirementUpdateResponseMock = (
+export const getUpdateRequirementResponseMock = (
   overrideResponse: Partial<ResultBoolean> = {},
 ): ResultBoolean => ({
   success: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
@@ -24,7 +24,7 @@ export const getRequirementUpdateResponseMock = (
   ...overrideResponse,
 });
 
-export const getRequirementCreateResponseMock = (
+export const getSaveRequirementResponseMock = (
   overrideResponse: Partial<ResultBoolean> = {},
 ): ResultBoolean => ({
   success: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
@@ -32,7 +32,7 @@ export const getRequirementCreateResponseMock = (
   ...overrideResponse,
 });
 
-export const getRequirementGetByIdResponseMock = (
+export const getGetRequirementByIdResponseMock = (
   overrideResponse: Partial<ResultRequirementEntity> = {},
 ): ResultRequirementEntity => ({
   success: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
@@ -73,7 +73,7 @@ export const getRequirementGetByIdResponseMock = (
   ...overrideResponse,
 });
 
-export const getRequirementDeleteResponseMock = (
+export const getDeleteRequirementResponseMock = (
   overrideResponse: Partial<ResultBoolean> = {},
 ): ResultBoolean => ({
   success: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
@@ -81,7 +81,7 @@ export const getRequirementDeleteResponseMock = (
   ...overrideResponse,
 });
 
-export const getRequirementNameAllResponseMock = (
+export const getGetAllRequirementNamesResponseMock = (
   overrideResponse: Partial<ResultListString> = {},
 ): ResultListString => ({
   success: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
@@ -94,7 +94,7 @@ export const getRequirementNameAllResponseMock = (
   ...overrideResponse,
 });
 
-export const getRequirementMeResponseMock = (
+export const getGetCurrentUserRequirementResponseMock = (
   overrideResponse: Partial<ResultListRequirementEntity> = {},
 ): ResultListRequirementEntity => ({
   success: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
@@ -135,7 +135,7 @@ export const getRequirementMeResponseMock = (
   ...overrideResponse,
 });
 
-export const getRequirementUpdateMockHandler = (
+export const getUpdateRequirementMockHandler = (
   overrideResponse?:
     | ResultBoolean
     | ((
@@ -151,14 +151,14 @@ export const getRequirementUpdateMockHandler = (
           ? typeof overrideResponse === 'function'
             ? await overrideResponse(info)
             : overrideResponse
-          : getRequirementUpdateResponseMock(),
+          : getUpdateRequirementResponseMock(),
       ),
       { status: 200, headers: { 'Content-Type': 'application/json' } },
     );
   });
 };
 
-export const getRequirementCreateMockHandler = (
+export const getSaveRequirementMockHandler = (
   overrideResponse?:
     | ResultBoolean
     | ((
@@ -174,14 +174,14 @@ export const getRequirementCreateMockHandler = (
           ? typeof overrideResponse === 'function'
             ? await overrideResponse(info)
             : overrideResponse
-          : getRequirementCreateResponseMock(),
+          : getSaveRequirementResponseMock(),
       ),
       { status: 200, headers: { 'Content-Type': 'application/json' } },
     );
   });
 };
 
-export const getRequirementGetByIdMockHandler = (
+export const getGetRequirementByIdMockHandler = (
   overrideResponse?:
     | ResultRequirementEntity
     | ((
@@ -197,14 +197,14 @@ export const getRequirementGetByIdMockHandler = (
           ? typeof overrideResponse === 'function'
             ? await overrideResponse(info)
             : overrideResponse
-          : getRequirementGetByIdResponseMock(),
+          : getGetRequirementByIdResponseMock(),
       ),
       { status: 200, headers: { 'Content-Type': 'application/json' } },
     );
   });
 };
 
-export const getRequirementDeleteMockHandler = (
+export const getDeleteRequirementMockHandler = (
   overrideResponse?:
     | ResultBoolean
     | ((
@@ -220,14 +220,14 @@ export const getRequirementDeleteMockHandler = (
           ? typeof overrideResponse === 'function'
             ? await overrideResponse(info)
             : overrideResponse
-          : getRequirementDeleteResponseMock(),
+          : getDeleteRequirementResponseMock(),
       ),
       { status: 200, headers: { 'Content-Type': 'application/json' } },
     );
   });
 };
 
-export const getRequirementNameAllMockHandler = (
+export const getGetAllRequirementNamesMockHandler = (
   overrideResponse?:
     | ResultListString
     | ((
@@ -243,14 +243,14 @@ export const getRequirementNameAllMockHandler = (
           ? typeof overrideResponse === 'function'
             ? await overrideResponse(info)
             : overrideResponse
-          : getRequirementNameAllResponseMock(),
+          : getGetAllRequirementNamesResponseMock(),
       ),
       { status: 200, headers: { 'Content-Type': 'application/json' } },
     );
   });
 };
 
-export const getRequirementMeMockHandler = (
+export const getGetCurrentUserRequirementMockHandler = (
   overrideResponse?:
     | ResultListRequirementEntity
     | ((
@@ -266,17 +266,17 @@ export const getRequirementMeMockHandler = (
           ? typeof overrideResponse === 'function'
             ? await overrideResponse(info)
             : overrideResponse
-          : getRequirementMeResponseMock(),
+          : getGetCurrentUserRequirementResponseMock(),
       ),
       { status: 200, headers: { 'Content-Type': 'application/json' } },
     );
   });
 };
 export const getRequirementMock = () => [
-  getRequirementUpdateMockHandler(),
-  getRequirementCreateMockHandler(),
-  getRequirementGetByIdMockHandler(),
-  getRequirementDeleteMockHandler(),
-  getRequirementNameAllMockHandler(),
-  getRequirementMeMockHandler(),
+  getUpdateRequirementMockHandler(),
+  getSaveRequirementMockHandler(),
+  getGetRequirementByIdMockHandler(),
+  getDeleteRequirementMockHandler(),
+  getGetAllRequirementNamesMockHandler(),
+  getGetCurrentUserRequirementMockHandler(),
 ];

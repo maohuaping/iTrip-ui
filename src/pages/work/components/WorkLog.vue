@@ -229,7 +229,7 @@ const requirementOptions = ref<{ label: string; value: string }[]>([])
 // 获取需求类型列表
 async function fetchRequirementOptions() {
   try {
-    const response = await requirementApi.requirementNameAll()
+    const response = await requirementApi.getAllRequirementNames()
     if (response.data.success && response.data.payload) {
       // 将API返回的字符串数组转换为选项格式
       requirementOptions.value = response.data.payload.map(name => ({
@@ -244,7 +244,6 @@ async function fetchRequirementOptions() {
       })
     }
   } catch (error) {
-    console.error('获取需求类型出错:', error)
     $q.notify({
       color: 'negative',
       message: '获取需求类型出错',
@@ -288,7 +287,7 @@ async function fetchLogs() {
   isLoading.value = true
   try {
     // 假设后端API已经提供按日期降序排序的数据
-    const response = await worklogApi.workLogMeLogs()
+    const response = await worklogApi.listWorkLogOfMe()
     if (response.data.success && response.data.payload) {
       // 直接使用后端返回的已排序数据
       logs.value = response.data.payload.map(item => ({
@@ -305,7 +304,6 @@ async function fetchLogs() {
       })
     }
   } catch (error) {
-    console.error('获取日志列表出错:', error)
     $q.notify({
       color: 'negative',
       message: '获取日志列表出错',

@@ -21,7 +21,7 @@ export const getAuth = () => {
   /**
    * @summary 忘记密码-修改密码
    */
-  const authPassword = (updatePasswordRequestDTO: UpdatePasswordRequestDTO) => {
+  const updatePassword = (updatePasswordRequestDTO: UpdatePasswordRequestDTO) => {
     return customInstance<ResultBoolean>({
       url: `/api/auth/password`,
       method: 'PUT',
@@ -32,7 +32,7 @@ export const getAuth = () => {
   /**
    * @summary 注册
    */
-  const authRegister = (registerRequestDTO: RegisterRequestDTO) => {
+  const register = (registerRequestDTO: RegisterRequestDTO) => {
     return customInstance<ResultBoolean>({
       url: `/api/auth/register`,
       method: 'POST',
@@ -43,7 +43,7 @@ export const getAuth = () => {
   /**
    * @summary 登录
    */
-  const authLogin = (userLoginRequestDTO: UserLoginRequestDTO) => {
+  const login = (userLoginRequestDTO: UserLoginRequestDTO) => {
     return customInstance<ResultUserLoginResponseDTO>({
       url: `/api/auth/login`,
       method: 'POST',
@@ -54,7 +54,7 @@ export const getAuth = () => {
   /**
    * @summary 获取验证码
    */
-  const authCode = (verifyCodeRequestDTO: VerifyCodeRequestDTO) => {
+  const sendVerifyCode = (verifyCodeRequestDTO: VerifyCodeRequestDTO) => {
     return customInstance<ResultBoolean>({
       url: `/api/auth/code`,
       method: 'POST',
@@ -65,23 +65,21 @@ export const getAuth = () => {
   /**
    * @summary 获取VAPID公钥
    */
-  const authVapidPublicKey = () => {
+  const getVapidPublicKey = () => {
     return customInstance<ResultString>({ url: `/api/auth/vapidPublicKey`, method: 'GET' });
   };
-  return { authPassword, authRegister, authLogin, authCode, authVapidPublicKey };
+  return { updatePassword, register, login, sendVerifyCode, getVapidPublicKey };
 };
-export type AuthPasswordResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getAuth>['authPassword']>>
+export type UpdatePasswordResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getAuth>['updatePassword']>>
 >;
-export type AuthRegisterResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getAuth>['authRegister']>>
+export type RegisterResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getAuth>['register']>>
 >;
-export type AuthLoginResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getAuth>['authLogin']>>
+export type LoginResult = NonNullable<Awaited<ReturnType<ReturnType<typeof getAuth>['login']>>>;
+export type SendVerifyCodeResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getAuth>['sendVerifyCode']>>
 >;
-export type AuthCodeResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getAuth>['authCode']>>
->;
-export type AuthVapidPublicKeyResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getAuth>['authVapidPublicKey']>>
+export type GetVapidPublicKeyResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getAuth>['getVapidPublicKey']>>
 >;

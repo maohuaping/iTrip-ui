@@ -7,11 +7,11 @@
           <q-icon name="task_alt" size="28px" class="q-mr-sm" />
           任务列表
         </h2>
-        <q-btn 
-          color="primary" 
-          size="md" 
-          icon="add" 
-          label="新建任务" 
+        <q-btn
+          color="primary"
+          size="md"
+          icon="add"
+          label="新建任务"
           @click="openNewTaskDialog"
           class="q-px-md"
           unelevated
@@ -47,8 +47,8 @@
       <q-tab-panels v-model="activeTab" animated>
         <q-tab-panel name="incoming" class="q-pa-none">
           <div class="row q-col-gutter-md">
-            <div v-for="task in visibleIncomingTasks" 
-                 :key="task.id" 
+            <div v-for="task in visibleIncomingTasks"
+                 :key="task.id"
                  class="col-12"
             >
               <q-card flat bordered class="task-card">
@@ -58,14 +58,14 @@
                       <div class="row items-center q-gutter-x-sm">
                         <q-avatar size="32px" color="primary" text-color="white" icon="assignment" />
                         <div class="column">
-                          <div 
-                            class="text-subtitle1 text-weight-medium text-dark ellipsis cursor-pointer" 
+                          <div
+                            class="text-subtitle1 text-weight-medium text-dark ellipsis cursor-pointer"
                             @click="copyToClipboard(task.requirementName)"
                             title="点击复制任务名称"
                           >
                             {{ task.requirementName }}
                           </div>
-                          <div 
+                          <div
                             class="text-caption text-grey-7 cursor-pointer"
                             @click="copyToClipboard(task.requirementId)"
                             title="点击复制需求编号"
@@ -75,7 +75,7 @@
                         </div>
                       </div>
                     </div>
-                    
+
                     <div class="row items-center q-gutter-x-sm q-ml-md">
                       <q-chip
                         v-for="tag in getTaskTags(task)"
@@ -96,7 +96,7 @@
               </q-card>
             </div>
           </div>
-          
+
           <!-- 展示更多按钮 -->
           <div v-if="incomingTasks.length > maxVisibleTasks && !showAllIncomingTasks" class="text-center q-mt-md">
             <q-btn
@@ -123,8 +123,8 @@
         <!-- 呼出任务面板 -->
         <q-tab-panel name="outgoing" class="q-pa-none">
           <div class="row q-col-gutter-md">
-            <div v-for="task in visibleOutgoingTasks" 
-                 :key="task.id" 
+            <div v-for="task in visibleOutgoingTasks"
+                 :key="task.id"
                  class="col-12"
             >
               <q-card flat bordered class="task-card">
@@ -134,14 +134,14 @@
                       <div class="row items-center q-gutter-x-sm">
                         <q-avatar size="32px" color="teal" text-color="white" icon="assignment" />
                         <div class="column">
-                          <div 
-                            class="text-subtitle1 text-weight-medium text-dark ellipsis cursor-pointer" 
+                          <div
+                            class="text-subtitle1 text-weight-medium text-dark ellipsis cursor-pointer"
                             @click="copyToClipboard(task.requirementName)"
                             title="点击复制任务名称"
                           >
                             {{ task.requirementName }}
                           </div>
-                          <div 
+                          <div
                             class="text-caption text-grey-7 cursor-pointer"
                             @click="copyToClipboard(task.requirementId)"
                             title="点击复制需求编号"
@@ -151,7 +151,7 @@
                         </div>
                       </div>
                     </div>
-                    
+
                     <div class="row items-center q-gutter-x-sm q-ml-md">
                       <q-chip
                         v-for="tag in getTaskTags(task)"
@@ -172,7 +172,7 @@
               </q-card>
             </div>
           </div>
-          
+
           <!-- 展示更多按钮 -->
           <div v-if="outgoingTasks.length > maxVisibleTasks && !showAllOutgoingTasks" class="text-center q-mt-md">
             <q-btn
@@ -212,32 +212,32 @@
         <!-- 任务类型和编号 -->
         <div class="row q-col-gutter-md q-mb-md">
           <div class="col-5">
-            <q-select 
-              v-model="newTask.type" 
-              :options="taskTypes" 
-              label="任务类型" 
-              outlined 
-              dense 
+            <q-select
+              v-model="newTask.type"
+              :options="taskTypes"
+              label="任务类型"
+              outlined
+              dense
               class="light-field"
             />
           </div>
           <div class="col-7">
-            <q-input 
-              v-model="newTask.id" 
-              label="任务编号" 
-              outlined 
-              dense 
+            <q-input
+              v-model="newTask.id"
+              label="任务编号"
+              outlined
+              dense
               class="light-field"
             />
           </div>
         </div>
 
         <!-- 任务标题 -->
-        <q-input 
-          v-model="newTask.title" 
-          label="任务标题" 
-          outlined 
-          dense 
+        <q-input
+          v-model="newTask.title"
+          label="任务标题"
+          outlined
+          dense
           class="light-field q-mb-md"
           placeholder="请输入任务标题"
         />
@@ -248,17 +248,17 @@
             <div class="text-subtitle2 text-dark">关联文档</div>
             <div class="text-caption text-grey-7">点击标签上传相关文档</div>
           </div>
-          
+
           <div class="row q-gutter-sm q-mb-md">
-            <div 
+            <div
               class="doc-label doc-requirement cursor-pointer"
               :class="{ 'doc-active': hasRequirementDocs }"
               @click="triggerFileUpload('requirement')"
             >
               需求
             </div>
-            
-            <div 
+
+            <div
               class="doc-label doc-design cursor-pointer"
               :class="{ 'doc-active': hasDesignDocs }"
               @click="triggerFileUpload('design')"
@@ -266,58 +266,58 @@
               设计
             </div>
           </div>
-          
+
           <!-- 显示已上传的文档列表 -->
           <div class="q-mt-md">
             <!-- 需求文档列表 -->
             <div v-if="newTask.docsList.requirement.length > 0">
               <div class="text-caption text-weight-medium q-mb-xs">需求文档:</div>
               <div class="q-gutter-y-sm">
-                <div 
-                  v-for="(doc, index) in newTask.docsList.requirement" 
+                <div
+                  v-for="(doc, index) in newTask.docsList.requirement"
                   :key="index"
                   class="uploaded-doc requirement-doc"
                 >
-                  <q-icon name="description" size="18px" class="q-mr-xs" /> 
+                  <q-icon name="description" size="18px" class="q-mr-xs" />
                   <span class="ellipsis">{{ doc }}</span>
-                  <q-btn 
-                    flat 
-                    round 
-                    dense 
-                    icon="close" 
-                    size="xs" 
-                    @click="removeDoc('requirement', index)" 
-                    class="q-ml-xs" 
+                  <q-btn
+                    flat
+                    round
+                    dense
+                    icon="close"
+                    size="xs"
+                    @click="removeDoc('requirement', index)"
+                    class="q-ml-xs"
                   />
                 </div>
               </div>
             </div>
-            
+
             <!-- 设计文档列表 -->
             <div v-if="newTask.docsList.design.length > 0" class="q-mt-sm">
               <div class="text-caption text-weight-medium q-mb-xs">设计文档:</div>
               <div class="q-gutter-y-sm">
-                <div 
-                  v-for="(doc, index) in newTask.docsList.design" 
+                <div
+                  v-for="(doc, index) in newTask.docsList.design"
                   :key="index"
                   class="uploaded-doc design-doc"
                 >
-                  <q-icon name="description" size="18px" class="q-mr-xs" /> 
+                  <q-icon name="description" size="18px" class="q-mr-xs" />
                   <span class="ellipsis">{{ doc }}</span>
-                  <q-btn 
-                    flat 
-                    round 
-                    dense 
-                    icon="close" 
-                    size="xs" 
-                    @click="removeDoc('design', index)" 
-                    class="q-ml-xs" 
+                  <q-btn
+                    flat
+                    round
+                    dense
+                    icon="close"
+                    size="xs"
+                    @click="removeDoc('design', index)"
+                    class="q-ml-xs"
                   />
                 </div>
               </div>
             </div>
           </div>
-          
+
           <!-- 隐藏的文件上传输入框 -->
           <input
             type="file"
@@ -364,14 +364,14 @@ const showAllOutgoingTasks = ref(false)
 
 // 计算要显示的任务列表
 const visibleIncomingTasks = computed(() => {
-  return showAllIncomingTasks.value 
-    ? incomingTasks.value 
+  return showAllIncomingTasks.value
+    ? incomingTasks.value
     : incomingTasks.value.slice(0, maxVisibleTasks)
 })
 
 const visibleOutgoingTasks = computed(() => {
-  return showAllOutgoingTasks.value 
-    ? outgoingTasks.value 
+  return showAllOutgoingTasks.value
+    ? outgoingTasks.value
     : outgoingTasks.value.slice(0, maxVisibleTasks)
 })
 
@@ -379,12 +379,12 @@ const visibleOutgoingTasks = computed(() => {
 const fetchTasks = async () => {
   try {
     const requirementApi = getRequirement()
-    const response = await requirementApi.requirementMe()
-    
+    const response = await requirementApi.getCurrentUserRequirement()
+
     if (response.data?.success && response.data.payload) {
       // 根据systemCategory字段区分呼入和呼出任务
       const allTasks = response.data.payload
-      
+
       incomingTasks.value = allTasks.filter(task => task.systemCategory === 'callin')
       outgoingTasks.value = allTasks.filter(task => task.systemCategory === 'callout')
     }
@@ -405,7 +405,7 @@ const $q = useQuasar()
 // 转换任务标签 - 添加Git分支图标
 const getTaskTags = (task: TaskItem) => {
   const tags = []
-  
+
   // Git分支标签 - 添加图标
   if (task.requirementId) {
     tags.push({
@@ -417,7 +417,7 @@ const getTaskTags = (task: TaskItem) => {
       onClick: () => handleSystemClick(task.systemCategory, task.requirementId)
     })
   }
-  
+
   // 需求文档处理
   if (task.relatedRequirementDocs) {
     let reqDocs = [];
@@ -428,13 +428,13 @@ const getTaskTags = (task: TaskItem) => {
       } else {
         reqDocs = [task.relatedRequirementDocs];
       }
-      
+
       // 过滤空值
       reqDocs = reqDocs.filter(doc => doc && doc.trim() !== '');
     } catch (err) {
       reqDocs = [task.relatedRequirementDocs]; // 出错时使用整个字符串
     }
-    
+
     // 判断文档数量并创建标签
     if (reqDocs.length === 1) {
       // 单个文档
@@ -464,7 +464,7 @@ const getTaskTags = (task: TaskItem) => {
       });
     }
   }
-  
+
   // 同样处理设计文档
   if (task.relatedDesignDocs) {
     let designDocs = [];
@@ -474,12 +474,12 @@ const getTaskTags = (task: TaskItem) => {
       } else {
         designDocs = [task.relatedDesignDocs];
       }
-      
+
       designDocs = designDocs.filter(doc => doc && doc.trim() !== '');
     } catch (err) {
       designDocs = [task.relatedDesignDocs];
     }
-    
+
     if (designDocs.length === 1) {
       tags.push({
         label: '设计文档',
@@ -506,19 +506,19 @@ const getTaskTags = (task: TaskItem) => {
       });
     }
   }
-  
+
   return tags;
 }
 
 // 添加系统点击处理方法
 const handleSystemClick = (system: SystemType, branch: string) => {
   if (system === 'other') return
-  
+
   const baseUrls = {
     callin: 'http://code.devops.piccnet/picc/_source/picc/picc__picc-life-ccin/Flex-Media/-/branches',
     callout: 'http://code.devops.piccnet/picc/_source/picc/picc__picc-life-ccout/Flex-Callout/-/branches'
   }
-  
+
   const url = `${baseUrls[system]}?search=${branch}`
   window.open(url, '_blank')
 }
@@ -529,11 +529,11 @@ const handleRequirementClick = async (item: any, fileName: string) => {
     // 确保文件名被正确处理（去除可能的空格）
     const trimmedFileName = fileName.trim();
     const fullPath = `${requirementBasePath}${trimmedFileName}`
-    
+
     try {
       const response = await fetch(`http://localhost:8090/open?path=${encodeURIComponent(fullPath)}`)
       const result = await response.json()
-      
+
       if (result.success) {
         $q.notify({
           message: `文件 "${trimmedFileName}" 已打开`,
@@ -617,24 +617,24 @@ const triggerFileUpload = (type: 'requirement' | 'design') => {
 const handleFileUpload = (type: 'requirement' | 'design', event: Event) => {
   const target = event.target as HTMLInputElement
   const files = target.files
-  
+
   if (files && files.length > 0) {
     const file = files[0]
     const fileName = file.name
-    
+
     // 添加文件名到对应的文档数组
     if (type === 'requirement') {
       newTask.value.docsList.requirement.push(fileName)
     } else if (type === 'design') {
       newTask.value.docsList.design.push(fileName)
     }
-    
+
     // 同时更新单文档字段，用逗号分隔的文件名列表
     updateDocNamesFromList(type)
-    
+
     // 清空文件输入框，方便下次选择同一个文件
     target.value = ''
-    
+
     // 提示用户文件名已获取
     $q.notify({
       message: `已添加文件: ${fileName}`,
@@ -661,7 +661,7 @@ const removeDoc = (type: 'requirement' | 'design', index: number) => {
   } else if (type === 'design') {
     newTask.value.docsList.design.splice(index, 1)
   }
-  
+
   // 更新字符串形式的文档名
   updateDocNamesFromList(type)
 }
@@ -670,23 +670,23 @@ const removeDoc = (type: 'requirement' | 'design', index: number) => {
 const createTask = async () => {
   try {
     const requirementApi = getRequirement()
-    
+
     // 修改此处 - 检查文档列表而不是文档标志
     const requirementEntity = {
       requirementId: newTask.value.id,
       requirementName: newTask.value.title,
       systemCategory: newTask.value.type.value === 'incoming' ? 'callin' : 'callout',
       // 使用文档列表而不是标志来判断是否有文档
-      relatedRequirementDocs: newTask.value.docsList.requirement.length > 0 
-                              ? newTask.value.docsList.requirement.join(',') 
+      relatedRequirementDocs: newTask.value.docsList.requirement.length > 0
+                              ? newTask.value.docsList.requirement.join(',')
                               : '',
-      relatedDesignDocs: newTask.value.docsList.design.length > 0 
-                         ? newTask.value.docsList.design.join(',') 
+      relatedDesignDocs: newTask.value.docsList.design.length > 0
+                         ? newTask.value.docsList.design.join(',')
                          : ''
     }
 
-    const response = await requirementApi.requirementCreate(requirementEntity)
-    
+    const response = await requirementApi.save(requirementEntity)
+
     if (response.data?.success) {
       $q.notify({
         message: '任务创建成功',
@@ -694,10 +694,10 @@ const createTask = async () => {
         position: 'top',
         timeout: 1500
       })
-      
+
       // 重新获取任务列表
       fetchTasks()
-      
+
       // 重置表单，现在也重置文档列表
       newTask.value = {
         title: '',
@@ -787,7 +787,7 @@ defineOptions({
     height: 8px;
     border-radius: 50%;
     background: #1976D2;
-    
+
     &.outgoing-dot {
       background: #26A69A;
     }
@@ -817,11 +817,11 @@ defineOptions({
   .q-field__native, .q-field__prefix, .q-field__suffix, .q-field__input {
     color: #333 !important;
   }
-  
+
   .q-field__label {
     color: rgba(0, 0, 0, 0.7) !important;
   }
-  
+
   &.q-field--outlined .q-field__control {
     background-color: white !important;
     border-color: rgba(0, 0, 0, 0.2) !important;
@@ -834,30 +834,30 @@ defineOptions({
   border-radius: 16px;
   font-size: 0.8rem;
   transition: all 0.2s ease;
-  
+
   &.doc-requirement {
     background: rgba(59, 130, 246, 0.2);
     color: #1e40af;
-    
+
     &:hover {
       background: rgba(59, 130, 246, 0.3);
     }
-    
+
     &.doc-active {
       background: rgba(59, 130, 246, 0.5);
       color: #1e40af;
       font-weight: 500;
     }
   }
-  
+
   &.doc-design {
     background: rgba(168, 85, 247, 0.2);
     color: #6b21a8;
-    
+
     &:hover {
       background: rgba(168, 85, 247, 0.3);
     }
-    
+
     &.doc-active {
       background: rgba(168, 85, 247, 0.5);
       color: #6b21a8;
@@ -891,17 +891,17 @@ defineOptions({
   background-color: rgba(0, 0, 0, 0.05);
   margin-top: 8px;
   max-width: 100%;
-  
+
   &.requirement-doc {
     color: #1e40af;
     background-color: rgba(59, 130, 246, 0.1);
   }
-  
+
   &.design-doc {
     color: #6b21a8;
     background-color: rgba(168, 85, 247, 0.1);
   }
-  
+
   .ellipsis {
     white-space: nowrap;
     overflow: hidden;
@@ -915,12 +915,12 @@ defineOptions({
   font-size: 0.9rem;
   padding: 4px 8px;
   height: 28px;
-  
+
   :deep(.q-chip__icon) {
     font-size: 1.1rem;
     padding-right: 6px;
   }
-  
+
   :deep(.q-chip__content) {
     padding: 0 4px;
   }

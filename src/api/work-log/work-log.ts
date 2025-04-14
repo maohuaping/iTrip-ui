@@ -18,7 +18,7 @@ export const getWorkLog = () => {
   /**
    * @summary 更新
    */
-  const workLogUpdate = (workLogEntity: WorkLogEntity) => {
+  const updateWorkLog = (workLogEntity: WorkLogEntity) => {
     return customInstance<ResultBoolean>({
       url: `/api/work-log`,
       method: 'PUT',
@@ -29,7 +29,7 @@ export const getWorkLog = () => {
   /**
    * @summary 新增
    */
-  const workLogCreate = (workLogEntity: WorkLogEntity) => {
+  const saveWorkLog = (workLogEntity: WorkLogEntity) => {
     return customInstance<ResultBoolean>({
       url: `/api/work-log`,
       method: 'POST',
@@ -40,35 +40,35 @@ export const getWorkLog = () => {
   /**
    * @summary 根据ID获取
    */
-  const workLogGetById = (id: number) => {
+  const getWorkLogById = (id: number) => {
     return customInstance<ResultWorkLogEntity>({ url: `/api/work-log/${id}`, method: 'GET' });
   };
   /**
    * @summary 删除
    */
-  const workLogDelete = (id: number) => {
+  const deleteWorkLog = (id: number) => {
     return customInstance<ResultBoolean>({ url: `/api/work-log/${id}`, method: 'DELETE' });
   };
   /**
    * @summary 获取当前用户的工作日志
    */
-  const workLogMeLogs = () => {
+  const listWorkLogOfMe = () => {
     return customInstance<ResultListWorkLogEntity>({ url: `/api/work-log/list`, method: 'GET' });
   };
-  return { workLogUpdate, workLogCreate, workLogGetById, workLogDelete, workLogMeLogs };
+  return { updateWorkLog, saveWorkLog, getWorkLogById, deleteWorkLog, listWorkLogOfMe };
 };
-export type WorkLogUpdateResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getWorkLog>['workLogUpdate']>>
+export type UpdateWorkLogResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getWorkLog>['updateWorkLog']>>
 >;
-export type WorkLogCreateResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getWorkLog>['workLogCreate']>>
+export type SaveWorkLogResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getWorkLog>['saveWorkLog']>>
 >;
-export type WorkLogGetByIdResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getWorkLog>['workLogGetById']>>
+export type GetWorkLogByIdResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getWorkLog>['getWorkLogById']>>
 >;
-export type WorkLogDeleteResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getWorkLog>['workLogDelete']>>
+export type DeleteWorkLogResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getWorkLog>['deleteWorkLog']>>
 >;
-export type WorkLogMeLogsResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getWorkLog>['workLogMeLogs']>>
+export type ListWorkLogOfMeResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getWorkLog>['listWorkLogOfMe']>>
 >;

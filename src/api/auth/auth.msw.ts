@@ -11,7 +11,7 @@ import { HttpResponse, delay, http } from 'msw';
 
 import type { ResultBoolean, ResultString, ResultUserLoginResponseDTO } from '../api.schemas';
 
-export const getAuthPasswordResponseMock = (
+export const getUpdatePasswordResponseMock = (
   overrideResponse: Partial<ResultBoolean> = {},
 ): ResultBoolean => ({
   success: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
@@ -19,7 +19,7 @@ export const getAuthPasswordResponseMock = (
   ...overrideResponse,
 });
 
-export const getAuthRegisterResponseMock = (
+export const getRegisterResponseMock = (
   overrideResponse: Partial<ResultBoolean> = {},
 ): ResultBoolean => ({
   success: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
@@ -27,7 +27,7 @@ export const getAuthRegisterResponseMock = (
   ...overrideResponse,
 });
 
-export const getAuthLoginResponseMock = (
+export const getLoginResponseMock = (
   overrideResponse: Partial<ResultUserLoginResponseDTO> = {},
 ): ResultUserLoginResponseDTO => ({
   success: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
@@ -53,7 +53,7 @@ export const getAuthLoginResponseMock = (
   ...overrideResponse,
 });
 
-export const getAuthCodeResponseMock = (
+export const getSendVerifyCodeResponseMock = (
   overrideResponse: Partial<ResultBoolean> = {},
 ): ResultBoolean => ({
   success: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
@@ -61,7 +61,7 @@ export const getAuthCodeResponseMock = (
   ...overrideResponse,
 });
 
-export const getAuthVapidPublicKeyResponseMock = (
+export const getGetVapidPublicKeyResponseMock = (
   overrideResponse: Partial<ResultString> = {},
 ): ResultString => ({
   success: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
@@ -69,7 +69,7 @@ export const getAuthVapidPublicKeyResponseMock = (
   ...overrideResponse,
 });
 
-export const getAuthPasswordMockHandler = (
+export const getUpdatePasswordMockHandler = (
   overrideResponse?:
     | ResultBoolean
     | ((
@@ -85,14 +85,14 @@ export const getAuthPasswordMockHandler = (
           ? typeof overrideResponse === 'function'
             ? await overrideResponse(info)
             : overrideResponse
-          : getAuthPasswordResponseMock(),
+          : getUpdatePasswordResponseMock(),
       ),
       { status: 200, headers: { 'Content-Type': 'application/json' } },
     );
   });
 };
 
-export const getAuthRegisterMockHandler = (
+export const getRegisterMockHandler = (
   overrideResponse?:
     | ResultBoolean
     | ((
@@ -108,14 +108,14 @@ export const getAuthRegisterMockHandler = (
           ? typeof overrideResponse === 'function'
             ? await overrideResponse(info)
             : overrideResponse
-          : getAuthRegisterResponseMock(),
+          : getRegisterResponseMock(),
       ),
       { status: 200, headers: { 'Content-Type': 'application/json' } },
     );
   });
 };
 
-export const getAuthLoginMockHandler = (
+export const getLoginMockHandler = (
   overrideResponse?:
     | ResultUserLoginResponseDTO
     | ((
@@ -131,14 +131,14 @@ export const getAuthLoginMockHandler = (
           ? typeof overrideResponse === 'function'
             ? await overrideResponse(info)
             : overrideResponse
-          : getAuthLoginResponseMock(),
+          : getLoginResponseMock(),
       ),
       { status: 200, headers: { 'Content-Type': 'application/json' } },
     );
   });
 };
 
-export const getAuthCodeMockHandler = (
+export const getSendVerifyCodeMockHandler = (
   overrideResponse?:
     | ResultBoolean
     | ((
@@ -154,14 +154,14 @@ export const getAuthCodeMockHandler = (
           ? typeof overrideResponse === 'function'
             ? await overrideResponse(info)
             : overrideResponse
-          : getAuthCodeResponseMock(),
+          : getSendVerifyCodeResponseMock(),
       ),
       { status: 200, headers: { 'Content-Type': 'application/json' } },
     );
   });
 };
 
-export const getAuthVapidPublicKeyMockHandler = (
+export const getGetVapidPublicKeyMockHandler = (
   overrideResponse?:
     | ResultString
     | ((
@@ -177,16 +177,16 @@ export const getAuthVapidPublicKeyMockHandler = (
           ? typeof overrideResponse === 'function'
             ? await overrideResponse(info)
             : overrideResponse
-          : getAuthVapidPublicKeyResponseMock(),
+          : getGetVapidPublicKeyResponseMock(),
       ),
       { status: 200, headers: { 'Content-Type': 'application/json' } },
     );
   });
 };
 export const getAuthMock = () => [
-  getAuthPasswordMockHandler(),
-  getAuthRegisterMockHandler(),
-  getAuthLoginMockHandler(),
-  getAuthCodeMockHandler(),
-  getAuthVapidPublicKeyMockHandler(),
+  getUpdatePasswordMockHandler(),
+  getRegisterMockHandler(),
+  getLoginMockHandler(),
+  getSendVerifyCodeMockHandler(),
+  getGetVapidPublicKeyMockHandler(),
 ];

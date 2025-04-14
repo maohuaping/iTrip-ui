@@ -14,8 +14,8 @@ export const customInstance = <T>(config: AxiosRequestConfig): Promise<AxiosResp
   // 从localStorage或其他存储中获取token
   // const token = localStorage.getItem('auth_token');
   // 在登录注册没有做好之前，先尝试使用临时token
-  const token = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1aWQiOjE0LCJ1c2VybmFtZSI6IuWcn-aLqOm8oDIxMTUiLCJyb2xlIjoiUk9MRV9BRE1JTiIsImV4cCI6MTc0NDQzNTU3NTc5M30.HT-pkCNCQQDmM4spPqWhrlFXBlHT9z_5danQ7gX4XJc';
-  
+  const token = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1aWQiOjE0LCJ1c2VybmFtZSI6IuWcn-aLqOm8oDIxMTUiLCJyb2xlIjoiUk9MRV9BRE1JTiIsImV4cCI6MTc0NDc2NTUxMDY5OX0.ZodO1SUvcft0QCRRozZLvN46iWLm6LG4-9aekczrXAc';
+
   // 创建请求配置
   const requestConfig = {
     ...config,
@@ -33,7 +33,7 @@ export const customInstance = <T>(config: AxiosRequestConfig): Promise<AxiosResp
     })
     .catch((error) => {
       Loading.hide();
-      
+
       // 使用 Quasar Notify 显示错误
       if (error.response) {
         switch (error.response.status) {
@@ -78,11 +78,11 @@ export const customInstance = <T>(config: AxiosRequestConfig): Promise<AxiosResp
           position: 'top',
         });
       }
-      
+
       return Promise.reject(error);
     });
 };
 
 export default boot(({ app }) => {
   // 这个 boot 文件不需要做任何事情，因为我们只是导出 customInstance
-}); 
+});

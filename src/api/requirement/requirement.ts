@@ -19,7 +19,7 @@ export const getRequirement = () => {
   /**
    * @summary 更新
    */
-  const requirementUpdate = (requirementEntity: RequirementEntity) => {
+  const updateRequirement = (requirementEntity: RequirementEntity) => {
     return customInstance<ResultBoolean>({
       url: `/api/requirement`,
       method: 'PUT',
@@ -30,7 +30,7 @@ export const getRequirement = () => {
   /**
    * @summary 新增
    */
-  const requirementCreate = (requirementEntity: RequirementEntity) => {
+  const saveRequirement = (requirementEntity: RequirementEntity) => {
     return customInstance<ResultBoolean>({
       url: `/api/requirement`,
       method: 'POST',
@@ -41,7 +41,7 @@ export const getRequirement = () => {
   /**
    * @summary 根据ID获取
    */
-  const requirementGetById = (id: number) => {
+  const getRequirementById = (id: number) => {
     return customInstance<ResultRequirementEntity>({
       url: `/api/requirement/${id}`,
       method: 'GET',
@@ -50,48 +50,48 @@ export const getRequirement = () => {
   /**
    * @summary 删除
    */
-  const requirementDelete = (id: number) => {
+  const deleteRequirement = (id: number) => {
     return customInstance<ResultBoolean>({ url: `/api/requirement/${id}`, method: 'DELETE' });
   };
   /**
    * @summary 获取所有需求的名称
    */
-  const requirementNameAll = () => {
+  const getAllRequirementNames = () => {
     return customInstance<ResultListString>({ url: `/api/requirement/name-all`, method: 'GET' });
   };
   /**
    * @summary 获取当前用户的需求
    */
-  const requirementMe = () => {
+  const getCurrentUserRequirement = () => {
     return customInstance<ResultListRequirementEntity>({
       url: `/api/requirement/list`,
       method: 'GET',
     });
   };
   return {
-    requirementUpdate,
-    requirementCreate,
-    requirementGetById,
-    requirementDelete,
-    requirementNameAll,
-    requirementMe,
+    updateRequirement,
+    saveRequirement,
+    getRequirementById,
+    deleteRequirement,
+    getAllRequirementNames,
+    getCurrentUserRequirement,
   };
 };
-export type RequirementUpdateResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRequirement>['requirementUpdate']>>
+export type UpdateRequirementResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getRequirement>['updateRequirement']>>
 >;
-export type RequirementCreateResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRequirement>['requirementCreate']>>
+export type SaveRequirementResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getRequirement>['saveRequirement']>>
 >;
-export type RequirementGetByIdResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRequirement>['requirementGetById']>>
+export type GetRequirementByIdResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getRequirement>['getRequirementById']>>
 >;
-export type RequirementDeleteResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRequirement>['requirementDelete']>>
+export type DeleteRequirementResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getRequirement>['deleteRequirement']>>
 >;
-export type RequirementNameAllResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRequirement>['requirementNameAll']>>
+export type GetAllRequirementNamesResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getRequirement>['getAllRequirementNames']>>
 >;
-export type RequirementMeResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRequirement>['requirementMe']>>
+export type GetCurrentUserRequirementResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getRequirement>['getCurrentUserRequirement']>>
 >;

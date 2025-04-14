@@ -11,7 +11,7 @@ import { HttpResponse, delay, http } from 'msw';
 
 import type { ResultBoolean, ResultListWorkLogEntity, ResultWorkLogEntity } from '../api.schemas';
 
-export const getWorkLogUpdateResponseMock = (
+export const getUpdateWorkLogResponseMock = (
   overrideResponse: Partial<ResultBoolean> = {},
 ): ResultBoolean => ({
   success: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
@@ -19,7 +19,7 @@ export const getWorkLogUpdateResponseMock = (
   ...overrideResponse,
 });
 
-export const getWorkLogCreateResponseMock = (
+export const getSaveWorkLogResponseMock = (
   overrideResponse: Partial<ResultBoolean> = {},
 ): ResultBoolean => ({
   success: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
@@ -27,7 +27,7 @@ export const getWorkLogCreateResponseMock = (
   ...overrideResponse,
 });
 
-export const getWorkLogGetByIdResponseMock = (
+export const getGetWorkLogByIdResponseMock = (
   overrideResponse: Partial<ResultWorkLogEntity> = {},
 ): ResultWorkLogEntity => ({
   success: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
@@ -68,7 +68,7 @@ export const getWorkLogGetByIdResponseMock = (
   ...overrideResponse,
 });
 
-export const getWorkLogDeleteResponseMock = (
+export const getDeleteWorkLogResponseMock = (
   overrideResponse: Partial<ResultBoolean> = {},
 ): ResultBoolean => ({
   success: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
@@ -76,7 +76,7 @@ export const getWorkLogDeleteResponseMock = (
   ...overrideResponse,
 });
 
-export const getWorkLogMeLogsResponseMock = (
+export const getListWorkLogOfMeResponseMock = (
   overrideResponse: Partial<ResultListWorkLogEntity> = {},
 ): ResultListWorkLogEntity => ({
   success: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
@@ -117,7 +117,7 @@ export const getWorkLogMeLogsResponseMock = (
   ...overrideResponse,
 });
 
-export const getWorkLogUpdateMockHandler = (
+export const getUpdateWorkLogMockHandler = (
   overrideResponse?:
     | ResultBoolean
     | ((
@@ -133,14 +133,14 @@ export const getWorkLogUpdateMockHandler = (
           ? typeof overrideResponse === 'function'
             ? await overrideResponse(info)
             : overrideResponse
-          : getWorkLogUpdateResponseMock(),
+          : getUpdateWorkLogResponseMock(),
       ),
       { status: 200, headers: { 'Content-Type': 'application/json' } },
     );
   });
 };
 
-export const getWorkLogCreateMockHandler = (
+export const getSaveWorkLogMockHandler = (
   overrideResponse?:
     | ResultBoolean
     | ((
@@ -156,14 +156,14 @@ export const getWorkLogCreateMockHandler = (
           ? typeof overrideResponse === 'function'
             ? await overrideResponse(info)
             : overrideResponse
-          : getWorkLogCreateResponseMock(),
+          : getSaveWorkLogResponseMock(),
       ),
       { status: 200, headers: { 'Content-Type': 'application/json' } },
     );
   });
 };
 
-export const getWorkLogGetByIdMockHandler = (
+export const getGetWorkLogByIdMockHandler = (
   overrideResponse?:
     | ResultWorkLogEntity
     | ((
@@ -179,14 +179,14 @@ export const getWorkLogGetByIdMockHandler = (
           ? typeof overrideResponse === 'function'
             ? await overrideResponse(info)
             : overrideResponse
-          : getWorkLogGetByIdResponseMock(),
+          : getGetWorkLogByIdResponseMock(),
       ),
       { status: 200, headers: { 'Content-Type': 'application/json' } },
     );
   });
 };
 
-export const getWorkLogDeleteMockHandler = (
+export const getDeleteWorkLogMockHandler = (
   overrideResponse?:
     | ResultBoolean
     | ((
@@ -202,14 +202,14 @@ export const getWorkLogDeleteMockHandler = (
           ? typeof overrideResponse === 'function'
             ? await overrideResponse(info)
             : overrideResponse
-          : getWorkLogDeleteResponseMock(),
+          : getDeleteWorkLogResponseMock(),
       ),
       { status: 200, headers: { 'Content-Type': 'application/json' } },
     );
   });
 };
 
-export const getWorkLogMeLogsMockHandler = (
+export const getListWorkLogOfMeMockHandler = (
   overrideResponse?:
     | ResultListWorkLogEntity
     | ((
@@ -225,16 +225,16 @@ export const getWorkLogMeLogsMockHandler = (
           ? typeof overrideResponse === 'function'
             ? await overrideResponse(info)
             : overrideResponse
-          : getWorkLogMeLogsResponseMock(),
+          : getListWorkLogOfMeResponseMock(),
       ),
       { status: 200, headers: { 'Content-Type': 'application/json' } },
     );
   });
 };
 export const getWorkLogMock = () => [
-  getWorkLogUpdateMockHandler(),
-  getWorkLogCreateMockHandler(),
-  getWorkLogGetByIdMockHandler(),
-  getWorkLogDeleteMockHandler(),
-  getWorkLogMeLogsMockHandler(),
+  getUpdateWorkLogMockHandler(),
+  getSaveWorkLogMockHandler(),
+  getGetWorkLogByIdMockHandler(),
+  getDeleteWorkLogMockHandler(),
+  getListWorkLogOfMeMockHandler(),
 ];
