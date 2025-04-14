@@ -79,10 +79,10 @@ export const customInstance = <T>(config: AxiosRequestConfig): Promise<AxiosResp
         });
       }
 
-      return Promise.reject(error);
+      return Promise.reject(new Error(error.message || '请求失败'));
     });
 };
 
-export default boot(({ app }) => {
+export default boot(() => {
   // 这个 boot 文件不需要做任何事情，因为我们只是导出 customInstance
 });

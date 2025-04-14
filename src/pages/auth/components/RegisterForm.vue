@@ -103,11 +103,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, onUnmounted } from 'vue';
 import { useQuasar } from 'quasar';
 import { getAuth } from 'src/api/auth/auth';
+import { useRouter } from 'vue-router';
 
 const $q = useQuasar();
+const router = useRouter();
 const authApi = getAuth();
 
 // 密码可见性
@@ -127,6 +129,7 @@ const form = ref({
 // 验证码发送状态
 const codeSending = ref(false);
 const codeCountdown = ref(0);
+let timer: ReturnType<typeof setInterval> | null = null;
 
 // 邮箱验证
 const isValidEmail = (val: string) => {
@@ -160,10 +163,13 @@ const sendVerificationCode = async () => {
 
     // 开始倒计时
     codeCountdown.value = 60;
-    const timer = setInterval(() => {
+    timer = setInterval(() => {
       codeCountdown.value--;
       if (codeCountdown.value <= 0) {
-        clearInterval(timer);
+        if (timer) {
+          clearInterval(timer);
+          timer = null;
+        }
       }
     }, 1000);
   } catch (error) {
@@ -180,17 +186,58 @@ const sendVerificationCode = async () => {
 
 // 处理注册
 const handleRegister = async () => {
-  // 这里应该调用注册API，但是根据提供的API，似乎没有直接的注册接口
-  // 通常注册后会自动登录，或者跳转到登录页面
-  $q.notify({
-    message: '注册功能尚未实现，请联系管理员',
-    color: 'warning',
-    position: 'top'
-  });
+  // 表单验证
+  if (!form.value.email || !form.value.password || !form.value.confirmPassword) {
+    $q.notify({
+      message: '请填写完整注册信息',
+      type: 'negative'
+    });
+    return;
+  }
 
-  // 通知父组件切换到登录页面
-  emit('switch-to-login');
+  if (form.value.password !== form.value.confirmPassword) {
+    $q.notify({
+      message: '两次输入的密码不一致',
+      type: 'negative'
+    });
+    return;
+  }
+
+  try {
+    const response = await authApi.register({
+      email: form.value.email,
+      password: form.value.password,
+      code: form.value.verificationCode
+    });
+
+    if (response.data?.success) {
+      $q.notify({
+        message: '注册成功',
+        type: 'positive'
+      });
+      
+      // 注册成功后导航到登录页面
+      void router.push('/login');
+    } else {
+      $q.notify({
+        message: '注册失败',
+        type: 'negative'
+      });
+    }
+  } catch (error) {
+    console.error('注册出错:', error);
+    $q.notify({
+      message: '注册失败，请稍后重试',
+      type: 'negative'
+    });
+  }
 };
 
-const emit = defineEmits(['switch-to-login']);
+// 组件卸载时清除定时器
+onUnmounted(() => {
+  if (timer) {
+    clearInterval(timer);
+    timer = null;
+  }
+});
 </script>

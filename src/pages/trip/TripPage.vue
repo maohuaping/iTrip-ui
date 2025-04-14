@@ -142,7 +142,7 @@
                   <q-btn flat round color="grey" icon="more_vert">
                     <q-menu>
                       <q-list style="min-width: 100px">
-                        <q-item clickable v-close-popup @click="editTrip(trip)">
+                        <q-item clickable v-close-popup @click="editTrip()">
                           <q-item-section avatar>
                             <q-icon name="edit" />
                           </q-item-section>
@@ -348,7 +348,7 @@ const futureDate = new Date();
 futureDate.setDate(currentDate.getDate() + 15);
 
 // 即将出行的旅行
-const upcomingTrip = ref<Trip>({
+const upcomingTrip = ref<Trip | null>({
   id: 1,
   destination: '日本东京',
   startDate: futureDate,
@@ -626,7 +626,7 @@ const resetNewTripForm = () => {
 };
 
 // 编辑旅行计划
-const editTrip = (trip: Trip) => {
+const editTrip = () => {
   $q.notify({
     color: 'info',
     message: '编辑功能尚未实现',
@@ -668,7 +668,7 @@ const deleteTrip = () => {
       // 如果删除的是即将出行的旅行，更新upcomingTrip
       if (upcomingTrip.value && upcomingTrip.value.id === tripToDelete.value.id) {
         const nextUpcomingTrip = trips.value.find(t => t.status === 'upcoming');
-        upcomingTrip.value = nextUpcomingTrip || null;
+        upcomingTrip.value = nextUpcomingTrip ?? null;
       }
 
       $q.notify({

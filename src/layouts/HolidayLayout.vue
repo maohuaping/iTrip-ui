@@ -13,6 +13,6 @@
   </q-layout>
 </template>
 
-<script setup>
+<script setup lang="ts">
 // No additional setup needed
 </script> 

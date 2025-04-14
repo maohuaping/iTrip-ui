@@ -187,11 +187,11 @@ const countdownTimer = ref<number | null>(null);
 
 // 表格列定义
 const columns = [
-  { name: 'name', label: '节假日', field: 'name', align: 'left' },
-  { name: 'date', label: '日期', field: 'startDate', align: 'left' },
-  { name: 'days', label: '天数', field: 'days', align: 'center' },
-  { name: 'status', label: '状态', field: 'status', align: 'center' },
-  { name: 'ticketSale', label: '火车票预售日', field: 'ticketSale', align: 'left' }
+  { name: 'name', label: '节假日', field: 'name', align: 'left' as const },
+  { name: 'date', label: '日期', field: 'startDate', align: 'left' as const },
+  { name: 'days', label: '天数', field: 'days', align: 'center' as const },
+  { name: 'status', label: '状态', field: 'status', align: 'center' as const },
+  { name: 'ticketSale', label: '火车票预售日', field: 'ticketSale', align: 'left' as const }
 ];
 
 // 倒计时数据

@@ -346,6 +346,7 @@
 import { ref, onMounted, computed } from 'vue'
 import { useQuasar } from 'quasar'
 import { getRequirement } from 'src/api/requirement/requirement'
+import type { RequirementEntity } from 'src/api/api.schemas'
 
 // 初始化
 const $q = useQuasar()
@@ -380,13 +381,24 @@ const visibleOutgoingTasks = computed(() => {
 })
 
 // 获取任务数据
-const fetchTasks = async () => {
+const fetchTasks = async (): Promise<void> => {
   try {
     const response = await requirementApi.getCurrentUserRequirement()
 
     if (response.data?.success && response.data.payload) {
-      // 根据systemCategory字段区分呼入和呼出任务
-      const allTasks = response.data.payload
+      // 确保将API返回的数据正确地映射到TaskItem类型
+      const allTasks: TaskItem[] = response.data.payload.map((item: RequirementEntity) => {
+        // 创建符合 TaskItem 类型的对象
+        const taskItem: TaskItem = {
+          id: item.requirementId || (item.id?.toString() || ''),
+          requirementId: item.requirementId || '',
+          requirementName: item.requirementName || '',
+          systemCategory: (item.systemCategory || 'other') as SystemType,
+          relatedRequirementDocs: item.relatedRequirementDocs,
+          relatedDesignDocs: item.relatedDesignDocs
+        };
+        return taskItem;
+      });
 
       incomingTasks.value = allTasks.filter(task => task.systemCategory === 'callin')
       outgoingTasks.value = allTasks.filter(task => task.systemCategory === 'callout')
@@ -397,14 +409,55 @@ const fetchTasks = async () => {
 }
 
 // 在组件挂载时获取数据
-onMounted(fetchTasks)
+onMounted(() => {
+  fetchTasks().catch(error => {
+    console.error('获取任务列表失败:', error)
+    $q.notify({
+      message: '加载任务列表出错',
+      color: 'negative',
+      position: 'top',
+      timeout: 1500
+    })
+  })
+})
 
 // 添加 requirementBasePath 常量
 const requirementBasePath = '/Users/maohuaping/中科软/需求文档/'
 
-// 转换任务标签 - 添加Git分支图标
-const getTaskTags = (task: TaskItem) => {
-  const tags = []
+// 定义任务标签接口
+interface TaskTag {
+  label: string;
+  color: string;
+  textColor: string;
+  icon?: string;
+  clickable?: boolean;
+  onClick?: () => void | Promise<void>;
+  index?: number; // 添加可选的index属性
+}
+
+// 定义TaskItem接口
+interface TaskItem {
+  id: string;
+  requirementId: string;
+  requirementName: string;
+  systemCategory: SystemType;
+  relatedRequirementDocs?: string | undefined;
+  relatedDesignDocs?: string | undefined;
+  [key: string]: string | undefined; // 移除冗余的 SystemType，因为它已经是 string 的子类型
+}
+
+// 添加本地任务需求接口定义，用于本地创建任务
+interface TaskRequirementEntity {
+  requirementId: string;
+  requirementName: string;
+  systemCategory: SystemType;
+  relatedRequirementDocs?: string;
+  relatedDesignDocs?: string;
+}
+
+// 修改getTaskTags函数添加返回类型
+const getTaskTags = (task: TaskItem): TaskTag[] => {
+  const tags: TaskTag[] = []
 
   // Git分支标签 - 添加图标
   if (task.requirementId) {
@@ -420,7 +473,7 @@ const getTaskTags = (task: TaskItem) => {
 
   // 需求文档处理
   if (task.relatedRequirementDocs) {
-    let reqDocs = [];
+    let reqDocs: string[] = [];
     try {
       // 尝试多种分隔方式，确保能正确分割
       if (task.relatedRequirementDocs.includes(',')) {
@@ -431,8 +484,8 @@ const getTaskTags = (task: TaskItem) => {
 
       // 过滤空值
       reqDocs = reqDocs.filter(doc => doc && doc.trim() !== '');
-    } catch (err) {
-      reqDocs = [task.relatedRequirementDocs]; // 出错时使用整个字符串
+    } catch {
+      reqDocs = [task.relatedRequirementDocs];
     }
 
     // 判断文档数量并创建标签
@@ -444,7 +497,7 @@ const getTaskTags = (task: TaskItem) => {
         textColor: 'green-8',
         icon: 'description',
         clickable: true,
-        onClick: () => handleRequirementClick(task, reqDocs[0].trim())
+        onClick: () => void handleRequirementClick(task, reqDocs[0]?.trim() || '')
       });
     } else if (reqDocs.length > 1) {
       // 多个文档 - 为每个创建标签
@@ -458,7 +511,7 @@ const getTaskTags = (task: TaskItem) => {
             icon: 'description',
             clickable: true,
             index: index, // 确保key唯一
-            onClick: () => handleRequirementClick(task, trimmedDoc)
+            onClick: () => void handleRequirementClick(task, trimmedDoc)
           });
         }
       });
@@ -467,7 +520,7 @@ const getTaskTags = (task: TaskItem) => {
 
   // 同样处理设计文档
   if (task.relatedDesignDocs) {
-    let designDocs = [];
+    let designDocs: string[] = [];
     try {
       if (task.relatedDesignDocs.includes(',')) {
         designDocs = task.relatedDesignDocs.split(',');
@@ -476,7 +529,7 @@ const getTaskTags = (task: TaskItem) => {
       }
 
       designDocs = designDocs.filter(doc => doc && doc.trim() !== '');
-    } catch (err) {
+    } catch {
       designDocs = [task.relatedDesignDocs];
     }
 
@@ -487,7 +540,7 @@ const getTaskTags = (task: TaskItem) => {
         textColor: 'purple-8',
         icon: 'article',
         clickable: true,
-        onClick: () => handleRequirementClick(task, designDocs[0].trim())
+        onClick: () => void handleRequirementClick(task, designDocs[0]?.trim() || '')
       });
     } else if (designDocs.length > 1) {
       designDocs.forEach((doc, index) => {
@@ -500,7 +553,7 @@ const getTaskTags = (task: TaskItem) => {
             icon: 'article',
             clickable: true,
             index: index, // 确保key唯一
-            onClick: () => handleRequirementClick(task, trimmedDoc)
+            onClick: () => void handleRequirementClick(task, trimmedDoc)
           });
         }
       });
@@ -510,55 +563,64 @@ const getTaskTags = (task: TaskItem) => {
   return tags;
 }
 
-// 添加系统点击处理方法
-const handleSystemClick = (system: SystemType, branch: string) => {
+// 定义handleSystemClick返回类型
+const handleSystemClick = (system: SystemType, branch: string): void => {
   if (system === 'other') return
 
-  const baseUrls = {
+  const baseUrls: Partial<Record<SystemType, string>> = {
     callin: 'http://code.devops.piccnet/picc/_source/picc/picc__picc-life-ccin/Flex-Media/-/branches',
     callout: 'http://code.devops.piccnet/picc/_source/picc/picc__picc-life-ccout/Flex-Callout/-/branches'
   }
 
-  const url = `${baseUrls[system]}?search=${branch}`
-  window.open(url, '_blank')
-}
-
-// 添加处理需求文档点击的方法 - 修改为处理单个文档
-const handleRequirementClick = async (item: any, fileName: string) => {
-  if (fileName) {
-    // 确保文件名被正确处理（去除可能的空格）
-    const trimmedFileName = fileName.trim();
-    const fullPath = `${requirementBasePath}${trimmedFileName}`
-
-    try {
-      const response = await fetch(`http://localhost:8090/open?path=${encodeURIComponent(fullPath)}`)
-      const result = await response.json()
-
-      if (result.success) {
-        $q.notify({
-          message: `文件 "${trimmedFileName}" 已打开`,
-          type: 'positive'
-        })
-      } else {
-        $q.notify({
-          message: result.message,
-          type: 'negative'
-        })
-      }
-    } catch (error) {
-      $q.notify({
-        message: '无法打开文件，请确保本地服务已启动',
-        type: 'negative'
-      })
-    }
+  if (system === 'callin' || system === 'callout') {
+    const url = `${baseUrls[system]}?search=${branch}`
+    window.open(url, '_blank')
   }
 }
+
+// 修改handleRequirementClick函数，明确设置参数类型
+const handleRequirementClick = async (item: TaskItem, fileName: string): Promise<void> => {
+  if (!fileName) {
+    return; // 如果文件名不存在，直接返回
+  }
+  
+  // 确保文件名被正确处理（去除可能的空格）
+  const trimmedFileName = fileName.trim();
+  const fullPath = `${requirementBasePath}${trimmedFileName}`;
+
+  try {
+    const response = await fetch(`http://localhost:8090/open?path=${encodeURIComponent(fullPath)}`);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const result = await response.json();
+
+    if (result.success) {
+      $q.notify({
+        message: `文件 "${trimmedFileName}" 已打开`,
+        type: 'positive'
+      });
+    } else {
+      $q.notify({
+        message: result.message || '打开文件失败',
+        type: 'negative'
+      });
+    }
+  } catch (error) {
+    console.error('无法打开文件:', error);
+    $q.notify({
+      message: '无法打开文件，请确保本地服务已启动',
+      type: 'negative'
+    });
+  }
+};
 
 // 确保SystemType类型定义正确
 type SystemType = 'callin' | 'callout' | 'other'
 
 // 复制文本到剪贴板
-const copyToClipboard = (text: string) => {
+const copyToClipboard = (text: string): void => {
   navigator.clipboard.writeText(text)
     .then(() => {
       // 复制成功提示
@@ -569,8 +631,8 @@ const copyToClipboard = (text: string) => {
         timeout: 1000
       })
     })
-    .catch(err => {
-      console.error('复制失败:', err)
+    .catch((error: Error) => {
+      console.error('复制失败:', error)
     })
 }
 
@@ -580,8 +642,38 @@ const taskTypes = [
   { label: '呼出任务', value: 'outgoing' }
 ]
 
-// 修改任务数据结构，使用数组存储多个文档
-const newTask = ref({
+// 修改newTask定义，明确指定类型
+interface TaskType {
+  label: string;
+  value: string;
+}
+
+interface DocLists {
+  requirement: string[];
+  design: string[];
+}
+
+interface DocNames {
+  requirement: string;
+  design: string;
+}
+
+interface DocFlags {
+  requirement: boolean;
+  design: boolean;
+}
+
+interface NewTask {
+  title: string;
+  type: TaskType;
+  id: string;
+  docs: DocFlags;
+  docNames: DocNames;
+  docsList: DocLists;
+}
+
+// 初始化newTask，使用正确的类型
+const newTask = ref<NewTask>({
   title: '',
   type: { label: '呼入任务', value: 'incoming' },
   id: '',
@@ -593,7 +685,6 @@ const newTask = ref({
     requirement: '',
     design: ''
   },
-  // 添加文档列表数组
   docsList: {
     requirement: [],
     design: []
@@ -604,8 +695,8 @@ const newTask = ref({
 const hasRequirementDocs = computed(() => newTask.value.docsList.requirement.length > 0)
 const hasDesignDocs = computed(() => newTask.value.docsList.design.length > 0)
 
-// 触发文件上传点击事件
-const triggerFileUpload = (type: 'requirement' | 'design') => {
+// 添加触发文件上传点击事件返回类型
+const triggerFileUpload = (type: 'requirement' | 'design'): void => {
   if (type === 'requirement' && requirementFileInput.value) {
     requirementFileInput.value.click()
   } else if (type === 'design' && designFileInput.value) {
@@ -614,12 +705,12 @@ const triggerFileUpload = (type: 'requirement' | 'design') => {
 }
 
 // 修改处理文件上传，添加到文档数组而不是替换
-const handleFileUpload = (type: 'requirement' | 'design', event: Event) => {
+const handleFileUpload = (type: 'requirement' | 'design', event: Event): void => {
   const target = event.target as HTMLInputElement
   const files = target.files
 
   if (files && files.length > 0) {
-    const file = files[0]
+    const file = files[0]!  // 添加非空断言
     const fileName = file.name
 
     // 添加文件名到对应的文档数组
@@ -645,8 +736,8 @@ const handleFileUpload = (type: 'requirement' | 'design', event: Event) => {
   }
 }
 
-// 从数组更新到字符串
-const updateDocNamesFromList = (type: 'requirement' | 'design') => {
+// 添加从数组更新到字符串函数的返回类型
+const updateDocNamesFromList = (type: 'requirement' | 'design'): void => {
   if (type === 'requirement') {
     newTask.value.docNames.requirement = newTask.value.docsList.requirement.join(',')
   } else if (type === 'design') {
@@ -654,8 +745,8 @@ const updateDocNamesFromList = (type: 'requirement' | 'design') => {
   }
 }
 
-// 修改移除文档方法，现在需要指定索引
-const removeDoc = (type: 'requirement' | 'design', index: number) => {
+// 添加移除文档方法的返回类型
+const removeDoc = (type: 'requirement' | 'design', index: number): void => {
   if (type === 'requirement') {
     newTask.value.docsList.requirement.splice(index, 1)
   } else if (type === 'design') {
@@ -666,24 +757,48 @@ const removeDoc = (type: 'requirement' | 'design', index: number) => {
   updateDocNamesFromList(type)
 }
 
-// 修改创建任务方法，确保正确传递文档信息
-const createTask = async () => {
+// 修复重置表单函数
+const resetNewTaskForm = (): void => {
+  newTask.value = {
+    title: '',
+    type: { label: '呼入任务', value: 'incoming' },
+    id: '',
+    docs: {
+      requirement: false,
+      design: false
+    },
+    docNames: {
+      requirement: '',
+      design: ''
+    },
+    docsList: {
+      requirement: [],
+      design: []
+    }
+  }
+}
+
+// 修改创建任务方法，使用重置函数
+const createTask = async (): Promise<void> => {
   try {
-    // 修改此处 - 检查文档列表而不是文档标志
+    // 明确转换systemCategory类型
+    const systemCategory: SystemType = 
+      newTask.value.type.value === 'incoming' ? 'callin' : 'callout';
+
+    // 使用创建的本地接口
     const requirementEntity = {
       requirementId: newTask.value.id,
       requirementName: newTask.value.title,
-      systemCategory: newTask.value.type.value === 'incoming' ? 'callin' : 'callout',
-      // 使用文档列表而不是标志来判断是否有文档
+      systemCategory, // 使用转换后的类型
       relatedRequirementDocs: newTask.value.docsList.requirement.length > 0
                               ? newTask.value.docsList.requirement.join(',')
                               : '',
       relatedDesignDocs: newTask.value.docsList.design.length > 0
                          ? newTask.value.docsList.design.join(',')
                          : ''
-    }
+    } as TaskRequirementEntity;
 
-    const response = await requirementApi.saveRequirement(requirementEntity)
+    const response = await requirementApi.saveRequirement(requirementEntity);
 
     if (response.data?.success) {
       $q.notify({
@@ -694,26 +809,12 @@ const createTask = async () => {
       })
 
       // 重新获取任务列表
-      fetchTasks()
+      fetchTasks().catch(error => {
+        console.error('获取任务列表失败:', error)
+      })
 
-      // 重置表单，现在也重置文档列表
-      newTask.value = {
-        title: '',
-        type: { label: '呼入任务', value: 'incoming' },
-        id: '',
-        docs: {
-          requirement: false,
-          design: false
-        },
-        docNames: {
-          requirement: '',
-          design: ''
-        },
-        docsList: {
-          requirement: [],
-          design: []
-        }
-      }
+      // 使用重置函数
+      resetNewTaskForm()
     } else {
       $q.notify({
         message: '任务创建失败: ' + (response.data?.payload || '未知错误'),
@@ -733,11 +834,8 @@ const createTask = async () => {
   }
 }
 
-// 修改emit定义，添加open-new-task事件的处理
-const emit = defineEmits(['open-new-task'])
-
-// 添加打开新建任务对话框的方法
-const openNewTaskDialog = () => {
+// 添加打开新建任务对话框方法的返回类型
+const openNewTaskDialog = (): void => {
   showNewTaskDialog.value = true
 }
 

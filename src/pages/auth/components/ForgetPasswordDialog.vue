@@ -181,7 +181,7 @@ const sendForgetPasswordCode = async () => {
 
   try {
     codeSending.value = true;
-    await authApi.authCode({
+    await authApi.sendVerifyCode({
       type: 'forget',
       email: form.value.email
     });
@@ -225,7 +225,7 @@ const handleForgetPassword = async () => {
 
   try {
     isLoading.value = true;
-    await authApi.authPassword({
+    await authApi.updatePassword({
       email: form.value.email,
       code: form.value.verificationCode,
       newPwd: form.value.newPassword,

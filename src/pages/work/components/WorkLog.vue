@@ -203,6 +203,7 @@ import { ref, watch, onMounted, computed } from 'vue'
 import { useQuasar } from 'quasar'
 import { getWorkLog } from '../../../api/work-log/work-log'
 import { getRequirement } from 'src/api/requirement/requirement';
+import type { WorkLogEntity } from 'src/api/api.schemas';
 
 // 初始化通知
 const $q = useQuasar()
@@ -211,7 +212,7 @@ const requirementApi = getRequirement()
 
 // 定义日志接口
 interface WorkLogItem {
-  id?: number
+  id?: number | undefined  // 明确指定id可以是undefined
   title: string
   content: string
   date: string
@@ -246,7 +247,7 @@ async function fetchRequirementOptions() {
   } catch (error) {
     $q.notify({
       color: 'negative',
-      message: '获取需求类型出错',
+      message: '获取需求类型出错:' + String(error),
       icon: 'error'
     })
   }
@@ -292,10 +293,9 @@ async function fetchLogs() {
       // 直接使用后端返回的已排序数据
       logs.value = response.data.payload.map(item => ({
         id: item.id,
-        title: item.title || '',
         content: item.content || '',
         date: item.logDate || formatDateForInput(new Date(item.createdAt || new Date()))
-      }))
+      })) as WorkLogItem[]  // 添加类型断言
     } else {
       $q.notify({
         color: 'negative',
@@ -306,7 +306,7 @@ async function fetchLogs() {
   } catch (error) {
     $q.notify({
       color: 'negative',
-      message: '获取日志列表出错',
+      message: '获取日志列表出错: ' + String(error),
       icon: 'error'
     })
   } finally {
@@ -338,7 +338,7 @@ function confirmDelete(index: number) {
 // 删除日志
 async function deleteLog() {
   if (deleteIndex.value > -1 && deleteIndex.value < logs.value.length) {
-    const logToDelete = logs.value[deleteIndex.value]
+    const logToDelete = logs.value[deleteIndex.value]!;
 
     if (!logToDelete.id) {
       $q.notify({
@@ -368,7 +368,7 @@ async function deleteLog() {
     } catch (error) {
       $q.notify({
         color: 'negative',
-        message: '删除日志出错',
+        message: '删除日志出错: ' + String(error),
         icon: 'error'
       })
     }
@@ -418,14 +418,13 @@ async function addNewLog() {
     .map(item => `【${item.type}】${item.content}`)
     .join('\n')
 
-  const newLog = {
-    title: '',
+  const newLog: WorkLogEntity = {
     content: combinedContent,
-    date: formatDateForInput(new Date())
+    logDate: formatDateForInput(new Date())
   }
 
   try {
-    const response = await workLogApi.saveWorkLog(newLog as any)
+    const response = await workLogApi.saveWorkLog(newLog)
     if (response.data.success) {
       // 重新获取最新的日志列表
       await fetchLogs()
@@ -542,8 +541,23 @@ watch(showNewLogDialog, (isOpen) => {
 
 // 组件加载后获取日志列表和需求类型
 onMounted(() => {
-  fetchLogs()
-  fetchRequirementOptions()
+  fetchLogs().catch(error => {
+    console.error('获取日志时出错:', error)
+    $q.notify({
+      color: 'negative',
+      message: '加载日志出错',
+      icon: 'error'
+    })
+  })
+  
+  fetchRequirementOptions().catch(error => {
+    console.error('获取需求选项时出错:', error)
+    $q.notify({
+      color: 'negative',
+      message: '加载需求类型出错',
+      icon: 'error'
+    })
+  })
 })
 
 // 组件选项
