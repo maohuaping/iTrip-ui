@@ -1,5 +1,5 @@
 import { boot } from 'quasar/wrappers';
-import { AxiosRequestConfig, AxiosResponse } from 'axios';
+import type { AxiosRequestConfig, AxiosResponse } from 'axios';
 import { Notify, Loading } from 'quasar';
 import { api } from './axios'; // 导入现有的 api 实例
 
@@ -61,7 +61,7 @@ export const customInstance = <T>(config: AxiosRequestConfig): Promise<AxiosResp
           default:
             Notify.create({
               type: 'negative',
-              message: error.response.data?.message || '请求失败',
+              message: error.response.data?.payload || '请求失败',
               position: 'top',
             });
         }

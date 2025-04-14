@@ -425,7 +425,7 @@ async function addNewLog() {
   }
 
   try {
-    const response = await workLogApi.workLogCreate(newLog as any)
+    const response = await workLogApi.saveWorkLog(newLog as any)
     if (response.data.success) {
       // 重新获取最新的日志列表
       await fetchLogs()

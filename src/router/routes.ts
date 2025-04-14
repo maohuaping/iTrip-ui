@@ -17,6 +17,13 @@ const routes: RouteRecordRaw[] = [
     ]
   },
   {
+    path: '/trip',
+    component: () => import('layouts/CleanLayout.vue'),
+    children: [
+      { path: '', component: () => import('pages/trip/TripPage.vue') },
+    ]
+  },
+  {
     path: '/login',
     component: () => import('pages/auth/LoginPage.vue'),
     meta: { requiresAuth: false }

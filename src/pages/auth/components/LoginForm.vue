@@ -90,7 +90,7 @@ const isValidEmail = (val: string) => {
 const handleLogin = async () => {
   try {
     isLoading.value = true;
-    const response = await authApi.authLogin({
+    const response = await authApi.login({
       email: form.value.email,
       password: form.value.password
     });
