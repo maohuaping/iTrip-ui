@@ -206,7 +206,7 @@ import { getRequirement } from 'src/api/requirement/requirement';
 
 // 初始化通知
 const $q = useQuasar()
-const worklogApi = getWorkLog()
+const workLogApi = getWorkLog()
 const requirementApi = getRequirement()
 
 // 定义日志接口
@@ -287,7 +287,7 @@ async function fetchLogs() {
   isLoading.value = true
   try {
     // 假设后端API已经提供按日期降序排序的数据
-    const response = await worklogApi.listWorkLogOfMe()
+    const response = await workLogApi.listWorkLogOfMe()
     if (response.data.success && response.data.payload) {
       // 直接使用后端返回的已排序数据
       logs.value = response.data.payload.map(item => ({
@@ -350,7 +350,7 @@ async function deleteLog() {
     }
 
     try {
-      const response = await worklogApi.workLogDelete(logToDelete.id)
+      const response = await workLogApi.deleteWorkLog(logToDelete.id)
       if (response.data.success) {
         logs.value.splice(deleteIndex.value, 1)
         $q.notify({
@@ -366,7 +366,6 @@ async function deleteLog() {
         })
       }
     } catch (error) {
-      console.error('删除日志出错:', error)
       $q.notify({
         color: 'negative',
         message: '删除日志出错',
@@ -426,7 +425,7 @@ async function addNewLog() {
   }
 
   try {
-    const response = await worklogApi.workLogCreate(newLog as any)
+    const response = await workLogApi.workLogCreate(newLog as any)
     if (response.data.success) {
       // 重新获取最新的日志列表
       await fetchLogs()

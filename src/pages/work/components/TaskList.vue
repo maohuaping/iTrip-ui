@@ -344,8 +344,12 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
-import { getRequirement } from 'src/api/requirement/requirement'
 import { useQuasar } from 'quasar'
+import { getRequirement } from 'src/api/requirement/requirement'
+
+// 初始化
+const $q = useQuasar()
+const requirementApi = getRequirement()
 
 // 活动标签页
 const activeTab = ref('incoming')
@@ -378,7 +382,6 @@ const visibleOutgoingTasks = computed(() => {
 // 获取任务数据
 const fetchTasks = async () => {
   try {
-    const requirementApi = getRequirement()
     const response = await requirementApi.getCurrentUserRequirement()
 
     if (response.data?.success && response.data.payload) {
@@ -398,9 +401,6 @@ onMounted(fetchTasks)
 
 // 添加 requirementBasePath 常量
 const requirementBasePath = '/Users/maohuaping/中科软/需求文档/'
-
-// 在 setup 中声明
-const $q = useQuasar()
 
 // 转换任务标签 - 添加Git分支图标
 const getTaskTags = (task: TaskItem) => {
@@ -669,8 +669,6 @@ const removeDoc = (type: 'requirement' | 'design', index: number) => {
 // 修改创建任务方法，确保正确传递文档信息
 const createTask = async () => {
   try {
-    const requirementApi = getRequirement()
-
     // 修改此处 - 检查文档列表而不是文档标志
     const requirementEntity = {
       requirementId: newTask.value.id,
@@ -685,7 +683,7 @@ const createTask = async () => {
                          : ''
     }
 
-    const response = await requirementApi.save(requirementEntity)
+    const response = await requirementApi.saveRequirement(requirementEntity)
 
     if (response.data?.success) {
       $q.notify({

@@ -5,7 +5,7 @@ export default {
             target: './src/api', // 输出目录
             // schemas: 'src/model', // 指定模型文件的位置
             client: 'axios', // 使用 axios 作为 HTTP 客户端
-            mock: true, // 生成模拟数据
+            mock: false, // 关闭生成模拟数据
             clean: true, // 生成前清理目录
             prettier: true, // 使用 prettier 格式化代码
             override: {
