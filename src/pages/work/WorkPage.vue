@@ -21,7 +21,7 @@
 <script setup lang="ts">
 import TaskList from './components/TaskList.vue'
 import WorkLog from './components/WorkLog.vue'
-import WorkSideMenu from './components/WorkSideMenu.vue'
+import WorkSideMenu from './components/SideNav.vue'
 
 // 添加组件名称以解决ESLint警告
 defineOptions({
