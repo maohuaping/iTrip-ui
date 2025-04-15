@@ -1,5 +1,5 @@
 <template>
-  <div class="work-side-menu">
+  <div class="work-side-menu" :class="{ 'collapsed': collapsed }">
     <q-scroll-area style="height: calc(100vh - 50px);" class="fit">
       <q-list padding>
         <!-- 添加新URL的按钮 -->
@@ -140,6 +140,14 @@ const menuItems = ref<any[]>([
   }
 ])
 
+// 添加 collapsed 属性
+const props = defineProps({
+  collapsed: {
+    type: Boolean,
+    default: false
+  }
+})
+
 // 获取用户URL列表
 const fetchUserUrls = async () => {
   try {
@@ -269,6 +277,30 @@ defineOptions({
   background: #fff;
   border-right: 1px solid rgba(0, 0, 0, 0.05);
   box-shadow: 2px 0 8px rgba(0, 0, 0, 0.02);
+  transition: width 0.3s ease;
+  
+  &.collapsed {
+    width: 64px;
+    
+    :deep(.q-item__section--main),
+    :deep(.q-item__section--side),
+    :deep(.q-item__label--caption),
+    :deep(.q-expansion-item__toggle-icon) {
+      display: none;
+    }
+    
+    :deep(.q-expansion-item--collapsed) {
+      .q-item__section--avatar {
+        padding-right: 0;
+      }
+    }
+    
+    .add-url-btn {
+      .q-item__section--main {
+        display: none;
+      }
+    }
+  }
 }
 
 .add-url-btn {

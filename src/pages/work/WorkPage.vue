@@ -1,32 +1,60 @@
 <template>
   <div class="work-page-container">
     <!-- 侧边菜单 -->
-    <WorkSideMenu />
+    <WorkSideMenu ref="sideMenu" :collapsed="sideMenuCollapsed" />
 
     <!-- 主内容区域 -->
-    <q-page class="work-page-content">
-      <div class="q-pa-md">
-        <div class="q-mx-auto" style="max-width: 1200px">
-          <!-- 任务列表部分 -->
-          <TaskList />
+    <div class="work-page-main">
+      <!-- 顶部状态栏 -->
+      <WorkPageHeader 
+        :title="pageTitle" 
+        :statusInfo="statusInfo" 
+        @toggle-menu="toggleSideMenu" 
+      />
+      
+      <q-page class="work-page-content">
+        <div class="q-pa-md">
+          <div class="q-mx-auto" style="max-width: 1200px">
+            <!-- 任务列表部分 -->
+            <TaskList />
 
-          <!-- 工作日志部分 -->
-          <WorkLog />
+            <!-- 工作日志部分 -->
+            <WorkLog />
+          </div>
         </div>
-      </div>
-    </q-page>
+      </q-page>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue'
 import TaskList from './components/TaskList.vue'
 import WorkLog from './components/WorkLog.vue'
 import WorkSideMenu from './components/SideNav.vue'
+import WorkPageHeader from './components/WorkPageHeader.vue'
 
 // 添加组件名称以解决ESLint警告
 defineOptions({
   name: 'WorkPage'
 })
+
+// 侧边栏收起状态
+const sideMenuCollapsed = ref(false)
+const sideMenu = ref(null)
+
+// 页面标题和状态信息
+const pageTitle = ref('工作台')
+const statusInfo = ref({
+  tasks: 5,
+  completed: 2,
+  pending: 3
+})
+
+// 切换侧边栏
+const toggleSideMenu = () => {
+  sideMenuCollapsed.value = !sideMenuCollapsed.value
+}
 </script>
 
 <style lang="scss" scoped>
@@ -36,11 +64,15 @@ defineOptions({
   min-height: 100vh;
 }
 
+.work-page-main {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
 .work-page-content {
   flex: 1;
-  margin-left: 0;
   background: #f8fafc;
-  min-height: 100vh;
 }
 
 // 玻璃效果修改为适合白色背景的样式
