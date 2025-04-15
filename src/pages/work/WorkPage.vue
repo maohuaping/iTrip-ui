@@ -11,8 +11,19 @@
           @click="toggleLeftDrawer"
         />
 
-        <q-toolbar-title>
-          {{ pageTitle }}
+        <q-toolbar-title class="row items-center">
+          <div>{{ pageTitle }}</div>
+          
+          <div class="countdown-container q-ml-md">
+            <q-badge color="amber" text-color="black" class="countdown-badge">
+              <q-icon name="schedule" size="xs" class="q-mr-xs" />
+              <span class="countdown-label">截止倒计时:</span>
+              <span class="countdown-digits">{{ countdownTime.days }}</span>天
+              <span class="countdown-digits">{{ countdownTime.hours }}</span>时
+              <span class="countdown-digits">{{ countdownTime.minutes }}</span>分
+              <span class="countdown-digits">{{ countdownTime.seconds }}</span>秒
+            </q-badge>
+          </div>
         </q-toolbar-title>
 
         <div class="status-info">
@@ -194,7 +205,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed, reactive } from 'vue'
+import { ref, onMounted, onUnmounted, computed, reactive } from 'vue'
 import { useQuasar } from 'quasar'
 import TaskList from './components/TaskList.vue'
 import WorkLog from './components/WorkLog.vue'
@@ -231,6 +242,38 @@ const statusInfo = ref({
   completed: 2,
   pending: 3
 })
+
+// 倒计时相关
+const countdownTime = ref({
+  days: 0,
+  hours: 0,
+  minutes: 0,
+  seconds: 0
+})
+
+// 修改为2025年4月17日13:30
+const targetDate = new Date('2025-04-17T13:30:00+08:00')
+
+let countdownInterval: number | undefined
+
+// 计算倒计时
+const calculateCountdown = () => {
+  const now = new Date()
+  const difference = targetDate.getTime() - now.getTime()
+  
+  if (difference <= 0) {
+    // 如果已经到期
+    countdownTime.value = { days: 0, hours: 0, minutes: 0, seconds: 0 }
+    return
+  }
+  
+  const days = Math.floor(difference / (1000 * 60 * 60 * 24))
+  const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
+  const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60))
+  const seconds = Math.floor((difference % (1000 * 60)) / 1000)
+  
+  countdownTime.value = { days, hours, minutes, seconds }
+}
 
 // URL列表数据
 const urlList = ref<UrlItem[]>([])
@@ -410,6 +453,17 @@ const mockData = {
 // 组件挂载时获取URL列表
 onMounted(() => {
   fetchUrlList()
+  
+  // 初始化倒计时
+  calculateCountdown()
+  countdownInterval = setInterval(calculateCountdown, 1000)
+})
+
+// 清除定时器
+onUnmounted(() => {
+  if (countdownInterval) {
+    clearInterval(countdownInterval)
+  }
 })
 </script>
 
@@ -789,6 +843,49 @@ section {
   
   :deep(.q-expansion-item__content) {
     padding: 0;
+  }
+}
+
+// 倒计时样式
+.countdown-container {
+  display: flex;
+  align-items: center;
+}
+
+.countdown-badge {
+  padding: 6px 10px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  font-size: 0.8rem;
+  font-weight: 400;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
+}
+
+.countdown-label {
+  margin-right: 6px;
+  font-weight: 500;
+}
+
+.countdown-digits {
+  font-family: 'Roboto Mono', monospace;
+  font-weight: 600;
+  padding: 0 2px;
+  min-width: 22px;
+  text-align: center;
+  display: inline-block;
+  margin: 0 2px;
+}
+
+// 响应式调整
+@media (max-width: 768px) {
+  .countdown-label {
+    display: none;
+  }
+  
+  .countdown-badge {
+    padding: 4px 8px;
   }
 }
 </style>
