@@ -60,31 +60,33 @@
         </q-item-label>
 
         <template v-if="!loading">
-          <!-- 根据tag对URL进行分组，默认收起状态 -->
-          <template v-for="(group, tag) in groupedUrls" :key="tag">
-            <q-expansion-item
-              :label="tag"
-              icon="folder"
-              :header-class="'group-header'"
+          <!-- 设置 header-class 为可点击样式并使整个标题可点击 -->
+          <q-expansion-item
+            group="links"
+            v-for="(group, tag) in groupedUrls" 
+            :key="tag"
+            :label="tag"
+            icon="folder"
+            header-class="cursor-pointer group-header"
+            expand-separator
+            switch-toggle-side
+          >
+            <q-item
+              v-for="url in group"
+              :key="url.id"
+              clickable
+              tag="a"
+              :href="url.address"
+              target="_blank"
             >
-              <q-item
-                v-for="url in group"
-                :key="url.id"
-                clickable
-                tag="a"
-                :href="url.address"
-                target="_blank"
-              >
-                <q-item-section avatar>
-                  <q-icon name="link" />
-                </q-item-section>
-                <q-item-section>
-                  <q-item-label>{{ url.name }}</q-item-label>
-                </q-item-section>
-              </q-item>
-            </q-expansion-item>
-            <q-separator spaced v-if="Object.keys(groupedUrls).indexOf(tag) < Object.keys(groupedUrls).length - 1" />
-          </template>
+              <q-item-section avatar>
+                <q-icon name="link" />
+              </q-item-section>
+              <q-item-section>
+                <q-item-label>{{ url.name }}</q-item-label>
+              </q-item-section>
+            </q-item>
+          </q-expansion-item>
         </template>
         
         <q-item v-else>
@@ -255,7 +257,6 @@ const saveNewUrl = async () => {
     }
     
     // 使用API保存URL
-    // 注意：可能需要根据实际API调整这里的代码
     await urlApi.saveUrl(newUrl.value as any)
     
     $q.notify({
