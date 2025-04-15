@@ -1,6 +1,6 @@
 <template>
   <q-layout view="lHh Lpr lFf">
-    <q-header elevated>
+    <q-header elevated class="bg-white text-dark">
       <q-toolbar>
         <q-btn
           flat
@@ -17,7 +17,8 @@
 
         <div class="status-info">
           <q-chip 
-            color="white" 
+            outline
+            color="primary" 
             text-color="primary" 
             icon="task_alt" 
             class="status-chip"
@@ -26,7 +27,8 @@
           </q-chip>
           
           <q-chip 
-            color="white" 
+            outline
+            color="orange" 
             text-color="orange" 
             icon="pending" 
             class="status-chip"
@@ -35,7 +37,8 @@
           </q-chip>
           
           <q-chip 
-            color="white" 
+            outline
+            color="blue-grey" 
             text-color="blue-grey" 
             icon="inventory" 
             class="status-chip"
