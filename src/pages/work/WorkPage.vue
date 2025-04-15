@@ -17,8 +17,7 @@
 
         <div class="status-info">
           <q-chip 
-            outline 
-            color="primary" 
+            color="white" 
             text-color="primary" 
             icon="task_alt" 
             class="status-chip"
@@ -27,8 +26,7 @@
           </q-chip>
           
           <q-chip 
-            outline 
-            color="orange" 
+            color="white" 
             text-color="orange" 
             icon="pending" 
             class="status-chip"
@@ -37,8 +35,7 @@
           </q-chip>
           
           <q-chip 
-            outline 
-            color="blue-grey" 
+            color="white" 
             text-color="blue-grey" 
             icon="inventory" 
             class="status-chip"
