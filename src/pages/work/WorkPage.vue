@@ -55,14 +55,28 @@
       bordered
     >
       <q-list>
-        <q-item-label header>
-          我的链接
-        </q-item-label>
+        <div class="drawer-header q-px-md">
+          <q-item-label header class="q-py-sm">
+            我的链接
+          </q-item-label>
+          
+          <div class="expand-actions q-py-sm">
+            <q-btn 
+              flat 
+              dense 
+              no-caps 
+              class="expand-btn" 
+              :label="allExpanded ? '全部收起' : '全部展开'" 
+              @click="toggleAllGroups" 
+            />
+          </div>
+        </div>
+
+        <q-separator />
 
         <template v-if="!loading">
-          <!-- 设置 header-class 为可点击样式并使整个标题可点击 -->
+          <!-- 单独控制每个展开项 -->
           <q-expansion-item
-            group="links"
             v-for="(group, tag) in groupedUrls" 
             :key="tag"
             :label="tag"
@@ -70,6 +84,8 @@
             header-class="cursor-pointer group-header"
             expand-separator
             switch-toggle-side
+            :model-value="expandedGroups[tag] || false"
+            @update:model-value="(val) => updateExpandedState(tag, val)"
           >
             <q-item
               v-for="url in group"
@@ -164,7 +180,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, reactive } from 'vue'
 import { useQuasar } from 'quasar'
 import TaskList from './components/TaskList.vue'
 import WorkLog from './components/WorkLog.vue'
@@ -206,6 +222,17 @@ const statusInfo = ref({
 const urlList = ref<UrlItem[]>([])
 const loading = ref(true)
 
+// 存储每个分组的展开状态
+const expandedGroups = reactive<Record<string, boolean>>({})
+
+// 检查是否所有组都已展开
+const allExpanded = computed(() => {
+  const tagKeys = Object.keys(groupedUrls.value)
+  if (tagKeys.length === 0) return false
+  
+  return tagKeys.every(tag => expandedGroups[tag])
+})
+
 // 按标签分组的URL
 const groupedUrls = computed(() => {
   const groups: Record<string, UrlItem[]> = {}
@@ -232,6 +259,35 @@ const newUrl = ref<Partial<UrlItem>>({
 // 切换侧边栏
 const toggleLeftDrawer = () => {
   leftDrawerOpen.value = !leftDrawerOpen.value
+}
+
+// 更新展开状态
+const updateExpandedState = (tag: string, expanded: boolean) => {
+  // 如果要展开一个组，需要先关闭其他已展开的组（手风琴效果）
+  if (expanded) {
+    Object.keys(expandedGroups).forEach(key => {
+      if (key !== tag) {
+        expandedGroups[key] = false
+      }
+    })
+  }
+  
+  expandedGroups[tag] = expanded
+}
+
+// 切换所有分组的展开/收起状态
+const toggleAllGroups = () => {
+  if (allExpanded.value) {
+    // 全部收起
+    Object.keys(groupedUrls.value).forEach(tag => {
+      expandedGroups[tag] = false
+    })
+  } else {
+    // 全部展开
+    Object.keys(groupedUrls.value).forEach(tag => {
+      expandedGroups[tag] = true
+    })
+  }
 }
 
 // 打开添加URL对话框
@@ -684,5 +740,15 @@ section {
 
 .add-url-btn {
   color: #1976D2;
+}
+
+.expand-btn {
+  font-size: 0.8rem;
+  color: #1976D2;
+  
+  &:hover {
+    color: #1565C0;
+    background: rgba(25, 118, 210, 0.1);
+  }
 }
 </style>
