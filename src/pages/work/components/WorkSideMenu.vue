@@ -2,6 +2,18 @@
   <div class="work-side-menu">
     <q-scroll-area style="height: calc(100vh - 50px);" class="fit">
       <q-list padding>
+        <!-- 添加新URL的按钮 -->
+        <q-item clickable v-ripple class="add-url-btn" @click="showAddUrlDialog = true">
+          <q-item-section avatar>
+            <q-icon name="add_circle" color="primary" />
+          </q-item-section>
+          <q-item-section>
+            <span class="text-primary">新增URL</span>
+          </q-item-section>
+        </q-item>
+
+        <q-separator spaced />
+
         <template v-for="item in menuItems" :key="item.label">
           <!-- 有子菜单的项目 -->
           <q-expansion-item
@@ -45,10 +57,69 @@
         </template>
       </q-list>
     </q-scroll-area>
+
+    <!-- 添加URL的弹窗 -->
+    <q-dialog v-model="showAddUrlDialog" persistent>
+      <q-card style="min-width: 350px">
+        <q-card-section>
+          <div class="text-h6">新增URL</div>
+        </q-card-section>
+
+        <q-card-section class="q-pt-none">
+          <q-input
+            v-model="newUrl.name"
+            label="链接名称"
+            dense
+            autofocus
+            class="q-mb-md"
+          />
+          <q-input
+            v-model="newUrl.url"
+            label="URL地址"
+            dense
+            class="q-mb-md"
+          />
+          <q-input
+            v-model="newUrl.category"
+            label="所属分类"
+            dense
+            class="q-mb-md"
+          />
+        </q-card-section>
+
+        <q-card-actions align="right">
+          <q-btn flat label="取消" color="negative" v-close-popup />
+          <q-btn flat label="保存" color="primary" @click="addNewUrl" v-close-popup />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
+import { ref, reactive } from 'vue'
+
+// 显示弹窗的标志
+const showAddUrlDialog = ref(false)
+
+// 新URL的数据
+const newUrl = reactive({
+  name: '',
+  url: '',
+  category: ''
+})
+
+// 添加新URL的方法
+const addNewUrl = () => {
+  // 这里添加保存URL的逻辑
+  console.log('添加新URL:', newUrl)
+  
+  // 重置表单
+  newUrl.name = ''
+  newUrl.url = ''
+  newUrl.category = ''
+}
+
 const menuItems = [
   {
     label: '工作台',
@@ -107,6 +178,27 @@ const menuItems = [
     label: '监控中心',
     icon: 'monitor', // 修改这里，使用 'monitor' 替代 'monitoring'
     url: '/monitoring'
+  },
+  {
+    label: 'URL管理',
+    icon: 'link',
+    children: [
+      {
+        label: '我的链接',
+        icon: 'bookmark',
+        url: '/url/my-links'
+      },
+      {
+        label: '新增链接',
+        icon: 'add_link',
+        url: '/url/add-new'
+      },
+      {
+        label: '分类管理',
+        icon: 'category',
+        url: '/url/categories'
+      }
+    ]
   }
 ]
 
@@ -121,6 +213,18 @@ defineOptions({
   background: #fff;
   border-right: 1px solid rgba(0, 0, 0, 0.05);
   box-shadow: 2px 0 8px rgba(0, 0, 0, 0.02);
+}
+
+.add-url-btn {
+  border-radius: 8px;
+  margin: 4px 8px 12px;
+  background: rgba(25, 118, 210, 0.05);
+  transition: all 0.2s;
+
+  &:hover {
+    background: rgba(25, 118, 210, 0.1);
+    transform: translateY(-1px);
+  }
 }
 
 .menu-item {

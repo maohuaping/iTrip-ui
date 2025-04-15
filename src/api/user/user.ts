@@ -13,18 +13,18 @@ export const getUser = () => {
   /**
    * @summary 退出登录
    */
-  const userLogout = () => {
+  const logout = () => {
     return customInstance<ResultBoolean>({ url: `/api/user/logout`, method: 'POST' });
   };
   /**
    * @summary 获取当前用户信息
    */
-  const userMe = () => {
+  const getCurrentUser = () => {
     return customInstance<ResultUserResponseDTO>({ url: `/api/user/me`, method: 'GET' });
   };
-  return { userLogout, userMe };
+  return { logout, getCurrentUser };
 };
-export type UserLogoutResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getUser>['userLogout']>>
+export type LogoutResult = NonNullable<Awaited<ReturnType<ReturnType<typeof getUser>['logout']>>>;
+export type GetCurrentUserResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getUser>['getCurrentUser']>>
 >;
-export type UserMeResult = NonNullable<Awaited<ReturnType<ReturnType<typeof getUser>['userMe']>>>;

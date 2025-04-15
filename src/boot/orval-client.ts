@@ -14,7 +14,7 @@ export const customInstance = <T>(config: AxiosRequestConfig): Promise<AxiosResp
   // 从localStorage或其他存储中获取token
   // const token = localStorage.getItem('auth_token');
   // 在登录注册没有做好之前，先尝试使用临时token
-  const token = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1aWQiOjE0LCJ1c2VybmFtZSI6IuWcn-aLqOm8oDIxMTUiLCJyb2xlIjoiUk9MRV9BRE1JTiIsImV4cCI6MTc0NDc2NTUxMDY5OX0.ZodO1SUvcft0QCRRozZLvN46iWLm6LG4-9aekczrXAc';
+  const token = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1aWQiOjE0LCJ1c2VybmFtZSI6IuWcn-aLqOm8oDIxMTUiLCJyb2xlIjoiUk9MRV9BRE1JTiIsImV4cCI6MTc0NDg3NjA5ODkxOX0.fL6KUvR7BQLOIDF0x85SFKguLhCL17KaoPkBb6qIa2k';
 
   // 创建请求配置
   const requestConfig = {

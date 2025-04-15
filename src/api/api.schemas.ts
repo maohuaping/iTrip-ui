@@ -70,6 +70,30 @@ export interface UserSettingsEntity {
 }
 
 /**
+ * 平台跳转URL
+ */
+export interface UrlEntity {
+  /** 主键ID */
+  id?: number;
+  /** 创建人 */
+  createdBy?: number;
+  /** 创建时间 */
+  createdAt?: string;
+  /** 更新人 */
+  updatedBy?: number;
+  /** 更新时间 */
+  updatedAt?: string;
+  /** URL所属分组 */
+  tag?: string;
+  /** URL名称 */
+  name?: string;
+  /** URL地址 */
+  address?: string;
+  /** 用户ID */
+  userId?: number;
+}
+
+/**
  * 系统配置信息
  */
 export interface SystemConfigEntity {
@@ -442,6 +466,25 @@ export interface ResultUserResponseDTO {
 }
 
 /**
+ * API 统一返回格式
+ */
+export interface ResultUrlEntity {
+  /** 是否成功 */
+  success?: boolean;
+  payload?: UrlEntity;
+}
+
+/**
+ * API 统一返回格式
+ */
+export interface ResultListUrlEntity {
+  /** 是否成功 */
+  success?: boolean;
+  /** 数据或错误信息 */
+  payload?: UrlEntity[];
+}
+
+/**
  * 景点信息
  */
 export interface Attraction {
@@ -623,7 +666,7 @@ export type GetTravelGuideParams = {
   destination?: string;
 };
 
-export type TestTokenParams = {
+export type GetTestTokenParams = {
   hours?: number;
 };
 
