@@ -60,12 +60,12 @@
         </q-item-label>
 
         <template v-if="!loading">
-          <!-- 根据tag对URL进行分组 -->
+          <!-- 根据tag对URL进行分组，默认收起状态 -->
           <template v-for="(group, tag) in groupedUrls" :key="tag">
             <q-expansion-item
               :label="tag"
               icon="folder"
-              default-opened
+              :header-class="'group-header'"
             >
               <q-item
                 v-for="url in group"
@@ -80,7 +80,6 @@
                 </q-item-section>
                 <q-item-section>
                   <q-item-label>{{ url.name }}</q-item-label>
-                  <q-item-label caption v-if="url.tag">{{ url.tag }}</q-item-label>
                 </q-item-section>
               </q-item>
             </q-expansion-item>
@@ -97,7 +96,7 @@
 
         <q-separator spaced />
         
-        <q-item clickable @click="openAddUrlDialog" class="q-mt-md">
+        <q-item clickable @click="openAddUrlDialog" class="add-url-btn q-mt-md">
           <q-item-section avatar>
             <q-icon name="add" color="primary" />
           </q-item-section>
@@ -676,5 +675,13 @@ section {
 .side-menu-enter-from,
 .side-menu-leave-to {
   transform: translateX(-200px);
+}
+
+.group-header {
+  font-weight: 500;
+}
+
+.add-url-btn {
+  color: #1976D2;
 }
 </style>
