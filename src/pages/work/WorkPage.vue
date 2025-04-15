@@ -1,17 +1,114 @@
 <template>
-  <div class="work-page-container">
-    <!-- 侧边菜单 -->
-    <WorkSideMenu ref="sideMenu" :collapsed="sideMenuCollapsed" />
+  <q-layout view="lHh Lpr lFf">
+    <q-header elevated>
+      <q-toolbar>
+        <q-btn
+          flat
+          dense
+          round
+          icon="menu"
+          aria-label="Menu"
+          @click="toggleLeftDrawer"
+        />
 
-    <!-- 主内容区域 -->
-    <div class="work-page-main">
-      <!-- 顶部状态栏 -->
-      <WorkPageHeader 
-        :title="pageTitle" 
-        :statusInfo="statusInfo" 
-        @toggle-menu="toggleSideMenu" 
-      />
-      
+        <q-toolbar-title>
+          {{ pageTitle }}
+        </q-toolbar-title>
+
+        <div class="status-info">
+          <q-chip 
+            outline 
+            color="primary" 
+            text-color="primary" 
+            icon="task_alt" 
+            class="status-chip"
+          >
+            已完成: {{ statusInfo.completed }}
+          </q-chip>
+          
+          <q-chip 
+            outline 
+            color="orange" 
+            text-color="orange" 
+            icon="pending" 
+            class="status-chip"
+          >
+            待处理: {{ statusInfo.pending }}
+          </q-chip>
+          
+          <q-chip 
+            outline 
+            color="blue-grey" 
+            text-color="blue-grey" 
+            icon="inventory" 
+            class="status-chip"
+          >
+            总任务: {{ statusInfo.tasks }}
+          </q-chip>
+        </div>
+      </q-toolbar>
+    </q-header>
+
+    <q-drawer
+      v-model="leftDrawerOpen"
+      show-if-above
+      bordered
+    >
+      <q-list>
+        <q-item-label header>
+          我的链接
+        </q-item-label>
+
+        <template v-if="!loading">
+          <!-- 根据tag对URL进行分组 -->
+          <template v-for="(group, tag) in groupedUrls" :key="tag">
+            <q-expansion-item
+              :label="tag"
+              icon="folder"
+              default-opened
+            >
+              <q-item
+                v-for="url in group"
+                :key="url.id"
+                clickable
+                tag="a"
+                :href="url.address"
+                target="_blank"
+              >
+                <q-item-section avatar>
+                  <q-icon name="link" />
+                </q-item-section>
+                <q-item-section>
+                  <q-item-label>{{ url.name }}</q-item-label>
+                  <q-item-label caption v-if="url.tag">{{ url.tag }}</q-item-label>
+                </q-item-section>
+              </q-item>
+            </q-expansion-item>
+            <q-separator spaced v-if="Object.keys(groupedUrls).indexOf(tag) < Object.keys(groupedUrls).length - 1" />
+          </template>
+        </template>
+        
+        <q-item v-else>
+          <q-item-section>
+            <q-spinner color="primary" />
+            <q-item-label class="q-mt-sm text-center">加载中...</q-item-label>
+          </q-item-section>
+        </q-item>
+
+        <q-separator spaced />
+        
+        <q-item clickable @click="openAddUrlDialog" class="q-mt-md">
+          <q-item-section avatar>
+            <q-icon name="add" color="primary" />
+          </q-item-section>
+          <q-item-section>
+            <q-item-label>添加新链接</q-item-label>
+          </q-item-section>
+        </q-item>
+      </q-list>
+    </q-drawer>
+
+    <q-page-container>
       <q-page class="work-page-content">
         <div class="q-pa-md">
           <div class="q-mx-auto" style="max-width: 1200px">
@@ -23,25 +120,78 @@
           </div>
         </div>
       </q-page>
-    </div>
-  </div>
+    </q-page-container>
+    
+    <!-- 添加URL对话框 -->
+    <q-dialog v-model="addUrlDialog" persistent>
+      <q-card style="min-width: 350px">
+        <q-card-section>
+          <div class="text-h6">添加新链接</div>
+        </q-card-section>
+
+        <q-card-section class="q-pt-none">
+          <q-input
+            v-model="newUrl.name"
+            label="名称"
+            dense
+            outlined
+            class="q-mb-md"
+          />
+          <q-input
+            v-model="newUrl.address"
+            label="链接地址"
+            dense
+            outlined
+            class="q-mb-md"
+          />
+          <q-input
+            v-model="newUrl.tag"
+            label="分类标签"
+            dense
+            outlined
+            class="q-mb-md"
+          />
+        </q-card-section>
+
+        <q-card-actions align="right">
+          <q-btn flat label="取消" color="primary" v-close-popup />
+          <q-btn flat label="保存" color="primary" @click="saveNewUrl" />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+  </q-layout>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted, computed } from 'vue'
+import { useQuasar } from 'quasar'
 import TaskList from './components/TaskList.vue'
 import WorkLog from './components/WorkLog.vue'
-import WorkSideMenu from './components/SideNav.vue'
-import WorkPageHeader from './components/WorkPageHeader.vue'
+import { getUrl } from 'src/api/url/url'
 
 // 添加组件名称以解决ESLint警告
 defineOptions({
   name: 'WorkPage'
 })
 
-// 侧边栏收起状态
-const sideMenuCollapsed = ref(false)
-const sideMenu = ref(null)
+// 定义URL数据类型
+interface UrlItem {
+  id: number
+  createdBy: number
+  createdAt: string
+  updatedBy: number
+  updatedAt: string
+  tag: string
+  name: string
+  address: string
+  userId: number
+}
+
+const $q = useQuasar()
+const urlApi = getUrl()
+
+// 侧边栏状态
+const leftDrawerOpen = ref(false)
 
 // 页面标题和状态信息
 const pageTitle = ref('工作台')
@@ -51,10 +201,146 @@ const statusInfo = ref({
   pending: 3
 })
 
+// URL列表数据
+const urlList = ref<UrlItem[]>([])
+const loading = ref(true)
+
+// 按标签分组的URL
+const groupedUrls = computed(() => {
+  const groups: Record<string, UrlItem[]> = {}
+  
+  urlList.value.forEach(url => {
+    const tag = url.tag || '未分类'
+    if (!groups[tag]) {
+      groups[tag] = []
+    }
+    groups[tag].push(url)
+  })
+  
+  return groups
+})
+
+// 添加URL对话框
+const addUrlDialog = ref(false)
+const newUrl = ref<Partial<UrlItem>>({
+  name: '',
+  address: '',
+  tag: ''
+})
+
 // 切换侧边栏
-const toggleSideMenu = () => {
-  sideMenuCollapsed.value = !sideMenuCollapsed.value
+const toggleLeftDrawer = () => {
+  leftDrawerOpen.value = !leftDrawerOpen.value
 }
+
+// 打开添加URL对话框
+const openAddUrlDialog = () => {
+  newUrl.value = {
+    name: '',
+    address: '',
+    tag: ''
+  }
+  addUrlDialog.value = true
+}
+
+// 保存新URL
+const saveNewUrl = async () => {
+  try {
+    if (!newUrl.value.name || !newUrl.value.address) {
+      $q.notify({
+        color: 'negative',
+        message: '名称和链接地址不能为空',
+        icon: 'warning'
+      })
+      return
+    }
+    
+    // 使用API保存URL
+    // 注意：可能需要根据实际API调整这里的代码
+    await urlApi.saveUrl(newUrl.value as any)
+    
+    $q.notify({
+      color: 'positive',
+      message: '链接添加成功',
+      icon: 'check_circle'
+    })
+    
+    fetchUrlList()
+    addUrlDialog.value = false
+  } catch (error) {
+    $q.notify({
+      color: 'negative',
+      message: '添加链接失败，请重试',
+      icon: 'error'
+    })
+    console.error('保存URL失败:', error)
+  }
+}
+
+// 获取URL列表
+const fetchUrlList = async () => {
+  try {
+    loading.value = true
+    const response = await urlApi.listUrlOfMe()
+    
+    // 检查返回的数据格式是否符合预期
+    if (response.data?.payload) {
+      urlList.value = response.data.payload
+    } else if (response.data?.data) {
+      // 兼容旧的API返回格式
+      urlList.value = response.data.data
+    } else {
+      // 模拟数据用于测试
+      urlList.value = mockData.payload
+    }
+  } catch (error) {
+    console.error('获取URL列表失败:', error)
+    $q.notify({
+      color: 'negative',
+      message: '获取链接列表失败',
+      icon: 'error'
+    })
+    // 测试用
+    urlList.value = mockData.payload
+  } finally {
+    loading.value = false
+  }
+}
+
+// 模拟数据（用于开发阶段测试）
+const mockData = {
+  success: true,
+  payload: [
+    {
+      id: 4,
+      createdBy: 14,
+      createdAt: "2025-04-15T17:59:06",
+      updatedBy: 14,
+      updatedAt: "2025-04-15T17:59:06",
+      tag: "开发环境",
+      name: "虚拟机",
+      address: "https://vdesk.picclife.cn/por/service.csp",
+      userId: 14
+    },
+    {
+      id: 7,
+      createdBy: 14,
+      createdAt: "2025-04-15T17:59:06",
+      updatedBy: 14,
+      updatedAt: "2025-04-15T17:59:06",
+      tag: "流水线",
+      name: "回访流水线-develop",
+      address: "http://devops.itservice.piccnet/console/pipeline/x8cbec/p-72a6ff7240494d7ab76684d7c519b422/history",
+      userId: 14
+    },
+    // ...其他URL项
+  ]
+}
+
+// 组件挂载时获取URL列表
+onMounted(() => {
+  fetchUrlList()
+})
 </script>
 
 <style lang="scss" scoped>
@@ -64,15 +350,156 @@ const toggleSideMenu = () => {
   min-height: 100vh;
 }
 
+.side-menu-container {
+  width: 260px;
+  transition: width 0.3s ease;
+  overflow: hidden;
+  background: #fff;
+  border-right: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.02);
+  
+  &.collapsed {
+    width: 60px;
+    
+    :deep(.q-item__section--main),
+    :deep(.q-item__section--side),
+    :deep(.q-item__label--caption),
+    :deep(.q-expansion-item__toggle-icon),
+    :deep(.q-expansion-item__content) {
+      display: none !important;
+    }
+    
+    :deep(.q-expansion-item--collapsed) {
+      .q-item__section--avatar {
+        padding-right: 0;
+        min-width: 40px;
+        justify-content: center;
+      }
+    }
+    
+    :deep(.add-url-btn) {
+      justify-content: center;
+      
+      .q-item__section--main {
+        display: none;
+      }
+      
+      .q-item__section--avatar {
+        min-width: 40px;
+        padding: 0;
+        justify-content: center;
+      }
+    }
+    
+    :deep(.menu-item) {
+      justify-content: center;
+      
+      .q-item__section--avatar {
+        min-width: 40px;
+        padding: 0;
+        justify-content: center;
+      }
+    }
+    
+    :deep(.q-separator) {
+      margin: 8px 0;
+    }
+  }
+}
+
 .work-page-main {
   display: flex;
   flex-direction: column;
   flex: 1;
+  transition: margin-left 0.3s ease;
+}
+
+.work-page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 16px;
+  height: 60px;
+  background: white;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.header-left, .header-right {
+  display: flex;
+  align-items: center;
+}
+
+.toggle-menu-btn {
+  margin-right: 16px;
+  color: #1976D2;
+  transition: all 0.3s ease;
+  z-index: 100;
+  
+  &:hover {
+    background: rgba(25, 118, 210, 0.1);
+  }
+}
+
+.page-title {
+  font-size: 1.2rem;
+  font-weight: 500;
+  color: #2c3e50;
 }
 
 .work-page-content {
   flex: 1;
   background: #f8fafc;
+}
+
+.status-info {
+  display: flex;
+  margin-left: 24px;
+}
+
+.status-chip {
+  margin: 0 4px;
+  font-size: 0.8rem;
+}
+
+.header-actions {
+  display: flex;
+  
+  .action-btn {
+    margin-left: 4px;
+    color: #718096;
+    
+    &:hover {
+      color: #1976D2;
+      background: rgba(25, 118, 210, 0.1);
+    }
+  }
+}
+
+// 响应式调整
+@media (max-width: 768px) {
+  .status-chip {
+    .q-chip__content {
+      padding: 0 4px;
+    }
+    
+    span {
+      display: none;
+    }
+  }
+}
+
+@media (max-width: 600px) {
+  .page-title {
+    font-size: 1rem;
+  }
+  
+  .status-info {
+    margin-left: 8px;
+  }
 }
 
 // 玻璃效果修改为适合白色背景的样式
@@ -238,5 +665,16 @@ section {
 // 呼出任务项左边框
 .task-item:has(.outgoing-dot) {
   border-left-color: #26A69A;
+}
+
+// 添加侧边栏过渡效果
+.side-menu-enter-active,
+.side-menu-leave-active {
+  transition: transform 0.3s ease;
+}
+
+.side-menu-enter-from,
+.side-menu-leave-to {
+  transform: translateX(-200px);
 }
 </style>

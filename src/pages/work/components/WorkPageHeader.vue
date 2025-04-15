@@ -5,9 +5,11 @@
         flat 
         dense 
         round 
-        icon="menu" 
+        :icon="collapsed ? 'menu_open' : 'menu'" 
         @click="$emit('toggle-menu')" 
-        class="toggle-menu-btn"
+        class="toggle-menu-btn" 
+        color="primary"
+        :title="collapsed ? '展开菜单' : '收起菜单'"
       />
       <div class="page-title">{{ title }}</div>
     </div>
@@ -46,9 +48,9 @@
       </div>
       
       <div class="header-actions">
-        <q-btn flat round dense icon="refresh" class="action-btn" />
-        <q-btn flat round dense icon="settings" class="action-btn" />
-        <q-btn flat round dense icon="help_outline" class="action-btn" />
+        <q-btn flat round dense icon="refresh" class="action-btn" title="刷新" />
+        <q-btn flat round dense icon="settings" class="action-btn" title="设置" />
+        <q-btn flat round dense icon="help_outline" class="action-btn" title="帮助" />
       </div>
     </div>
   </div>
@@ -72,6 +74,10 @@ const props = defineProps({
       completed: 0,
       pending: 0
     })
+  },
+  collapsed: {
+    type: Boolean,
+    default: false
   }
 })
 
@@ -103,10 +109,12 @@ defineEmits(['toggle-menu'])
   margin-right: 16px;
   color: #1976D2;
   transition: all 0.3s ease;
+  z-index: 100;
+  background: rgba(25, 118, 210, 0.05);
   
   &:hover {
-    background: rgba(25, 118, 210, 0.1);
-    transform: rotate(180deg);
+    background: rgba(25, 118, 210, 0.15);
+    transform: scale(1.1);
   }
 }
 

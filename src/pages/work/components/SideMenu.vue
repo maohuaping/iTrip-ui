@@ -1,5 +1,5 @@
 <template>
-  <div class="work-side-menu" :class="{ 'collapsed': collapsed }">
+  <div class="side-menu-inner">
     <q-scroll-area style="height: calc(100vh - 50px);" class="fit">
       <q-list padding>
         <!-- 添加新URL的按钮 -->
@@ -115,7 +115,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, computed } from 'vue'
 import { getUrl } from 'src/api/url/url'
 
 // 显示弹窗的标志
@@ -139,14 +139,6 @@ const menuItems = ref<any[]>([
     url: '/work'
   }
 ])
-
-// 添加 collapsed 属性
-const props = defineProps({
-  collapsed: {
-    type: Boolean,
-    default: false
-  }
-})
 
 // 获取用户URL列表
 const fetchUserUrls = async () => {
@@ -241,7 +233,7 @@ const addNewUrl = async () => {
 }
 
 // 删除URL的方法
-const deleteUrlItem = async (id, event) => {
+const deleteUrlItem = async (id: any, event: Event) => {
   // 阻止事件冒泡，防止点击删除按钮时打开链接
   if (event) {
     event.preventDefault()
@@ -272,65 +264,8 @@ defineOptions({
 </script>
 
 <style lang="scss" scoped>
-.work-side-menu {
-  width: 260px;
-  background: #fff;
-  border-right: 1px solid rgba(0, 0, 0, 0.05);
-  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.02);
-  transition: width 0.3s ease;
-  overflow: visible;
-  
-  &.collapsed {
-    width: 60px;
-    min-width: 60px;
-    
-    :deep(.q-item__section--main),
-    :deep(.q-item__section--side),
-    :deep(.q-item__label--caption),
-    :deep(.q-expansion-item__toggle-icon) {
-      display: none;
-    }
-    
-    :deep(.q-expansion-item__content) {
-      display: none;
-    }
-    
-    :deep(.q-expansion-item--collapsed) {
-      .q-item__section--avatar {
-        padding-right: 0;
-        min-width: 40px;
-        justify-content: center;
-      }
-    }
-    
-    .add-url-btn {
-      justify-content: center;
-      
-      .q-item__section--main {
-        display: none;
-      }
-      
-      .q-item__section--avatar {
-        min-width: 40px;
-        padding: 0;
-        justify-content: center;
-      }
-    }
-    
-    .menu-item {
-      justify-content: center;
-      
-      .q-item__section--avatar {
-        min-width: 40px;
-        padding: 0;
-        justify-content: center;
-      }
-    }
-    
-    .q-separator {
-      margin: 8px 0;
-    }
-  }
+.side-menu-inner {
+  height: 100%;
 }
 
 .add-url-btn {
@@ -428,4 +363,4 @@ defineOptions({
   font-style: italic;
   opacity: 0.6;
 }
-</style>
+</style> 
