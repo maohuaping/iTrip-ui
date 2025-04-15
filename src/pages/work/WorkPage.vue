@@ -53,6 +53,8 @@
       v-model="leftDrawerOpen"
       show-if-above
       bordered
+      :width="240"
+      class="narrow-drawer"
     >
       <q-list>
         <div class="drawer-header q-px-md">
@@ -66,6 +68,7 @@
               dense 
               no-caps 
               class="expand-btn" 
+              :color="allExpanded ? 'primary' : 'blue-7'"
               :label="allExpanded ? '全部收起' : '全部展开'" 
               @click="toggleAllGroups" 
             />
@@ -75,33 +78,44 @@
         <q-separator />
 
         <template v-if="!loading">
-          <!-- 单独控制每个展开项 -->
+          <!-- 使用expand-icon="none"隐藏默认箭头 -->
           <q-expansion-item
             v-for="(group, tag) in groupedUrls" 
             :key="tag"
-            :label="tag"
-            icon="folder"
-            header-class="cursor-pointer group-header"
-            expand-separator
-            switch-toggle-side
             :model-value="expandedGroups[tag] || false"
             @update:model-value="(val) => updateExpandedState(tag, val)"
+            header-class="cursor-pointer group-header"
+            expand-separator
+            expand-icon="none"
           >
-            <q-item
-              v-for="url in group"
-              :key="url.id"
-              clickable
-              tag="a"
-              :href="url.address"
-              target="_blank"
-            >
+            <template v-slot:header>
               <q-item-section avatar>
-                <q-icon name="link" />
+                <q-icon name="folder" />
               </q-item-section>
+              
               <q-item-section>
-                <q-item-label>{{ url.name }}</q-item-label>
+                {{ tag }}
               </q-item-section>
-            </q-item>
+            </template>
+            
+            <q-list class="submenu-list">
+              <q-item
+                v-for="url in group"
+                :key="url.id"
+                clickable
+                tag="a"
+                :href="url.address"
+                target="_blank"
+                class="url-item"
+              >
+                <q-item-section avatar>
+                  <q-icon name="link" />
+                </q-item-section>
+                <q-item-section>
+                  <q-item-label>{{ url.name }}</q-item-label>
+                </q-item-section>
+              </q-item>
+            </q-list>
           </q-expansion-item>
         </template>
         
@@ -744,11 +758,37 @@ section {
 
 .expand-btn {
   font-size: 0.8rem;
-  color: #1976D2;
   
   &:hover {
-    color: #1565C0;
     background: rgba(25, 118, 210, 0.1);
+  }
+}
+
+.url-item {
+  padding-left: 40px; /* 减少链接项的缩进 */
+}
+
+.submenu-list {
+  padding: 0;
+  
+  :deep(.q-item) {
+    padding-top: 4px;
+    padding-bottom: 4px;
+  }
+}
+
+.narrow-drawer {
+  :deep(.q-item) {
+    padding: 8px 8px;
+  }
+  
+  :deep(.q-item__section--avatar) {
+    min-width: 40px;
+    padding-right: 8px;
+  }
+  
+  :deep(.q-expansion-item__content) {
+    padding: 0;
   }
 }
 </style>
