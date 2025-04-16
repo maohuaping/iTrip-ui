@@ -51,7 +51,8 @@
       bordered
       :width="240"
       :breakpoint="700"
-      behavior="desktop"
+      behavior="mobile"
+      overlay
       content-class="bg-white"
     >
       <div class="q-pa-sm">
