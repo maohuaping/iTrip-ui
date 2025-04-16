@@ -33,32 +33,35 @@
           no-caps
           dense
           class="q-mr-sm copy-btn-dropdown"
-          label="复制"
+          :label="selectedText || 'Flex20190429'"
           icon="content_copy"
           dropdown-icon="arrow_drop_down"
           split
-          @click="copyToClipboard('页面URL')"
+          @click="handleTextSelection(selectedText || 'Flex20190429')"
         >
           <q-list>
-            <q-item clickable v-close-popup @click="copyToClipboard('倒计时信息')">
-              <q-item-section avatar>
-                <q-icon name="schedule" />
+            <q-item clickable v-close-popup @click="handleTextSelection('Flex20190429')">
+              <q-item-section>
+                Flex20190429
               </q-item-section>
-              <q-item-section>复制倒计时</q-item-section>
             </q-item>
-
-            <q-item clickable v-close-popup @click="copyToClipboard('任务状态')">
-              <q-item-section avatar>
-                <q-icon name="task" />
+            
+            <q-item clickable v-close-popup @click="handleTextSelection('Media@20240218')">
+              <q-item-section>
+                Media@20240218
               </q-item-section>
-              <q-item-section>复制任务状态</q-item-section>
             </q-item>
-
-            <q-item clickable v-close-popup @click="copyToClipboard('页面URL')">
-              <q-item-section avatar>
-                <q-icon name="link" />
+            
+            <q-item clickable v-close-popup @click="handleTextSelection('Pi20240219*')">
+              <q-item-section>
+                Pi20240219*
               </q-item-section>
-              <q-item-section>复制页面链接</q-item-section>
+            </q-item>
+            
+            <q-item clickable v-close-popup @click="handleTextSelection('Flex@20190429')">
+              <q-item-section>
+                Flex@20190429
+              </q-item-section>
             </q-item>
           </q-list>
         </q-btn-dropdown>
@@ -503,29 +506,18 @@ onUnmounted(() => {
   }
 })
 
-// 复制到剪贴板功能
-const copyToClipboard = (type: string) => {
-  let textToCopy = ''
+// 当前选中的文本
+const selectedText = ref('Flex20190429')
 
-  switch (type) {
-    case '倒计时信息':
-      textToCopy = `截止倒计时: ${countdownTime.value.days}天${countdownTime.value.hours}时${countdownTime.value.minutes}分${countdownTime.value.seconds}秒`
-      break
-    case '任务状态':
-      textToCopy = `总任务: ${statusInfo.value.tasks}, 已完成: ${statusInfo.value.completed}, 待处理: ${statusInfo.value.pending}`
-      break
-    case '页面URL':
-      textToCopy = window.location.href
-      break
-    default:
-      textToCopy = '复制内容不可用'
-  }
-
-  navigator.clipboard.writeText(textToCopy)
+// 处理文本选择功能
+const handleTextSelection = (text: string) => {
+  selectedText.value = text // 更新选中的文本
+  
+  navigator.clipboard.writeText(text)
     .then(() => {
       $q.notify({
         color: 'positive',
-        message: '已复制到剪贴板',
+        message: `已复制: ${text}`,
         icon: 'content_copy',
         position: 'top',
         timeout: 1000
