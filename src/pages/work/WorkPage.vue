@@ -13,7 +13,7 @@
 
         <q-toolbar-title class="row items-center">
           <div>{{ pageTitle }}</div>
-          
+
           <div class="countdown-container q-ml-md">
             <q-badge color="amber" text-color="black" class="countdown-badge">
               <q-icon name="schedule" size="xs" class="q-mr-xs" />
@@ -26,32 +26,69 @@
           </div>
         </q-toolbar-title>
 
+        <!-- 使用Quasar的split button组件 - 改进版 -->
+        <q-btn-dropdown
+          flat
+          color="primary"
+          no-caps
+          dense
+          class="q-mr-sm copy-btn-dropdown"
+          label="复制"
+          icon="content_copy"
+          dropdown-icon="arrow_drop_down"
+          split
+          @click="copyToClipboard('页面URL')"
+        >
+          <q-list>
+            <q-item clickable v-close-popup @click="copyToClipboard('倒计时信息')">
+              <q-item-section avatar>
+                <q-icon name="schedule" />
+              </q-item-section>
+              <q-item-section>复制倒计时</q-item-section>
+            </q-item>
+
+            <q-item clickable v-close-popup @click="copyToClipboard('任务状态')">
+              <q-item-section avatar>
+                <q-icon name="task" />
+              </q-item-section>
+              <q-item-section>复制任务状态</q-item-section>
+            </q-item>
+
+            <q-item clickable v-close-popup @click="copyToClipboard('页面URL')">
+              <q-item-section avatar>
+                <q-icon name="link" />
+              </q-item-section>
+              <q-item-section>复制页面链接</q-item-section>
+            </q-item>
+          </q-list>
+        </q-btn-dropdown>
+
         <div class="status-info">
-          <q-chip 
+          <q-chip
             outline
-            color="primary" 
-            text-color="primary" 
-            icon="task_alt" 
+            color="primary"
+            text-color="primary"
+            icon="task_alt"
             class="status-chip"
           >
             已完成: {{ statusInfo.completed }}
           </q-chip>
-          
-          <q-chip 
+
+          <q-chip
             outline
-            color="orange" 
-            text-color="orange" 
-            icon="pending" 
+            color="orange"
+            text-color="orange"
+            icon="pending"
             class="status-chip"
           >
             待处理: {{ statusInfo.pending }}
           </q-chip>
-          
-          <q-chip 
+
+          <q-chip
             outline
-            color="blue-grey" 
-            text-color="blue-grey" 
-            icon="inventory" 
+            color="blue-grey"
+            text-color="blue-grey"
+            icon="inventory"
             class="status-chip"
           >
             总任务: {{ statusInfo.tasks }}
@@ -72,16 +109,16 @@
           <q-item-label header class="q-py-sm">
             我的链接
           </q-item-label>
-          
+
           <div class="expand-actions q-py-sm">
-            <q-btn 
-              flat 
-              dense 
-              no-caps 
-              class="expand-btn" 
+            <q-btn
+              flat
+              dense
+              no-caps
+              class="expand-btn"
               :color="allExpanded ? 'primary' : 'blue-7'"
-              :label="allExpanded ? '全部收起' : '全部展开'" 
-              @click="toggleAllGroups" 
+              :label="allExpanded ? '全部收起' : '全部展开'"
+              @click="toggleAllGroups"
             />
           </div>
         </div>
@@ -91,7 +128,7 @@
         <template v-if="!loading">
           <!-- 使用expand-icon="none"隐藏默认箭头 -->
           <q-expansion-item
-            v-for="(group, tag) in groupedUrls" 
+            v-for="(group, tag) in groupedUrls"
             :key="tag"
             :model-value="expandedGroups[tag] || false"
             @update:model-value="(val) => updateExpandedState(tag, val)"
@@ -103,12 +140,12 @@
               <q-item-section avatar>
                 <q-icon name="folder" />
               </q-item-section>
-              
+
               <q-item-section>
                 {{ tag }}
               </q-item-section>
             </template>
-            
+
             <q-list class="submenu-list">
               <q-item
                 v-for="url in group"
@@ -129,7 +166,7 @@
             </q-list>
           </q-expansion-item>
         </template>
-        
+
         <q-item v-else>
           <q-item-section>
             <q-spinner color="primary" />
@@ -138,7 +175,7 @@
         </q-item>
 
         <q-separator spaced />
-        
+
         <q-item clickable @click="openAddUrlDialog" class="add-url-btn q-mt-md">
           <q-item-section avatar>
             <q-icon name="add" color="primary" />
@@ -163,7 +200,7 @@
         </div>
       </q-page>
     </q-page-container>
-    
+
     <!-- 添加URL对话框 -->
     <q-dialog v-model="addUrlDialog" persistent>
       <q-card style="min-width: 350px">
@@ -251,8 +288,8 @@ const countdownTime = ref({
   seconds: 0
 })
 
-// 修改为2025年4月17日13:30
-const targetDate = new Date('2025-04-17T13:30:00+08:00')
+// 修改为2025年4月16日13:30
+const targetDate = new Date('2025-04-16T13:30:00+08:00')
 
 let countdownInterval: number | undefined
 
@@ -260,18 +297,18 @@ let countdownInterval: number | undefined
 const calculateCountdown = () => {
   const now = new Date()
   const difference = targetDate.getTime() - now.getTime()
-  
+
   if (difference <= 0) {
     // 如果已经到期
     countdownTime.value = { days: 0, hours: 0, minutes: 0, seconds: 0 }
     return
   }
-  
+
   const days = Math.floor(difference / (1000 * 60 * 60 * 24))
   const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
   const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60))
   const seconds = Math.floor((difference % (1000 * 60)) / 1000)
-  
+
   countdownTime.value = { days, hours, minutes, seconds }
 }
 
@@ -286,14 +323,14 @@ const expandedGroups = reactive<Record<string, boolean>>({})
 const allExpanded = computed(() => {
   const tagKeys = Object.keys(groupedUrls.value)
   if (tagKeys.length === 0) return false
-  
+
   return tagKeys.every(tag => expandedGroups[tag])
 })
 
 // 按标签分组的URL
 const groupedUrls = computed(() => {
   const groups: Record<string, UrlItem[]> = {}
-  
+
   urlList.value.forEach(url => {
     const tag = url.tag || '未分类'
     if (!groups[tag]) {
@@ -301,7 +338,7 @@ const groupedUrls = computed(() => {
     }
     groups[tag].push(url)
   })
-  
+
   return groups
 })
 
@@ -328,7 +365,7 @@ const updateExpandedState = (tag: string, expanded: boolean) => {
       }
     })
   }
-  
+
   expandedGroups[tag] = expanded
 }
 
@@ -368,16 +405,16 @@ const saveNewUrl = async () => {
       })
       return
     }
-    
+
     // 使用API保存URL
     await urlApi.saveUrl(newUrl.value as any)
-    
+
     $q.notify({
       color: 'positive',
       message: '链接添加成功',
       icon: 'check_circle'
     })
-    
+
     fetchUrlList()
     addUrlDialog.value = false
   } catch (error) {
@@ -395,7 +432,7 @@ const fetchUrlList = async () => {
   try {
     loading.value = true
     const response = await urlApi.listUrlOfMe()
-    
+
     // 检查返回的数据格式是否符合预期
     if (response.data?.payload) {
       urlList.value = response.data.payload
@@ -453,7 +490,7 @@ const mockData = {
 // 组件挂载时获取URL列表
 onMounted(() => {
   fetchUrlList()
-  
+
   // 初始化倒计时
   calculateCountdown()
   countdownInterval = setInterval(calculateCountdown, 1000)
@@ -465,6 +502,45 @@ onUnmounted(() => {
     clearInterval(countdownInterval)
   }
 })
+
+// 复制到剪贴板功能
+const copyToClipboard = (type: string) => {
+  let textToCopy = ''
+
+  switch (type) {
+    case '倒计时信息':
+      textToCopy = `截止倒计时: ${countdownTime.value.days}天${countdownTime.value.hours}时${countdownTime.value.minutes}分${countdownTime.value.seconds}秒`
+      break
+    case '任务状态':
+      textToCopy = `总任务: ${statusInfo.value.tasks}, 已完成: ${statusInfo.value.completed}, 待处理: ${statusInfo.value.pending}`
+      break
+    case '页面URL':
+      textToCopy = window.location.href
+      break
+    default:
+      textToCopy = '复制内容不可用'
+  }
+
+  navigator.clipboard.writeText(textToCopy)
+    .then(() => {
+      $q.notify({
+        color: 'positive',
+        message: '已复制到剪贴板',
+        icon: 'content_copy',
+        position: 'top',
+        timeout: 1000
+      })
+    })
+    .catch(err => {
+      console.error('复制失败:', err)
+      $q.notify({
+        color: 'negative',
+        message: '复制失败，请重试',
+        icon: 'error',
+        position: 'top'
+      })
+    })
+}
 </script>
 
 <style lang="scss" scoped>
@@ -481,10 +557,10 @@ onUnmounted(() => {
   background: #fff;
   border-right: 1px solid rgba(0, 0, 0, 0.05);
   box-shadow: 2px 0 8px rgba(0, 0, 0, 0.02);
-  
+
   &.collapsed {
     width: 60px;
-    
+
     :deep(.q-item__section--main),
     :deep(.q-item__section--side),
     :deep(.q-item__label--caption),
@@ -492,7 +568,7 @@ onUnmounted(() => {
     :deep(.q-expansion-item__content) {
       display: none !important;
     }
-    
+
     :deep(.q-expansion-item--collapsed) {
       .q-item__section--avatar {
         padding-right: 0;
@@ -500,31 +576,31 @@ onUnmounted(() => {
         justify-content: center;
       }
     }
-    
+
     :deep(.add-url-btn) {
       justify-content: center;
-      
+
       .q-item__section--main {
         display: none;
       }
-      
+
       .q-item__section--avatar {
         min-width: 40px;
         padding: 0;
         justify-content: center;
       }
     }
-    
+
     :deep(.menu-item) {
       justify-content: center;
-      
+
       .q-item__section--avatar {
         min-width: 40px;
         padding: 0;
         justify-content: center;
       }
     }
-    
+
     :deep(.q-separator) {
       margin: 8px 0;
     }
@@ -562,7 +638,7 @@ onUnmounted(() => {
   color: #1976D2;
   transition: all 0.3s ease;
   z-index: 100;
-  
+
   &:hover {
     background: rgba(25, 118, 210, 0.1);
   }
@@ -591,11 +667,11 @@ onUnmounted(() => {
 
 .header-actions {
   display: flex;
-  
+
   .action-btn {
     margin-left: 4px;
     color: #718096;
-    
+
     &:hover {
       color: #1976D2;
       background: rgba(25, 118, 210, 0.1);
@@ -609,7 +685,7 @@ onUnmounted(() => {
     .q-chip__content {
       padding: 0 4px;
     }
-    
+
     span {
       display: none;
     }
@@ -620,7 +696,7 @@ onUnmounted(() => {
   .page-title {
     font-size: 1rem;
   }
-  
+
   .status-info {
     margin-left: 8px;
   }
@@ -812,7 +888,7 @@ section {
 
 .expand-btn {
   font-size: 0.8rem;
-  
+
   &:hover {
     background: rgba(25, 118, 210, 0.1);
   }
@@ -824,7 +900,7 @@ section {
 
 .submenu-list {
   padding: 0;
-  
+
   :deep(.q-item) {
     padding-top: 4px;
     padding-bottom: 4px;
@@ -835,12 +911,12 @@ section {
   :deep(.q-item) {
     padding: 8px 8px;
   }
-  
+
   :deep(.q-item__section--avatar) {
     min-width: 40px;
     padding-right: 8px;
   }
-  
+
   :deep(.q-expansion-item__content) {
     padding: 0;
   }
@@ -883,9 +959,24 @@ section {
   .countdown-label {
     display: none;
   }
-  
+
   .countdown-badge {
     padding: 4px 8px;
+  }
+}
+
+// 增强复制按钮分割线的样式
+.copy-btn-dropdown {
+  :deep(.q-btn-dropdown__arrow-container) {
+    border-left: 1px solid rgba(25, 118, 210, 0.4);
+    margin-left: 4px;
+    padding-left: 4px;
+  }
+
+  &:hover {
+    :deep(.q-btn-dropdown__arrow-container) {
+      border-left-color: rgba(25, 118, 210, 0.7);
+    }
   }
 }
 </style>
