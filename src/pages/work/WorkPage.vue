@@ -110,6 +110,18 @@
         >
           <q-tooltip>回到主页</q-tooltip>
         </q-btn>
+        
+        <!-- 添加暗黑主题切换按钮 -->
+        <q-btn
+          flat
+          dense
+          :icon="isDark ? 'light_mode' : 'dark_mode'"
+          aria-label="切换主题"
+          class="q-ml-sm"
+          @click="toggleDarkMode"
+        >
+          <q-tooltip>{{ isDark ? '切换到亮色模式' : '切换到暗色模式' }}</q-tooltip>
+        </q-btn>
       </q-toolbar>
     </q-header>
 
@@ -284,6 +296,28 @@ interface UrlItem {
 
 const $q = useQuasar()
 const urlApi = getUrl()
+
+// 暗黑模式状态
+const isDark = ref($q.dark.isActive)
+
+// 切换暗黑模式
+const toggleDarkMode = () => {
+  $q.dark.toggle()
+  isDark.value = $q.dark.isActive
+  
+  // 可选：将用户主题偏好保存到 localStorage
+  localStorage.setItem('darkMode', isDark.value ? 'true' : 'false')
+}
+
+// 在组件挂载时恢复用户的主题偏好
+onMounted(() => {
+  const savedDarkMode = localStorage.getItem('darkMode')
+  if (savedDarkMode !== null) {
+    const prefersDark = savedDarkMode === 'true'
+    $q.dark.set(prefersDark)
+    isDark.value = prefersDark
+  }
+})
 
 // 侧边栏状态
 const leftDrawerOpen = ref(false)
