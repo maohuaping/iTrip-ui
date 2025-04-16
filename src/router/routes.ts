@@ -17,10 +17,11 @@ const routes: RouteRecordRaw[] = [
     ]
   },
   {
-    path: '/trip',
+    path: '',
     component: () => import('layouts/CleanLayout.vue'),
     children: [
-      { path: '', component: () => import('pages/trip/TripPage.vue') },
+      { path: '/trip', component: () => import('pages/trip/TripPage.vue') },
+      { path: '/plan', component: () => import('pages/trip/PlanTrip.vue') },
     ]
   },
   {
