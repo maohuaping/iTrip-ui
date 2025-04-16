@@ -50,70 +50,70 @@
       show-if-above
       bordered
       :width="240"
-      class="narrow-drawer"
+      :breakpoint="700"
+      behavior="desktop"
+      content-class="bg-white"
     >
-      <q-list>
-        <div class="drawer-header q-px-md">
-          <q-item-label header class="q-py-sm">
-            旅行导航
-          </q-item-label>
-        </div>
-
-        <q-separator />
-
-        <q-item clickable to="/trip/destinations" class="q-py-sm">
-          <q-item-section avatar>
-            <q-icon name="place" />
-          </q-item-section>
-          <q-item-section>热门目的地</q-item-section>
-        </q-item>
-
-        <q-item clickable to="/trip/routes" class="q-py-sm">
-          <q-item-section avatar>
-            <q-icon name="map" />
-          </q-item-section>
-          <q-item-section>推荐路线</q-item-section>
-        </q-item>
-
-        <q-item clickable to="/trip/types" class="q-py-sm">
-          <q-item-section avatar>
-            <q-icon name="category" />
-          </q-item-section>
-          <q-item-section>旅行风格</q-item-section>
-        </q-item>
-
-        <q-item clickable to="/trip/blogs" class="q-py-sm">
-          <q-item-section avatar>
-            <q-icon name="article" />
-          </q-item-section>
-          <q-item-section>旅行博客</q-item-section>
-        </q-item>
-
-        <q-separator spaced />
-
-        <q-item-label header>我的旅行</q-item-label>
+      <div class="q-pa-sm">
+        <div class="text-subtitle1 q-pa-sm q-mb-sm text-weight-medium text-primary">旅行导航</div>
         
-        <q-item clickable to="/trip/planner" class="q-py-sm">
-          <q-item-section avatar>
-            <q-icon name="event_note" />
-          </q-item-section>
-          <q-item-section>行程规划</q-item-section>
-        </q-item>
+        <q-separator class="q-mb-sm" />
+        
+        <q-list padding dense class="menu-list">
+          <q-item clickable to="/trip/destinations" v-ripple>
+            <q-item-section avatar>
+              <q-icon name="place" />
+            </q-item-section>
+            <q-item-section>热门目的地</q-item-section>
+          </q-item>
 
-        <q-item clickable to="/trip/favorites" class="q-py-sm">
-          <q-item-section avatar>
-            <q-icon name="favorite" />
-          </q-item-section>
-          <q-item-section>我的收藏</q-item-section>
-        </q-item>
+          <q-item clickable to="/trip/routes" v-ripple>
+            <q-item-section avatar>
+              <q-icon name="map" />
+            </q-item-section>
+            <q-item-section>推荐路线</q-item-section>
+          </q-item>
 
-        <q-item clickable to="/trip/history" class="q-py-sm">
-          <q-item-section avatar>
-            <q-icon name="history" />
-          </q-item-section>
-          <q-item-section>历史行程</q-item-section>
-        </q-item>
-      </q-list>
+          <q-item clickable to="/trip/types" v-ripple>
+            <q-item-section avatar>
+              <q-icon name="category" />
+            </q-item-section>
+            <q-item-section>旅行风格</q-item-section>
+          </q-item>
+
+          <q-item clickable to="/trip/blogs" v-ripple>
+            <q-item-section avatar>
+              <q-icon name="article" />
+            </q-item-section>
+            <q-item-section>旅行博客</q-item-section>
+          </q-item>
+          
+          <q-separator class="q-my-sm" />
+          
+          <div class="text-subtitle2 q-pa-sm q-pb-xs text-weight-medium">我的旅行</div>
+          
+          <q-item clickable to="/trip/planner" v-ripple>
+            <q-item-section avatar>
+              <q-icon name="event_note" />
+            </q-item-section>
+            <q-item-section>行程规划</q-item-section>
+          </q-item>
+
+          <q-item clickable to="/trip/favorites" v-ripple>
+            <q-item-section avatar>
+              <q-icon name="favorite" />
+            </q-item-section>
+            <q-item-section>我的收藏</q-item-section>
+          </q-item>
+
+          <q-item clickable to="/trip/history" v-ripple>
+            <q-item-section avatar>
+              <q-icon name="history" />
+            </q-item-section>
+            <q-item-section>历史行程</q-item-section>
+          </q-item>
+        </q-list>
+      </div>
     </q-drawer>
 
     <q-page-container>
@@ -534,17 +534,6 @@ export default {
   align-items: center;
 }
 
-.narrow-drawer {
-  :deep(.q-item) {
-    padding: 8px 8px;
-  }
-
-  :deep(.q-item__section--avatar) {
-    min-width: 40px;
-    padding-right: 8px;
-  }
-}
-
 .search-card {
   margin-top: -30px;
   z-index: 1;
@@ -601,5 +590,27 @@ export default {
   width: 60px;
   background: linear-gradient(to right, var(--q-primary), transparent);
   border-radius: 3px;
+}
+
+/* 简化菜单样式 */
+.menu-list :deep(.q-item) {
+  border-radius: 4px;
+  padding: 8px 8px;
+  margin-bottom: 2px;
+}
+
+.menu-list :deep(.q-item):hover {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.menu-list :deep(.q-item.q-router-link-active) {
+  background: rgba(25, 118, 210, 0.1);
+  color: var(--q-primary);
+  font-weight: 500;
+}
+
+/* 优化抽屉过渡 */
+.q-drawer {
+  will-change: transform;
 }
 </style>
