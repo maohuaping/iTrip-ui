@@ -11,6 +11,21 @@
           @click="toggleLeftDrawer"
         />
 
+        <!-- 响应式主页按钮 -->
+        <q-btn
+          flat
+          dense
+          icon="home"
+          no-caps
+          :label="$q.screen.gt.xs ? '主页' : ''"
+          class="q-ml-sm"
+          aria-label="回到主页"
+          to="/"
+          color="primary"
+        >
+          <q-tooltip>回到主页</q-tooltip>
+        </q-btn>
+
         <q-toolbar-title class="row items-center">
           <div>{{ pageTitle }}</div>
 
