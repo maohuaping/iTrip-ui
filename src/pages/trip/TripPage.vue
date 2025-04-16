@@ -37,7 +37,7 @@
           :label="$q.screen.gt.xs ? '主页' : ''"
           class="q-ml-sm"
           aria-label="回到主页"
-          to="/"
+          to="/work"
           color="primary"
         >
           <q-tooltip>回到主页</q-tooltip>
