@@ -1,7 +1,7 @@
 <template>
   <q-page class="plan-trip-page">
-    <!-- 简洁紧凑的页面头部 -->
-    <div class="header-section bg-primary text-white q-pa-md">
+    <!-- 头部 - 更具视觉冲击力的渐变设计 -->
+    <div class="header-section text-white q-pa-md">
       <div class="container">
         <div class="row items-center justify-between">
           <div class="col-auto">
@@ -17,28 +17,29 @@
       </div>
     </div>
 
-    <!-- 底部导航栏 - 移动端优先 -->
+    <!-- 底部导航增加动画效果 -->
     <div class="mobile-bottom-nav bg-white shadow-up-1 fixed-bottom q-py-sm" v-if="$q.screen.lt.md">
       <div class="row no-wrap justify-around">
         <div
           v-for="(step, index) in planSteps"
           :key="index"
-          class="col text-center cursor-pointer"
-          @click="currentStep = index + 1"
+          class="col text-center cursor-pointer nav-item"
+          @click="currentStep = (index + 1).toString()"
+          :class="{'nav-item-active': currentStep === (index + 1).toString()}"
         >
           <q-icon
             :name="step.icon"
-            :color="currentStep === index + 1 ? 'primary' : 'grey-7'"
+            :color="currentStep === (index + 1).toString() ? 'primary' : 'grey-7'"
             size="md"
           />
-          <div class="text-caption" :class="currentStep === index + 1 ? 'text-primary' : 'text-grey-7'">
+          <div class="text-caption" :class="currentStep === (index + 1).toString() ? 'text-primary' : 'text-grey-7'">
             {{ step.title }}
           </div>
         </div>
       </div>
     </div>
 
-    <!-- 顶部标签导航 - PC端 -->
+    <!-- PC端标签导航 - 更现代的设计 -->
     <div class="desktop-tabs" v-if="$q.screen.gt.sm">
       <div class="container">
         <q-tabs
@@ -46,27 +47,43 @@
           class="text-primary"
           indicator-color="primary"
           align="justify"
+          active-color="primary"
+          active-bg-color="blue-1"
+          narrow-indicator
+          dense
         >
-          <q-tab v-for="(step, index) in planSteps" :key="index" :name="index + 1" :icon="step.icon" :label="step.title" />
+          <q-route-tab v-for="(step, index) in planSteps" :key="index" :name="(index + 1).toString()">
+            <div class="row items-center q-gutter-x-sm">
+              <q-icon :name="step.icon" size="sm" />
+              <div>{{ step.title }}</div>
+            </div>
+          </q-route-tab>
         </q-tabs>
       </div>
     </div>
 
-    <!-- 主内容区 - 带内容页面 -->
+    <!-- 主内容区 - 带过渡动画 -->
     <div class="container q-py-md content-wrapper">
       <q-tab-panels
         v-model="currentStep"
         animated
         swipeable
-        transition-prev="slide-right"
-        transition-next="slide-left"
+        transition-prev="scale"
+        transition-next="scale"
         class="transparent"
       >
         <!-- 第一步：基本信息 -->
         <q-tab-panel name="1">
-          <div class="text-h6 q-mb-md">行程基本信息</div>
+          <div class="section-header">
+            <div class="text-h5 text-primary">
+              <q-icon name="info" class="q-mr-sm" />
+              行程基本信息
+            </div>
+            <div class="text-caption text-grey">第一步：填写您的旅行基本信息</div>
+          </div>
+          
           <q-form ref="tripForm" @submit="goToNextStep">
-            <q-card flat bordered>
+            <q-card flat bordered class="form-card q-mt-md">
               <q-card-section>
                 <q-input
                   filled
@@ -74,8 +91,12 @@
                   label="行程名称 *"
                   stack-label
                   :rules="[val => !!val || '请输入行程名称']"
-                  class="q-mb-md"
-                />
+                  class="custom-input"
+                >
+                  <template v-slot:prepend>
+                    <q-icon name="edit" color="primary" />
+                  </template>
+                </q-input>
                 
                 <q-input
                   filled
@@ -83,10 +104,15 @@
                   label="目的地 *"
                   stack-label
                   :rules="[val => !!val || '请输入目的地']"
-                  class="q-mb-md"
+                  class="custom-input q-mt-md"
                 >
                   <template v-slot:prepend>
-                    <q-icon name="place" />
+                    <q-icon name="place" color="deep-orange" />
+                  </template>
+                  <template v-slot:append>
+                    <q-btn round flat dense icon="travel_explore" color="primary" @click="showDestinationSuggestions = true">
+                      <q-tooltip>浏览热门目的地</q-tooltip>
+                    </q-btn>
                   </template>
                 </q-input>
                 
@@ -97,18 +123,18 @@
                   stack-label
                   readonly
                   :rules="[val => !!val || '请选择日期']"
-                  class="q-mb-md"
+                  class="custom-input q-mt-md"
                 >
                   <template v-slot:prepend>
-                    <q-icon name="event" />
+                    <q-icon name="event" color="green" />
                   </template>
                   <template v-slot:append>
-                    <q-icon name="event" class="cursor-pointer">
+                    <q-icon name="event" class="cursor-pointer" color="primary">
                       <q-popup-proxy ref="qDateProxy" transition-show="scale" transition-hide="scale">
                         <q-date
                           v-model="trip.dateRange"
                           range
-                          minimal
+                          color="primary"
                           @update:model-value="() => $refs.qDateProxy.hide()"
                         />
                       </q-popup-proxy>
@@ -116,32 +142,38 @@
                   </template>
                 </q-input>
                 
-                <q-select
-                  filled
-                  v-model="trip.travelers"
-                  :options="travelerOptions"
-                  label="旅行人数 *"
-                  stack-label
-                  :rules="[val => !!val || '请选择旅行人数']"
-                  class="q-mb-md"
-                >
-                  <template v-slot:prepend>
-                    <q-icon name="people" />
-                  </template>
-                </q-select>
-                
-                <q-select
-                  filled
-                  v-model="trip.tripType"
-                  :options="tripTypeOptions"
-                  label="旅行类型"
-                  stack-label
-                  class="q-mb-md"
-                >
-                  <template v-slot:prepend>
-                    <q-icon name="category" />
-                  </template>
-                </q-select>
+                <div class="row q-col-gutter-md q-mt-md">
+                  <div class="col-12 col-md-6">
+                    <q-select
+                      filled
+                      v-model="trip.travelers"
+                      :options="travelerOptions"
+                      label="旅行人数 *"
+                      stack-label
+                      :rules="[val => !!val || '请选择旅行人数']"
+                      class="custom-input"
+                    >
+                      <template v-slot:prepend>
+                        <q-icon name="people" color="purple" />
+                      </template>
+                    </q-select>
+                  </div>
+                  
+                  <div class="col-12 col-md-6">
+                    <q-select
+                      filled
+                      v-model="trip.tripType"
+                      :options="tripTypeOptions"
+                      label="旅行类型"
+                      stack-label
+                      class="custom-input"
+                    >
+                      <template v-slot:prepend>
+                        <q-icon name="category" color="blue" />
+                      </template>
+                    </q-select>
+                  </div>
+                </div>
                 
                 <q-input
                   filled
@@ -150,109 +182,201 @@
                   label="行程描述"
                   stack-label
                   autogrow
-                />
+                  class="custom-input q-mt-md"
+                >
+                  <template v-slot:prepend>
+                    <q-icon name="description" color="teal" />
+                  </template>
+                </q-input>
               </q-card-section>
             </q-card>
             
-            <div class="row justify-end q-mt-md">
+            <div class="row justify-end q-mt-lg">
               <q-btn 
                 color="primary" 
                 type="submit"
                 label="下一步" 
                 :disable="!trip.name || !trip.destination || !trip.dateRange"
+                class="next-btn"
+                icon-right="arrow_forward"
               />
             </div>
           </q-form>
+          
+          <!-- 热门目的地推荐 -->
+          <q-dialog v-model="showDestinationSuggestions" persistent>
+            <q-card style="width: 90vw; max-width: 500px">
+              <q-card-section class="row items-center">
+                <div class="text-h6">热门目的地</div>
+                <q-space />
+                <q-btn icon="close" flat round dense v-close-popup />
+              </q-card-section>
+              
+              <q-card-section class="scroll" style="max-height: 60vh">
+                <div class="row q-col-gutter-sm">
+                  <div v-for="(dest, index) in popularDestinations" :key="index" class="col-6">
+                    <q-card class="destination-card cursor-pointer" flat @click="selectDestination(dest)">
+                      <q-img :src="dest.image" height="120px">
+                        <div class="absolute-bottom text-subtitle2 text-center bg-primary-7">
+                          {{ dest.name }}
+                        </div>
+                      </q-img>
+                    </q-card>
+                  </div>
+                </div>
+              </q-card-section>
+            </q-card>
+          </q-dialog>
         </q-tab-panel>
 
         <!-- 第二步：行程安排 -->
         <q-tab-panel name="2">
-          <div class="text-h6 q-mb-md">行程安排</div>
-          <div class="text-subtitle2 q-mb-sm">您的行程天数：{{ getDaysBetween() }} 天</div>
+          <div class="section-header">
+            <div class="text-h5 text-primary">
+              <q-icon name="map" class="q-mr-sm" />
+              行程安排
+            </div>
+            <div class="text-caption text-grey">第二步：规划每天的活动安排</div>
+          </div>
           
-          <div v-if="getDaysBetween() > 0">
-            <q-card v-for="(day, index) in days" :key="index" flat bordered class="q-mb-md">
-              <q-card-section class="bg-blue-1">
-                <div class="text-h6">第 {{ index + 1 }} 天</div>
-                <div class="text-subtitle2">{{ formatDate(day.date) }}</div>
+          <div class="stats-card q-mt-md q-pa-md bg-blue-1 rounded-borders">
+            <div class="row items-center">
+              <div class="col">
+                <div class="text-h6">您的行程天数</div>
+                <div class="text-subtitle1">共 {{ getDaysBetween() }} 天</div>
+              </div>
+              <div class="col-auto">
+                <q-icon name="date_range" size="2.5rem" color="primary" />
+              </div>
+            </div>
+          </div>
+          
+          <div v-if="getDaysBetween() > 0" class="q-mt-md">
+            <q-card v-for="(day, index) in days" :key="index" flat bordered class="day-card q-mb-md">
+              <q-card-section class="day-header">
+                <div class="row items-center justify-between">
+                  <div class="col">
+                    <div class="text-h6">第 {{ index + 1 }} 天</div>
+                    <div class="text-subtitle2">{{ formatDate(day.date) }}</div>
+                  </div>
+                  <div class="col-auto">
+                    <q-avatar color="white" text-color="primary" size="md">
+                      <q-icon name="today" />
+                    </q-avatar>
+                  </div>
+                </div>
               </q-card-section>
               
+              <q-separator />
+              
               <q-card-section>
-                <q-list>
-                  <q-item v-for="(activity, actIndex) in day.activities" :key="actIndex" class="q-mb-xs">
-                    <q-item-section avatar>
-                      <q-avatar color="primary" text-color="white">
-                        <q-icon :name="getActivityIcon(activity.type)" />
-                      </q-avatar>
-                    </q-item-section>
-                    <q-item-section>
-                      <q-item-label>{{ activity.time }} - {{ activity.name }}</q-item-label>
-                      <q-item-label caption v-if="activity.location">{{ activity.location }}</q-item-label>
-                      <q-item-label caption v-if="activity.note">{{ activity.note }}</q-item-label>
-                    </q-item-section>
-                    <q-item-section side>
-                      <div class="row items-center">
-                        <q-btn flat round dense icon="edit" size="sm" @click="editActivity(index, actIndex)" />
-                        <q-btn flat round dense icon="delete" size="sm" @click="removeActivity(index, actIndex)" />
+                <q-timeline color="secondary">
+                  <q-timeline-entry
+                    v-for="(activity, actIndex) in day.activities"
+                    :key="actIndex"
+                    :title="activity.name"
+                    :subtitle="activity.time"
+                    :icon="getActivityIcon(activity.type)"
+                    :color="getActivityColor(activity.type)"
+                  >
+                    <div>
+                      <div v-if="activity.location" class="q-mb-xs">
+                        <q-icon name="place" size="xs" color="grey-7" /> {{ activity.location }}
                       </div>
-                    </q-item-section>
-                  </q-item>
-
-                  <q-item clickable @click="addNewActivity(index)" class="text-primary">
-                    <q-item-section avatar>
-                      <q-avatar color="primary" text-color="white">
-                        <q-icon name="add" />
-                      </q-avatar>
-                    </q-item-section>
-                    <q-item-section>
-                      <q-item-label>添加活动</q-item-label>
-                    </q-item-section>
-                  </q-item>
-                </q-list>
+                      <div v-if="activity.note" class="text-grey-8">{{ activity.note }}</div>
+                      
+                      <div class="row justify-end q-mt-sm">
+                        <q-btn flat round dense icon="edit" color="primary" @click="editActivity(index, actIndex)" />
+                        <q-btn flat round dense icon="delete" color="negative" @click="removeActivity(index, actIndex)" />
+                      </div>
+                    </div>
+                  </q-timeline-entry>
+                  
+                  <q-timeline-entry
+                    title="添加新活动"
+                    icon="add"
+                    color="primary"
+                  >
+                    <div>
+                      <q-btn
+                        label="添加活动"
+                        color="primary"
+                        outline
+                        class="full-width"
+                        @click="addNewActivity(index)"
+                        icon="add_circle"
+                      />
+                    </div>
+                  </q-timeline-entry>
+                </q-timeline>
               </q-card-section>
             </q-card>
           </div>
-          <div v-else class="text-center q-pa-md text-grey">
-            请先在上方选择旅行日期
+          <div v-else class="no-data-placeholder">
+            <q-icon name="event_busy" size="4rem" color="grey-5" />
+            <div class="text-subtitle1 text-grey q-mt-sm">请先在基本信息步骤中选择旅行日期</div>
           </div>
           
-          <div class="row justify-between q-mt-md">
-            <q-btn outline color="primary" icon="arrow_back" label="上一步" @click="goToPrevStep" />
-            <q-btn color="primary" label="下一步" @click="goToNextStep" />
+          <div class="row justify-between q-mt-lg">
+            <q-btn outline color="primary" icon="arrow_back" label="上一步" @click="goToPrevStep" class="nav-btn" />
+            <q-btn color="primary" label="下一步" icon-right="arrow_forward" @click="goToNextStep" class="nav-btn" />
           </div>
         </q-tab-panel>
 
         <!-- 第三步：预算规划 -->
         <q-tab-panel name="3">
-          <div class="text-h6 q-mb-md">预算规划</div>
+          <div class="section-header">
+            <div class="text-h5 text-primary">
+              <q-icon name="account_balance_wallet" class="q-mr-sm" />
+              预算规划
+            </div>
+            <div class="text-caption text-grey">第三步：设置旅行预算</div>
+          </div>
           
-          <q-card flat bordered class="q-mb-md">
+          <q-card flat bordered class="budget-card q-mt-md">
+            <q-card-section class="bg-green-1">
+              <div class="row items-center">
+                <div class="col">
+                  <div class="text-h6">总预算设置</div>
+                </div>
+                <div class="col-auto">
+                  <q-icon name="savings" size="2rem" color="green" />
+                </div>
+              </div>
+            </q-card-section>
+            
             <q-card-section>
               <div class="row q-col-gutter-md">
-                <div class="col-12 col-md-6">
+                <div class="col-12 col-md-7">
                   <q-input
                     filled
                     v-model.number="trip.budget.total"
                     type="number"
                     label="总预算"
                     stack-label
-                    suffix="元"
+                    class="custom-input"
                   >
                     <template v-slot:prepend>
-                      <q-icon name="paid" />
+                      <q-icon name="paid" color="green" />
+                    </template>
+                    <template v-slot:append>
+                      <q-chip dense color="green" text-color="white">
+                        {{ trip.budget.currency }}
+                      </q-chip>
                     </template>
                   </q-input>
                 </div>
-                <div class="col-12 col-md-6">
+                <div class="col-12 col-md-5">
                   <q-select
                     filled
                     v-model="trip.budget.currency"
                     :options="currencyOptions"
                     label="货币"
                     stack-label
+                    class="custom-input"
                   >
                     <template v-slot:prepend>
-                      <q-icon name="currency_exchange" />
+                      <q-icon name="currency_exchange" color="blue" />
                     </template>
                   </q-select>
                 </div>
@@ -260,27 +384,35 @@
             </q-card-section>
           </q-card>
           
-          <div class="budget-categories q-mb-md">
-            <q-card flat bordered v-for="(category, index) in budgetCategories" :key="index" class="q-mb-sm">
-              <q-card-section class="q-pa-sm">
+          <div class="text-h6 q-mt-lg q-mb-md">预算分配</div>
+          
+          <div class="budget-categories">
+            <q-card v-for="(category, index) in budgetCategories" :key="index" 
+                   flat bordered class="budget-category-card q-mb-sm"
+                   :class="{'budget-category-card-active': isActiveBudgetCategory(category.id)}">
+              <q-card-section class="q-pa-md">
                 <div class="row items-center no-wrap">
                   <div class="col-auto">
-                    <q-avatar color="blue-1" text-color="primary">
+                    <q-avatar :color="getBudgetCategoryColor(category.id) + '-1'" :text-color="getBudgetCategoryColor(category.id)">
                       <q-icon :name="category.icon" />
                     </q-avatar>
                   </div>
                   <div class="col q-px-md">
-                    {{ category.name }}
+                    <div class="budget-category-name">{{ category.name }}</div>
+                    <div class="text-caption text-grey" v-if="trip.budget.categories[category.id] > 0">
+                      占总预算的 {{ getBudgetCategoryPercentage(category.id) }}%
+                    </div>
                   </div>
                   <div class="col-auto">
                     <q-input
                       dense
                       v-model.number="trip.budget.categories[category.id]"
                       type="number"
-                      suffix="元"
+                      :suffix="trip.budget.currency"
                       borderless
-                      class="text-right"
-                      style="min-width: 100px"
+                      class="budget-input text-right"
+                      @focus="activeBudgetCategory = category.id"
+                      @blur="activeBudgetCategory = null"
                     />
                   </div>
                 </div>
@@ -288,31 +420,54 @@
             </q-card>
           </div>
           
-          <q-card flat bordered class="q-mb-md">
+          <q-card flat bordered class="budget-summary-card q-mt-lg">
             <q-card-section>
-              <div class="text-subtitle1">
-                已分配预算：{{ getTotalAllocatedBudget() }} 元 / {{ trip.budget.total || 0 }} 元
+              <div class="row items-center justify-between q-mb-sm">
+                <div class="text-subtitle1 text-weight-medium">已分配预算</div>
+                <div class="text-subtitle1">
+                  <span class="text-weight-bold">{{ getTotalAllocatedBudget() }}</span> 
+                  {{ trip.budget.currency }} / 
+                  <span>{{ trip.budget.total || 0 }}</span>
+                  {{ trip.budget.currency }}
+                </div>
               </div>
+              
               <q-linear-progress
                 :value="getBudgetProgressValue()"
-                size="10px"
+                size="15px"
                 :color="getBudgetProgressColor()"
-                class="q-mt-sm"
-              />
+                track-color="grey-3"
+                class="q-mt-sm rounded-borders"
+              >
+                <div class="absolute-full flex flex-center">
+                  <q-badge color="white" text-color="black" :label="`${Math.round(getBudgetProgressValue() * 100)}%`" />
+                </div>
+              </q-linear-progress>
+              
+              <div class="budget-tips q-mt-md text-grey-8" v-if="trip.budget.total > 0">
+                <q-icon name="lightbulb" color="warning" /> 
+                提示: {{ getBudgetTip() }}
+              </div>
             </q-card-section>
           </q-card>
           
-          <div class="row justify-between q-mt-md">
-            <q-btn outline color="primary" icon="arrow_back" label="上一步" @click="goToPrevStep" />
-            <q-btn color="primary" label="下一步" @click="goToNextStep" />
+          <div class="row justify-between q-mt-lg">
+            <q-btn outline color="primary" icon="arrow_back" label="上一步" @click="goToPrevStep" class="nav-btn" />
+            <q-btn color="primary" label="下一步" icon-right="arrow_forward" @click="goToNextStep" class="nav-btn" />
           </div>
         </q-tab-panel>
 
         <!-- 第四步：旅行清单 -->
         <q-tab-panel name="4">
-          <div class="text-h6 q-mb-md">旅行清单</div>
+          <div class="section-header">
+            <div class="text-h5 text-primary">
+              <q-icon name="checklist" class="q-mr-sm" />
+              旅行清单
+            </div>
+            <div class="text-caption text-grey">第四步：添加待办事项和物品清单</div>
+          </div>
           
-          <q-card flat bordered class="q-mb-md">
+          <q-card flat bordered class="checklist-input-card q-mt-md">
             <q-card-section>
               <q-input
                 filled
@@ -320,69 +475,128 @@
                 label="添加物品或任务"
                 stack-label
                 @keyup.enter="addTodoItem"
+                class="custom-input"
+                placeholder="例如: 护照、充电器、防晒霜..."
               >
+                <template v-slot:prepend>
+                  <q-icon name="add_task" color="primary" />
+                </template>
                 <template v-slot:append>
                   <q-btn
                     round
-                    dense
-                    flat
+                    color="primary"
                     icon="add"
+                    size="sm"
                     @click="addTodoItem"
                   />
                 </template>
               </q-input>
+              
+              <div class="quick-items q-mt-sm" v-if="!trip.todoList.length">
+                <div class="text-caption text-grey q-mb-xs">快速添加常用物品:</div>
+                <div class="row q-col-gutter-sm">
+                  <div class="col-auto" v-for="(item, index) in quickItems" :key="index">
+                    <q-chip
+                      clickable
+                      color="blue-1"
+                      text-color="primary"
+                      icon="add"
+                      @click="quickAddItem(item)"
+                    >
+                      {{ item }}
+                    </q-chip>
+                  </div>
+                </div>
+              </div>
             </q-card-section>
           </q-card>
           
-          <q-card flat bordered>
-            <q-list>
-              <q-item
-                v-for="(item, index) in trip.todoList"
-                :key="index"
-                tag="label"
-                v-ripple
-              >
-                <q-item-section side>
-                  <q-checkbox v-model="item.done" color="primary" />
-                </q-item-section>
-                <q-item-section>
-                  <q-item-label :class="{'text-strike': item.done}">{{ item.text }}</q-item-label>
-                </q-item-section>
-                <q-item-section side>
-                  <q-btn
-                    flat
-                    round
-                    dense
-                    icon="delete"
-                    @click.stop="removeTodoItem(index)"
+          <div class="checklist-stats q-mt-md" v-if="trip.todoList.length > 0">
+            <div class="row q-col-gutter-md">
+              <div class="col-6 col-md-3">
+                <q-card flat bordered class="text-center q-pa-sm">
+                  <div class="text-h6 text-primary">{{ trip.todoList.length }}</div>
+                  <div class="text-caption">总事项</div>
+                </q-card>
+              </div>
+              <div class="col-6 col-md-3">
+                <q-card flat bordered class="text-center q-pa-sm">
+                  <div class="text-h6 text-positive">{{ getCompletedItemsCount() }}</div>
+                  <div class="text-caption">已完成</div>
+                </q-card>
+              </div>
+              <div class="col-12 col-md-6">
+                <q-card flat bordered class="q-pa-sm">
+                  <q-linear-progress
+                    :value="getCompletionRate()"
+                    color="positive"
+                    size="8px"
+                    class="q-mb-xs"
                   />
-                </q-item-section>
-              </q-item>
-              
-              <q-item v-if="trip.todoList.length === 0">
-                <q-item-section class="text-grey text-center">
-                  添加旅行所需物品和待办事项
-                </q-item-section>
-              </q-item>
-            </q-list>
+                  <div class="text-caption text-center">
+                    完成率: {{ Math.round(getCompletionRate() * 100) }}%
+                  </div>
+                </q-card>
+              </div>
+            </div>
+          </div>
+          
+          <q-card flat bordered class="checklist-card q-mt-md" v-if="trip.todoList.length > 0">
+            <q-card-section class="q-pa-none">
+              <q-list separator>
+                <q-item
+                  v-for="(item, index) in trip.todoList"
+                  :key="index"
+                  tag="label"
+                  v-ripple
+                  :class="{'completed-item': item.done}"
+                >
+                  <q-item-section side>
+                    <q-checkbox v-model="item.done" color="primary" />
+                  </q-item-section>
+                  <q-item-section>
+                    <q-item-label :class="{'text-strike': item.done}">{{ item.text }}</q-item-label>
+                  </q-item-section>
+                  <q-item-section side>
+                    <q-btn
+                      flat
+                      round
+                      dense
+                      icon="delete"
+                      color="grey-7"
+                      @click.stop="removeTodoItem(index)"
+                    />
+                  </q-item-section>
+                </q-item>
+              </q-list>
+            </q-card-section>
+            
+            <q-card-actions align="right">
+              <q-btn flat color="negative" @click="confirmClearCompleted" label="清除已完成" />
+            </q-card-actions>
           </q-card>
           
-          <div class="row justify-between q-mt-md">
-            <q-btn outline color="primary" icon="arrow_back" label="上一步" @click="goToPrevStep" />
-            <q-btn color="positive" icon="check" label="完成规划" @click="saveTrip" />
+          <div class="no-data-placeholder" v-if="trip.todoList.length === 0">
+            <q-icon name="checklist" size="4rem" color="grey-5" />
+            <div class="text-subtitle1 text-grey q-mt-sm">添加旅行所需物品和待办事项</div>
+          </div>
+          
+          <div class="row justify-between q-mt-lg">
+            <q-btn outline color="primary" icon="arrow_back" label="上一步" @click="goToPrevStep" class="nav-btn" />
+            <q-btn color="positive" icon-right="check_circle" label="完成规划" @click="saveTrip" class="nav-btn" />
           </div>
         </q-tab-panel>
       </q-tab-panels>
     </div>
     
     <!-- 活动编辑对话框 -->
-    <q-dialog v-model="activityDialog.show" persistent>
-      <q-card style="min-width: 300px; max-width: 95vw">
-        <q-card-section>
+    <q-dialog v-model="activityDialog.show" persistent transition-show="scale" transition-hide="scale">
+      <q-card style="min-width: 350px; max-width: 95vw">
+        <q-card-section class="bg-primary text-white">
           <div class="text-h6">{{ activityDialog.isEdit ? '编辑活动' : '添加活动' }}</div>
         </q-card-section>
 
-        <q-card-section>
+        <q-card-section class="q-pt-lg">
           <q-form @submit="saveActivity">
             <div class="q-gutter-md">
               <q-input
@@ -391,7 +605,12 @@
                 label="活动名称 *"
                 stack-label
                 :rules="[val => !!val || '请输入活动名称']"
-              />
+                class="custom-input"
+              >
+                <template v-slot:prepend>
+                  <q-icon name="event_note" color="primary" />
+                </template>
+              </q-input>
               
               <q-input
                 filled
@@ -403,9 +622,10 @@
                   val => !!val || '请输入时间',
                   val => /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/.test(val) || '请输入有效的时间格式 (HH:MM)'
                 ]"
+                class="custom-input"
               >
                 <template v-slot:prepend>
-                  <q-icon name="access_time" />
+                  <q-icon name="access_time" color="orange" />
                 </template>
               </q-input>
               
@@ -414,9 +634,10 @@
                 v-model="activityDialog.activity.location"
                 label="地点"
                 stack-label
+                class="custom-input"
               >
                 <template v-slot:prepend>
-                  <q-icon name="place" />
+                  <q-icon name="place" color="deep-orange" />
                 </template>
               </q-input>
               
@@ -426,9 +647,10 @@
                 :options="activityTypeOptions"
                 label="活动类型"
                 stack-label
+                class="custom-input"
               >
                 <template v-slot:prepend>
-                  <q-icon name="category" />
+                  <q-icon name="category" color="purple" />
                 </template>
               </q-select>
               
@@ -438,7 +660,13 @@
                 type="textarea"
                 label="备注"
                 stack-label
-              />
+                class="custom-input"
+                autogrow
+              >
+                <template v-slot:prepend>
+                  <q-icon name="notes" color="teal" />
+                </template>
+              </q-input>
             </div>
             
             <q-card-actions align="right" class="q-mt-md">
@@ -458,6 +686,8 @@ export default {
   data () {
     return {
       currentStep: "1",
+      activeBudgetCategory: null,
+      showDestinationSuggestions: false,
       planSteps: [
         { title: '基本信息', icon: 'info' },
         { title: '行程安排', icon: 'map' },
@@ -536,7 +766,45 @@ export default {
           note: ''
         }
       },
-      newItemText: ''
+      newItemText: '',
+      quickItems: [
+        '护照', '充电器', '转换插头', '现金', '信用卡', 
+        '墨镜', '防晒霜', '雨伞', '常用药', '洗漱用品'
+      ],
+      popularDestinations: [
+        {
+          name: '东京',
+          image: 'https://images.unsplash.com/photo-1503899036084-c55cdd92da26'
+        },
+        {
+          name: '巴黎',
+          image: 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34'
+        },
+        {
+          name: '巴厘岛',
+          image: 'https://images.unsplash.com/photo-1554481923-a6918bd997bc'
+        },
+        {
+          name: '纽约',
+          image: 'https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9'
+        },
+        {
+          name: '伦敦',
+          image: 'https://images.unsplash.com/photo-1533929736458-ca588d08c8be'
+        },
+        {
+          name: '香港',
+          image: 'https://images.unsplash.com/photo-1536599018102-9f803c140fc1'
+        }
+      ],
+      budgetTips: [
+        '旅行预算中建议为交通分配约30%',
+        '住宿通常占据旅行预算的25-35%',
+        '餐饮费用建议保持在预算的20%左右',
+        '为意外支出预留10-15%的预算',
+        '提前预订可以节省大量门票和住宿费用',
+        '合理分配购物预算可以避免冲动消费'
+      ]
     }
   },
   watch: {
@@ -548,6 +816,10 @@ export default {
       },
       deep: true
     }
+  },
+  mounted() {
+    // 加载页面时淡入动画效果
+    document.body.classList.add('page-loaded');
   },
   methods: {
     // 进入下一步
@@ -641,6 +913,24 @@ export default {
       return iconMap[type.value] || 'event';
     },
     
+    // 获取活动颜色
+    getActivityColor(type) {
+      if (!type) return 'primary';
+      
+      const colorMap = {
+        sightseeing: 'deep-purple',
+        dining: 'orange',
+        transportation: 'blue',
+        checkin: 'green',
+        checkout: 'red',
+        shopping: 'pink',
+        leisure: 'teal',
+        other: 'grey'
+      };
+      
+      return colorMap[type.value] || 'primary';
+    },
+    
     // 添加新活动
     addNewActivity(dayIndex) {
       this.activityDialog = {
@@ -689,6 +979,14 @@ export default {
         });
       }
       
+      this.$q.notify({
+        color: 'positive',
+        message: isEdit ? '活动已更新' : '活动已添加',
+        icon: isEdit ? 'edit' : 'add_circle',
+        position: 'bottom',
+        timeout: 1000
+      });
+      
       this.activityDialog.show = false;
     },
     
@@ -701,6 +999,14 @@ export default {
         persistent: true
       }).onOk(() => {
         this.days[dayIndex].activities.splice(activityIndex, 1);
+        
+        this.$q.notify({
+          color: 'negative',
+          message: '活动已删除',
+          icon: 'delete',
+          position: 'bottom',
+          timeout: 1000
+        });
       });
     },
     
@@ -729,6 +1035,38 @@ export default {
       return 'positive';
     },
     
+    // 判断预算类别是否激活
+    isActiveBudgetCategory(categoryId) {
+      return this.activeBudgetCategory === categoryId;
+    },
+    
+    // 获取预算类别颜色
+    getBudgetCategoryColor(categoryId) {
+      const colors = {
+        transportation: 'blue',
+        accommodation: 'green',
+        food: 'orange',
+        activities: 'purple',
+        shopping: 'pink',
+        other: 'grey'
+      };
+      
+      return colors[categoryId] || 'primary';
+    },
+    
+    // 获取预算类别百分比
+    getBudgetCategoryPercentage(categoryId) {
+      if (!this.trip.budget.total) return 0;
+      
+      const categoryAmount = this.trip.budget.categories[categoryId] || 0;
+      return Math.round((categoryAmount / this.trip.budget.total) * 100);
+    },
+    
+    // 获取预算提示
+    getBudgetTip() {
+      return this.budgetTips[Math.floor(Math.random() * this.budgetTips.length)];
+    },
+    
     // 添加待办事项
     addTodoItem() {
       if (!this.newItemText.trim()) return;
@@ -739,11 +1077,97 @@ export default {
       });
       
       this.newItemText = '';
+      
+      this.$q.notify({
+        color: 'positive',
+        message: '已添加到清单',
+        icon: 'add_task',
+        position: 'bottom',
+        timeout: 1000
+      });
+    },
+    
+    // 快速添加常用物品
+    quickAddItem(item) {
+      this.trip.todoList.push({
+        text: item,
+        done: false
+      });
+      
+      this.$q.notify({
+        color: 'positive',
+        message: `已添加: ${item}`,
+        icon: 'add_task',
+        position: 'bottom',
+        timeout: 1000
+      });
     },
     
     // 删除待办事项
     removeTodoItem(index) {
       this.trip.todoList.splice(index, 1);
+    },
+    
+    // 确认清除已完成事项
+    confirmClearCompleted() {
+      if (!this.getCompletedItemsCount()) {
+        this.$q.notify({
+          color: 'warning',
+          message: '没有已完成的事项',
+          icon: 'info',
+          position: 'bottom'
+        });
+        return;
+      }
+      
+      this.$q.dialog({
+        title: '确认清除',
+        message: '您确定要清除所有已完成的事项吗？',
+        cancel: true,
+        persistent: true
+      }).onOk(() => {
+        this.clearCompletedItems();
+      });
+    },
+    
+    // 清除已完成事项
+    clearCompletedItems() {
+      this.trip.todoList = this.trip.todoList.filter(item => !item.done);
+      
+      this.$q.notify({
+        color: 'positive',
+        message: '已清除完成事项',
+        icon: 'cleaning_services',
+        position: 'bottom',
+        timeout: 1000
+      });
+    },
+    
+    // 获取已完成事项数量
+    getCompletedItemsCount() {
+      return this.trip.todoList.filter(item => item.done).length;
+    },
+    
+    // 获取完成率
+    getCompletionRate() {
+      if (!this.trip.todoList.length) return 0;
+      
+      return this.getCompletedItemsCount() / this.trip.todoList.length;
+    },
+    
+    // 选择目的地
+    selectDestination(destination) {
+      this.trip.destination = destination.name;
+      this.showDestinationSuggestions = false;
+      
+      this.$q.notify({
+        color: 'positive',
+        textColor: 'white',
+        icon: 'place',
+        message: `已选择 ${destination.name} 作为目的地`,
+        position: 'bottom',
+        timeout: 1500
+      });
     },
     
     // 保存行程
@@ -763,8 +1187,9 @@ export default {
             textColor: 'white',
             icon: 'save',
             message: '行程保存成功！',
-            position: 'bottom',
-            timeout: 2000
+            position: 'center',
+            timeout: 2000,
+            classes: 'save-notification'
           });
           
           // 在实际应用中，这里可能会导航到行程详情页面
@@ -775,7 +1200,7 @@ export default {
             textColor: 'white',
             icon: 'warning',
             message: '请填写必填信息',
-            position: 'bottom'
+            position: 'center'
           });
         }
       });
@@ -787,7 +1212,7 @@ export default {
 <style>
 .plan-trip-page {
   background-color: #f5f7fa;
-  padding-bottom: 60px; /* 为移动端底部导航留出空间 */
+  padding-bottom: 70px; /* 为移动端底部导航留出空间 */
 }
 
 .container {
@@ -796,10 +1221,23 @@ export default {
   padding: 0 16px;
 }
 
+/* 页面加载动画 */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.page-loaded .plan-trip-page {
+  animation: fadeIn 0.6s ease-out;
+}
+
+/* 头部导航栏样式 */
 .header-section {
+  background: linear-gradient(135deg, #1976d2 0%, #2196f3 100%);
   position: sticky;
   top: 0;
   z-index: 10;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 .content-wrapper {
@@ -808,54 +1246,216 @@ export default {
 
 /* 底部导航栏样式 */
 .mobile-bottom-nav {
-  height: 56px;
+  height: 60px;
   border-top: 1px solid rgba(0, 0, 0, 0.1);
   z-index: 5;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
 }
 
 .mobile-bottom-nav .q-icon {
   font-size: 1.5rem;
 }
 
+.nav-item {
+  position: relative;
+  padding: 6px 0;
+  transition: transform 0.2s;
+}
+
+.nav-item:active {
+  transform: scale(0.95);
+}
+
+.nav-item-active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 20px;
+  height: 3px;
+  background-color: var(--q-primary);
+  border-radius: 3px;
+}
+
 /* 卡片样式 */
 .q-card {
   border-radius: 12px;
-  transition: box-shadow 0.3s;
+  transition: all 0.3s ease;
 }
 
 .q-card:hover {
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  transform: translateY(-2px);
+}
+
+/* 表单卡片 */
+.form-card {
+  background-color: #fff;
+  overflow: hidden;
+}
+
+.custom-input {
+  margin-bottom: 16px;
+}
+
+/* 导航按钮样式 */
+.nav-btn {
+  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.nav-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.next-btn {
+  min-width: 120px;
+  font-weight: 500;
 }
 
 /* 预算类别卡片 */
-.budget-categories .q-card {
+.budget-category-card {
   overflow: visible;
   transition: transform 0.2s, box-shadow 0.2s;
 }
 
-.budget-categories .q-card:hover {
+.budget-category-card:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.budget-category-card-active {
+  box-shadow: 0 0 0 2px var(--q-primary);
+  transform: translateY(-2px);
+}
+
+.budget-category-name {
+  font-weight: 500;
+}
+
+.budget-input {
+  min-width: 110px;
+  font-weight: 500;
+  font-size: 1.05rem;
+}
+
+/* 预算提示条样式 */
+.budget-tips {
+  padding: 10px;
+  border-radius: 8px;
+  background-color: #fff8e1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* 行程天数卡片样式 */
+.day-card {
+  overflow: hidden;
+}
+
+.day-header {
+  background: linear-gradient(to right, #e3f2fd, #bbdefb);
+  padding: 12px 16px;
+}
+
+/* 清单样式 */
+.checklist-card {
+  background-color: white;
+}
+
+.completed-item {
+  background-color: #f5f5f5;
+  opacity: 0.8;
 }
 
 /* 输入框样式 */
 .q-field--filled .q-field__control {
   border-radius: 8px;
+  background-color: #f5f5f5;
 }
 
-/* 删除线样式 */
-.text-strike {
-  text-decoration: line-through;
-  color: #a0a0a0;
+.q-field--filled:hover .q-field__control {
+  background-color: #eeeeee;
 }
 
-/* 面板切换动画 */
-.q-tab-panels {
-  background: transparent;
+.q-field--focused .q-field__control {
+  box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.2);
 }
 
-.q-tab-panel {
-  padding: 16px 0;
+/* 目的地卡片 */
+.destination-card {
+  border-radius: 8px;
+  overflow: hidden;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.destination-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
+}
+
+/* 路径指示器 */
+.section-header {
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+/* 无数据占位符 */
+.no-data-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  background-color: white;
+  border-radius: 12px;
+  margin: 20px 0;
+  text-align: center;
+}
+
+/* 步骤区分背景色 */
+.q-tab-panel[name="1"] {
+  background-color: rgba(25, 118, 210, 0.03);
+}
+
+.q-tab-panel[name="2"] {
+  background-color: rgba(63, 81, 181, 0.03);
+}
+
+.q-tab-panel[name="3"] {
+  background-color: rgba(0, 150, 136, 0.03);
+}
+
+.q-tab-panel[name="4"] {
+  background-color: rgba(76, 175, 80, 0.03);
+}
+
+/* 保存通知样式 */
+.save-notification {
+  font-weight: 500;
+  font-size: 16px;
+}
+
+/* 各种圆角统一 */
+.rounded-borders {
+  border-radius: 8px;
+}
+
+.q-avatar {
+  transition: transform 0.2s;
+}
+
+.q-avatar:hover {
+  transform: scale(1.1);
+}
+
+/* 统计卡片样式 */
+.stats-card {
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
 }
 
 /* 移动端优化样式 */
@@ -893,50 +1493,52 @@ export default {
     padding: 4px 0;
   }
   
-  /* 行程天数卡片在移动端的样式 */
-  .q-timeline__title {
-    font-size: 1rem;
-  }
-  
   /* 底部导航文字大小 */
   .mobile-bottom-nav .text-caption {
     font-size: 0.65rem;
     margin-top: 2px;
   }
+  
+  /* 移动端页面边距 */
+  .container {
+    padding: 0 12px;
+  }
+  
+  /* 移动端按钮大小 */
+  .nav-btn {
+    min-height: 42px;
+  }
+  
+  /* 移动端标题大小 */
+  .section-header .text-h5 {
+    font-size: 1.25rem;
+  }
 }
 
-/* 阴影效果 */
-.shadow-up-1 {
-  box-shadow: 0 -2px 5px rgba(0,0,0,0.05);
+/* 平板设备优化 */
+@media (min-width: 600px) and (max-width: 1023px) {
+  .container {
+    padding: 0 24px;
+  }
+  
+  .section-header {
+    margin-bottom: 30px;
+  }
 }
 
-/* 标签切换样式 */
-.desktop-tabs .q-tabs {
-  background-color: white;
-  border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-  margin-bottom: 16px;
+/* 动画效果 */
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
 }
 
-/* 表单标签样式 */
-.q-field--filled.q-field--labeled .q-field__native, 
-.q-field--filled.q-field--labeled .q-field__prefix, 
-.q-field--filled.q-field--labeled .q-field__suffix {
-  padding-top: 24px;
+.q-btn:focus {
+  animation: pulse 0.3s ease-in-out;
 }
 
-/* 进度条美化 */
-.q-linear-progress {
-  border-radius: 4px;
-  height: 8px;
-}
-
-/* 列表项动画 */
-.q-item {
-  transition: background-color 0.2s;
-}
-
-.q-item:hover {
-  background-color: rgba(0, 0, 0, 0.03);
+/* 特效样式 */
+.bg-primary-7 {
+  background-color: rgba(25, 118, 210, 0.7);
 }
 </style> 
