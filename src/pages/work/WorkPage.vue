@@ -11,25 +11,8 @@
           @click="toggleLeftDrawer"
         />
 
-        <!-- 响应式主页按钮 -->
-        <q-btn
-          flat
-          dense
-          icon="home"
-          no-caps
-          :label="$q.screen.gt.xs ? '主页' : ''"
-          class="q-ml-sm"
-          aria-label="回到主页"
-          to="/"
-          color="primary"
-        >
-          <q-tooltip>回到主页</q-tooltip>
-        </q-btn>
-
-        <q-toolbar-title class="row items-center">
-          <div>{{ pageTitle }}</div>
-
-          <div class="countdown-container q-ml-md">
+        <q-toolbar-title class="row items-center justify-start">
+          <div class="countdown-container">
             <q-badge color="amber" text-color="black" class="countdown-badge">
               <q-icon name="schedule" size="xs" class="q-mr-xs" />
               <span class="countdown-label">截止倒计时:</span>
@@ -112,6 +95,21 @@
             总任务: {{ statusInfo.tasks }}
           </q-chip>
         </div>
+        
+        <!-- 主页按钮移到最右侧 -->
+        <q-btn
+          flat
+          dense
+          icon="home"
+          no-caps
+          :label="$q.screen.gt.xs ? '主页' : ''"
+          class="q-ml-sm"
+          aria-label="回到主页"
+          to="/"
+          color="primary"
+        >
+          <q-tooltip>回到主页</q-tooltip>
+        </q-btn>
       </q-toolbar>
     </q-header>
 
