@@ -1,6 +1,6 @@
 <template>
-  <q-layout view="lHh Lpr lFf">
-    <q-header elevated class="bg-white text-dark">
+  <q-layout view="lHh Lpr lFf" :class="{ 'body--dark': isDark, 'body--light': !isDark }">
+    <q-header elevated :class="isDark ? 'bg-dark text-white' : 'bg-white text-dark'">
       <q-toolbar>
         <q-btn
           flat
@@ -585,7 +585,7 @@ const handleTextSelection = (text: string) => {
 <style lang="scss" scoped>
 .work-page-container {
   display: flex;
-  background: white;
+  background: var(--q-primary-light);
   min-height: 100vh;
 }
 
@@ -1017,5 +1017,19 @@ section {
       border-left-color: rgba(25, 118, 210, 0.7);
     }
   }
+}
+
+/* 全局样式 - 不要使用 scoped */
+.body--dark {
+  .work-page-content {
+    background: #121212;
+  }
+  
+  .glass-card {
+    background: rgba(30, 30, 30, 0.9);
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+  
+  /* 其他暗色主题特定样式 */
 }
 </style>
