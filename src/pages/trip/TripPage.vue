@@ -124,7 +124,7 @@
           <div class="container">
             <h1 class="text-h2 text-white q-mb-md hero-title">探索您的下一次冒险</h1>
             <p class="text-subtitle1 text-white q-mb-lg hero-subtitle">规划完美旅程，创造难忘回忆</p>
-            <q-btn color="primary" label="开始规划" size="lg" class="q-px-xl hero-btn" unelevated />
+            <q-btn color="primary" label="开始规划" size="lg" class="q-px-xl hero-btn" unelevated to="/trip/plan" />
           </div>
         </div>
 
@@ -367,7 +367,7 @@ export default {
           id: 'chiangmai-1',
           destination: '泰国清迈',
           date: '2024年1月10日 - 2024年1月17日',
-          image: 'https://images.unsplash.com/photo-1528181304800-259b08848526',
+          image: tongLuImage,
           daysLeft: 54,
           preparationProgress: 0.3
         },

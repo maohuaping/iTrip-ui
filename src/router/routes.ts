@@ -21,7 +21,7 @@ const routes: RouteRecordRaw[] = [
     component: () => import('layouts/CleanLayout.vue'),
     children: [
       { path: '/trip', component: () => import('pages/trip/TripPage.vue') },
-      { path: '/plan', component: () => import('pages/trip/PlanTrip.vue') },
+      { path: '/trip/plan', component: () => import('pages/trip/PlanTrip.vue') },
       { path: '/trip/detail/:id', component: () => import('pages/trip/TripDetailPage.vue') }
     ]
   },
