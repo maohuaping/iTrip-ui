@@ -517,455 +517,161 @@ export default {
       editor: null,
       editorContent: '',
       
-      // 旅行数据
+      // 旅行数据 - 更新为桐庐两日游数据
       trip: {
-        id: '123456',
-        destination: '日本东京',
-        date: '2023年12月15日 - 2023年12月22日',
+        id: this.id || '1', // 使用ID属性，如果没有则使用默认值
+        destination: '桐庐',
+        date: `${new Date().toLocaleDateString('zh-CN')} - ${new Date(Date.now() + 86400000).toLocaleDateString('zh-CN')}`,
         status: 'upcoming', // upcoming, ongoing, completed
-        coverImage: 'https://images.unsplash.com/photo-1536098561742-ca998e48cbcc',
-        daysLeft: 28,
+        coverImage: 'https://images.unsplash.com/photo-1512453979798-5ea266f8880c',
+        daysLeft: 0, // 今天出发
         currentDay: 0,
-        totalDays: 8,
-        accommodationDays: 7,
+        totalDays: 2,
+        accommodationDays: 1,
         travelers: 2,
-        description: '这是一次期待已久的东京之旅，我们将探索这座现代与传统并存的城市。行程包括参观东京塔、明治神宫、浅草寺等知名景点，还会在秋叶原体验电子产品天堂，在涩谷感受城市脉搏。此外，我们还安排了一日游前往富士山和箱根。',
+        description: '这是一次桐庐两日游，我们将游览大奇山国家森林公园、马岭古道和江南龙门湾等景点。行程包括在大奇山国家森林公园观赏水帘飞瀑和竹林，在马岭古道徒步体验，以及在江南龙门湾体验各种水上活动。',
         rating: 0, // 仅完成状态可评分
         
         // 预算信息
         budget: {
-          total: 20000,
-          used: 8000,
+          total: 1000,
+          used: 0,
           breakdown: [
-            { category: '交通 (机票)', amount: 8000 },
-            { category: '住宿', amount: 5600 },
-            { category: '餐饮', amount: 3200 },
-            { category: '门票', amount: 1500 },
-            { category: '购物', amount: 1500 },
-            { category: '其他', amount: 200 }
+            { category: '交通', amount: 300 },
+            { category: '住宿', amount: 200 },
+            { category: '餐饮', amount: 300 },
+            { category: '门票', amount: 200 },
           ]
         },
         
         // 景点列表
         attractions: [
-          { name: '东京塔', location: '东京都港区芝公园4丁目', image: 'https://images.unsplash.com/photo-1536098561742-ca998e48cbcc?auto=format&fit=crop&w=80&h=80', rating: 4.5 },
-          { name: '浅草寺', location: '东京都台东区浅草2丁目', image: 'https://images.unsplash.com/photo-1570459027562-4a916cc6f1ba?auto=format&fit=crop&w=80&h=80', rating: 4.3 },
-          { name: '明治神宫', location: '东京都涩谷区代代木', image: 'https://images.unsplash.com/photo-1583084647979-b62a6e0f8dae?auto=format&fit=crop&w=80&h=80', rating: 4.7 },
-          { name: '秋叶原', location: '东京都千代田区外神田', image: 'https://images.unsplash.com/photo-1542051841857-5f90071e7989?auto=format&fit=crop&w=80&h=80', rating: 4.2 },
-          { name: '涩谷十字路口', location: '东京都涩谷区道玄坂', image: 'https://images.unsplash.com/photo-1532246420286-a0e5e4a4d00d?auto=format&fit=crop&w=80&h=80', rating: 4.4 },
-          { name: '上野公园', location: '东京都台东区上野公园', image: 'https://images.unsplash.com/photo-1584029432120-8dfe81be585a?auto=format&fit=crop&w=80&h=80', rating: 4.1 },
-          { name: '富士山', location: '山梨县和静冈县', image: 'https://images.unsplash.com/photo-1578271887552-5ac3a72752bc?auto=format&fit=crop&w=80&h=80', rating: 4.9 },
-          { name: '箱根', location: '神奈川县足柄下郡', image: 'https://images.unsplash.com/photo-1671718761256-4df5c9dd0711?auto=format&fit=crop&w=80&h=80', rating: 4.6 }
+          { name: '大奇山国家森林公园', location: '桐庐', image: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e', rating: 4.5 },
+          { name: '马岭古道', location: '桐庐', image: 'https://images.unsplash.com/photo-1448375240586-882707db888b', rating: 4.3 },
+          { name: '江南龙门湾', location: '桐庐', image: 'https://images.unsplash.com/photo-1501785888041-af3ef285b470', rating: 4.6 }
         ],
         
         // 待办事项
         todoList: [
-          { title: '购买机票', completed: true, priority: 'high', dueDate: '2023-11-15' },
-          { title: '预订酒店', completed: true, priority: 'high', dueDate: '2023-11-20' },
-          { title: '兑换日元', completed: false, priority: 'medium', dueDate: '2023-12-10' },
-          { title: '购买旅行保险', completed: false, priority: 'high', dueDate: '2023-12-01' },
-          { title: '整理行李', completed: false, priority: 'medium', dueDate: '2023-12-14' },
-          { title: '下载离线地图', completed: false, priority: 'low', dueDate: null },
-          { title: '购买电源转换器', completed: false, priority: 'medium', dueDate: '2023-12-05' },
-          { title: '复印重要证件', completed: false, priority: 'medium', dueDate: '2023-12-10' }
+          { title: '购买大奇山门票', completed: false, priority: 'high', dueDate: new Date().toLocaleDateString('zh-CN') },
+          { title: '预订汉庭酒店', completed: false, priority: 'high', dueDate: new Date().toLocaleDateString('zh-CN') },
+          { title: '购买汽车票', completed: true, priority: 'high', dueDate: new Date().toLocaleDateString('zh-CN') },
+          { title: '准备徒步装备', completed: false, priority: 'medium', dueDate: new Date().toLocaleDateString('zh-CN') },
+          { title: '检查天气预报', completed: false, priority: 'medium', dueDate: new Date().toLocaleDateString('zh-CN') }
         ],
         
         // 日程安排
         itinerary: [
           {
-            date: '2023年12月15日',
-            title: '出发 · 抵达东京',
+            date: new Date().toLocaleDateString('zh-CN'),
+            title: 'Day1 - 大奇山国家森林公园与马岭古道',
             activities: [
               {
-                time: '07:30',
-                title: '在机场集合',
-                location: '首都国际机场 T2',
-                description: '提前2小时到达机场办理登机手续'
+                time: '09:16',
+                title: '从上海虹桥出发',
+                location: '上海虹桥',
+                description: '乘坐汽车前往桐庐，票价122元/人'
               },
               {
-                time: '09:30',
-                title: '搭乘航班',
-                location: 'CA167 北京 → 东京',
-                description: '飞行时间约3小时'
+                time: '11:06',
+                title: '抵达桐庐',
+                location: '桐庐站',
+                description: '到达桐庐汽车站'
               },
               {
-                time: '14:00',
-                title: '抵达成田机场',
-                location: '成田国际机场',
-                description: '出关、取行李，购买N\'EX票前往东京市区'
+                time: '11:30',
+                title: '前往一味大院',
+                location: '一味大院',
+                description: '打车前往一味大院就餐，距离5.5km'
               },
               {
-                time: '16:30',
-                title: '入住酒店',
-                location: '东京新宿京王广场酒店',
-                description: '办理入住手续，稍作休息'
+                time: '12:30',
+                title: '前往酒店放行李',
+                location: '汉庭酒店(杭州桐庐富春江一桥店)',
+                description: '前往酒店放行李，距离2.4km'
               },
               {
-                time: '18:30',
-                title: '晚餐',
-                location: '新宿歌舞伎町',
-                description: '品尝当地美食，适应时差'
-              }
-            ]
-          },
-          {
-            date: '2023年12月16日',
-            title: '东京市区观光 (浅草寺 & 晴空塔)',
-            activities: [
-              {
-                time: '08:00',
-                title: '酒店早餐',
-                location: '酒店内',
-                description: '享用酒店提供的日式早餐'
-              },
-              {
-                time: '09:30',
-                title: '参观浅草寺',
-                location: '浅草寺',
-                description: '参观东京最古老的寺庙，体验日本传统文化',
+                time: '13:30',
+                title: '游览大奇山国家森林公园',
+                location: '大奇山国家森林公园',
+                description: '打卡点：水帘飞瀑有锦鲤果冻湖瀑布、竹林。门票46元/人，下山的丛林飞鼠项目60元/人（可选）。景区门口有智能柜可以存放行李，行李箱8元一小时，20元封顶。',
                 photos: [
-                  'https://images.unsplash.com/photo-1570459027562-4a916cc6f1ba',
-                  'https://images.unsplash.com/photo-1590237580089-b638d4df4282'
-                ]
-              },
-              {
-                time: '12:00',
-                title: '午餐',
-                location: '浅草寺附近',
-                description: '品尝传统日式料理'
-              },
-              {
-                time: '14:00',
-                title: '游览晴空塔',
-                location: '东京晴空塔',
-                description: '登上晴空塔观景台，俯瞰东京全景',
-                photos: [
-                  'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf'
+                  'https://images.unsplash.com/photo-1441974231531-c6227db76b6e',
+                  'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05'
                 ]
               },
               {
                 time: '17:30',
-                title: '晚餐',
-                location: '晴空塔美食街',
-                description: '在美食街享用晚餐'
-              },
-              {
-                time: '19:30',
-                title: '返回酒店',
-                location: '东京新宿京王广场酒店',
-                description: '乘坐地铁返回酒店休息'
-              }
-            ]
-          },
-          {
-            date: '2023年12月17日',
-            title: '明治神宫 & 涩谷',
-            activities: [
-              {
-                time: '08:30',
-                title: '酒店早餐',
-                location: '酒店内',
-                description: '享用早餐'
-              },
-              {
-                time: '09:30',
-                title: '参观明治神宫',
-                location: '明治神宫',
-                description: '参观日本最重要的神道教神社之一',
-                photos: [
-                  'https://images.unsplash.com/photo-1583084647979-b62a6e0f8dae'
-                ]
-              },
-              {
-                time: '12:00',
-                title: '午餐',
-                location: '原宿',
-                description: '在原宿地区品尝时尚小吃'
-              },
-              {
-                time: '14:00',
-                title: '涩谷十字路口',
-                location: '涩谷站前',
-                description: '体验全球最繁忙的人行横道，拍照留念',
-                photos: [
-                  'https://images.unsplash.com/photo-1532246420286-a0e5e4a4d00d'
-                ]
-              },
-              {
-                time: '15:30',
-                title: '涩谷购物',
-                location: '涩谷109',
-                description: '在涩谷地区购物和探索'
-              },
-              {
-                time: '18:30',
-                title: '晚餐',
-                location: '涩谷',
-                description: '品尝当地特色料理'
-              },
-              {
-                time: '20:30',
-                title: '返回酒店',
-                location: '东京新宿京王广场酒店',
-                description: '乘坐地铁返回酒店'
-              }
-            ]
-          },
-          {
-            date: '2023年12月18日',
-            title: '秋叶原 & 上野公园',
-            activities: [
-              {
-                time: '08:30',
-                title: '酒店早餐',
-                location: '酒店内',
-                description: '享用早餐'
-              },
-              {
-                time: '10:00',
-                title: '参观秋叶原',
-                location: '秋叶原电器街',
-                description: '探索动漫与电子产品的天堂',
-                photos: [
-                  'https://images.unsplash.com/photo-1542051841857-5f90071e7989'
-                ]
-              },
-              {
-                time: '13:00',
-                title: '午餐',
-                location: '秋叶原',
-                description: '在女仆咖啡厅或当地餐厅用餐'
-              },
-              {
-                time: '14:30',
-                title: '上野公园散步',
-                location: '上野公园',
-                description: '参观上野公园和上野动物园',
-                photos: [
-                  'https://images.unsplash.com/photo-1584029432120-8dfe81be585a'
-                ]
-              },
-              {
-                time: '17:00',
-                title: '上野购物',
-                location: '阿美横丁',
-                description: '在阿美横丁购物和享用小吃'
+                title: '前往瑶琳路小吃街',
+                location: '瑶琳路小吃街',
+                description: '打车前往瑶琳路小吃街就餐，距离4.6km'
               },
               {
                 time: '19:00',
-                title: '晚餐',
-                location: '上野',
-                description: '品尝当地特色料理'
-              },
-              {
-                time: '21:00',
                 title: '返回酒店',
-                location: '东京新宿京王广场酒店',
-                description: '乘坐地铁返回酒店'
+                location: '汉庭酒店(杭州桐庐富春江一桥店)',
+                description: '返回酒店休息'
               }
             ]
           },
           {
-            date: '2023年12月19日',
-            title: '富士山一日游',
+            date: new Date(Date.now() + 86400000).toLocaleDateString('zh-CN'),
+            title: 'Day2 - 江南龙门湾',
             activities: [
               {
-                time: '06:30',
-                title: '集合出发',
-                location: '酒店大堂',
-                description: '与导游集合，乘坐巴士前往富士山'
-              },
-              {
-                time: '10:00',
-                title: '抵达富士山五合目',
-                location: '富士山五合目',
-                description: '参观富士山，拍照留念',
-                photos: [
-                  'https://images.unsplash.com/photo-1578271887552-5ac3a72752bc'
-                ]
-              },
-              {
-                time: '12:30',
-                title: '午餐',
-                location: '富士山游客中心',
-                description: '享用特色午餐'
-              },
-              {
-                time: '14:00',
-                title: '游览箱根',
-                location: '箱根',
-                description: '参观箱根国立公园，体验温泉',
-                photos: [
-                  'https://images.unsplash.com/photo-1671718761256-4df5c9dd0711'
-                ]
-              },
-              {
-                time: '16:00',
-                title: '箱根海盗船',
-                location: '芦之湖',
-                description: '乘坐海盗船游览芦之湖'
-              },
-              {
-                time: '19:30',
-                title: '返回东京',
-                location: '东京新宿京王广场酒店',
-                description: '乘坐巴士返回酒店'
-              }
-            ]
-          },
-          {
-            date: '2023年12月20日',
-            title: '东京迪士尼乐园',
-            activities: [
-              {
-                time: '07:30',
-                title: '出发前往迪士尼',
+                time: '08:00',
+                title: '早餐',
                 location: '酒店',
-                description: '乘坐地铁前往东京迪士尼乐园'
+                description: '在酒店享用早餐'
               },
               {
                 time: '09:00',
-                title: '到达迪士尼乐园',
-                location: '东京迪士尼乐园',
-                description: '全天游玩迪士尼乐园',
+                title: '前往石舍村',
+                location: '石舍村',
+                description: '前往马岭古道起点石舍村，顺风车约26元'
+              },
+              {
+                time: '09:30',
+                title: '徒步马岭古道',
+                location: '马岭古道',
+                description: '全程11km，可以分三段进行，石舍村→郢坪村→芦苇村。石舍村观景台很出片，郢坪村非常古朴，芦苇村商业氛围。需要做好防晒，带足食物和水。',
                 photos: [
-                  'https://images.unsplash.com/photo-1624811533744-f85a1c55248a'
-                ]
-              },
-              {
-                time: '12:30',
-                title: '午餐',
-                location: '迪士尼乐园内',
-                description: '在园内餐厅用餐'
-              },
-              {
-                time: '20:00',
-                title: '观看烟花表演',
-                location: '迪士尼乐园城堡前',
-                description: '欣赏迪士尼经典烟花表演'
-              },
-              {
-                time: '22:00',
-                title: '返回酒店',
-                location: '东京新宿京王广场酒店',
-                description: '乘坐地铁返回酒店'
-              }
-            ]
-          },
-          {
-            date: '2023年12月21日',
-            title: '自由活动 & 购物',
-            activities: [
-              {
-                time: '09:00',
-                title: '酒店早餐',
-                location: '酒店内',
-                description: '享用早餐'
-              },
-              {
-                time: '10:30',
-                title: '银座购物',
-                location: '银座',
-                description: '在东京最著名的购物区购物',
-                photos: [
-                  'https://images.unsplash.com/photo-1551641506-ee5bf4cb45f1'
+                  'https://images.unsplash.com/photo-1448375240586-882707db888b'
                 ]
               },
               {
                 time: '13:00',
-                title: '午餐',
-                location: '银座',
-                description: '在高级餐厅享用午餐'
+                title: '前往江南龙门湾',
+                location: '江南龙门湾',
+                description: '从芦苇村到江南龙门湾，距离3.1km'
               },
               {
-                time: '15:00',
-                title: '六本木Hills',
-                location: '六本木Hills',
-                description: '参观六本木Hills，欣赏东京城市景观'
+                time: '14:00',
+                title: '游览江南龙门湾',
+                location: '江南龙门湾',
+                description: '抖音团购票船72元/人，比现场买便宜8块钱，4选2联票115元/人。快艇120元/人，竹筏60元/人，游船80元/人，电动船80元/人，卡丁船60元/人。畅游小三峡选择快艇或游船，因为游船和竹筏路线不同。',
+                photos: [
+                  'https://images.unsplash.com/photo-1501785888041-af3ef285b470'
+                ]
               },
               {
-                time: '18:00',
-                title: '告别晚宴',
-                location: '新宿',
-                description: '在日式烤肉店享用告别晚餐'
-              },
-              {
-                time: '20:30',
-                title: '返回酒店整理行李',
-                location: '东京新宿京王广场酒店',
-                description: '返回酒店，整理行李准备明天离开'
-              }
-            ]
-          },
-          {
-            date: '2023年12月22日',
-            title: '返程',
-            activities: [
-              {
-                time: '07:30',
-                title: '酒店早餐',
-                location: '酒店内',
-                description: '享用最后一次酒店早餐'
-              },
-              {
-                time: '09:00',
-                title: '退房',
-                location: '东京新宿京王广场酒店',
-                description: '办理退房手续'
-              },
-              {
-                time: '10:00',
-                title: '前往机场',
-                location: '成田国际机场',
-                description: '乘坐机场快线前往成田机场'
-              },
-              {
-                time: '12:00',
-                title: '机场办理手续',
-                location: '成田国际机场',
-                description: '办理登机手续，购买免税商品'
-              },
-              {
-                time: '15:00',
-                title: '搭乘航班',
-                location: 'CA168 东京 → 北京',
-                description: '飞行时间约3小时'
+                time: '16:30',
+                title: '前往桐庐站',
+                location: '桐庐站',
+                description: '前往火车站准备返程，距离16km'
               },
               {
                 time: '18:00',
-                title: '抵达北京',
-                location: '首都国际机场',
-                description: '结束愉快的东京之旅'
+                title: '返回上海',
+                location: '上海虹桥',
+                description: '乘坐汽车返回上海'
               }
             ]
           }
         ],
         
-        // 旅行笔记 (仅进行中或已完成旅行会有)
-        notes: [
-          // 如果是已完成或进行中的旅行，可以添加笔记示例
-          /*
-          {
-            title: '初到东京的感受',
-            date: '2023年12月15日',
-            content: '第一天抵达东京，城市比想象中更加整洁有序。从机场到酒店的路上，能感受到浓厚的日本文化氛围。新宿站周边非常热闹，各种霓虹灯和广告牌让人目不暇接。期待接下来的行程！',
-            photos: [
-              'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf',
-              'https://images.unsplash.com/photo-1542931291-small-63ff1c1ea33'
-            ]
-          },
-          {
-            title: '浅草寺之行',
-            date: '2023年12月16日',
-            content: '今天参观了浅草寺，这座寺庙历史悠久，建筑风格独特。寺庙门口的大红灯笼非常壮观，仿佛穿越回了古代日本。在寺庙周边的商店街购买了一些小纪念品，还尝试了日本传统点心。下午登上了晴空塔，东京的全景尽收眼底，太震撼了！',
-            photos: [
-              'https://images.unsplash.com/photo-1570459027562-4a916cc6f1ba',
-              'https://images.unsplash.com/photo-1590237580089-b638d4df4282',
-              'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf'
-            ]
-          }
-          */
-        ],
+        // 旅行笔记
+        notes: [],
         
         // 当旅行完成后可以添加总结
         summary: {
@@ -976,21 +682,21 @@ export default {
         
         // 旅行伙伴信息
         companions: [
-          { name: '张三', email: 'zhangsan@example.com', phone: '138****1234' },
-          { name: '李四', email: 'lisi@example.com', phone: '139****5678' }
+          { name: '旅伴1', email: 'companion1@example.com', phone: '138****1234' },
+          { name: '旅伴2', email: 'companion2@example.com', phone: '139****5678' }
         ],
         
         // 紧急联系人信息
         emergencyContacts: [
-          { name: '王五', relationship: '家人', phone: '135****4321' }
+          { name: '紧急联系人', relationship: '家人', phone: '135****4321' }
         ],
         
         // 文件和文档
         documents: [
-          { name: '航班确认单.pdf', type: 'pdf', size: '1.2MB' },
-          { name: '酒店预订.pdf', type: 'pdf', size: '0.8MB' },
-          { name: '旅游保险.pdf', type: 'pdf', size: '1.5MB' },
-          { name: '东京地铁图.jpg', type: 'image', size: '2.3MB' }
+          { name: '桐庐行程.pdf', type: 'pdf', size: '1.2MB' },
+          { name: '酒店预订确认.pdf', type: 'pdf', size: '0.8MB' },
+          { name: '大奇山国家森林公园门票.pdf', type: 'pdf', size: '0.5MB' },
+          { name: '马岭古道地图.jpg', type: 'image', size: '2.3MB' }
         ]
       }
     }
