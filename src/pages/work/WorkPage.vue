@@ -43,19 +43,19 @@
                 Flex20190429
               </q-item-section>
             </q-item>
-            
+
             <q-item clickable v-close-popup @click="handleTextSelection('Media@20240218')">
               <q-item-section>
                 Media@20240218
               </q-item-section>
             </q-item>
-            
+
             <q-item clickable v-close-popup @click="handleTextSelection('Pi20240219*')">
               <q-item-section>
                 Pi20240219*
               </q-item-section>
             </q-item>
-            
+
             <q-item clickable v-close-popup @click="handleTextSelection('Flex@20190429')">
               <q-item-section>
                 Flex@20190429
@@ -95,7 +95,7 @@
             总任务: {{ statusInfo.tasks }}
           </q-chip>
         </div>
-        
+
         <!-- 主页按钮移到最右侧 -->
         <q-btn
           flat
@@ -110,7 +110,7 @@
         >
           <q-tooltip>回到主页</q-tooltip>
         </q-btn>
-        
+
         <!-- 添加暗黑主题切换按钮 -->
         <q-btn
           flat
@@ -304,7 +304,7 @@ const isDark = ref($q.dark.isActive)
 const toggleDarkMode = () => {
   $q.dark.toggle()
   isDark.value = $q.dark.isActive
-  
+
   // 可选：将用户主题偏好保存到 localStorage
   localStorage.setItem('darkMode', isDark.value ? 'true' : 'false')
 }
@@ -338,8 +338,8 @@ const countdownTime = ref({
   seconds: 0
 })
 
-// 修改为2025年4月17日13:30
-const targetDate = new Date('2025-04-17T13:30:00+08:00')
+// 修改为2025年4月21日08:30
+const targetDate = new Date('2025-04-21T08:30:00+08:00')
 
 let countdownInterval: number | undefined
 
@@ -559,7 +559,7 @@ const selectedText = ref('Flex20190429')
 // 处理文本选择功能
 const handleTextSelection = (text: string) => {
   selectedText.value = text // 更新选中的文本
-  
+
   navigator.clipboard.writeText(text)
     .then(() => {
       $q.notify({
