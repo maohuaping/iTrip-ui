@@ -119,83 +119,12 @@
 
     <q-page-container>
       <q-page class="trip-page-content">
-        <!-- 顶部横幅 -->
-        <div class="banner q-px-md q-py-xl">
+        <!-- 顶部横幅 - 优化后的英雄头 -->
+        <div class="hero-banner q-px-md q-py-xl">
           <div class="container">
-            <h1 class="text-h3 text-white q-mb-md">探索您的下一次冒险</h1>
-            <p class="text-subtitle1 text-white q-mb-lg">规划完美旅程，创造难忘回忆</p>
-            <q-btn color="primary" label="开始规划" size="lg" class="q-px-md" />
-          </div>
-        </div>
-
-        <!-- 搜索区域 -->
-        <div class="search-section q-pa-md bg-grey-2">
-          <div class="container">
-            <q-card flat bordered class="search-card q-pa-md">
-              <q-form @submit="onSearch" class="row q-col-gutter-md">
-                <div class="col-12 col-sm-4">
-                  <q-input
-                    filled
-                    v-model="searchForm.destination"
-                    label="目的地"
-                    placeholder="城市、地区或景点"
-                    :dense="$q.screen.lt.sm"
-                  >
-                    <template v-slot:prepend>
-                      <q-icon name="place" />
-                    </template>
-                  </q-input>
-                </div>
-                <div class="col-12 col-sm-3">
-                  <q-input
-                    filled
-                    v-model="searchForm.dateRange"
-                    label="日期"
-                    placeholder="选择日期范围"
-                    mask="date"
-                    :dense="$q.screen.lt.sm"
-                  >
-                    <template v-slot:prepend>
-                      <q-icon name="event" />
-                    </template>
-                    <template v-slot:append>
-                      <q-icon name="event" class="cursor-pointer">
-                        <q-popup-proxy ref="qDateProxy" transition-show="scale" transition-hide="scale">
-                          <q-date
-                            v-model="searchForm.dateRange"
-                            range
-                            minimal
-                          />
-                        </q-popup-proxy>
-                      </q-icon>
-                    </template>
-                  </q-input>
-                </div>
-                <div class="col-12 col-sm-3">
-                  <q-select
-                    filled
-                    v-model="searchForm.travelers"
-                    :options="travelerOptions"
-                    label="旅行人数"
-                    :dense="$q.screen.lt.sm"
-                  >
-                    <template v-slot:prepend>
-                      <q-icon name="people" />
-                    </template>
-                  </q-select>
-                </div>
-                <div class="col-12 col-sm-2">
-                  <q-btn
-                    color="primary"
-                    icon="search"
-                    label="搜索"
-                    class="full-width"
-                    type="submit"
-                    :size="$q.screen.lt.sm ? 'md' : 'lg'"
-                  />
-                </div>
-              </q-form>
-            </q-card>
+            <h1 class="text-h2 text-white q-mb-md hero-title">探索您的下一次冒险</h1>
+            <p class="text-subtitle1 text-white q-mb-lg hero-subtitle">规划完美旅程，创造难忘回忆</p>
+            <q-btn color="primary" label="开始规划" size="lg" class="q-px-xl hero-btn" unelevated />
           </div>
         </div>
 
@@ -525,21 +454,66 @@ export default {
   margin: 0 auto;
 }
 
-.banner {
-  background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1');
+.hero-banner {
+  background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.6)), url('https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  min-height: 400px;
+  min-height: 500px;
   display: flex;
   align-items: center;
+  position: relative;
+  overflow: hidden;
 }
 
-.search-card {
-  margin-top: -30px;
+.hero-banner::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at center, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.6) 100%);
   z-index: 1;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.hero-banner .container {
+  position: relative;
+  z-index: 2;
+}
+
+.hero-title {
+  font-weight: 700;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+  animation: fadeInUp 1s ease-out;
+}
+
+.hero-subtitle {
+  max-width: 600px;
+  text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+  animation: fadeInUp 1s ease-out 0.3s both;
+}
+
+.hero-btn {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  transition: transform 0.3s, box-shadow 0.3s;
+  animation: fadeInUp 1s ease-out 0.6s both;
+}
+
+.hero-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.3);
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .trip-card,
@@ -571,13 +545,13 @@ export default {
 }
 
 @media (max-width: 599px) {
-  .banner {
-    min-height: 300px;
+  .hero-banner {
+    min-height: 350px;
     text-align: center;
   }
   
-  .search-card {
-    margin-top: -20px;
+  .hero-title {
+    font-size: 2rem;
   }
 }
 
