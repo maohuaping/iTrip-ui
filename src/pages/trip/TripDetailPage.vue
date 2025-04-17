@@ -146,45 +146,114 @@
                 <!-- 日程安排 -->
                 <q-card flat bordered class="q-mb-md">
                   <q-card-section>
-                    <div class="text-h6">日程安排</div>
-                    <q-separator class="q-my-sm" />
+                    <div class="text-h6 q-mb-md flex justify-between items-center">
+                      <span>日程安排</span>
+                      <q-btn dense flat round icon="tune" color="grey-7">
+                        <q-tooltip>自定义显示</q-tooltip>
+                      </q-btn>
+                    </div>
                     
-                    <q-timeline color="primary">
-                      <q-timeline-entry
-                        v-for="(day, index) in trip.itinerary"
+                    <q-tabs
+                      v-model="activeDay"
+                      dense
+                      class="text-primary q-mb-md itinerary-tabs"
+                      active-color="primary"
+                      indicator-color="primary"
+                      align="justify"
+                      narrow-indicator
+                    >
+                      <q-tab 
+                        v-for="(day, index) in trip.itinerary" 
                         :key="index"
-                        :title="`第 ${index + 1} 天 · ${day.date}`"
-                        :subtitle="day.title"
-                        :icon="index + 1 === trip.currentDay ? 'location_on' : ''"
-                        :color="index + 1 === trip.currentDay ? 'green' : 'primary'"
+                        :name="index"
+                        :label="`第${index + 1}天`"
+                      />
+                    </q-tabs>
+
+                    <q-separator class="q-mb-md" />
+                    
+                    <q-tab-panels v-model="activeDay" animated>
+                      <q-tab-panel 
+                        v-for="(day, index) in trip.itinerary" 
+                        :key="index" 
+                        :name="index"
+                        class="q-pa-none"
                       >
-                        <div>
-                          <div v-for="(activity, i) in day.activities" :key="i" class="q-mb-sm">
-                            <div class="row items-start">
-                              <div class="col-auto time-column">
-                                <div class="text-subtitle2 text-weight-medium">{{ activity.time }}</div>
+                        <div class="day-header q-mb-md">
+                          <div class="text-subtitle1 text-weight-bold">{{ day.title }}</div>
+                          <div class="text-caption text-grey">{{ day.date }}</div>
+                        </div>
+                        
+                        <div class="timeline-container">
+                          <div 
+                            v-for="(activity, i) in day.activities" 
+                            :key="i"
+                            class="timeline-item q-mb-md"
+                            :class="{'timeline-item-current': index + 1 === trip.currentDay && 
+                              i === getCurrentActivityIndex(day.activities)}"
+                          >
+                            <div class="timeline-time">
+                              <div class="time-badge">{{ activity.time }}</div>
+                            </div>
+                            
+                            <div class="timeline-content q-pa-sm">
+                              <div class="text-weight-medium">{{ activity.title }}</div>
+                              <div class="text-caption location">
+                                <q-icon name="place" size="xs" class="q-mr-xs" />
+                                {{ activity.location }}
                               </div>
-                              <q-separator vertical inset class="q-mx-md" />
-                              <div class="col activity-content">
-                                <div class="text-subtitle2 text-weight-medium">{{ activity.title }}</div>
-                                <div class="text-caption text-grey-8">{{ activity.location }}</div>
-                                <div class="q-mt-xs">{{ activity.description }}</div>
-                                <div class="row q-mt-sm" v-if="activity.photos && activity.photos.length">
-                                  <q-img
-                                    v-for="(photo, photoIndex) in activity.photos"
-                                    :key="photoIndex"
-                                    :src="photo"
-                                    class="activity-photo q-mr-sm"
-                                    width="80px"
-                                    height="80px"
-                                  />
-                                </div>
+                              <div class="description q-mt-xs">{{ activity.description }}</div>
+                              
+                              <div class="row q-mt-sm q-gutter-xs" v-if="activity.photos && activity.photos.length">
+                                <q-img
+                                  v-for="(photo, photoIndex) in activity.photos.slice(0, 3)"
+                                  :key="photoIndex"
+                                  :src="photo"
+                                  class="activity-photo"
+                                  @click="openPhotoGallery(activity.photos, photoIndex)"
+                                >
+                                  <div v-if="activity.photos.length > 3 && photoIndex === 2" 
+                                       class="absolute-full flex flex-center bg-black-6 text-white">
+                                    +{{ activity.photos.length - 2 }}
+                                  </div>
+                                </q-img>
+                              </div>
+                              
+                              <div class="row q-mt-sm justify-end">
+                                <q-btn flat dense size="sm" color="grey-7" icon="directions" class="q-mr-xs" @click="viewTransportation(activity)">
+                                  <q-tooltip>查看路线</q-tooltip>
+                                </q-btn>
+                                <q-btn flat dense size="sm" color="grey-7" icon="more_horiz">
+                                  <q-menu>
+                                    <q-list style="min-width: 120px">
+                                      <q-item clickable v-close-popup @click="addActivityNote(activity)">
+                                        <q-item-section avatar>
+                                          <q-icon name="note_add" />
+                                        </q-item-section>
+                                        <q-item-section>添加笔记</q-item-section>
+                                      </q-item>
+                                      <q-item clickable v-close-popup @click="addActivityPhotoPrompt(activity)">
+                                        <q-item-section avatar>
+                                          <q-icon name="add_a_photo" />
+                                        </q-item-section>
+                                        <q-item-section>添加照片</q-item-section>
+                                      </q-item>
+                                      <q-separator />
+                                      <q-item clickable v-close-popup @click="editActivity(activity)">
+                                        <q-item-section avatar>
+                                          <q-icon name="edit" />
+                                        </q-item-section>
+                                        <q-item-section>编辑</q-item-section>
+                                      </q-item>
+                                    </q-list>
+                                  </q-menu>
+                                </q-btn>
                               </div>
                             </div>
                           </div>
                         </div>
-                      </q-timeline-entry>
-                    </q-timeline>
+                      </q-tab-panel>
+                    </q-tab-panels>
                   </q-card-section>
                 </q-card>
 
@@ -516,6 +585,9 @@ export default {
       // 富文本编辑器
       editor: null,
       editorContent: '',
+      
+      // 添加这些新的变量
+      activeDay: 0,
       
       // 旅行数据 - 更新为桐庐两日游数据
       trip: {
@@ -907,7 +979,63 @@ export default {
       console.log('加载行程数据:', tripId);
       // 这里可以添加从API或store加载数据的逻辑
       // 示例仅使用已有数据
-    }
+    },
+    // 添加这些新方法
+    getCurrentActivityIndex(activities) {
+      // 根据当前时间确定当前活动
+      if (!activities || activities.length === 0) return -1;
+      
+      const now = new Date();
+      const currentHour = now.getHours();
+      const currentMinute = now.getMinutes();
+      
+      for (let i = activities.length - 1; i >= 0; i--) {
+        const activity = activities[i];
+        const [hour, minute] = activity.time.split(':').map(Number);
+        
+        if (hour < currentHour || (hour === currentHour && minute <= currentMinute)) {
+          return i;
+        }
+      }
+      
+      return 0; // 如果当前时间早于所有活动，则返回第一个活动
+    },
+    
+    addActivityNote(activity) {
+      this.$q.dialog({
+        title: '添加活动笔记',
+        message: `为 "${activity.title}" 添加笔记`,
+        prompt: {
+          model: '',
+          type: 'textarea'
+        },
+        cancel: true,
+        persistent: true
+      }).onOk(data => {
+        this.$q.notify({
+          color: 'positive',
+          message: '笔记已添加',
+          icon: 'done'
+        });
+      });
+    },
+    
+    addActivityPhotoPrompt(activity) {
+      // 在真实应用中，这里会打开文件选择器
+      this.$q.notify({
+        color: 'green',
+        message: '照片上传功能尚未实现',
+        icon: 'add_a_photo'
+      });
+    },
+    
+    editActivity(activity) {
+      this.$q.notify({
+        color: 'orange',
+        message: '编辑活动功能尚未实现',
+        icon: 'edit'
+      });
+    },
   },
   created() {
     // 根据ID加载行程数据
@@ -1124,5 +1252,146 @@ export default {
   background: linear-gradient(to right, #1976d2, transparent);
   border-radius: 3px;
   margin-bottom: 16px;
+}
+
+/* 新增和修改的样式 */
+.timeline-container {
+  position: relative;
+}
+
+.timeline-item {
+  display: flex;
+  position: relative;
+  margin-left: 8px;
+}
+
+.timeline-item:before {
+  content: '';
+  position: absolute;
+  left: 15px;
+  top: 30px;
+  bottom: -15px;
+  width: 2px;
+  background-color: rgba(25, 118, 210, 0.2);
+  z-index: 1;
+}
+
+.timeline-item:last-child:before {
+  display: none;
+}
+
+.timeline-time {
+  position: relative;
+  z-index: 2;
+  margin-right: 15px;
+}
+
+.time-badge {
+  background-color: #f5f5f5;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  color: #1976d2;
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  min-width: 60px;
+  text-align: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.timeline-content {
+  flex: 1;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border-left: 3px solid #1976d2;
+  transition: all 0.3s ease;
+}
+
+.timeline-content:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+}
+
+.timeline-item-current .timeline-content {
+  border-left-color: #4caf50;
+  background-color: #f1f8e9;
+}
+
+.timeline-item-current .time-badge {
+  background-color: #4caf50;
+  color: white;
+  border-color: #4caf50;
+}
+
+.location {
+  color: #757575;
+  display: flex;
+  align-items: center;
+}
+
+.activity-photo {
+  width: 80px;
+  height: 80px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.activity-photo:hover {
+  transform: scale(1.05);
+}
+
+.description {
+  font-size: 0.9rem;
+  color: #424242;
+  white-space: pre-line;
+}
+
+.day-header {
+  padding: 4px 0;
+  border-radius: 4px;
+}
+
+/* 修改的选项卡样式 */
+.itinerary-tabs {
+  background-color: #f5f5f5;
+  border-radius: 8px;
+}
+
+:deep(.q-tab) {
+  min-height: 36px;
+  padding: 0 12px;
+}
+
+:deep(.q-tab__label) {
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+/* 针对移动设备的优化 */
+@media (max-width: 599px) {
+  .timeline-item {
+    margin-left: 0;
+  }
+  
+  .time-badge {
+    min-width: 52px;
+    font-size: 0.8rem;
+    padding: 3px 6px;
+  }
+  
+  .activity-photo {
+    width: 70px;
+    height: 70px;
+  }
+  
+  .description {
+    font-size: 0.85rem;
+  }
+  
+  :deep(.q-tab__label) {
+    font-size: 0.75rem;
+  }
 }
 </style> 
