@@ -236,16 +236,16 @@
                                 <q-icon name="place" size="xs" color="deep-orange" class="q-mr-xs" />
                                 <span class="text-caption">{{ activity.location }}</span>
                                 
-                                <!-- 添加导航按钮 -->
+                                <!-- 优化导航按钮样式 -->
                                 <q-btn
                                   v-if="i > 0"
                                   flat
                                   round
                                   dense
-                                  color="teal"
-                                  icon="directions"
+                                  color="teal-7"
+                                  icon="navigation"
                                   size="xs"
-                                  class="navigation-btn q-ml-sm"
+                                  class="navigation-btn-new q-ml-sm"
                                   @click="navigateBetweenLocations(day.activities[i-1], activity)"
                                 >
                                   <q-tooltip>导航到这里</q-tooltip>
@@ -2137,5 +2137,26 @@ export default {
 .timeline-content:hover {
   transform: translateY(-5px) scale(1.01);
   box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
+
+/* 新的导航按钮样式 */
+.navigation-btn-new {
+  transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+  background-color: rgba(0, 150, 136, 0.1);
+  margin-left: 8px !important;
+  font-size: 14px;
+  padding: 4px;
+  opacity: 0.9;
+}
+
+.navigation-btn-new:hover {
+  opacity: 1;
+  transform: scale(1.1);
+  background-color: rgba(0, 150, 136, 0.2);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.navigation-btn-new .q-icon {
+  font-size: 16px;
 }
 </style> 
