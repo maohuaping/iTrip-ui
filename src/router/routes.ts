@@ -22,7 +22,8 @@ const routes: RouteRecordRaw[] = [
     children: [
       { path: '/trip', component: () => import('pages/trip/TripPage.vue') },
       { path: '/trip/plan', component: () => import('pages/trip/PlanTrip.vue') },
-      { path: '/trip/detail/:id', component: () => import('pages/trip/TripDetailPage.vue') }
+      { path: '/trip/detail/:id', component: () => import('pages/trip/TripDetailPage.vue') },
+      { path: '/trip/edit/:id', component: () => import('pages/trip/TripEditPage.vue') }
     ]
   },
   {

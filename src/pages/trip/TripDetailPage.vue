@@ -1027,7 +1027,7 @@ export default {
   methods: {
     editTrip() {
       // 实现编辑行程功能
-      this.$router.push(`/trip/planner/edit/${this.trip.id}`);
+      this.$router.push(`/trip/edit/${this.trip.id}`);
     },
     shareTrip() {
       // 实现分享行程功能
