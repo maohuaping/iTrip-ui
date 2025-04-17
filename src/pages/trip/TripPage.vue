@@ -28,7 +28,7 @@
         >
           <q-tooltip>快速搜索</q-tooltip>
         </q-btn>
-        
+
         <q-btn
           flat
           dense
@@ -57,9 +57,9 @@
     >
       <div class="q-pa-sm">
         <div class="text-subtitle1 q-pa-sm q-mb-sm text-weight-medium text-primary">旅行导航</div>
-        
+
         <q-separator class="q-mb-sm" />
-        
+
         <q-list padding dense class="menu-list">
           <q-item clickable to="/trip/destinations" v-ripple>
             <q-item-section avatar>
@@ -88,11 +88,11 @@
             </q-item-section>
             <q-item-section>旅行博客</q-item-section>
           </q-item>
-          
+
           <q-separator class="q-my-sm" />
-          
+
           <div class="text-subtitle2 q-pa-sm q-pb-xs text-weight-medium">我的旅行</div>
-          
+
           <q-item clickable to="/trip/planner" v-ripple>
             <q-item-section avatar>
               <q-icon name="event_note" />
@@ -136,7 +136,7 @@
               <div class="title-underline"></div>
               <!-- <p class="text-subtitle1 text-grey-7 q-mt-md">管理您的所有旅行计划</p> -->
             </div>
-            
+
             <q-tabs
               v-model="activeTab"
               dense
@@ -194,7 +194,7 @@
                     </q-card>
                   </div>
                 </div>
-                
+
                 <div class="text-center q-mt-lg" v-if="upcomingTrips.length === 0">
                   <q-icon name="flight_takeoff" size="4rem" color="grey-5" />
                   <p class="text-grey-7 q-mt-md">您目前没有待出发的旅行</p>
@@ -241,7 +241,7 @@
                     </q-card>
                   </div>
                 </div>
-                
+
                 <div class="text-center q-mt-lg" v-if="ongoingTrips.length === 0">
                   <q-icon name="card_travel" size="4rem" color="grey-5" />
                   <p class="text-grey-7 q-mt-md">您目前没有进行中的旅行</p>
@@ -281,12 +281,12 @@
                     </q-card>
                   </div>
                 </div>
-                
+
                 <div class="text-center q-mt-lg" v-if="completedTrips.length === 0">
                   <q-icon name="flag" size="4rem" color="grey-5" />
                   <p class="text-grey-7 q-mt-md">您还没有完成的旅行记录</p>
                 </div>
-                
+
                 <div class="text-center q-mt-xl" v-if="completedTrips.length > 0">
                   <q-btn outline color="primary" label="查看更多历史旅行" to="/trip/history" />
                 </div>
@@ -329,7 +329,10 @@
   </q-layout>
 </template>
 
-<script>
+<script lang="ts">
+// 导入桐庐图片
+import tongLuImage from 'src/assets/destinations/tongLu.jpg'
+
 export default {
   name: 'TripPage',
   data () {
@@ -353,23 +356,23 @@ export default {
       // 待出发的旅行
       upcomingTrips: [
         {
-          destination: '日本东京',
+          destination: '桐庐',
           date: '2023年12月15日 - 2023年12月22日',
-          image: 'https://images.unsplash.com/photo-1536098561742-ca998e48cbcc',
+          image: tongLuImage,
           daysLeft: 28,
           preparationProgress: 0.65
         },
         {
-          destination: '泰国清迈',
+          destination: '海昌海洋公园',
           date: '2024年1月10日 - 2024年1月17日',
-          image: 'https://images.unsplash.com/photo-1528181304800-259b08848526',
+          image: tongLuImage,
           daysLeft: 54,
           preparationProgress: 0.3
         },
         {
           destination: '法国巴黎',
           date: '2024年2月14日 - 2024年2月21日',
-          image: 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34',
+          image: tongLuImage,
           daysLeft: 89,
           preparationProgress: 0.15
         }
@@ -549,7 +552,7 @@ export default {
     min-height: 350px;
     text-align: center;
   }
-  
+
   .hero-title {
     font-size: 2rem;
   }
