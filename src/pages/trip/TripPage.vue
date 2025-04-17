@@ -188,7 +188,7 @@
                         </div>
                       </q-card-section>
                       <q-card-actions align="right">
-                        <q-btn flat color="primary" label="查看详情" />
+                        <q-btn flat color="primary" label="查看详情" @click="viewTripDetail(trip)" />
                         <q-btn flat color="secondary" label="编辑行程" />
                       </q-card-actions>
                     </q-card>
@@ -356,6 +356,7 @@ export default {
       // 待出发的旅行
       upcomingTrips: [
         {
+          id: 'tonglu-1',
           destination: '桐庐',
           date: '2023年12月15日 - 2023年12月22日',
           image: tongLuImage,
@@ -363,13 +364,15 @@ export default {
           preparationProgress: 0.65
         },
         {
-          destination: '海昌海洋公园',
+          id: 'chiangmai-1',
+          destination: '泰国清迈',
           date: '2024年1月10日 - 2024年1月17日',
-          image: tongLuImage,
+          image: 'https://images.unsplash.com/photo-1528181304800-259b08848526',
           daysLeft: 54,
           preparationProgress: 0.3
         },
         {
+          id: 'paris-1',
           destination: '法国巴黎',
           date: '2024年2月14日 - 2024年2月21日',
           image: tongLuImage,
@@ -446,6 +449,10 @@ export default {
         message: '订阅成功！感谢您的关注'
       })
       this.email = ''
+    },
+    viewTripDetail(trip) {
+      // 跳转到行程详情页，并传递行程ID
+      this.$router.push(`/trip/detail/${trip.id || '1'}`);
     }
   }
 }

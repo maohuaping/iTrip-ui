@@ -491,6 +491,12 @@
 <script>
 export default {
   name: 'TripDetailPage',
+  props: {
+    id: {
+      type: String,
+      required: true
+    }
+  },
   data() {
     return {
       // 图片画廊相关
@@ -1190,11 +1196,16 @@ export default {
     isDatePassed(date) {
       // 实现日期比较逻辑
       return false; // 示例返回
+    },
+    loadTripData(tripId) {
+      console.log('加载行程数据:', tripId);
+      // 这里可以添加从API或store加载数据的逻辑
+      // 示例仅使用已有数据
     }
   },
   created() {
-    // 这里可以添加初始化逻辑，如从API获取行程数据
-    console.log('Trip detail page created');
+    // 根据ID加载行程数据
+    this.loadTripData(this.id);
   },
   mounted() {
     // 页面加载后的逻辑
