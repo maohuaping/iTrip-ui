@@ -66,7 +66,7 @@ export default defineConfig((/* ctx */) => {
       // extendViteConf (viteConf) {},
       // viteVuePluginOptions: {},
 
-      vitePlugins: [
+    vitePlugins: [
         // https://vite-plugin-checker.netlify.app/introduction/introduction.html
       //   ['vite-plugin-checker', {
       //     vueTsc: true,
@@ -78,7 +78,7 @@ export default defineConfig((/* ctx */) => {
       //       initialIsOpen: false
       //     },  // 即使有错误或警告，也不自动打开诊断面板（用户需要手动点击徽章才能查看）
       //   }, { server: false }]
-      // ]
+      ]
     },
 
     // Full list of options: https://v2.quasar.dev/quasar-cli-vite/quasar-config-file#devserver
