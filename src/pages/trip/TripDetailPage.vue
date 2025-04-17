@@ -222,16 +222,36 @@
                             :class="{'timeline-item-current': index + 1 === trip.currentDay && 
                               i === getCurrentActivityIndex(day.activities)}"
                           >
-                            <div class="timeline-time">
-                              <div class="time-badge">{{ activity.time }}</div>
-                            </div>
-                            
                             <div class="timeline-content q-pa-md">
+                              <div class="time-badge-corner">{{ activity.time }}</div>
+                              
+                              <!-- 添加活动类型标签 -->
+                              <div class="activity-type-badge" :class="getActivityTypeClass(activity)">
+                                {{ getActivityTypeLabel(activity) }}
+                              </div>
+                              
                               <div class="text-weight-medium text-subtitle1">{{ activity.title }}</div>
+                              
                               <div class="location q-mt-xs">
                                 <q-icon name="place" size="xs" color="deep-orange" class="q-mr-xs" />
                                 <span class="text-caption">{{ activity.location }}</span>
+                                
+                                <!-- 添加导航按钮 -->
+                                <q-btn
+                                  v-if="i > 0"
+                                  flat
+                                  round
+                                  dense
+                                  color="teal"
+                                  icon="directions"
+                                  size="xs"
+                                  class="navigation-btn q-ml-sm"
+                                  @click="navigateBetweenLocations(day.activities[i-1], activity)"
+                                >
+                                  <q-tooltip>导航到这里</q-tooltip>
+                                </q-btn>
                               </div>
+                              
                               <q-separator class="q-my-sm" />
                               <div class="description">{{ activity.description }}</div>
                               
@@ -250,7 +270,7 @@
                                 </q-img>
                               </div>
                               
-                              <div class="row q-mt-sm q-gutter-xs justify-end">
+                              <div class="activity-actions row q-mt-sm q-gutter-xs justify-end">
                                 <q-btn flat round dense size="sm" color="teal" icon="directions" @click="viewTransportation(activity)">
                                   <q-tooltip>查看路线</q-tooltip>
                                 </q-btn>
@@ -623,6 +643,78 @@
         </q-card-section>
       </q-card>
     </q-dialog>
+
+    <!-- 添加导航对话框 -->
+    <q-dialog v-model="navigationDialogOpen" persistent>
+      <q-card style="max-width: 500px; width: 90vw;">
+        <q-card-section class="row items-center">
+          <div class="text-h6">导航路线</div>
+          <q-space />
+          <q-btn icon="close" flat round dense v-close-popup />
+        </q-card-section>
+        
+        <q-separator />
+        
+        <q-card-section class="q-pa-md">
+          <div class="text-subtitle1 q-mb-md">从 {{ navigationData.from.location }} 到 {{ navigationData.to.location }}</div>
+          
+          <div class="navigation-details q-mb-md">
+            <div class="row items-center q-mb-sm">
+              <q-icon name="place" color="primary" size="sm" class="q-mr-sm" />
+              <div class="text-weight-medium">{{ navigationData.from.title }}</div>
+            </div>
+            
+            <div class="navigation-path q-px-md q-py-sm">
+              <div class="route-info q-mb-sm">
+                <div class="row justify-between items-center">
+                  <div>
+                    <q-icon name="directions_car" color="teal" class="q-mr-xs" />
+                    <span class="text-weight-medium">驾车路线</span>
+                  </div>
+                  <div class="text-caption">
+                    <span class="text-weight-bold">{{ navigationDistance }}</span> · 
+                    约 <span class="text-weight-bold">{{ navigationDuration }}</span>
+                  </div>
+                </div>
+              </div>
+              
+              <q-separator class="q-my-sm navigation-line" />
+              
+              <div class="route-info q-mb-sm">
+                <div class="row justify-between items-center">
+                  <div>
+                    <q-icon name="directions_walk" color="light-green" class="q-mr-xs" />
+                    <span class="text-weight-medium">步行路线</span>
+                  </div>
+                  <div class="text-caption">
+                    <span class="text-weight-bold">{{ navigationWalkDistance }}</span> · 
+                    约 <span class="text-weight-bold">{{ navigationWalkDuration }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="row items-center q-mt-md">
+              <q-icon name="flag" color="deep-orange" size="sm" class="q-mr-sm" />
+              <div class="text-weight-medium">{{ navigationData.to.title }}</div>
+            </div>
+          </div>
+          
+          <div class="map-container q-mt-lg">
+            <q-img
+              src="https://maps.googleapis.com/maps/api/staticmap?size=400x200&path=color:0x1976D2|weight:5|Tonglu,China&markers=color:red|label:A|Tonglu,China&markers=color:red|label:B|Tonglu+Station,China&key=YOUR_API_KEY"
+              class="full-width"
+              style="height: 200px; border-radius: 8px"
+            />
+          </div>
+        </q-card-section>
+        
+        <q-card-actions align="right" class="q-pa-md">
+          <q-btn flat label="取消" color="grey-7" v-close-popup />
+          <q-btn unelevated label="在地图中打开" color="primary" icon="open_in_new" @click="openInMaps" />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
   </q-layout>
 </template>
 
@@ -839,7 +931,18 @@ export default {
           { name: '大奇山国家森林公园门票.pdf', type: 'pdf', size: '0.5MB' },
           { name: '马岭古道地图.jpg', type: 'image', size: '2.3MB' }
         ]
-      }
+      },
+      
+      // 添加导航相关数据
+      navigationDialogOpen: false,
+      navigationData: {
+        from: null,
+        to: null
+      },
+      navigationDistance: '3.5 公里',
+      navigationDuration: '15 分钟',
+      navigationWalkDistance: '2.8 公里',
+      navigationWalkDuration: '35 分钟'
     }
   },
   computed: {
@@ -1157,6 +1260,96 @@ export default {
         });
       }
     },
+    
+    // 获取活动类型标签
+    getActivityTypeLabel(activity) {
+      if (activity.title.includes('出发') || activity.title.includes('抵达') || 
+          activity.title.includes('前往') || activity.title.includes('返回')) {
+        return '出行';
+      } else if (activity.title.includes('早餐') || activity.title.includes('午餐') || 
+                 activity.title.includes('晚餐') || activity.title.includes('用餐') ||
+                 activity.title.includes('大院') || activity.title.includes('小吃')) {
+        return '用餐';
+      } else if (activity.title.includes('游览') || activity.title.includes('徒步') || 
+                 activity.title.includes('游玩') || activity.title.includes('观光')) {
+        return '游览';
+      } else if (activity.title.includes('酒店') || activity.title.includes('休息')) {
+        return '住宿';
+      } else {
+        return '活动';
+      }
+    },
+    
+    // 获取活动类型样式类
+    getActivityTypeClass(activity) {
+      const type = this.getActivityTypeLabel(activity);
+      switch (type) {
+        case '出行': return 'transport';
+        case '用餐': return 'meal';
+        case '游览': return 'attraction';
+        case '住宿': return 'rest';
+        default: return 'activity';
+      }
+    },
+    
+    // 两个位置之间的导航
+    navigateBetweenLocations(fromActivity, toActivity) {
+      this.navigationData = {
+        from: fromActivity,
+        to: toActivity
+      };
+      
+      // 这里应该调用地图API获取实际导航数据
+      // 示例中使用固定数据
+      
+      // 根据距离估算时间和距离
+      const locationNames = [fromActivity.location, toActivity.location].join(',').toLowerCase();
+      
+      if (locationNames.includes('酒店') && locationNames.includes('大奇山')) {
+        this.navigationDistance = '5.2 公里';
+        this.navigationDuration = '18 分钟';
+        this.navigationWalkDistance = '4.5 公里';
+        this.navigationWalkDuration = '55 分钟';
+      } else if (locationNames.includes('酒店') && locationNames.includes('小吃街')) {
+        this.navigationDistance = '3.1 公里';
+        this.navigationDuration = '12 分钟';
+        this.navigationWalkDistance = '2.8 公里';
+        this.navigationWalkDuration = '35 分钟';
+      } else if (locationNames.includes('石舍村') && locationNames.includes('马岭古道')) {
+        this.navigationDistance = '0.8 公里';
+        this.navigationDuration = '5 分钟';
+        this.navigationWalkDistance = '0.8 公里';
+        this.navigationWalkDuration = '10 分钟';
+      } else {
+        // 默认数据
+        this.navigationDistance = '3.5 公里';
+        this.navigationDuration = '15 分钟';
+        this.navigationWalkDistance = '3.2 公里';
+        this.navigationWalkDuration = '40 分钟';
+      }
+      
+      this.navigationDialogOpen = true;
+    },
+    
+    // 在地图应用中打开
+    openInMaps() {
+      const fromLocation = encodeURIComponent(this.navigationData.from.location);
+      const toLocation = encodeURIComponent(this.navigationData.to.location);
+      
+      // 尝试打开高德地图
+      const aMapUrl = `https://uri.amap.com/navigation?from=,,${fromLocation}&to=,,${toLocation}&mode=car&policy=1&src=mypage&coordinate=gaode&callnative=0`;
+      
+      // 这里应该有更复杂的逻辑来检测用户设备和打开相应的地图应用
+      window.open(aMapUrl, '_blank');
+      
+      this.navigationDialogOpen = false;
+      
+      this.$q.notify({
+        color: 'positive',
+        message: '正在打开地图应用',
+        icon: 'directions'
+      });
+    }
   },
   created() {
     // 根据ID加载行程数据
@@ -1264,25 +1457,6 @@ export default {
   display: none;
 }
 
-.timeline-time {
-  position: relative;
-  z-index: 2;
-  margin-right: 16px;
-}
-
-.time-badge {
-  background-color: white;
-  border: 1px solid #1976d2;
-  color: #1976d2;
-  border-radius: 20px;
-  padding: 4px 10px;
-  font-size: 0.9rem;
-  font-weight: 500;
-  min-width: 60px;
-  text-align: center;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
 .timeline-content {
   flex: 1;
   background-color: white;
@@ -1291,6 +1465,7 @@ export default {
   position: relative;
   overflow: hidden;
   transition: all 0.3s ease;
+  padding-top: 36px !important; /* 为角标留出空间 */
 }
 
 .timeline-content:hover {
@@ -1312,16 +1487,49 @@ export default {
   background-color: #4caf50;
 }
 
-.timeline-item-current .time-badge {
-  background-color: #4caf50;
-  color: white;
-  border-color: #4caf50;
+.timeline-content {
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+}
+
+.timeline-content::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 40px;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.03), transparent);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.timeline-content .text-subtitle1 {
+  font-weight: 600;
+  color: #263238;
+  font-size: 1.1rem;
+  margin-bottom: 6px;
+  position: relative;
+  z-index: 2;
 }
 
 .location {
   color: #757575;
   display: flex;
   align-items: center;
+  font-weight: 500;
+  background-color: rgba(0,0,0,0.03);
+  padding: 4px 8px;
+  border-radius: 4px;
+  display: inline-flex;
+  margin-bottom: 10px;
+}
+
+.timeline-content .q-separator {
+  opacity: 0.5;
+  background: linear-gradient(to right, transparent, #1976d2, transparent);
+  height: 1px;
 }
 
 .activity-photo {
@@ -1344,6 +1552,20 @@ export default {
   color: #424242;
   white-space: pre-line;
   line-height: 1.5;
+  padding: 8px;
+  background-color: rgba(0,0,0,0.02);
+  border-radius: 8px;
+  margin-bottom: 10px;
+}
+
+.timeline-content .q-btn {
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.timeline-content .q-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }
 
 .note-card {
@@ -1471,22 +1693,21 @@ export default {
     margin: 4px 0;
   }
   
-  .timeline-time {
-    margin-right: 10px;
+  .timeline-content {
+    padding-top: 32px !important;
   }
   
-  .time-badge {
-    min-width: 54px;
-    font-size: 0.85rem;
+  .time-badge-corner {
+    font-size: 0.75rem;
     padding: 3px 8px;
   }
   
-  .timeline-content {
-    padding: 12px !important;
+  .timeline-content .text-subtitle1 {
+    font-size: 1rem;
   }
   
   .activity-photo {
-    width: 80px;
+    width: 70px;
     height: 60px;
   }
   
@@ -1511,7 +1732,7 @@ export default {
   }
   
   .timeline-container {
-    padding-left: 4px;
+    padding-left: 0;
   }
   
   .timeline-item:before {
@@ -1568,7 +1789,7 @@ export default {
     border: 1px solid #ddd !important;
   }
   
-  .time-badge {
+  .time-badge-corner {
     box-shadow: none !important;
     border: 1px solid #000 !important;
   }
@@ -1598,7 +1819,7 @@ export default {
   box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
 }
 
-.dark-mode .time-badge {
+.dark-mode .time-badge-corner {
   background-color: #333;
   border-color: #555;
   color: #fff;
@@ -1771,5 +1992,150 @@ export default {
 
 ::-webkit-scrollbar-thumb:hover {
   background: #9e9e9e;
+}
+
+/* 角标时间样式 */
+.time-badge-corner {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background-color: #1976d2;
+  color: white;
+  padding: 4px 10px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  border-radius: 0 12px 0 12px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  z-index: 2;
+}
+
+/* 活动类型标签 */
+.activity-type-badge {
+  position: absolute;
+  top: 0;
+  left: 0;
+  padding: 4px 10px;
+  font-size: 0.7rem;
+  font-weight: 500;
+  border-radius: 12px 0 12px 0;
+  z-index: 2;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.activity-type-badge.transport {
+  background-color: #e3f2fd;
+  color: #1976d2;
+}
+
+.activity-type-badge.attraction {
+  background-color: #e8f5e9;
+  color: #388e3c;
+}
+
+.activity-type-badge.meal {
+  background-color: #fff8e1;
+  color: #ffa000;
+}
+
+.activity-type-badge.rest {
+  background-color: #f3e5f5;
+  color: #8e24aa;
+}
+
+.activity-type-badge.activity {
+  background-color: #f5f5f5;
+  color: #616161;
+}
+
+/* 导航按钮 */
+.navigation-btn {
+  transition: all 0.3s ease;
+  opacity: 0.7;
+}
+
+.navigation-btn:hover {
+  opacity: 1;
+  transform: scale(1.2);
+}
+
+/* 操作按钮 */
+.activity-actions {
+  border-top: 1px dashed #e0e0e0;
+  padding-top: 8px;
+  margin-top: 8px !important;
+}
+
+.activity-actions .q-btn {
+  transition: all 0.3s ease;
+}
+
+.activity-actions .q-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 3px 5px rgba(0,0,0,0.1);
+}
+
+/* 导航对话框样式 */
+.navigation-details {
+  background-color: #f5f5f5;
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.navigation-path {
+  border-left: 2px dashed #1976d2;
+  margin-left: 12px;
+}
+
+.route-info {
+  background-color: white;
+  border-radius: 6px;
+  padding: 8px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.navigation-line {
+  border-style: dashed;
+  height: 20px;
+  margin-left: 15px;
+}
+
+/* 更新的响应式样式 */
+@media (max-width: 599px) {
+  .timeline-container {
+    padding-left: 0;
+  }
+  
+  .activity-type-badge, .time-badge-corner {
+    font-size: 0.65rem;
+    padding: 3px 6px;
+  }
+  
+  .route-info {
+    padding: 6px;
+  }
+}
+
+/* 暗色模式支持 */
+.dark-mode .navigation-details {
+  background-color: #1e1e1e;
+}
+
+.dark-mode .route-info {
+  background-color: #333;
+}
+
+.dark-mode .activity-actions {
+  border-top-color: #424242;
+}
+
+/* 卡片悬停效果增强 */
+.timeline-content {
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.timeline-content:hover {
+  transform: translateY(-5px) scale(1.01);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.1);
 }
 </style> 
