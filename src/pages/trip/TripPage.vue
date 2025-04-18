@@ -140,9 +140,30 @@
               align="justify"
               narrow-indicator
             >
-              <q-tab name="upcoming" label="待出发" />
-              <q-tab name="ongoing" label="进行中" />
-              <q-tab name="completed" label="已完成" />
+              <q-tab name="upcoming">
+                <q-item-section>
+                  <span class="row items-center">
+                    待出发
+                    <q-badge color="primary" class="q-ml-sm">{{ upcomingTrips.length }}</q-badge>
+                  </span>
+                </q-item-section>
+              </q-tab>
+              <q-tab name="ongoing">
+                <q-item-section>
+                  <span class="row items-center">
+                    进行中
+                    <q-badge color="primary" class="q-ml-sm">{{ ongoingTrips.length }}</q-badge>
+                  </span>
+                </q-item-section>
+              </q-tab>
+              <q-tab name="completed">
+                <q-item-section>
+                  <span class="row items-center">
+                    已完成
+                    <q-badge color="primary" class="q-ml-sm">{{ completedTrips.length }}</q-badge>
+                  </span>
+                </q-item-section>
+              </q-tab>
             </q-tabs>
 
             <q-separator />
