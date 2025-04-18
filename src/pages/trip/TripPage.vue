@@ -129,31 +129,25 @@
         </div>
 
         <!-- 旅行状态标签页 -->
-        <div class="trips-section q-py-lg">
+        <div class="trips-section">
           <div class="container">
-            <div class="section-header q-px-md q-mb-lg">
-              <h2 class="text-h4 q-mb-sm">我的旅行</h2>
-              <div class="title-underline"></div>
-              <!-- <p class="text-subtitle1 text-grey-7 q-mt-md">管理您的所有旅行计划</p> -->
-            </div>
-
             <q-tabs
               v-model="activeTab"
               dense
-              class="text-grey"
+              class="text-grey q-mt-md"
               active-color="primary"
               indicator-color="primary"
               align="justify"
               narrow-indicator
             >
-              <q-tab name="upcoming" icon="flight_takeoff" label="待出发" />
-              <q-tab name="ongoing" icon="directions_car" label="进行中" />
-              <q-tab name="completed" icon="flag" label="已完成" />
+              <q-tab name="upcoming" label="待出发" />
+              <q-tab name="ongoing" label="进行中" />
+              <q-tab name="completed" label="已完成" />
             </q-tabs>
 
             <q-separator />
 
-            <q-tab-panels v-model="activeTab" animated>
+            <q-tab-panels v-model="activeTab">
               <!-- 待出发旅行面板 -->
               <q-tab-panel name="upcoming">
                 <div class="row q-col-gutter-md">
@@ -474,6 +468,7 @@ export default {
   align-items: center;
   position: relative;
   overflow: hidden;
+  margin-bottom: 0;
 }
 
 .hero-banner::before {
@@ -565,16 +560,10 @@ export default {
   }
 }
 
-.section-header {
-  position: relative;
-  padding-bottom: 8px;
-}
-
-.title-underline {
-  height: 3px;
-  width: 60px;
-  background: linear-gradient(to right, var(--q-primary), transparent);
-  border-radius: 3px;
+.trips-section {
+  background: white;
+  padding-top: 1rem;
+  padding-bottom: 2rem;
 }
 
 /* 简化菜单样式 */
