@@ -338,8 +338,8 @@ const countdownTime = ref({
   seconds: 0
 })
 
-// 修改为2025年4月21日08:30
-const targetDate = new Date('2025-04-21T08:30:00+08:00')
+// 修改为2025年5月10日08:30
+const targetDate = new Date('2025-05-10T08:30:00+08:00')
 
 let countdownInterval: number | undefined
 
