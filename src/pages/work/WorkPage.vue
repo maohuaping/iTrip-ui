@@ -24,6 +24,60 @@
           </div>
         </q-toolbar-title>
 
+        <!-- 添加待办列表下拉按钮 -->
+        <q-btn-dropdown
+          flat
+          color="green-7"
+          no-caps
+          dense
+          class="q-mr-sm todo-dropdown"
+          label="待办事项"
+          icon="checklist"
+        >
+          <q-list style="min-width: 250px">
+            <q-item-label header>今日待办</q-item-label>
+            
+            <template v-if="todoItems.length > 0">
+              <q-item v-for="(item, index) in todoItems" :key="index" tag="label" v-ripple>
+                <q-item-section side>
+                  <q-checkbox v-model="item.done" color="green-7" @update:model-value="updateTodoStatus(index)" />
+                </q-item-section>
+                <q-item-section>
+                  <q-item-label :class="{'text-strike': item.done}">{{ item.text }}</q-item-label>
+                  <q-item-label caption v-if="item.dueTime">{{ item.dueTime }}</q-item-label>
+                </q-item-section>
+                <q-item-section side>
+                  <q-btn flat round dense icon="delete" color="grey-7" size="sm" @click.stop="removeTodo(index)" />
+                </q-item-section>
+              </q-item>
+            </template>
+            
+            <q-item v-else>
+              <q-item-section>
+                <q-item-label class="text-center text-grey-7">暂无待办事项</q-item-label>
+              </q-item-section>
+            </q-item>
+            
+            <q-separator />
+            
+            <q-item>
+              <q-item-section>
+                <q-input 
+                  v-model="newTodo" 
+                  dense 
+                  placeholder="添加新待办..."
+                  @keyup.enter="addTodo"
+                  class="new-todo-input"
+                >
+                  <template v-slot:append>
+                    <q-btn round dense flat icon="add" color="green-7" @click="addTodo" />
+                  </template>
+                </q-input>
+              </q-item-section>
+            </q-item>
+          </q-list>
+        </q-btn-dropdown>
+
         <!-- 使用Quasar的split button组件 - 改进版 -->
         <q-btn-dropdown
           flat
@@ -270,7 +324,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, computed, reactive } from 'vue'
+import { ref, onMounted, onUnmounted, computed, reactive, watch } from 'vue'
 import { useQuasar } from 'quasar'
 import TaskList from './components/TaskList.vue'
 import WorkLog from './components/WorkLog.vue'
@@ -280,6 +334,13 @@ import { getUrl } from 'src/api/url/url'
 defineOptions({
   name: 'WorkPage'
 })
+
+// 定义待办事项类型
+interface TodoItem {
+  text: string
+  done: boolean
+  dueTime?: string
+}
 
 // 定义URL数据类型
 interface UrlItem {
@@ -537,10 +598,52 @@ const mockData = {
   ]
 }
 
-// 组件挂载时获取URL列表
+// 待办事项列表
+const todoItems = ref<TodoItem[]>([])
+const newTodo = ref('')
+
+// 添加待办事项
+const addTodo = () => {
+  if (newTodo.value.trim()) {
+    todoItems.value.push({
+      text: newTodo.value.trim(),
+      done: false
+    })
+    newTodo.value = ''
+    saveTodos() // 保存到本地存储
+  }
+}
+
+// 更新待办事项状态
+const updateTodoStatus = (index: number) => {
+  // 可以在这里添加其他逻辑，如已完成项目自动排序等
+  saveTodos() // 保存到本地存储
+}
+
+// 删除待办事项
+const removeTodo = (index: number) => {
+  todoItems.value.splice(index, 1)
+  saveTodos() // 保存到本地存储
+}
+
+// 保存待办事项到本地存储
+const saveTodos = () => {
+  localStorage.setItem('workPageTodos', JSON.stringify(todoItems.value))
+}
+
+// 从本地存储加载待办事项
+const loadTodos = () => {
+  const savedTodos = localStorage.getItem('workPageTodos')
+  if (savedTodos) {
+    todoItems.value = JSON.parse(savedTodos)
+  }
+}
+
+// 在组件挂载时加载待办事项
 onMounted(() => {
   fetchUrlList()
-
+  loadTodos() // 加载待办事项
+  
   // 初始化倒计时
   calculateCountdown()
   countdownInterval = setInterval(calculateCountdown, 1000)
@@ -1017,5 +1120,34 @@ section {
       border-left-color: rgba(25, 118, 210, 0.7);
     }
   }
+}
+
+// 待办事项下拉样式
+.todo-dropdown {
+  .q-btn-dropdown__arrow-container {
+    border-left: 1px solid rgba(76, 175, 80, 0.4);
+    margin-left: 4px;
+    padding-left: 4px;
+  }
+
+  &:hover {
+    .q-btn-dropdown__arrow-container {
+      border-left-color: rgba(76, 175, 80, 0.7);
+    }
+  }
+}
+
+.new-todo-input {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  
+  :deep(.q-field__control) {
+    box-shadow: none;
+  }
+}
+
+// 添加删除线样式，用于已完成待办
+.text-strike {
+  text-decoration: line-through;
+  color: #9e9e9e;
 }
 </style>
