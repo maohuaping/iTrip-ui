@@ -94,6 +94,36 @@ export interface UrlEntity {
 }
 
 /**
+ * 待办事项
+ */
+export interface TodoEntity {
+  /** 主键ID */
+  id?: number;
+  /** 创建人 */
+  createdBy?: number;
+  /** 创建时间 */
+  createdAt?: string;
+  /** 更新人 */
+  updatedBy?: number;
+  /** 更新时间 */
+  updatedAt?: string;
+  /** 待办事项名称 */
+  title?: string;
+  /** 待办事项描述 */
+  description?: string;
+  /** 是否完成 */
+  completed?: boolean;
+  /** 计划完成日期 */
+  dueDate?: string;
+  /** 优先级 */
+  priority?: number;
+  /** 类别/标签 */
+  category?: string;
+  /** 用户ID */
+  userId?: number;
+}
+
+/**
  * 系统配置信息
  */
 export interface SystemConfigEntity {
@@ -519,6 +549,25 @@ export interface TravelGuideDTO {
   attractions?: Attraction[];
   /** 旅游建议 */
   tips?: string;
+}
+
+/**
+ * API 统一返回格式
+ */
+export interface ResultTodoEntity {
+  /** 是否成功 */
+  success?: boolean;
+  payload?: TodoEntity;
+}
+
+/**
+ * API 统一返回格式
+ */
+export interface ResultListTodoEntity {
+  /** 是否成功 */
+  success?: boolean;
+  /** 数据或错误信息 */
+  payload?: TodoEntity[];
 }
 
 /**
