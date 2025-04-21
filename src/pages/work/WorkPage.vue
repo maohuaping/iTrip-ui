@@ -329,6 +329,7 @@ import { useQuasar } from 'quasar'
 import TaskList from './components/TaskList.vue'
 import WorkLog from './components/WorkLog.vue'
 import { getUrl } from 'src/api/url/url'
+import { getTodo } from 'src/api/todo/todo'
 
 // 添加组件名称以解决ESLint警告
 defineOptions({
@@ -357,6 +358,7 @@ interface UrlItem {
 
 const $q = useQuasar()
 const urlApi = getUrl()
+const todoApi = getTodo()
 
 // 暗黑模式状态
 const isDark = ref($q.dark.isActive)
@@ -602,47 +604,148 @@ const mockData = {
 const todoItems = ref<TodoItem[]>([])
 const newTodo = ref('')
 
-// 添加待办事项
-const addTodo = () => {
-  if (newTodo.value.trim()) {
-    todoItems.value.push({
-      text: newTodo.value.trim(),
-      done: false
+// 获取待办事项列表
+const fetchTodos = async () => {
+  try {
+    const response = await todoApi.listTodoOfMe()
+    if (response.data?.payload) {
+      // 将API返回的数据格式转换为组件使用的格式
+      todoItems.value = response.data.payload.map(item => ({
+        text: item.title || '',
+        done: item.completed || false,
+        id: item.id,
+        dueTime: item.dueDate ? new Date(item.dueDate).toLocaleString() : undefined
+      }))
+    }
+  } catch (error) {
+    console.error('获取待办列表失败:', error)
+    $q.notify({
+      color: 'negative',
+      message: '获取待办列表失败',
+      icon: 'error'
     })
-    newTodo.value = ''
-    saveTodos() // 保存到本地存储
+  }
+}
+
+// 添加待办事项
+const addTodo = async () => {
+  if (newTodo.value.trim()) {
+    try {
+      // 创建待办事项对象
+      const todoEntity = {
+        title: newTodo.value.trim(),
+        completed: false,
+        description: '',
+        priority: 0,
+        category: '工作'
+      }
+      
+      // 调用API保存待办事项
+      const response = await todoApi.saveTodo(todoEntity)
+      
+      if (response.data?.success) {
+        $q.notify({
+          color: 'positive',
+          message: '待办事项添加成功',
+          icon: 'check_circle'
+        })
+        
+        // 重新获取待办列表
+        fetchTodos()
+        
+        // 清空输入
+        newTodo.value = ''
+      }
+    } catch (error) {
+      console.error('添加待办事项失败:', error)
+      $q.notify({
+        color: 'negative',
+        message: '添加待办事项失败',
+        icon: 'error'
+      })
+    }
   }
 }
 
 // 更新待办事项状态
-const updateTodoStatus = (index: number) => {
-  // 可以在这里添加其他逻辑，如已完成项目自动排序等
-  saveTodos() // 保存到本地存储
+const updateTodoStatus = async (index: number) => {
+  try {
+    const todoItem = todoItems.value[index]
+    
+    // 确保待办项有ID
+    if (!todoItem.id) {
+      console.error('待办项缺少ID')
+      return
+    }
+    
+    if (todoItem.done) {
+      // 如果标记为完成，调用完成API
+      await todoApi.completeTodo(todoItem.id)
+    } else {
+      // 如果标记为未完成，调用更新API
+      const todoEntity = {
+        id: todoItem.id,
+        title: todoItem.text,
+        completed: false
+      }
+      await todoApi.updateTodo(todoEntity)
+    }
+    
+    $q.notify({
+      color: 'positive',
+      message: todoItem.done ? '已完成待办事项' : '已恢复待办事项',
+      icon: 'check_circle',
+      position: 'top',
+      timeout: 1000
+    })
+  } catch (error) {
+    console.error('更新待办状态失败:', error)
+    $q.notify({
+      color: 'negative',
+      message: '更新待办状态失败',
+      icon: 'error'
+    })
+  }
 }
 
 // 删除待办事项
-const removeTodo = (index: number) => {
-  todoItems.value.splice(index, 1)
-  saveTodos() // 保存到本地存储
-}
-
-// 保存待办事项到本地存储
-const saveTodos = () => {
-  localStorage.setItem('workPageTodos', JSON.stringify(todoItems.value))
-}
-
-// 从本地存储加载待办事项
-const loadTodos = () => {
-  const savedTodos = localStorage.getItem('workPageTodos')
-  if (savedTodos) {
-    todoItems.value = JSON.parse(savedTodos)
+const removeTodo = async (index: number) => {
+  try {
+    const todoItem = todoItems.value[index]
+    
+    // 确保待办项有ID
+    if (!todoItem.id) {
+      console.error('待办项缺少ID')
+      return
+    }
+    
+    // 调用API删除待办事项
+    await todoApi.deleteTodo(todoItem.id)
+    
+    // 从列表中移除
+    todoItems.value.splice(index, 1)
+    
+    $q.notify({
+      color: 'positive',
+      message: '已删除待办事项',
+      icon: 'delete',
+      position: 'top',
+      timeout: 1000
+    })
+  } catch (error) {
+    console.error('删除待办事项失败:', error)
+    $q.notify({
+      color: 'negative',
+      message: '删除待办事项失败',
+      icon: 'error'
+    })
   }
 }
 
 // 在组件挂载时加载待办事项
 onMounted(() => {
   fetchUrlList()
-  loadTodos() // 加载待办事项
+  fetchTodos() // 从API获取待办事项
   
   // 初始化倒计时
   calculateCountdown()
