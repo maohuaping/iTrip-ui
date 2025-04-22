@@ -534,7 +534,7 @@
                 </q-card-section>
               </q-card>
               
-              <!-- 行程安排 -->
+              <!-- 移动端行程安排卡片部分 -->
               <q-card class="itinerary-card q-mb-md" flat bordered>
                 <q-card-section class="bg-primary-1 q-py-sm">
                   <div class="row items-center justify-between">
@@ -559,9 +559,8 @@
                 
                 <q-separator />
                 
-                <!-- 移动端日历视图 - 滚动式 -->
-                <q-card-section v-if="itineraryView === 'calendar'" class="calendar-view-mobile">
-                  <!-- 使用与列表视图相同的 q-tabs 组件 -->
+                <!-- 共享的天数选择器 -->
+                <div class="shared-day-selector">
                   <q-tabs
                     v-model="selectedDay"
                     dense
@@ -583,7 +582,10 @@
                   <div class="text-subtitle1 q-pa-md bg-grey-1">
                     {{ days[selectedDay] ? formatDate(days[selectedDay].date) : '' }}
                   </div>
-                  
+                </div>
+                
+                <!-- 移动端日历视图 -->
+                <q-card-section v-if="itineraryView === 'calendar'" class="calendar-view-mobile q-pa-none">
                   <div class="calendar-day-activities" v-if="days[selectedDay]">
                     <div 
                       v-for="(timeSlot, timeIndex) in timeSlots" 
@@ -613,32 +615,8 @@
                 
                 <!-- 移动端列表视图 -->
                 <q-card-section v-else-if="itineraryView === 'list'" class="q-pa-none">
-                  <q-tabs
-                    v-model="selectedDay"
-                    dense
-                    class="text-grey"
-                    active-color="primary"
-                    indicator-color="primary"
-                    align="justify"
-                    narrow-indicator
-                    scrollable
-                  >
-                    <q-tab 
-                      v-for="(day, index) in days" 
-                      :key="index"
-                      :name="index"
-                      :label="`第${index + 1}天`"
-                    />
-                  </q-tabs>
-                  
-                  <q-separator />
-                  
                   <q-tab-panels v-model="selectedDay" animated>
                     <q-tab-panel v-for="(day, index) in days" :key="index" :name="index" class="q-pa-none">
-                      <div class="text-subtitle1 q-pa-md bg-grey-1">
-                        {{ formatDate(day.date) }}
-                      </div>
-                      
                       <q-list separator>
                         <q-item 
                           v-for="(activity, actIndex) in day.activities.sort((a, b) => a.time.localeCompare(b.time))" 
@@ -2149,5 +2127,16 @@ export default {
     max-width: 100%;
     flex: 0 0 100%;
   }
+}
+
+.shared-day-selector {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background-color: white;
+}
+
+.body--dark .shared-day-selector {
+  background-color: #1d1d1d;
 }
 </style>
