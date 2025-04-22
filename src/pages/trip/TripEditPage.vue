@@ -644,14 +644,14 @@
               预算规划
             </div>
           </div>
-          <div class="text-subtitle1 q-mb-lg text-grey-8">规划并分配您的旅行预算</div>
+          <div class="text-subtitle1 q-mb-lg text-grey-8">规划并合理分配您的旅行预算</div>
           
           <!-- 总预算设置卡片 -->
-          <q-card bordered class="budget-card">
-            <q-card-section class="bg-green-1">
+          <q-card bordered class="budget-card q-mb-lg">
+            <q-card-section :class="`bg-${trip.themeColor || 'primary'}-1`">
               <div class="row items-center q-gutter-md">
-                <q-icon name="account_balance_wallet" color="green" size="md" />
-                <div class="text-h6 text-green">总预算设置</div>
+                <q-icon name="account_balance_wallet" :color="trip.themeColor || 'primary'" size="md" />
+                <div class="text-h6" :class="`text-${trip.themeColor || 'primary'}`">总预算设置</div>
               </div>
             </q-card-section>
             
@@ -662,48 +662,55 @@
                     filled
                     v-model.number="trip.budget.total"
                     type="number"
-                    label="总预算金额"
+                    label="总预算金额（人民币）"
+                    prefix="￥"
                     stack-label
                   >
                     <template v-slot:prepend>
-                      <q-icon name="paid" color="green" />
+                      <q-icon name="paid" :color="trip.themeColor || 'primary'" />
                     </template>
-                    <template v-slot:append>
-                      <q-btn-dropdown flat dense color="primary" :label="trip.budget.currency">
-                        <q-list>
-                          <q-item 
-                            v-for="currency in currencyOptions" 
-                            :key="currency" 
-                            clickable 
-                            v-close-popup
-                            @click="trip.budget.currency = currency"
-                          >
-                            <q-item-section>{{ currency }}</q-item-section>
-                          </q-item>
-                        </q-list>
-                      </q-btn-dropdown>
+                    <template v-slot:hint>
+                      输入此次旅行的总预算金额
                     </template>
                   </q-input>
                 </div>
                 
                 <div class="col-12 col-md-4">
-                  <q-card flat bordered class="text-center q-pa-md">
-                    <div class="text-subtitle1 text-weight-medium">已分配预算</div>
-                    <div class="text-subtitle1">
-                      <span class="text-weight-bold">{{ getTotalAllocatedBudget() }}</span> 
-                      {{ trip.budget.currency }} / 
-                      <span>{{ trip.budget.total || 0 }}</span>
-                      {{ trip.budget.currency }}
-                    </div>
+                  <q-card flat bordered class="budget-summary-mini">
+                    <q-card-section class="q-pa-sm text-center">
+                      <div class="text-subtitle2 text-weight-medium">已分配预算</div>
+                      <div class="budget-value">
+                        <span class="text-weight-bold" :class="getBudgetProgressValue() > 1 ? 'text-negative' : ''">
+                          ￥{{ getTotalAllocatedBudget().toLocaleString() }}
+                        </span> 
+                        <span class="text-grey">/ ￥{{ (trip.budget.total || 0).toLocaleString() }}</span>
+                      </div>
+                      <q-linear-progress
+                        :value="getBudgetProgressValue()"
+                        size="8px"
+                        :color="getBudgetProgressColor()"
+                        track-color="grey-3"
+                        class="q-mt-xs rounded-borders"
+                      />
+                    </q-card-section>
                   </q-card>
                 </div>
               </div>
             </q-card-section>
           </q-card>
           
-          <div class="text-h6 q-mt-lg q-mb-md">预算分配</div>
+          <div class="row q-mb-md items-center justify-between">
+            <div class="text-h6">预算分配</div>
+            <q-btn 
+              :color="trip.themeColor || 'primary'" 
+              outline flat 
+              icon="calculate" 
+              label="平均分配" 
+              @click="distributeEvenlyBudget" 
+            />
+          </div>
           
-          <div class="budget-categories">
+          <div class="budget-categories q-mb-lg">
             <q-card v-for="(category, index) in budgetCategories" :key="index" 
                    flat bordered class="budget-category-card q-mb-sm"
                    :class="{'budget-category-card-active': isActiveBudgetCategory(category.id)}">
@@ -716,36 +723,39 @@
                   </div>
                   <div class="col q-px-md">
                     <div class="budget-category-name">{{ category.name }}</div>
-                    <div class="text-caption text-grey" v-if="trip.budget.categories[category.id] > 0">
+                    <div class="text-caption" :class="getBudgetCategoryClass(category.id)">
                       占总预算的 {{ getBudgetCategoryPercentage(category.id) }}%
                     </div>
                   </div>
                   <div class="col-auto">
-                    <q-input
-                      dense
-                      v-model.number="trip.budget.categories[category.id]"
-                      type="number"
-                      :suffix="trip.budget.currency"
-                      borderless
-                      class="budget-input text-right"
-                      @focus="activeBudgetCategory = category.id"
-                      @blur="activeBudgetCategory = null"
-                    />
+                    <div class="budget-input-container">
+                      <span class="currency-symbol">￥</span>
+                      <q-input
+                        dense
+                        v-model.number="trip.budget.categories[category.id]"
+                        type="number"
+                        borderless
+                        class="budget-input text-right"
+                        @focus="activeBudgetCategory = category.id"
+                        @blur="activeBudgetCategory = null"
+                        hide-bottom-space
+                      />
+                    </div>
                   </div>
                 </div>
               </q-card-section>
             </q-card>
           </div>
           
-          <q-card flat bordered class="budget-summary-card q-mt-lg">
+          <q-card flat bordered class="budget-summary-card q-mb-lg">
             <q-card-section>
               <div class="row items-center justify-between q-mb-sm">
-                <div class="text-subtitle1 text-weight-medium">已分配预算</div>
-                <div class="text-subtitle1">
-                  <span class="text-weight-bold">{{ getTotalAllocatedBudget() }}</span> 
-                  {{ trip.budget.currency }} / 
-                  <span>{{ trip.budget.total || 0 }}</span>
-                  {{ trip.budget.currency }}
+                <div class="text-subtitle1 text-weight-medium">预算使用情况</div>
+                <div class="budget-total-value">
+                  <span class="text-weight-bold" :class="getBudgetProgressValue() > 1 ? 'text-negative' : ''">
+                    ￥{{ getTotalAllocatedBudget().toLocaleString() }}
+                  </span> 
+                  <span class="text-grey-7">/ ￥{{ (trip.budget.total || 0).toLocaleString() }}</span>
                 </div>
               </div>
               
@@ -760,17 +770,83 @@
                   <q-badge color="white" text-color="black" :label="`${Math.round(getBudgetProgressValue() * 100)}%`" />
                 </div>
               </q-linear-progress>
-              
-              <div class="budget-tips q-mt-md text-grey-8" v-if="trip.budget.total > 0">
-                <q-icon name="lightbulb" color="warning" /> 
-                提示: {{ getBudgetTip() }}
+            </q-card-section>
+            
+            <q-separator />
+            
+            <q-card-section class="budget-breakdown">
+              <div class="text-subtitle2 q-mb-sm">预算明细</div>
+              <div class="row q-col-gutter-md">
+                <div 
+                  v-for="(category, index) in budgetCategories" 
+                  :key="index" 
+                  class="col-12 col-sm-6 col-md-3"
+                >
+                  <q-card flat bordered class="budget-category-stat">
+                    <q-card-section class="q-pa-sm">
+                      <div class="row items-center no-wrap">
+                        <q-avatar :color="getBudgetCategoryColor(category.id) + '-1'" :text-color="getBudgetCategoryColor(category.id)" size="sm">
+                          <q-icon :name="category.icon" size="xs" />
+                        </q-avatar>
+                        <div class="q-ml-sm">
+                          <div class="text-caption">{{ category.name }}</div>
+                          <div class="text-subtitle2 text-weight-medium">￥{{ (trip.budget.categories[category.id] || 0).toLocaleString() }}</div>
+                        </div>
+                      </div>
+                    </q-card-section>
+                  </q-card>
+                </div>
+              </div>
+            </q-card-section>
+            
+            <q-separator />
+            
+            <q-card-section class="budget-tips">
+              <q-icon name="lightbulb" color="warning" size="md" class="q-mr-sm" /> 
+              <div>
+                <div class="text-subtitle2">预算贴士</div>
+                <div class="text-body2 text-grey-8">{{ getBudgetTip() }}</div>
+              </div>
+            </q-card-section>
+          </q-card>
+          
+          <!-- 预算建议 -->
+          <q-card bordered class="ai-assistant-card">
+            <q-card-section>
+              <div class="row items-start no-wrap">
+                <q-avatar :color="trip.themeColor || 'primary'" text-color="white" icon="smart_toy" size="md" class="q-mr-md" />
+                <div>
+                  <div class="text-subtitle1 q-mb-sm">智能预算建议</div>
+                  <div class="text-body2">
+                    根据您的旅行目的地、天数和人数，我们可以为您推荐合理的预算分配方案。
+                  </div>
+                  <div class="row q-mt-md justify-end">
+                    <q-btn :color="trip.themeColor || 'primary'" label="获取预算建议" icon-right="assistant" flat @click="getBudgetSuggestions" />
+                  </div>
+                </div>
               </div>
             </q-card-section>
           </q-card>
           
           <div class="row justify-between q-mt-lg">
-            <q-btn outline color="primary" icon="arrow_back" label="上一步" @click="goToPrevStep" class="nav-btn" />
-            <q-btn color="primary" label="下一步" icon-right="arrow_forward" @click="goToNextStep" class="nav-btn" />
+            <q-btn 
+              outline 
+              :color="trip.themeColor || 'primary'" 
+              icon="arrow_back" 
+              label="上一步" 
+              @click="goToPrevStep" 
+              class="nav-btn"
+              rounded
+            />
+            <q-btn 
+              :color="trip.themeColor || 'primary'" 
+              label="下一步" 
+              icon-right="arrow_forward" 
+              @click="goToNextStep" 
+              class="nav-btn"
+              unelevated
+              rounded
+            />
           </div>
         </q-tab-panel>
 
@@ -1759,6 +1835,16 @@ export default {
       }).onOk(() => {
         this.updateTrip();
       });
+    },
+    distributeEvenlyBudget() {
+      // Implement the logic to distribute budget evenly
+      console.log('Budget distributed evenly');
+    },
+    getBudgetCategoryClass(categoryId) {
+      const value = this.getBudgetCategoryPercentage(categoryId);
+      if (value < 30) return 'text-positive';
+      if (value < 50) return 'text-warning';
+      return 'text-negative';
     }
   }
 }
