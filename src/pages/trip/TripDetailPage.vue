@@ -1,2162 +1,1924 @@
 <template>
-  <q-layout view="lHh Lpr lFf">
-    <q-header elevated class="bg-white text-dark">
-      <q-toolbar>
-        <q-btn
-          flat
-          dense
-          round
-          icon="arrow_back"
-          aria-label="返回"
-          @click="$router.back()"
-        />
-
-        <q-toolbar-title class="row items-center justify-start">
-          <div class="text-h6 text-primary">行程详情</div>
-        </q-toolbar-title>
-
-        <q-btn
-          flat
-          dense
-          icon="edit"
-          no-caps
-          label="编辑"
-          class="q-mr-sm"
-          aria-label="编辑行程"
-          @click="editTrip"
-          color="primary"
-        >
-          <q-tooltip>编辑行程</q-tooltip>
-        </q-btn>
-        
-        <q-btn
-          flat
-          dense
-          icon="share"
-          no-caps
-          :label="$q.screen.gt.xs ? '分享' : ''"
-          class="q-ml-sm"
-          aria-label="分享行程"
-          @click="shareTrip"
-          color="primary"
-        >
-          <q-tooltip>分享行程</q-tooltip>
-        </q-btn>
-      </q-toolbar>
-    </q-header>
-
-    <q-page-container>
-      <q-page class="trip-detail-page">
-        <!-- 顶部封面 -->
-        <div class="trip-header relative-position">
-          <q-img
-            :src="trip.coverImage"
-            :ratio="16/9"
-            style="max-height: 350px"
-          >
-            <template v-slot:loading>
-              <q-skeleton type="QImg" />
-            </template>
-            <div class="absolute-bottom">
-              <div class="container q-px-md q-pb-lg gradient-overlay">
-                <div class="text-h4 text-bold text-white">{{ trip.destination }}</div>
-                <div class="text-subtitle1 q-mt-sm text-white opacity-8">{{ trip.date }}</div>
-                <div class="row items-center q-mt-md">
-                  <q-chip
-                    v-if="trip.status === 'upcoming'"
-                    color="deep-orange"
-                    text-color="white"
-                    icon="flight_takeoff"
-                    class="glossy"
-                  >
-                    {{ trip.daysLeft }} 天后出发
-                  </q-chip>
-                  <q-chip
-                    v-if="trip.status === 'ongoing'"
-                    color="light-green-7"
-                    text-color="white"
-                    icon="directions_car"
-                    class="glossy"
-                  >
-                    进行中 (第 {{ trip.currentDay }} 天)
-                  </q-chip>
-                  <q-chip
-                    v-if="trip.status === 'completed'"
-                    color="blue-grey"
-                    text-color="white"
-                    icon="flag"
-                    class="glossy"
-                  >
-                    已完成
-                  </q-chip>
-                  <q-space />
-                  <q-rating
-                    v-if="trip.status === 'completed'"
-                    v-model="trip.rating"
-                    size="1.5em"
-                    color="amber"
-                    icon="star"
-                  />
-                </div>
-              </div>
+  <q-page class="trip-detail-page">
+    <!-- 1. 现代化标题设计 - 沉浸式头部 -->
+    <div class="immersive-header" :style="headerStyle">
+      <div class="header-overlay">
+        <div class="container">
+          <div class="row items-center justify-between q-py-md">
+            <div class="col-auto">
+              <q-btn flat round dense icon="arrow_back" color="white" to="/trip" />
             </div>
-          </q-img>
+            <div class="col">
+              <h1 class="text-h5 text-center text-white q-my-none">{{ trip.name }}</h1>
+              <p v-if="getDaysBetween() > 0" class="text-center text-white q-my-sm">
+                {{ formatDateRange(trip.dateRange) }} · {{ getDaysBetween() }}天
+              </p>
+            </div>
+            <div class="col-auto">
+              <q-btn flat round dense icon="edit" color="white" :to="`/trip/edit/${trip.id}`" />
+            </div>
+          </div>
         </div>
+      </div>
+    </div>
 
-        <!-- 行程信息 -->
-        <div class="trip-content q-pa-md">
-          <div class="container">
-            <!-- 快速操作按钮行 -->
-            <div class="row q-mb-md action-buttons">
-              <q-btn unelevated rounded color="primary" class="col q-mx-xs" icon="edit" label="编辑行程" @click="editTrip" />
-              <q-btn unelevated rounded color="secondary" class="col q-mx-xs" icon="content_copy" label="复制行程" @click="duplicateTrip" />
-              <q-btn unelevated rounded color="teal" class="col q-mx-xs" icon="directions" label="导航" @click="navigateToFirstLocation" />
-            </div>
+    <!-- 2. 进度指示与进度展示 -->
+    <div class="progress-container bg-white q-py-sm shadow-1">
+      <div class="container">
+        <div class="progress-bar">
+          <div class="progress-value" :style="`width: ${completionPercentage}%`"></div>
+        </div>
+        <div class="text-caption text-center q-mt-xs">
+          行程准备度: {{ completionPercentage }}%
+        </div>
+        <div class="progress-steps q-mt-md q-px-md hide-on-mobile">
+          <div 
+            v-for="(step, index) in progressSteps" 
+            :key="index"
+            class="step"
+            :class="{'step-active': step.isCompleted}"
+          >
+            <div class="step-name">{{ step.name }}</div>
+            <q-icon :name="step.isCompleted ? 'check_circle' : 'radio_button_unchecked'" 
+                   :color="step.isCompleted ? 'positive' : 'grey-5'" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 主内容区 -->
+    <div class="container q-py-lg">
+      <div v-if="loading" class="flex flex-center q-pa-xl">
+        <q-spinner-dots color="primary" size="80px" />
+        <div class="text-subtitle1 q-ml-md">正在加载行程数据...</div>
+      </div>
+      
+      <div v-else>
+        <!-- 移动端导航标签 -->
+        <div class="mobile-tabs q-mb-md" v-if="$q.screen.lt.md">
+          <q-tabs
+            v-model="mobileTab"
+            dense
+            class="bg-white"
+            active-color="primary"
+            indicator-color="primary"
+            align="justify"
+            narrow-indicator
+          >
+            <q-tab name="itinerary" icon="map" label="行程" />
+            <q-tab name="budget" icon="account_balance_wallet" label="预算" />
+            <q-tab name="todo" icon="checklist" label="清单" />
+            <q-tab name="ai" icon="smart_toy" label="助手" />
+          </q-tabs>
+        </div>
+      
+        <!-- 桌面布局 - 两列 -->
+        <div class="row q-col-gutter-md" v-if="$q.screen.gt.sm">
+          <!-- 左侧信息栏 -->
+          <div class="col-12 col-md-4">
+            <!-- 基本信息卡片 -->
+            <q-card class="info-card q-mb-md" bordered>
+              <q-card-section class="bg-primary-1">
+                <div class="text-h6 text-primary">
+                  <q-icon name="info" class="q-mr-sm" />
+                  行程信息
+                </div>
+              </q-card-section>
+              
+              <q-card-section>
+                <div class="info-item">
+                  <q-icon name="place" color="deep-orange" size="sm" />
+                  <span class="info-label">目的地:</span>
+                  <span class="info-value">{{ trip.destination }}</span>
+                </div>
+                
+                <div class="info-item">
+                  <q-icon name="event" color="green" size="sm" />
+                  <span class="info-label">日期:</span>
+                  <span class="info-value">{{ formatDateRange(trip.dateRange) }}</span>
+                </div>
+                
+                <div class="info-item">
+                  <q-icon name="people" color="purple" size="sm" />
+                  <span class="info-label">人数:</span>
+                  <span class="info-value">{{ trip.travelers }}人</span>
+                </div>
+                
+                <div class="info-item">
+                  <q-icon name="category" color="blue" size="sm" />
+                  <span class="info-label">类型:</span>
+                  <span class="info-value">{{ trip.tripType }}</span>
+                </div>
+                
+                <div class="info-item" v-if="trip.description">
+                  <q-icon name="description" color="teal" size="sm" />
+                  <span class="info-label">描述:</span>
+                  <div class="info-description q-mt-xs">{{ trip.description }}</div>
+                </div>
+              </q-card-section>
+              
+              <q-card-actions align="right">
+                <q-btn flat color="primary" label="编辑信息" icon="edit" :to="`/trip/edit/${trip.id}`" />
+              </q-card-actions>
+            </q-card>
             
-            <div class="row q-col-gutter-md">
-              <!-- 左侧主要内容 -->
-              <div class="col-12 col-md-8">
-                <!-- 行程概览 -->
-                <q-card flat bordered class="q-mb-md card-hover">
-                  <q-card-section>
-                    <div class="text-h6 text-primary q-mb-sm flex items-center">
-                      <q-icon name="info" class="q-mr-xs" />
-                      行程概览
+            <!-- 预算卡片 -->
+            <q-card class="budget-card q-mb-md" bordered>
+              <q-card-section class="bg-green-1">
+                <div class="text-h6 text-green">
+                  <q-icon name="account_balance_wallet" class="q-mr-sm" />
+                  预算概览
+                </div>
+              </q-card-section>
+              
+              <q-card-section>
+                <div class="budget-overview">
+                  <div class="text-h5 text-weight-bold text-center text-primary">
+                    {{ trip.budget.total.toLocaleString() }} {{ trip.budget.currency }}
+                  </div>
+                  <div class="text-caption text-center q-mb-md">总预算</div>
+                  
+                  <div class="row q-col-gutter-md">
+                    <div class="col-6">
+                      <q-card flat bordered class="budget-stat-card text-center q-pa-sm">
+                        <div class="text-h6 text-positive">{{ getSpentBudget().toLocaleString() }}</div>
+                        <div class="text-caption">已花费</div>
+                      </q-card>
                     </div>
-                    <q-separator color="primary" class="q-mb-md" />
-                    <p class="description-text">{{ trip.description }}</p>
-                    
-                    <div class="row q-col-gutter-md q-mt-lg">
-                      <div class="col-6 col-sm-3">
-                        <div class="stat-box text-center">
-                          <q-icon name="event" size="2rem" color="primary" />
-                          <div class="text-caption q-mt-sm">总天数</div>
-                          <div class="text-subtitle1 text-weight-bold">{{ trip.totalDays }} 天</div>
-                        </div>
+                    <div class="col-6">
+                      <q-card flat bordered class="budget-stat-card text-center q-pa-sm">
+                        <div class="text-h6 text-primary">{{ getRemainingBudget().toLocaleString() }}</div>
+                        <div class="text-caption">剩余预算</div>
+                      </q-card>
+                    </div>
+                  </div>
+                </div>
+                
+                <q-linear-progress
+                  :value="getBudgetProgressValue()"
+                  size="15px"
+                  :color="getBudgetProgressColor()"
+                  track-color="grey-3"
+                  class="q-mt-lg rounded-borders"
+                >
+                  <div class="absolute-full flex flex-center">
+                    <q-badge color="white" text-color="black" :label="`${Math.round(getBudgetProgressValue() * 100)}%`" />
+                  </div>
+                </q-linear-progress>
+                
+                <div class="category-budget q-mt-lg">
+                  <div class="text-subtitle2 q-mb-sm">预算分配</div>
+                  
+                  <div v-for="(category, index) in budgetCategories" :key="index" class="category-item q-mb-sm">
+                    <div class="row items-center justify-between">
+                      <div class="col-auto">
+                        <q-avatar :color="getBudgetCategoryColor(category.id) + '-1'" :text-color="getBudgetCategoryColor(category.id)" size="sm">
+                          <q-icon :name="category.icon" />
+                        </q-avatar>
+                        <span class="q-ml-sm">{{ category.name }}</span>
                       </div>
-                      <div class="col-6 col-sm-3">
-                        <div class="stat-box text-center">
-                          <q-icon name="people" size="2rem" color="green" />
-                          <div class="text-caption q-mt-sm">旅行人数</div>
-                          <div class="text-subtitle1 text-weight-bold">{{ trip.travelers }} 人</div>
-                        </div>
-                      </div>
-                      <div class="col-6 col-sm-3">
-                        <div class="stat-box text-center">
-                          <q-icon name="place" size="2rem" color="orange" />
-                          <div class="text-caption q-mt-sm">景点数量</div>
-                          <div class="text-subtitle1 text-weight-bold">{{ trip.attractions.length }} 个</div>
-                        </div>
-                      </div>
-                      <div class="col-6 col-sm-3">
-                        <div class="stat-box text-center">
-                          <q-icon name="hotel" size="2rem" color="purple" />
-                          <div class="text-caption q-mt-sm">住宿天数</div>
-                          <div class="text-subtitle1 text-weight-bold">{{ trip.accommodationDays }} 晚</div>
-                        </div>
+                      <div class="col-auto">
+                        {{ trip.budget.categories[category.id].toLocaleString() }} {{ trip.budget.currency }}
                       </div>
                     </div>
-                  </q-card-section>
-                </q-card>
-
-                <!-- 日程安排 -->
-                <q-card flat bordered class="q-mb-md card-hover">
-                  <q-card-section class="q-pb-none">
-                    <div class="text-h6 text-primary q-mb-md flex justify-between items-center">
-                      <div class="flex items-center">
-                        <q-icon name="date_range" class="q-mr-xs" />
-                        <span>日程安排</span>
-                      </div>
-                      <q-btn dense flat round icon="tune" color="grey-7">
-                        <q-tooltip>自定义显示</q-tooltip>
-                      </q-btn>
-                    </div>
-                    
-                    <q-tabs
-                      v-model="activeDay"
-                      dense
-                      class="text-primary q-mb-md modern-tabs"
-                      active-color="primary"
-                      indicator-color="primary"
-                      align="justify"
-                      narrow-indicator
-                      no-caps
-                      outside-arrows
-                      mobile-arrows
+                    <q-linear-progress
+                      :value="getCategoryPercentage(category.id)"
+                      size="5px"
+                      :color="getBudgetCategoryColor(category.id)"
+                      class="q-mt-xs"
+                    />
+                  </div>
+                </div>
+              </q-card-section>
+              
+              <q-card-actions align="right">
+                <q-btn flat color="primary" label="查看详情" icon="visibility" @click="showBudgetDetails = true" />
+              </q-card-actions>
+            </q-card>
+            
+            <!-- 旅行清单 -->
+            <q-card class="checklist-card" bordered>
+              <q-card-section class="bg-blue-1">
+                <div class="text-h6 text-blue">
+                  <q-icon name="checklist" class="q-mr-sm" />
+                  旅行清单
+                </div>
+              </q-card-section>
+              
+              <q-card-section>
+                <div class="checklist-stats q-mb-md" v-if="trip.todoList.length > 0">
+                  <q-linear-progress
+                    :value="getCompletionRate()"
+                    color="positive"
+                    size="8px"
+                    class="q-mb-xs"
+                  />
+                  <div class="text-caption text-center">
+                    完成率: {{ Math.round(getCompletionRate() * 100) }}%
+                    ({{ getCompletedItemsCount() }}/{{ trip.todoList.length }})
+                  </div>
+                </div>
+                
+                <div v-if="trip.todoList.length > 0" class="checklist-items">
+                  <q-list separator>
+                    <q-item
+                      v-for="(item, index) in trip.todoList"
+                      :key="index"
+                      tag="label"
+                      v-ripple
+                      :class="{'completed-item': item.done}"
                     >
-                      <q-tab 
-                        v-for="(day, index) in trip.itinerary" 
-                        :key="index"
-                        :name="index"
-                        :class="index + 1 === trip.currentDay ? 'current-day-tab' : ''"
-                      >
-                        <q-item dense class="q-pa-none">
-                          <q-item-section>
-                            <q-item-label>第{{ index + 1 }}天</q-item-label>
-                            <q-item-label caption class="tab-subtitle">{{ formatDayDate(day.date) }}</q-item-label>
-                          </q-item-section>
-                        </q-item>
-                      </q-tab>
-                    </q-tabs>
-                  </q-card-section>
+                      <q-item-section side>
+                        <q-checkbox v-model="item.done" color="primary" @update:model-value="updateTodoItem" />
+                      </q-item-section>
+                      <q-item-section>
+                        <q-item-label :class="{'text-strike': item.done}">{{ item.text }}</q-item-label>
+                      </q-item-section>
+                    </q-item>
+                  </q-list>
+                </div>
+                
+                <div v-else class="text-center q-pa-md">
+                  <q-icon name="checklist" size="2rem" color="grey-5" />
+                  <div class="text-grey q-mt-sm">暂无待办事项</div>
+                </div>
+              </q-card-section>
+              
+              <q-card-actions align="right">
+                <q-btn flat color="primary" label="编辑清单" icon="edit" :to="`/trip/edit/${trip.id}?tab=4`" />
+              </q-card-actions>
+            </q-card>
+          </div>
+          
+          <!-- 右侧内容区 -->
+          <div class="col-12 col-md-8">
+            <!-- 行程安排 -->
+            <q-card class="itinerary-card q-mb-md" bordered>
+              <q-card-section class="bg-primary-1">
+                <div class="row items-center justify-between">
+                  <div class="text-h6 text-primary">
+                    <q-icon name="map" class="q-mr-sm" />
+                    行程安排
+                  </div>
                   
-                  <q-separator />
-                  
-                  <q-card-section class="q-pt-md">
-                    <q-tab-panels v-model="activeDay" animated transition-prev="slide-right" transition-next="slide-left">
-                      <q-tab-panel 
-                        v-for="(day, index) in trip.itinerary" 
-                        :key="index" 
-                        :name="index"
-                        class="q-pa-none"
+                  <div>
+                    <q-btn-toggle
+                      v-model="itineraryView"
+                      :options="[
+                        {label: '列表', value: 'list', icon: 'view_list'},
+                        {label: '日历', value: 'calendar', icon: 'calendar_month'}
+                      ]"
+                      color="primary"
+                      text-color="white"
+                      unelevated
+                      dense
+                      rounded
+                    />
+                  </div>
+                </div>
+              </q-card-section>
+              
+              <q-separator />
+              
+              <!-- 日历视图 -->
+              <q-card-section v-if="itineraryView === 'calendar'" class="calendar-view">
+                <div class="calendar-header row q-mb-sm">
+                  <div 
+                    v-for="(day, index) in days" 
+                    :key="index"
+                    class="col calendar-day-header text-center"
+                  >
+                    <div class="text-subtitle1 text-weight-medium">第{{ index + 1 }}天</div>
+                    <div class="text-caption">{{ formatDate(day.date) }}</div>
+                  </div>
+                </div>
+                
+                <div class="calendar-body">
+                  <div class="row" style="min-height: 400px">
+                    <div 
+                      v-for="(day, dayIndex) in days" 
+                      :key="dayIndex"
+                      class="col calendar-day"
+                    >
+                      <div 
+                        v-for="(timeSlot, timeIndex) in timeSlots" 
+                        :key="timeIndex"
+                        class="calendar-timeslot"
                       >
-                        <div class="day-header q-mb-md">
-                          <div class="text-subtitle1 text-weight-bold text-primary">{{ day.title }}</div>
-                        </div>
+                        <div class="timeslot-time text-caption text-grey-8">{{ timeSlot }}</div>
                         
-                        <div class="timeline-container">
+                        <div class="timeslot-content">
                           <div 
-                            v-for="(activity, i) in day.activities" 
-                            :key="i"
-                            class="timeline-item q-mb-md"
-                            :class="{'timeline-item-current': index + 1 === trip.currentDay && 
-                              i === getCurrentActivityIndex(day.activities)}"
+                            v-for="(activity, actIndex) in getActivitiesForTimeSlot(day.activities, timeSlot)"
+                            :key="actIndex"
+                            class="activity-item"
+                            :class="`activity-${getActivityTypeClass(activity.type)}`"
+                            @click="showActivityDetails(dayIndex, findActivityIndex(day.activities, activity))"
                           >
-                            <div class="timeline-content q-pa-md">
-                              <div class="time-badge-corner">{{ activity.time }}</div>
-                              
-                              <!-- 添加活动类型标签 -->
-                              <div class="activity-type-badge" :class="getActivityTypeClass(activity)">
-                                {{ getActivityTypeLabel(activity) }}
-                              </div>
-                              
-                              <div class="text-weight-medium text-subtitle1">{{ activity.title }}</div>
-                              
-                              <div class="location q-mt-xs">
-                                <q-icon name="place" size="xs" color="deep-orange" class="q-mr-xs" />
-                                <span class="text-caption">{{ activity.location }}</span>
-                                
-                                <!-- 优化导航按钮样式 -->
-                                <q-btn
-                                  v-if="i > 0"
-                                  flat
-                                  round
-                                  dense
-                                  color="teal-7"
-                                  icon="navigation"
-                                  size="xs"
-                                  class="navigation-btn-new q-ml-sm"
-                                  @click="navigateBetweenLocations(day.activities[i-1], activity)"
-                                >
-                                  <q-tooltip>导航到这里</q-tooltip>
-                                </q-btn>
-                              </div>
-                              
-                              <q-separator class="q-my-sm" />
-                              <div class="description">{{ activity.description }}</div>
-                              
-                              <div class="row q-mt-md q-gutter-sm" v-if="activity.photos && activity.photos.length">
-                                <q-img
-                                  v-for="(photo, photoIndex) in activity.photos.slice(0, 3)"
-                                  :key="photoIndex"
-                                  :src="photo"
-                                  class="activity-photo"
-                                  @click="openPhotoGallery(activity.photos, photoIndex)"
-                                >
-                                  <div v-if="activity.photos.length > 3 && photoIndex === 2" 
-                                       class="absolute-full flex flex-center bg-black-6 text-white">
-                                    +{{ activity.photos.length - 2 }}
-                                  </div>
-                                </q-img>
-                              </div>
-                              
-                              <div class="activity-actions row q-mt-sm q-gutter-xs justify-end">
-                                <q-btn flat round dense size="sm" color="teal" icon="directions" @click="viewTransportation(activity)">
-                                  <q-tooltip>查看路线</q-tooltip>
-                                </q-btn>
-                                <q-btn flat round dense size="sm" color="purple" icon="add_a_photo" @click="addActivityPhotoPrompt(activity)">
-                                  <q-tooltip>添加照片</q-tooltip>
-                                </q-btn>
-                                <q-btn flat round dense size="sm" color="orange" icon="note_add" @click="addActivityNote(activity)">
-                                  <q-tooltip>添加笔记</q-tooltip>
-                                </q-btn>
-                                <q-btn flat round dense size="sm" color="primary" icon="edit" @click="editActivity(activity)">
-                                  <q-tooltip>编辑</q-tooltip>
-                                </q-btn>
-                              </div>
+                            <div class="activity-time text-caption">{{ activity.time }}</div>
+                            <div class="activity-name text-body2">{{ activity.name }}</div>
+                            <div v-if="activity.location" class="activity-location text-caption">
+                              <q-icon name="place" size="xs" /> {{ activity.location }}
                             </div>
                           </div>
                         </div>
-                      </q-tab-panel>
-                    </q-tab-panels>
-                  </q-card-section>
-                </q-card>
-
-                <!-- 旅行笔记和照片 -->
-                <q-card v-if="trip.notes && trip.notes.length" flat bordered class="q-mb-md card-hover">
-                  <q-card-section>
-                    <div class="text-h6 text-primary q-mb-sm flex items-center">
-                      <q-icon name="book" class="q-mr-xs" />
-                      旅行笔记
-                    </div>
-                    <q-separator color="primary" class="q-mb-md" />
-                    
-                    <div v-for="(note, index) in trip.notes" :key="index" class="note-card q-mb-lg">
-                      <div class="row items-center q-mb-sm">
-                        <div class="text-subtitle1 text-weight-medium text-primary">{{ note.title }}</div>
-                        <q-space />
-                        <div class="text-caption text-grey flex items-center">
-                          <q-icon name="event" size="xs" class="q-mr-xs" />
-                          {{ note.date }}
-                        </div>
-                      </div>
-                      <p class="note-content">{{ note.content }}</p>
-                      
-                      <div class="row q-col-gutter-sm q-mt-md" v-if="note.photos && note.photos.length">
-                        <div v-for="(photo, photoIndex) in note.photos" :key="photoIndex" class="col-4 col-sm-3">
-                          <q-img
-                            :src="photo"
-                            :ratio="1"
-                            class="rounded-borders cursor-pointer photo-thumbnail"
-                            @click="openPhotoGallery(note.photos, photoIndex)"
-                          />
-                        </div>
                       </div>
                     </div>
-                    
-                    <div class="q-mt-md text-center" v-if="!trip.notes.length">
-                      <q-icon name="photo_album" size="3rem" color="grey-4" />
-                      <div class="text-body2 text-grey q-mt-sm">暂无旅行笔记</div>
-                      <q-btn unelevated color="primary" class="q-mt-sm" icon-right="add" label="添加笔记" @click="addNote" />
+                  </div>
+                </div>
+              </q-card-section>
+              
+              <!-- 列表视图 -->
+              <q-card-section v-else-if="itineraryView === 'list'" class="q-pa-none">
+                <q-tabs
+                  v-model="selectedDay"
+                  dense
+                  class="text-grey"
+                  active-color="primary"
+                  indicator-color="primary"
+                  align="justify"
+                  narrow-indicator
+                >
+                  <q-tab 
+                    v-for="(day, index) in days" 
+                    :key="index"
+                    :name="index"
+                    :label="`第${index + 1}天`"
+                  />
+                </q-tabs>
+                
+                <q-separator />
+                
+                <q-tab-panels v-model="selectedDay" animated>
+                  <q-tab-panel v-for="(day, index) in days" :key="index" :name="index" class="q-pa-none">
+                    <div class="text-subtitle1 q-pa-md bg-grey-1">
+                      {{ formatDate(day.date) }}
                     </div>
-                  </q-card-section>
-                </q-card>
-              </div>
-
-              <!-- 右侧侧边栏 -->
-              <div class="col-12 col-md-4">
-                <!-- 预算信息 -->
-                <q-card flat bordered class="q-mb-md card-hover">
-                  <q-card-section>
-                    <div class="text-h6 text-primary q-mb-sm flex items-center">
-                      <q-icon name="account_balance_wallet" class="q-mr-xs" />
-                      预算信息
-                    </div>
-                    <q-separator color="primary" class="q-mb-md" />
                     
-                    <div class="text-center q-mb-lg">
-                      <q-circular-progress
-                        :value="(trip.budget.used / trip.budget.total) * 100"
-                        size="120px"
-                        :thickness="0.15"
-                        color="primary"
-                        track-color="grey-3"
-                        class="q-ma-md"
-                        show-value
-                        font-size="16px"
+                    <q-list separator>
+                      <q-item 
+                        v-for="(activity, actIndex) in day.activities.sort((a, b) => a.time.localeCompare(b.time))" 
+                        :key="actIndex"
+                        clickable
+                        v-ripple
+                        @click="showActivityDetails(index, actIndex)"
+                        :class="`activity-item-${getActivityTypeClass(activity.type)}`"
                       >
-                        {{ Math.round((trip.budget.used / trip.budget.total) * 100) }}%
-                      </q-circular-progress>
-                      <div class="text-subtitle1 text-weight-bold">
-                        <span class="text-primary">¥{{ trip.budget.used.toLocaleString() }}</span> / 
-                        <span>¥{{ trip.budget.total.toLocaleString() }}</span>
-                      </div>
-                      <div class="text-caption text-grey">已使用 / 总预算</div>
-                    </div>
-                    
-                    <q-list separator class="rounded-borders">
-                      <q-item v-for="(item, index) in trip.budget.breakdown" :key="index" class="budget-item">
                         <q-item-section avatar>
-                          <q-icon :name="getBudgetIcon(item.category)" :color="getBudgetColor(item.category)" />
+                          <q-avatar :color="`${getActivityColor(activity.type)}-2`" :text-color="getActivityColor(activity.type)">
+                            <q-icon :name="getActivityIcon(activity.type)" />
+                          </q-avatar>
                         </q-item-section>
+                        
                         <q-item-section>
-                          <q-item-label>{{ item.category }}</q-item-label>
+                          <q-item-label>{{ activity.name }}</q-item-label>
+                          <q-item-label caption lines="2">
+                            <div class="row items-center q-gutter-x-sm">
+                              <div><q-icon name="access_time" size="xs" /> {{ activity.time }}</div>
+                              <div v-if="activity.location"><q-icon name="place" size="xs" /> {{ activity.location }}</div>
+                            </div>
+                          </q-item-label>
                         </q-item-section>
+                        
                         <q-item-section side>
-                          <q-item-label class="text-weight-medium">¥{{ item.amount.toLocaleString() }}</q-item-label>
+                          <q-icon name="chevron_right" color="grey-5" />
                         </q-item-section>
                       </q-item>
                     </q-list>
                     
-                    <div class="q-mt-md text-right">
-                      <q-btn flat color="primary" icon="add" label="添加支出" />
+                    <div v-if="day.activities.length === 0" class="text-center q-pa-lg">
+                      <q-icon name="event_busy" size="2rem" color="grey-5" />
+                      <div class="text-grey q-mt-sm">当天暂无安排</div>
                     </div>
-                  </q-card-section>
-                </q-card>
+                  </q-tab-panel>
+                </q-tab-panels>
+              </q-card-section>
+              
+              <q-card-actions align="right">
+                <q-btn flat color="primary" label="编辑行程" icon="edit" :to="`/trip/edit/${trip.id}?tab=2`" />
+              </q-card-actions>
+            </q-card>
+            
+            <!-- 智能建议系统 -->
+            <q-card class="recommendations-card q-mb-md" bordered>
+              <q-card-section class="bg-purple-1">
+                <div class="text-h6 text-purple">
+                  <q-icon name="lightbulb" class="q-mr-sm" />
+                  智能建议
+                </div>
+              </q-card-section>
+              
+              <q-card-section>
+                <div v-if="recommendations.length > 0">
+                  <q-list>
+                    <q-item 
+                      v-for="(recommendation, index) in recommendations" 
+                      :key="index"
+                      class="recommendation-item"
+                      :class="`recommendation-${recommendation.type}`"
+                    >
+                      <q-item-section avatar>
+                        <q-avatar :color="getRecommendationColor(recommendation.type)">
+                          <q-icon :name="getRecommendationIcon(recommendation.type)" color="white" />
+                        </q-avatar>
+                      </q-item-section>
+                      
+                      <q-item-section>
+                        <q-item-label>{{ recommendation.content }}</q-item-label>
+                      </q-item-section>
+                      
+                      <q-item-section side>
+                        <div class="row q-gutter-xs">
+                          <q-btn flat round dense icon="thumb_up" color="positive" @click="acceptRecommendation(index)" />
+                          <q-btn flat round dense icon="thumb_down" color="negative" @click="dismissRecommendation(index)" />
+                        </div>
+                      </q-item-section>
+                    </q-item>
+                  </q-list>
+                </div>
                 
-                <!-- 行程地图 -->
-                <q-card flat bordered class="q-mb-md card-hover">
-                  <q-card-section>
-                    <div class="text-h6 text-primary q-mb-sm flex items-center">
-                      <q-icon name="map" class="q-mr-xs" />
-                      行程地图
-                    </div>
-                    <q-separator color="primary" class="q-mb-md" />
-                    
-                    <div class="map-container">
-                      <q-img
-                        src="https://maps.googleapis.com/maps/api/staticmap?center=Tonglu,China&zoom=11&size=600x300&markers=color:red|Tonglu,China&key=YOUR_API_KEY"
-                        class="full-width rounded-borders"
-                        style="height: 200px"
+                <div v-else class="text-center q-pa-lg">
+                  <q-icon name="lightbulb" size="2rem" color="grey-5" />
+                  <div class="text-grey q-mt-sm">暂无智能建议</div>
+                </div>
+              </q-card-section>
+            </q-card>
+            
+            <!-- AI助手交互区域 -->
+            <q-card class="ai-assistant-card" bordered>
+              <q-card-section class="bg-blue-1">
+                <div class="text-h6 text-blue">
+                  <q-icon name="smart_toy" class="q-mr-sm" />
+                  旅行助手
+                </div>
+              </q-card-section>
+              
+              <q-card-section>
+                <div class="ai-response q-mb-md" v-if="aiResponse">
+                  <div class="row no-wrap">
+                    <q-avatar color="primary" text-color="white" icon="smart_toy" size="md" class="q-mr-md self-start" />
+                    <div class="ai-message bg-grey-2 rounded-borders q-pa-md">{{ aiResponse }}</div>
+                  </div>
+                </div>
+                
+                <div class="ai-query">
+                  <q-input 
+                    v-model="aiQuery" 
+                    filled 
+                    placeholder="询问任何与行程相关的问题..."
+                    @keyup.enter="submitAiQuery"
+                    class="custom-input"
+                  >
+                    <template v-slot:append>
+                      <q-btn round dense flat icon="send" color="primary" @click="submitAiQuery" />
+                    </template>
+                  </q-input>
+                </div>
+                
+                <div class="ai-suggestions q-mt-md">
+                  <div class="text-caption q-mb-xs">常见问题:</div>
+                  <div class="row q-col-gutter-sm wrap">
+                    <div class="col-auto" v-for="(suggestion, index) in aiSuggestions" :key="index">
+                      <q-chip
+                        clickable
+                        color="primary-1"
+                        text-color="primary"
+                        @click="useAiSuggestion(suggestion)"
+                        class="suggestion-chip"
                       >
-                        <div class="absolute-bottom text-subtitle2 text-center text-white gradient-overlay-bottom">
-                          点击查看详细地图
-                        </div>
-                        <div class="absolute-top-right q-ma-sm">
-                          <q-btn round color="white" text-color="primary" icon="open_in_new" size="sm">
-                            <q-tooltip>打开地图</q-tooltip>
-                          </q-btn>
-                        </div>
-                      </q-img>
+                        {{ suggestion }}
+                      </q-chip>
                     </div>
-                  </q-card-section>
-                </q-card>
-                
-                <!-- 景点列表 -->
-                <q-card flat bordered class="q-mb-md card-hover">
-                  <q-card-section>
-                    <div class="text-h6 text-primary q-mb-sm flex items-center justify-between">
-                      <div class="flex items-center">
-                        <q-icon name="attractions" class="q-mr-xs" />
-                        <span>景点列表</span>
-                      </div>
-                      <q-btn flat round dense icon="open_in_new" size="sm" color="primary">
-                        <q-tooltip>查看全部</q-tooltip>
-                      </q-btn>
-                    </div>
-                    <q-separator color="primary" class="q-mb-md" />
-                    
-                    <div class="row q-col-gutter-sm">
-                      <div v-for="(attraction, index) in trip.attractions" :key="index" class="col-12 col-sm-6 col-md-12">
-                        <q-card class="attraction-card q-mb-sm" flat bordered @click="viewAttractionDetail(attraction)">
-                          <q-item class="q-pa-none">
-                            <q-item-section avatar class="q-pa-none">
-                              <q-avatar square size="80px">
-                                <q-img :src="attraction.image" />
-                              </q-avatar>
-                            </q-item-section>
-                            <q-item-section>
-                              <q-item-label class="text-weight-medium">{{ attraction.name }}</q-item-label>
-                              <q-item-label caption class="flex items-center">
-                                <q-icon name="place" size="xs" class="q-mr-xs" />
-                                {{ attraction.location }}
-                              </q-item-label>
-                              <q-rating
-                                v-model="attraction.rating"
-                                size="1em"
-                                color="amber"
-                                icon="star"
-                                readonly
-                              />
-                            </q-item-section>
-                          </q-item>
-                        </q-card>
-                      </div>
-                    </div>
-                  </q-card-section>
-                </q-card>
-                
-                <!-- 待办事项 -->
-                <q-card v-if="trip.status === 'upcoming'" flat bordered class="q-mb-md card-hover">
-                  <q-card-section>
-                    <div class="text-h6 text-primary q-mb-sm flex items-center">
-                      <q-icon name="checklist" class="q-mr-xs" />
-                      待办事项
-                    </div>
-                    <q-separator color="primary" class="q-mb-md" />
-                    
-                    <q-list separator class="rounded-borders">
-                      <q-item v-for="(task, index) in trip.todoList" :key="index" :class="{ 'completed-task': task.completed }">
-                        <q-item-section avatar>
-                          <q-checkbox v-model="task.completed" color="green" />
-                        </q-item-section>
-                        <q-item-section>
-                          <q-item-label :class="{ 'text-strike text-grey': task.completed }">
-                            {{ task.title }}
-                          </q-item-label>
-                          <q-item-label caption v-if="task.dueDate" class="flex items-center">
-                            <q-icon name="event" size="xs" class="q-mr-xs" />
-                            截止日期: {{ task.dueDate }}
-                          </q-item-label>
-                        </q-item-section>
-                        <q-item-section side v-if="task.priority === 'high'">
-                          <q-icon name="priority_high" color="negative" />
-                        </q-item-section>
-                      </q-item>
-                    </q-list>
-                    
-                    <div class="text-center q-mt-md">
-                      <q-btn unelevated color="primary" label="添加待办事项" icon="add" />
-                    </div>
-                  </q-card-section>
-                </q-card>
-              </div>
-            </div>
+                  </div>
+                </div>
+              </q-card-section>
+            </q-card>
           </div>
         </div>
-
-        <!-- 底部操作工具栏 -->
-        <q-page-sticky position="bottom-right" :offset="[18, 18]">
-          <q-fab
-            color="primary"
-            icon="add"
-            direction="up"
-            glossy
-            padding="sm"
-          >
-            <q-fab-action color="green" icon="add_a_photo" label="添加照片" @click="addPhotos">
-              <q-tooltip anchor="center left" self="center right" :offset="[10, 0]">添加照片</q-tooltip>
-            </q-fab-action>
-            <q-fab-action color="orange" icon="edit_note" label="添加笔记" @click="addNote">
-              <q-tooltip anchor="center left" self="center right" :offset="[10, 0]">添加笔记</q-tooltip>
-            </q-fab-action>
-            <q-fab-action color="blue" icon="print" label="打印行程" @click="printItinerary">
-              <q-tooltip anchor="center left" self="center right" :offset="[10, 0]">打印行程</q-tooltip>
-            </q-fab-action>
-            <q-fab-action color="red" icon="delete" label="删除行程" @click="confirmDelete">
-              <q-tooltip anchor="center left" self="center right" :offset="[10, 0]">删除行程</q-tooltip>
-            </q-fab-action>
-          </q-fab>
-        </q-page-sticky>
-      </q-page>
-    </q-page-container>
-
-    <!-- 图片画廊对话框 -->
-    <q-dialog v-model="photoGalleryOpen" full-width>
-      <q-card class="full-width">
-        <q-card-section class="row items-center">
-          <div class="text-h6">旅行照片</div>
-          <q-space />
-          <q-btn icon="close" flat round dense v-close-popup />
-        </q-card-section>
         
-        <q-card-section>
-          <q-carousel
-            v-model="currentPhotoIndex"
-            :fullscreen.sync="fullscreenGallery"
-            arrows
-            navigation
-            infinite
-            height="70vh"
-          >
-            <q-carousel-slide
-              v-for="(photo, index) in galleryPhotos"
-              :key="index"
-              :name="index"
-              class="column flex-center"
-            >
-              <q-img
-                :src="photo"
-                fit="contain"
-                style="max-height: 100%; max-width: 100%"
-              />
-            </q-carousel-slide>
-          </q-carousel>
+        <!-- 移动端布局 - 选项卡切换 -->
+        <div v-if="$q.screen.lt.md">
+          <q-tab-panels v-model="mobileTab" animated class="transparent" keep-alive>
+            <!-- 行程面板 -->
+            <q-tab-panel name="itinerary" class="q-pa-none">
+              <!-- 基本信息卡片 - 移动端简化版 -->
+              <q-card class="info-card q-mb-md" flat bordered>
+                <q-card-section class="q-pa-sm">
+                  <div class="row q-col-gutter-sm">
+                    <div class="col-6">
+                      <div class="mobile-info-item">
+                        <q-icon name="place" color="deep-orange" size="sm" />
+                        <div class="info-label">目的地</div>
+                        <div class="info-value">{{ trip.destination }}</div>
+                      </div>
+                    </div>
+                    <div class="col-6">
+                      <div class="mobile-info-item">
+                        <q-icon name="people" color="purple" size="sm" />
+                        <div class="info-label">人数</div>
+                        <div class="info-value">{{ trip.travelers }}人</div>
+                      </div>
+                    </div>
+                    <div class="col-6">
+                      <div class="mobile-info-item">
+                        <q-icon name="event" color="green" size="sm" />
+                        <div class="info-label">类型</div>
+                        <div class="info-value">{{ trip.tripType }}</div>
+                      </div>
+                    </div>
+                    <div class="col-6">
+                      <div class="mobile-info-item">
+                        <q-icon name="date_range" color="blue" size="sm" />
+                        <div class="info-label">天数</div>
+                        <div class="info-value">{{ getDaysBetween() }}天</div>
+                      </div>
+                    </div>
+                  </div>
+                </q-card-section>
+              </q-card>
+              
+              <!-- 行程安排 -->
+              <q-card class="itinerary-card q-mb-md" flat bordered>
+                <q-card-section class="bg-primary-1 q-py-sm">
+                  <div class="row items-center justify-between">
+                    <div class="text-subtitle1 text-primary">
+                      <q-icon name="map" class="q-mr-xs" />
+                      行程安排
+                    </div>
+                    
+                    <div>
+                      <q-btn-toggle
+                        v-model="itineraryView"
+                        :options="[
+                          {label: '', value: 'list', icon: 'view_list'},
+                          {label: '', value: 'calendar', icon: 'calendar_month'}
+                        ]"
+                        color="primary"
+                        text-color="white"
+                        unelevated
+                        dense
+                        rounded
+                        size="sm"
+                      />
+                    </div>
+                  </div>
+                </q-card-section>
+                
+                <q-separator />
+                
+                <!-- 移动端日历视图 - 滚动式 -->
+                <q-card-section v-if="itineraryView === 'calendar'" class="calendar-view-mobile">
+                  <div class="calendar-day-selector q-mb-md">
+                    <q-select
+                      v-model="selectedDay"
+                      :options="days.map((day, index) => ({ 
+                        label: `第${index + 1}天 - ${formatDate(day.date)}`, 
+                        value: index 
+                      }))"
+                      dense
+                      outlined
+                      emit-value
+                      map-options
+                      options-dense
+                      label="选择日期"
+                    />
+                  </div>
+                  
+                  <div class="calendar-day-activities" v-if="days[selectedDay]">
+                    <div class="text-subtitle1 q-mb-sm">{{ formatDate(days[selectedDay].date) }}</div>
+                    
+                    <div 
+                      v-for="(timeSlot, timeIndex) in timeSlots" 
+                      :key="timeIndex"
+                      class="calendar-timeslot-mobile"
+                    >
+                      <div class="timeslot-time text-caption text-grey-8">{{ timeSlot }}</div>
+                      
+                      <div class="timeslot-content">
+                        <div 
+                          v-for="(activity, actIndex) in getActivitiesForTimeSlot(days[selectedDay].activities, timeSlot)"
+                          :key="actIndex"
+                          class="activity-item"
+                          :class="`activity-${getActivityTypeClass(activity.type)}`"
+                          @click="showActivityDetails(selectedDay, findActivityIndex(days[selectedDay].activities, activity))"
+                        >
+                          <div class="activity-time text-caption">{{ activity.time }}</div>
+                          <div class="activity-name text-body2">{{ activity.name }}</div>
+                          <div v-if="activity.location" class="activity-location text-caption">
+                            <q-icon name="place" size="xs" /> {{ activity.location }}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </q-card-section>
+                
+                <!-- 移动端列表视图 -->
+                <q-card-section v-else-if="itineraryView === 'list'" class="q-pa-none">
+                  <q-tabs
+                    v-model="selectedDay"
+                    dense
+                    class="text-grey"
+                    active-color="primary"
+                    indicator-color="primary"
+                    align="justify"
+                    narrow-indicator
+                    scrollable
+                  >
+                    <q-tab 
+                      v-for="(day, index) in days" 
+                      :key="index"
+                      :name="index"
+                      :label="`第${index + 1}天`"
+                    />
+                  </q-tabs>
+                  
+                  <q-separator />
+                  
+                  <q-tab-panels v-model="selectedDay" animated>
+                    <q-tab-panel v-for="(day, index) in days" :key="index" :name="index" class="q-pa-none">
+                      <div class="text-subtitle1 q-pa-md bg-grey-1">
+                        {{ formatDate(day.date) }}
+                      </div>
+                      
+                      <q-list separator>
+                        <q-item 
+                          v-for="(activity, actIndex) in day.activities.sort((a, b) => a.time.localeCompare(b.time))" 
+                          :key="actIndex"
+                          clickable
+                          v-ripple
+                          @click="showActivityDetails(index, actIndex)"
+                          :class="`activity-item-${getActivityTypeClass(activity.type)}`"
+                        >
+                          <q-item-section avatar>
+                            <q-avatar :color="`${getActivityColor(activity.type)}-2`" :text-color="getActivityColor(activity.type)">
+                              <q-icon :name="getActivityIcon(activity.type)" />
+                            </q-avatar>
+                          </q-item-section>
+                          
+                          <q-item-section>
+                            <q-item-label>{{ activity.name }}</q-item-label>
+                            <q-item-label caption lines="2">
+                              <div class="row items-center q-gutter-x-sm">
+                                <div><q-icon name="access_time" size="xs" /> {{ activity.time }}</div>
+                                <div v-if="activity.location"><q-icon name="place" size="xs" /> {{ activity.location }}</div>
+                              </div>
+                            </q-item-label>
+                          </q-item-section>
+                          
+                          <q-item-section side>
+                            <q-icon name="chevron_right" color="grey-5" />
+                          </q-item-section>
+                        </q-item>
+                      </q-list>
+                      
+                      <div v-if="day.activities.length === 0" class="text-center q-pa-lg">
+                        <q-icon name="event_busy" size="2rem" color="grey-5" />
+                        <div class="text-grey q-mt-sm">当天暂无安排</div>
+                      </div>
+                    </q-tab-panel>
+                  </q-tab-panels>
+                </q-card-section>
+              </q-card>
+            </q-tab-panel>
+          </q-tab-panels>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 活动详情对话框 -->
+    <q-dialog v-model="activityDialog.show" persistent>
+      <q-card style="min-width: 350px; max-width: 95vw">
+        <q-card-section :class="`bg-${getActivityColor(activityDialog.activity.type)} text-white`">
+          <div class="text-h6">
+            <q-icon :name="getActivityIcon(activityDialog.activity.type)" class="q-mr-sm" />
+            {{ activityDialog.activity.name }}
+          </div>
+          <div class="text-subtitle2">
+            第{{ activityDialog.dayIndex + 1 }}天 · {{ formatDate(days[activityDialog.dayIndex]?.date) }}
+          </div>
         </q-card-section>
-      </q-card>
-    </q-dialog>
 
-    <!-- 删除确认对话框 -->
-    <q-dialog v-model="deleteConfirmOpen" persistent>
-      <q-card>
-        <q-card-section class="row items-center">
-          <q-avatar icon="warning" color="negative" text-color="white" />
-          <span class="q-ml-sm text-h6">确认删除</span>
-        </q-card-section>
-
-        <q-card-section>
-          您确定要删除这个行程吗？此操作无法撤销。
+        <q-card-section class="q-pt-md">
+          <div class="row q-col-gutter-md">
+            <div class="col-12 col-sm-6">
+              <div class="text-caption text-grey">时间</div>
+              <div class="text-subtitle1">
+                <q-icon name="access_time" size="xs" /> {{ activityDialog.activity.time }}
+              </div>
+            </div>
+            
+            <div class="col-12 col-sm-6" v-if="activityDialog.activity.location">
+              <div class="text-caption text-grey">地点</div>
+              <div class="text-subtitle1">
+                <q-icon name="place" size="xs" /> {{ activityDialog.activity.location }}
+              </div>
+            </div>
+            
+            <div class="col-12" v-if="activityDialog.activity.note">
+              <div class="text-caption text-grey">备注</div>
+              <div class="text-body1">{{ activityDialog.activity.note }}</div>
+            </div>
+          </div>
         </q-card-section>
 
         <q-card-actions align="right">
-          <q-btn flat label="取消" color="primary" v-close-popup />
-          <q-btn flat label="删除" color="negative" @click="deleteTrip" v-close-popup />
+          <q-btn flat label="关闭" color="primary" v-close-popup />
+          <q-btn flat label="编辑" color="primary" :to="`/trip/edit/${trip.id}?tab=2&day=${activityDialog.dayIndex}`" />
         </q-card-actions>
       </q-card>
     </q-dialog>
-
-    <!-- 行程详情侧边抽屉 (移动设备) -->
-    <q-dialog v-model="showItinerary" position="right" maximized>
-      <q-card>
+    
+    <!-- 清单详情对话框 -->
+    <q-dialog v-model="showTodoListDialog">
+      <q-card style="width: 95vw; max-width: 600px">
+        <q-card-section class="bg-blue-1">
+          <div class="text-h6 text-blue">旅行清单</div>
+        </q-card-section>
+        
         <q-card-section>
-          <div class="row items-center q-mb-lg">
-            <div class="text-h6">行程安排</div>
-            <q-space />
-            <q-btn icon="close" flat round dense v-close-popup />
+          <div class="checklist-stats q-mb-md" v-if="trip.todoList.length > 0">
+            <q-linear-progress
+              :value="getCompletionRate()"
+              color="positive"
+              size="8px"
+              class="q-mb-xs"
+            />
+            <div class="text-caption text-center">
+              完成率: {{ Math.round(getCompletionRate() * 100) }}%
+              ({{ getCompletedItemsCount() }}/{{ trip.todoList.length }})
+            </div>
           </div>
           
-          <q-timeline color="primary">
-            <q-timeline-entry
-              v-for="(day, index) in trip.itinerary"
+          <q-list separator>
+            <q-item
+              v-for="(item, index) in trip.todoList"
               :key="index"
-              :title="`第 ${index + 1} 天 · ${day.date}`"
-              :subtitle="day.title"
-              :icon="index + 1 === trip.currentDay ? 'location_on' : ''"
-              :color="index + 1 === trip.currentDay ? 'green' : 'primary'"
+              tag="label"
+              v-ripple
+              :class="{'completed-item': item.done}"
             >
-              <div>
-                <div v-for="(activity, i) in day.activities" :key="i" class="q-mb-sm">
-                  <div class="row items-start">
-                    <div class="col-auto time-column">
-                      <div class="text-subtitle2 text-weight-medium">{{ activity.time }}</div>
-                    </div>
-                    <q-separator vertical inset class="q-mx-md" />
-                    <div class="col activity-content">
-                      <div class="text-subtitle2 text-weight-medium">{{ activity.title }}</div>
-                      <div class="text-caption text-grey-8">{{ activity.location }}</div>
-                      <div class="q-mt-xs">{{ activity.description }}</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </q-timeline-entry>
-          </q-timeline>
+              <q-item-section side>
+                <q-checkbox v-model="item.done" color="primary" @update:model-value="updateTodoItem" />
+              </q-item-section>
+              <q-item-section>
+                <q-item-label :class="{'text-strike': item.done}">{{ item.text }}</q-item-label>
+              </q-item-section>
+            </q-item>
+          </q-list>
         </q-card-section>
+        
+        <q-card-actions align="right">
+          <q-btn flat label="关闭" color="primary" v-close-popup />
+          <q-btn flat label="编辑清单" icon="edit" color="primary" :to="`/trip/edit/${trip.id}?tab=4`" v-close-popup />
+        </q-card-actions>
       </q-card>
     </q-dialog>
-
-    <!-- 文档查看器对话框 -->
-    <q-dialog v-model="documentViewOpen">
-      <q-card style="width: 700px; max-width: 90vw;">
-        <q-card-section class="row items-center">
-          <div class="text-h6">{{ selectedDocument?.name }}</div>
-          <q-space />
-          <q-btn icon="close" flat round dense v-close-popup />
+    
+    <!-- 预算详情对话框 -->
+    <q-dialog v-model="showBudgetDetails">
+      <q-card style="width: 95vw; max-width: 600px">
+        <q-card-section class="bg-green-1">
+          <div class="text-h6 text-green">预算详情</div>
         </q-card-section>
         
-        <q-separator />
-        
-        <q-card-section class="q-pa-none">
-          <q-img
-            v-if="selectedDocument?.type === 'image'"
-            :src="'https://picsum.photos/800/1000'"
-            style="height: 70vh"
-            fit="contain"
-          />
-          <div v-else class="flex justify-center items-center" style="height: 70vh">
-            <div class="text-center">
-              <q-icon name="description" size="8rem" color="grey-4" />
-              <div class="text-body1 q-mt-md">该文档预览功能尚未实现</div>
-              <q-btn color="primary" outline class="q-mt-md" icon="download" label="下载文档" />
-            </div>
+        <q-card-section>
+          <div class="text-h5 text-weight-bold text-center q-mb-lg">
+            {{ trip.budget.total.toLocaleString() }} {{ trip.budget.currency }}
+            <div class="text-caption">总预算</div>
           </div>
-        </q-card-section>
-      </q-card>
-    </q-dialog>
-
-    <!-- 添加导航对话框 -->
-    <q-dialog v-model="navigationDialogOpen" persistent>
-      <q-card style="max-width: 500px; width: 90vw;">
-        <q-card-section class="row items-center">
-          <div class="text-h6">导航路线</div>
-          <q-space />
-          <q-btn icon="close" flat round dense v-close-popup />
-        </q-card-section>
-        
-        <q-separator />
-        
-        <q-card-section class="q-pa-md">
-          <div class="text-subtitle1 q-mb-md">从 {{ navigationData.from.location }} 到 {{ navigationData.to.location }}</div>
           
-          <div class="navigation-details q-mb-md">
-            <div class="row items-center q-mb-sm">
-              <q-icon name="place" color="primary" size="sm" class="q-mr-sm" />
-              <div class="text-weight-medium">{{ navigationData.from.title }}</div>
+          <div class="row q-col-gutter-md q-mb-lg">
+            <div class="col-6">
+              <q-card flat bordered class="text-center q-pa-md">
+                <div class="text-h6 text-positive">{{ getSpentBudget().toLocaleString() }}</div>
+                <div class="text-caption">已花费</div>
+              </q-card>
             </div>
-            
-            <div class="navigation-path q-px-md q-py-sm">
-              <div class="route-info q-mb-sm">
-                <div class="row justify-between items-center">
-                  <div>
-                    <q-icon name="directions_car" color="teal" class="q-mr-xs" />
-                    <span class="text-weight-medium">驾车路线</span>
-                  </div>
-                  <div class="text-caption">
-                    <span class="text-weight-bold">{{ navigationDistance }}</span> · 
-                    约 <span class="text-weight-bold">{{ navigationDuration }}</span>
-                  </div>
-                </div>
-              </div>
-              
-              <q-separator class="q-my-sm navigation-line" />
-              
-              <div class="route-info q-mb-sm">
-                <div class="row justify-between items-center">
-                  <div>
-                    <q-icon name="directions_walk" color="light-green" class="q-mr-xs" />
-                    <span class="text-weight-medium">步行路线</span>
-                  </div>
-                  <div class="text-caption">
-                    <span class="text-weight-bold">{{ navigationWalkDistance }}</span> · 
-                    约 <span class="text-weight-bold">{{ navigationWalkDuration }}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            <div class="row items-center q-mt-md">
-              <q-icon name="flag" color="deep-orange" size="sm" class="q-mr-sm" />
-              <div class="text-weight-medium">{{ navigationData.to.title }}</div>
+            <div class="col-6">
+              <q-card flat bordered class="text-center q-pa-md">
+                <div class="text-h6 text-primary">{{ getRemainingBudget().toLocaleString() }}</div>
+                <div class="text-caption">剩余预算</div>
+              </q-card>
             </div>
           </div>
           
-          <div class="map-container q-mt-lg">
-            <q-img
-              src="https://maps.googleapis.com/maps/api/staticmap?size=400x200&path=color:0x1976D2|weight:5|Tonglu,China&markers=color:red|label:A|Tonglu,China&markers=color:red|label:B|Tonglu+Station,China&key=YOUR_API_KEY"
-              class="full-width"
-              style="height: 200px; border-radius: 8px"
+          <div class="text-subtitle1 q-mb-md">预算分配</div>
+          
+          <div v-for="(category, index) in budgetCategories" :key="index" class="q-mb-md">
+            <div class="row items-center justify-between q-mb-xs">
+              <div class="col-auto">
+                <q-avatar :color="getBudgetCategoryColor(category.id) + '-1'" :text-color="getBudgetCategoryColor(category.id)" size="sm">
+                  <q-icon :name="category.icon" />
+                </q-avatar>
+                <span class="q-ml-sm">{{ category.name }}</span>
+              </div>
+              <div class="col-auto">
+                {{ trip.budget.categories[category.id].toLocaleString() }} {{ trip.budget.currency }}
+              </div>
+            </div>
+            <q-linear-progress
+              :value="getCategoryPercentage(category.id)"
+              size="8px"
+              :color="getBudgetCategoryColor(category.id)"
             />
           </div>
         </q-card-section>
         
-        <q-card-actions align="right" class="q-pa-md">
-          <q-btn flat label="取消" color="grey-7" v-close-popup />
-          <q-btn unelevated label="在地图中打开" color="primary" icon="open_in_new" @click="openInMaps" />
+        <q-card-actions align="right">
+          <q-btn flat label="关闭" color="primary" v-close-popup />
+          <q-btn flat label="编辑预算" icon="edit" color="primary" :to="`/trip/edit/${trip.id}?tab=3`" v-close-popup />
         </q-card-actions>
       </q-card>
     </q-dialog>
-  </q-layout>
+  </q-page>
 </template>
 
 <script>
 export default {
   name: 'TripDetailPage',
-  props: {
-    id: {
-      type: String,
-      required: true
-    }
-  },
   data() {
     return {
-      // 图片画廊相关
-      photoGalleryOpen: false,
-      fullscreenGallery: false,
-      currentPhotoIndex: 0,
-      galleryPhotos: [],
-      
-      // 删除确认
-      deleteConfirmOpen: false,
-      
-      // 对话框控制
-      showItinerary: false,
-      documentViewOpen: false,
-      selectedDocument: null,
-      
-      // 富文本编辑器
-      editor: null,
-      editorContent: '',
-      
-      // 添加这些新的变量
-      activeDay: 0,
-      
-      // 旅行数据 - 更新为桐庐两日游数据
+      tripId: null,
+      loading: true,
+      completionPercentage: 75,
+      itineraryView: 'list',
+      selectedDay: 0,
+      mobileTab: 'itinerary',
+      maxDisplayTodoItems: 4,
+      aiQuery: '',
+      aiResponse: '',
+      showTodoListDialog: false,
+      showBudgetDetails: false,
+      showRecommendationsDialog: false,
+      timeSlots: ['08:00', '10:00', '12:00', '14:00', '16:00', '18:00', '20:00'],
+      progressSteps: [
+        { name: '计划', isCompleted: true },
+        { name: '预订', isCompleted: true },
+        { name: '准备', isCompleted: false },
+        { name: '出发', isCompleted: false }
+      ],
+      budgetCategories: [
+        { id: 'transportation', name: '交通', icon: 'directions_bus' },
+        { id: 'accommodation', name: '住宿', icon: 'hotel' },
+        { id: 'food', name: '餐饮', icon: 'restaurant' },
+        { id: 'activities', name: '活动', icon: 'event' }
+      ],
+      aiSuggestions: [
+        '附近有哪些好评餐厅?',
+        '如何优化我的行程安排?',
+        '当地有什么特色活动?',
+        '如何节省预算?'
+      ],
+      activityDialog: {
+        show: false,
+        dayIndex: 0,
+        activity: {}
+      },
       trip: {
-        id: this.id || '1', // 使用ID属性，如果没有则使用默认值
-        destination: '桐庐',
-        date: `${new Date().toLocaleDateString('zh-CN')} - ${new Date(Date.now() + 86400000).toLocaleDateString('zh-CN')}`,
-        status: 'upcoming', // upcoming, ongoing, completed
-        coverImage: 'https://images.unsplash.com/photo-1512453979798-5ea266f8880c',
-        daysLeft: 0, // 今天出发
-        currentDay: 0,
-        totalDays: 2,
-        accommodationDays: 1,
-        travelers: 2,
-        description: '这是一次桐庐两日游，我们将游览大奇山国家森林公园、马岭古道和江南龙门湾等景点。行程包括在大奇山国家森林公园观赏水帘飞瀑和竹林，在马岭古道徒步体验，以及在江南龙门湾体验各种水上活动。',
-        rating: 0, // 仅完成状态可评分
-        
-        // 预算信息
+        id: '',
+        name: '',
+        destination: '',
+        dateRange: {
+          from: '',
+          to: ''
+        },
+        travelers: 0,
+        tripType: '',
+        description: '',
         budget: {
-          total: 1000,
-          used: 0,
-          breakdown: [
-            { category: '交通', amount: 300 },
-            { category: '住宿', amount: 200 },
-            { category: '餐饮', amount: 300 },
-            { category: '门票', amount: 200 },
-          ]
-        },
-        
-        // 景点列表
-        attractions: [
-          { name: '大奇山国家森林公园', location: '桐庐', image: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e', rating: 4.5 },
-          { name: '马岭古道', location: '桐庐', image: 'https://images.unsplash.com/photo-1448375240586-882707db888b', rating: 4.3 },
-          { name: '江南龙门湾', location: '桐庐', image: 'https://images.unsplash.com/photo-1501785888041-af3ef285b470', rating: 4.6 }
-        ],
-        
-        // 待办事项
-        todoList: [
-          { title: '购买大奇山门票', completed: false, priority: 'high', dueDate: new Date().toLocaleDateString('zh-CN') },
-          { title: '预订汉庭酒店', completed: false, priority: 'high', dueDate: new Date().toLocaleDateString('zh-CN') },
-          { title: '购买汽车票', completed: true, priority: 'high', dueDate: new Date().toLocaleDateString('zh-CN') },
-          { title: '准备徒步装备', completed: false, priority: 'medium', dueDate: new Date().toLocaleDateString('zh-CN') },
-          { title: '检查天气预报', completed: false, priority: 'medium', dueDate: new Date().toLocaleDateString('zh-CN') }
-        ],
-        
-        // 日程安排
-        itinerary: [
-          {
-            date: new Date().toLocaleDateString('zh-CN'),
-            title: 'Day1 - 大奇山国家森林公园与马岭古道',
-            activities: [
-              {
-                time: '09:16',
-                title: '从上海虹桥出发',
-                location: '上海虹桥',
-                description: '乘坐汽车前往桐庐，票价122元/人'
-              },
-              {
-                time: '11:06',
-                title: '抵达桐庐',
-                location: '桐庐站',
-                description: '到达桐庐汽车站'
-              },
-              {
-                time: '11:30',
-                title: '前往一味大院',
-                location: '一味大院',
-                description: '打车前往一味大院就餐，距离5.5km'
-              },
-              {
-                time: '12:30',
-                title: '前往酒店放行李',
-                location: '汉庭酒店(杭州桐庐富春江一桥店)',
-                description: '前往酒店放行李，距离2.4km'
-              },
-              {
-                time: '13:30',
-                title: '游览大奇山国家森林公园',
-                location: '大奇山国家森林公园',
-                description: '打卡点：水帘飞瀑有锦鲤果冻湖瀑布、竹林。门票46元/人，下山的丛林飞鼠项目60元/人（可选）。景区门口有智能柜可以存放行李，行李箱8元一小时，20元封顶。',
-                photos: [
-                  'https://images.unsplash.com/photo-1441974231531-c6227db76b6e',
-                  'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05'
-                ]
-              },
-              {
-                time: '17:30',
-                title: '前往瑶琳路小吃街',
-                location: '瑶琳路小吃街',
-                description: '打车前往瑶琳路小吃街就餐，距离4.6km'
-              },
-              {
-                time: '19:00',
-                title: '返回酒店',
-                location: '汉庭酒店(杭州桐庐富春江一桥店)',
-                description: '返回酒店休息'
-              }
-            ]
-          },
-          {
-            date: new Date(Date.now() + 86400000).toLocaleDateString('zh-CN'),
-            title: 'Day2 - 江南龙门湾',
-            activities: [
-              {
-                time: '08:00',
-                title: '早餐',
-                location: '酒店',
-                description: '在酒店享用早餐'
-              },
-              {
-                time: '09:00',
-                title: '前往石舍村',
-                location: '石舍村',
-                description: '前往马岭古道起点石舍村，顺风车约26元'
-              },
-              {
-                time: '09:30',
-                title: '徒步马岭古道',
-                location: '马岭古道',
-                description: '全程11km，可以分三段进行，石舍村→郢坪村→芦苇村。石舍村观景台很出片，郢坪村非常古朴，芦苇村商业氛围。需要做好防晒，带足食物和水。',
-                photos: [
-                  'https://images.unsplash.com/photo-1448375240586-882707db888b'
-                ]
-              },
-              {
-                time: '13:00',
-                title: '前往江南龙门湾',
-                location: '江南龙门湾',
-                description: '从芦苇村到江南龙门湾，距离3.1km'
-              },
-              {
-                time: '14:00',
-                title: '游览江南龙门湾',
-                location: '江南龙门湾',
-                description: '抖音团购票船72元/人，比现场买便宜8块钱，4选2联票115元/人。快艇120元/人，竹筏60元/人，游船80元/人，电动船80元/人，卡丁船60元/人。畅游小三峡选择快艇或游船，因为游船和竹筏路线不同。',
-                photos: [
-                  'https://images.unsplash.com/photo-1501785888041-af3ef285b470'
-                ]
-              },
-              {
-                time: '16:30',
-                title: '前往桐庐站',
-                location: '桐庐站',
-                description: '前往火车站准备返程，距离16km'
-              },
-              {
-                time: '18:00',
-                title: '返回上海',
-                location: '上海虹桥',
-                description: '乘坐汽车返回上海'
-              }
-            ]
+          total: 0,
+          currency: '¥',
+          spentAmount: 0,
+          categories: {
+            transportation: 0,
+            accommodation: 0,
+            food: 0,
+            activities: 0
           }
-        ],
-        
-        // 旅行笔记
-        notes: [],
-        
-        // 当旅行完成后可以添加总结
-        summary: {
-          highlights: [],
-          recommendations: [],
-          tips: []
         },
-        
-        // 旅行伙伴信息
-        companions: [
-          { name: '旅伴1', email: 'companion1@example.com', phone: '138****1234' },
-          { name: '旅伴2', email: 'companion2@example.com', phone: '139****5678' }
-        ],
-        
-        // 紧急联系人信息
-        emergencyContacts: [
-          { name: '紧急联系人', relationship: '家人', phone: '135****4321' }
-        ],
-        
-        // 文件和文档
-        documents: [
-          { name: '桐庐行程.pdf', type: 'pdf', size: '1.2MB' },
-          { name: '酒店预订确认.pdf', type: 'pdf', size: '0.8MB' },
-          { name: '大奇山国家森林公园门票.pdf', type: 'pdf', size: '0.5MB' },
-          { name: '马岭古道地图.jpg', type: 'image', size: '2.3MB' }
-        ]
+        todoList: []
       },
-      
-      // 添加导航相关数据
-      navigationDialogOpen: false,
-      navigationData: {
-        from: null,
-        to: null
-      },
-      navigationDistance: '3.5 公里',
-      navigationDuration: '15 分钟',
-      navigationWalkDistance: '2.8 公里',
-      navigationWalkDuration: '35 分钟'
+      days: [],
+      recommendations: []
     }
   },
   computed: {
-    // 根据状态显示不同的行动按钮
-    primaryAction() {
-      switch(this.trip.status) {
-        case 'upcoming':
-          return { label: '编辑行程', icon: 'edit', action: this.editTrip };
-        case 'ongoing':
-          return { label: '添加今日照片', icon: 'add_a_photo', action: this.addPhotos };
-        case 'completed':
-          return { label: '查看照片集', icon: 'photo_library', action: this.viewPhotoAlbum };
-        default:
-          return { label: '编辑行程', icon: 'edit', action: this.editTrip };
-      }
-    },
-    
-    // 行程进度
-    tripProgress() {
-      if(this.trip.status === 'completed') return 1;
-      if(this.trip.status === 'upcoming') return 0;
-      // 如果是进行中，根据当前天数计算进度
-      return this.trip.currentDay / this.trip.totalDays;
-    },
-    
-    // 格式化日期显示
-    formattedDates() {
-      // 这里可以添加日期格式化逻辑
-      return this.trip.date;
-    }
-  },
-  methods: {
-    editTrip() {
-      // 实现编辑行程功能
-      this.$router.push(`/trip/edit/${this.trip.id}`);
-    },
-    shareTrip() {
-      // 实现分享行程功能
-      this.$q.notify({
-        color: 'positive',
-        message: '分享链接已复制到剪贴板',
-        icon: 'share'
-      });
-    },
-    addPhotos() {
-      // 实现添加照片功能
-      this.$q.notify({
-        color: 'green',
-        message: '照片上传功能尚未实现',
-        icon: 'add_a_photo'
-      });
-    },
-    addNote() {
-      // 实现添加笔记功能
-      this.$q.notify({
-        color: 'orange',
-        message: '笔记添加功能尚未实现',
-        icon: 'edit_note'
-      });
-    },
-    printItinerary() {
-      // 实现打印行程功能
-      window.print();
-    },
-    confirmDelete() {
-      this.deleteConfirmOpen = true;
-    },
-    deleteTrip() {
-      // 实现删除行程功能
-      this.$q.notify({
-        color: 'negative',
-        message: '行程已删除',
-        icon: 'delete'
-      });
-      this.$router.push('/trip');
-    },
-    openPhotoGallery(photos, index) {
-      this.galleryPhotos = photos;
-      this.currentPhotoIndex = index;
-      this.photoGalleryOpen = true;
-    },
-    viewPhotoAlbum() {
-      // 实现查看照片集功能
-      this.$router.push(`/trip/albums/${this.trip.id}`);
-    },
-    toggleFavorite() {
-      // 实现收藏功能
-      this.trip.isFavorite = !this.trip.isFavorite;
-      this.$q.notify({
-        color: this.trip.isFavorite ? 'positive' : 'grey-7',
-        message: this.trip.isFavorite ? '已添加到收藏' : '已从收藏中移除',
-        icon: this.trip.isFavorite ? 'favorite' : 'favorite_border'
-      });
-    },
-    exportTrip(format) {
-      // 实现导出行程功能
-      this.$q.notify({
-        color: 'primary',
-        message: `行程已导出为${format}格式`,
-        icon: 'download'
-      });
-    },
-    markAsCompleted() {
-      // 将行程标记为已完成
-      this.trip.status = 'completed';
-      this.$q.notify({
-        color: 'positive',
-        message: '行程已标记为已完成',
-        icon: 'check_circle'
-      });
-    },
-    startTrip() {
-      // 开始行程
-      this.trip.status = 'ongoing';
-      this.trip.currentDay = 1;
-      this.$q.notify({
-        color: 'green',
-        message: '行程已开始，祝您旅途愉快！',
-        icon: 'flight_takeoff'
-      });
-    },
-    duplicateTrip() {
-      // 复制行程
-      this.$q.notify({
-        color: 'primary',
-        message: '行程已复制，请在"我的行程"中查看',
-        icon: 'content_copy'
-      });
-    },
-    sendToPhone() {
-      // 将行程信息发送到手机
-      this.$q.dialog({
-        title: '发送到手机',
-        message: '请输入手机号码',
-        prompt: {
-          model: '',
-          type: 'tel'
-        },
-        cancel: true,
-        persistent: true
-      }).onOk(data => {
-        this.$q.notify({
-          color: 'positive',
-          message: `行程信息已发送至 ${data}`,
-          icon: 'phone_android'
-        });
-      });
-    },
-    // 添加新的旅行笔记
-    createNewNote() {
-      this.$q.dialog({
-        title: '添加旅行笔记',
-        message: '记录您的旅行体验',
-        prompt: {
-          model: {
-            title: '',
-            content: ''
-          },
-          type: 'text',
-          isValid: val => val.title && val.title.length > 0,
-        },
-        cancel: true,
-        persistent: true
-      }).onOk(data => {
-        const newNote = {
-          title: data.title,
-          date: new Date().toLocaleDateString('zh-CN', {year: 'numeric', month: 'long', day: 'numeric'}),
-          content: data.content,
-          photos: []
+    headerStyle() {
+      let bgImage = 'https://images.unsplash.com/photo-1452421822248-d4c2b47f0c81?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80';
+      
+      if (this.trip.destination) {
+        const destinationMap = {
+          '东京': 'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
+          '北京': 'https://images.unsplash.com/photo-1599571234909-27943af8aada?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
+          '巴黎': 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
+          '纽约': 'https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
         };
-        this.trip.notes.unshift(newNote);
-        this.$q.notify({
-          color: 'positive',
-          message: '笔记已添加',
-          icon: 'check'
-        });
-      });
-    },
-    // 显示天气预报
-    showWeatherForecast() {
-      this.$q.dialog({
-        title: '东京天气预报',
-        message: '未能获取天气数据，请检查网络连接',
-        persistent: true
-      });
-    },
-    // 查看交通路线
-    viewTransportation(activity) {
-      this.$q.dialog({
-        title: `前往${activity.location}的路线`,
-        message: '地图功能尚未实现',
-        persistent: true
-      });
-    },
-    // 查看文档
-    viewDocument(doc) {
-      this.selectedDocument = doc;
-      this.documentViewOpen = true;
-    },
-    // 当前行程中的日期是否已过
-    isDatePassed(date) {
-      // 实现日期比较逻辑
-      return false; // 示例返回
-    },
-    loadTripData(tripId) {
-      console.log('加载行程数据:', tripId);
-      // 这里可以添加从API或store加载数据的逻辑
-      // 示例仅使用已有数据
-    },
-    // 添加这些新方法
-    getCurrentActivityIndex(activities) {
-      // 根据当前时间确定当前活动
-      if (!activities || activities.length === 0) return -1;
-      
-      const now = new Date();
-      const currentHour = now.getHours();
-      const currentMinute = now.getMinutes();
-      
-      for (let i = activities.length - 1; i >= 0; i--) {
-        const activity = activities[i];
-        const [hour, minute] = activity.time.split(':').map(Number);
         
-        if (hour < currentHour || (hour === currentHour && minute <= currentMinute)) {
-          return i;
+        if (destinationMap[this.trip.destination]) {
+          bgImage = destinationMap[this.trip.destination];
         }
       }
       
-      return 0; // 如果当前时间早于所有活动，则返回第一个活动
-    },
-    
-    addActivityNote(activity) {
-      this.$q.dialog({
-        title: '添加活动笔记',
-        message: `为 "${activity.title}" 添加笔记`,
-        prompt: {
-          model: '',
-          type: 'textarea'
-        },
-        cancel: true,
-        persistent: true
-      }).onOk(data => {
-        this.$q.notify({
-          color: 'positive',
-          message: '笔记已添加',
-          icon: 'done'
-        });
-      });
-    },
-    
-    addActivityPhotoPrompt(activity) {
-      // 在真实应用中，这里会打开文件选择器
-      this.$q.notify({
-        color: 'green',
-        message: '照片上传功能尚未实现',
-        icon: 'add_a_photo'
-      });
-    },
-    
-    editActivity(activity) {
-      this.$q.notify({
-        color: 'orange',
-        message: '编辑活动功能尚未实现',
-        icon: 'edit'
-      });
-    },
-    
-    formatDayDate(date) {
-      // 简化日期显示
-      const d = new Date(date);
-      return `${d.getMonth() + 1}月${d.getDate()}日`;
-    },
-    
-    getBudgetIcon(category) {
-      // 根据预算类别返回相应图标
-      const icons = {
-        '交通': 'directions_car',
-        '住宿': 'hotel',
-        '餐饮': 'restaurant',
-        '门票': 'confirmation_number',
-        '购物': 'shopping_bag',
-        '其他': 'miscellaneous_services'
+      return {
+        backgroundImage: `url(${bgImage})`
       };
-      return icons[category] || 'attach_money';
+    }
+  },
+  mounted() {
+    this.initTripData();
+  },
+  methods: {
+    async initTripData() {
+      this.tripId = this.$route.params.id;
+      
+      if (!this.tripId) {
+        this.$q.notify({
+          color: 'negative',
+          message: '未找到行程ID',
+          icon: 'error',
+          position: 'top'
+        });
+        this.$router.push('/trip');
+        return;
+      }
+      
+      await this.fetchTripData();
     },
-    
-    getBudgetColor(category) {
-      // 根据预算类别返回相应颜色
-      const colors = {
-        '交通': 'blue',
-        '住宿': 'purple',
-        '餐饮': 'orange',
-        '门票': 'teal',
-        '购物': 'pink',
+    async fetchTripData() {
+      try {
+        this.loading = true;
+        
+        // 模拟API请求延迟
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        // 加载模拟数据
+        this.loadMockData();
+        
+        // 设置页面标题
+        document.title = `${this.trip.name} - 行程详情`;
+        
+        this.calculateCompletionPercentage();
+        this.generateRecommendations();
+        
+        this.loading = false;
+      } catch (error) {
+        console.error('获取行程数据失败:', error);
+        this.$q.notify({
+          color: 'negative',
+          message: '获取行程数据失败，请重试',
+          icon: 'error',
+          position: 'top'
+        });
+        this.loading = false;
+      }
+    },
+    loadMockData() {
+      this.trip = {
+        id: this.tripId,
+        name: '日本东京之旅',
+        destination: '东京',
+        dateRange: {
+          from: '2023-08-15',
+          to: '2023-08-20'
+        },
+        travelers: 2,
+        tripType: '情侣旅行',
+        description: '这是一次情侣东京旅行，计划游览主要景点和体验当地美食文化。',
+        budget: {
+          total: 15000,
+          currency: '¥',
+          spentAmount: 5600,
+          categories: {
+            transportation: 4000,
+            accommodation: 5000,
+            food: 3000,
+            activities: 3000
+          }
+        },
+        todoList: [
+          { text: '预订机票', done: true },
+          { text: '预订酒店', done: true },
+          { text: '兑换日元', done: false },
+          { text: '购买电源转换器', done: false },
+          { text: '准备护照和签证', done: true },
+          { text: '购买旅行保险', done: false },
+          { text: '下载离线地图', done: true }
+        ]
+      };
+      
+      this.days = [
+        {
+          date: '2023-08-15',
+          activities: [
+            {
+              name: '抵达东京',
+              time: '14:30',
+              location: '成田国际机场',
+              type: '交通出行',
+              note: '预定接机服务'
+            },
+            {
+              name: '酒店入住',
+              time: '16:00',
+              location: '新宿希尔顿酒店',
+              type: '住宿安排',
+              note: '提前确认预订'
+            },
+            {
+              name: '晚餐',
+              time: '18:30',
+              location: '新宿站附近拉面店',
+              type: '餐饮美食',
+              note: '品尝当地特色拉面'
+            }
+          ]
+        },
+        {
+          date: '2023-08-16',
+          activities: [
+            {
+              name: '早餐',
+              time: '08:00',
+              location: '酒店餐厅',
+              type: '餐饮美食',
+              note: ''
+            },
+            {
+              name: '游览浅草寺',
+              time: '10:00',
+              location: '浅草寺',
+              type: '景点游览',
+              note: '参观东京最古老的寺庙'
+            },
+            {
+              name: '午餐',
+              time: '12:30',
+              location: '浅草附近餐厅',
+              type: '餐饮美食',
+              note: '尝试当地小吃'
+            },
+            {
+              name: '东京晴空塔',
+              time: '14:30',
+              location: '晴空塔',
+              type: '景点游览',
+              note: '登顶观赏东京全景'
+            }
+          ]
+        },
+        {
+          date: '2023-08-17',
+          activities: [
+            {
+              name: '早餐',
+              time: '08:30',
+              location: '酒店餐厅',
+              type: '餐饮美食',
+              note: ''
+            },
+            {
+              name: '游览明治神宫',
+              time: '10:30',
+              location: '明治神宫',
+              type: '景点游览',
+              note: '体验日本传统神社文化'
+            }
+          ]
+        },
+        {
+          date: '2023-08-18',
+          activities: []
+        },
+        {
+          date: '2023-08-19',
+          activities: [
+            {
+              name: '购物',
+              time: '10:00',
+              location: '银座',
+              type: '购物娱乐',
+              note: '购买伴手礼'
+            }
+          ]
+        },
+        {
+          date: '2023-08-20',
+          activities: [
+            {
+              name: '退房',
+              time: '10:00',
+              location: '酒店',
+              type: '住宿安排',
+              note: ''
+            },
+            {
+              name: '返程',
+              time: '15:30',
+              location: '成田国际机场',
+              type: '交通出行',
+              note: '提前3小时到达机场'
+            }
+          ]
+        }
+      ];
+    },
+    generateRecommendations() {
+      // 分析行程数据，生成智能建议
+      this.recommendations = [
+        {
+          type: 'time-saving',
+          content: '您的第二天行程过于紧凑，建议调整下午的活动时间或减少一个景点。'
+        },
+        {
+          type: 'budget',
+          content: '餐饮预算可能超支，建议寻找更多经济型餐厅选择。'
+        },
+        {
+          type: 'weather',
+          content: '行程第三天可能有雨，建议准备室内备选方案或雨具。'
+        },
+        {
+          type: 'activity',
+          content: '第四天暂无安排，建议添加东京迪士尼乐园或台场购物中心游览。'
+        }
+      ];
+    },
+    calculateCompletionPercentage() {
+      // 计算行程完成度
+      let steps = 0;
+      let completed = 0;
+      
+      // 计算基本信息完成度
+      if (this.trip.name && this.trip.destination && this.trip.dateRange.from && this.trip.dateRange.to) {
+        completed += 1;
+      }
+      steps += 1;
+      
+      // 计算行程安排完成度
+      const totalDays = this.getDaysBetween();
+      let daysWithActivities = 0;
+      this.days.forEach(day => {
+        if (day.activities.length > 0) {
+          daysWithActivities += 1;
+        }
+      });
+      
+      if (daysWithActivities > 0) {
+        completed += (daysWithActivities / totalDays);
+      }
+      steps += 1;
+      
+      // 计算预算完成度
+      if (this.trip.budget.total > 0) {
+        completed += 1;
+      }
+      steps += 1;
+      
+      // 计算清单完成度
+      if (this.trip.todoList.length > 0) {
+        completed += (this.getCompletedItemsCount() / this.trip.todoList.length);
+      }
+      steps += 1;
+      
+      this.completionPercentage = Math.round((completed / steps) * 100);
+    },
+    getDaysBetween() {
+      if (!this.trip.dateRange || !this.trip.dateRange.from || !this.trip.dateRange.to) {
+        return 0;
+      }
+      
+      const fromDate = new Date(this.trip.dateRange.from);
+      const toDate = new Date(this.trip.dateRange.to);
+      
+      const diffTime = Math.abs(toDate - fromDate);
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+      
+      return diffDays;
+    },
+    formatDate(dateString) {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('zh-CN', { month: 'short', day: 'numeric', weekday: 'short' });
+    },
+    formatDateRange(dateRange) {
+      if (!dateRange || !dateRange.from || !dateRange.to) return '';
+      
+      const fromDate = new Date(dateRange.from);
+      const toDate = new Date(dateRange.to);
+      
+      return `${fromDate.getFullYear()}年${fromDate.getMonth() + 1}月${fromDate.getDate()}日 - ${toDate.getMonth() + 1}月${toDate.getDate()}日`;
+    },
+    getActivityIcon(type) {
+      const iconMap = {
+        '景点游览': 'photo_camera',
+        '餐饮美食': 'restaurant',
+        '住宿安排': 'hotel',
+        '交通出行': 'commute',
+        '购物娱乐': 'shopping_bag',
+        '文化体验': 'museum',
+        '休闲放松': 'spa',
+        '其他': 'more_horiz'
+      };
+      
+      return iconMap[type] || 'event';
+    },
+    getActivityColor(type) {
+      const colorMap = {
+        '景点游览': 'deep-purple',
+        '餐饮美食': 'orange',
+        '住宿安排': 'green',
+        '交通出行': 'blue',
+        '购物娱乐': 'pink',
+        '文化体验': 'indigo',
+        '休闲放松': 'teal',
         '其他': 'grey'
       };
-      return colors[category] || 'primary';
+      
+      return colorMap[type] || 'primary';
     },
-    
-    viewAttractionDetail(attraction) {
-      this.$q.notify({
-        color: 'primary',
-        message: `查看${attraction.name}详情`,
-        icon: 'place'
-      });
-    },
-    
-    navigateToFirstLocation() {
-      if (this.trip.itinerary && this.trip.itinerary.length > 0 && 
-          this.trip.itinerary[0].activities && this.trip.itinerary[0].activities.length > 0) {
-        const firstLocation = this.trip.itinerary[0].activities[0].location;
-        this.$q.notify({
-          color: 'teal',
-          message: `导航到${firstLocation}`,
-          icon: 'directions'
-        });
-      }
-    },
-    
-    // 获取活动类型标签
-    getActivityTypeLabel(activity) {
-      if (activity.title.includes('出发') || activity.title.includes('抵达') || 
-          activity.title.includes('前往') || activity.title.includes('返回')) {
-        return '出行';
-      } else if (activity.title.includes('早餐') || activity.title.includes('午餐') || 
-                 activity.title.includes('晚餐') || activity.title.includes('用餐') ||
-                 activity.title.includes('大院') || activity.title.includes('小吃')) {
-        return '用餐';
-      } else if (activity.title.includes('游览') || activity.title.includes('徒步') || 
-                 activity.title.includes('游玩') || activity.title.includes('观光')) {
-        return '游览';
-      } else if (activity.title.includes('酒店') || activity.title.includes('休息')) {
-        return '住宿';
-      } else {
-        return '活动';
-      }
-    },
-    
-    // 获取活动类型样式类
-    getActivityTypeClass(activity) {
-      const type = this.getActivityTypeLabel(activity);
-      switch (type) {
-        case '出行': return 'transport';
-        case '用餐': return 'meal';
-        case '游览': return 'attraction';
-        case '住宿': return 'rest';
-        default: return 'activity';
-      }
-    },
-    
-    // 两个位置之间的导航
-    navigateBetweenLocations(fromActivity, toActivity) {
-      this.navigationData = {
-        from: fromActivity,
-        to: toActivity
+    getActivityTypeClass(type) {
+      const classMap = {
+        '景点游览': 'sightseeing',
+        '餐饮美食': 'food',
+        '住宿安排': 'accommodation',
+        '交通出行': 'transportation',
+        '购物娱乐': 'shopping',
+        '文化体验': 'culture',
+        '休闲放松': 'relaxation',
+        '其他': 'other'
       };
       
-      // 这里应该调用地图API获取实际导航数据
-      // 示例中使用固定数据
-      
-      // 根据距离估算时间和距离
-      const locationNames = [fromActivity.location, toActivity.location].join(',').toLowerCase();
-      
-      if (locationNames.includes('酒店') && locationNames.includes('大奇山')) {
-        this.navigationDistance = '5.2 公里';
-        this.navigationDuration = '18 分钟';
-        this.navigationWalkDistance = '4.5 公里';
-        this.navigationWalkDuration = '55 分钟';
-      } else if (locationNames.includes('酒店') && locationNames.includes('小吃街')) {
-        this.navigationDistance = '3.1 公里';
-        this.navigationDuration = '12 分钟';
-        this.navigationWalkDistance = '2.8 公里';
-        this.navigationWalkDuration = '35 分钟';
-      } else if (locationNames.includes('石舍村') && locationNames.includes('马岭古道')) {
-        this.navigationDistance = '0.8 公里';
-        this.navigationDuration = '5 分钟';
-        this.navigationWalkDistance = '0.8 公里';
-        this.navigationWalkDuration = '10 分钟';
-      } else {
-        // 默认数据
-        this.navigationDistance = '3.5 公里';
-        this.navigationDuration = '15 分钟';
-        this.navigationWalkDistance = '3.2 公里';
-        this.navigationWalkDuration = '40 分钟';
-      }
-      
-      this.navigationDialogOpen = true;
+      return classMap[type] || 'other';
     },
-    
-    // 在地图应用中打开
-    openInMaps() {
-      const fromLocation = encodeURIComponent(this.navigationData.from.location);
-      const toLocation = encodeURIComponent(this.navigationData.to.location);
+    getRecommendationIcon(type) {
+      const iconMap = {
+        'time-saving': 'schedule',
+        'budget': 'savings',
+        'weather': 'wb_cloudy',
+        'activity': 'local_activity',
+        'safety': 'security',
+        'food': 'restaurant_menu'
+      };
       
-      // 尝试打开高德地图
-      const aMapUrl = `https://uri.amap.com/navigation?from=,,${fromLocation}&to=,,${toLocation}&mode=car&policy=1&src=mypage&coordinate=gaode&callnative=0`;
+      return iconMap[type] || 'tips_and_updates';
+    },
+    getRecommendationColor(type) {
+      const colorMap = {
+        'time-saving': 'blue',
+        'budget': 'green',
+        'weather': 'cyan',
+        'activity': 'purple',
+        'safety': 'red',
+        'food': 'orange'
+      };
       
-      // 这里应该有更复杂的逻辑来检测用户设备和打开相应的地图应用
-      window.open(aMapUrl, '_blank');
+      return colorMap[type] || 'primary';
+    },
+    getCompletedItemsCount() {
+      if (!this.trip.todoList) return 0;
+      return this.trip.todoList.filter(item => item.done).length;
+    },
+    getCompletionRate() {
+      if (!this.trip.todoList || !this.trip.todoList.length) return 0;
       
-      this.navigationDialogOpen = false;
+      return this.getCompletedItemsCount() / this.trip.todoList.length;
+    },
+    getDisplayedTodoItems() {
+      if (!this.trip.todoList) return [];
+      return this.trip.todoList.slice(0, this.maxDisplayTodoItems);
+    },
+    showActivityDetails(dayIndex, activityIndex) {
+      this.activityDialog = {
+        show: true,
+        dayIndex,
+        activity: {...this.days[dayIndex].activities[activityIndex]}
+      };
+    },
+    getSpentBudget() {
+      return this.trip.budget.spentAmount || 0;
+    },
+    getRemainingBudget() {
+      return this.trip.budget.total - this.getSpentBudget();
+    },
+    getBudgetProgressValue() {
+      if (!this.trip.budget.total) return 0;
+      return Math.min(this.getSpentBudget() / this.trip.budget.total, 1);
+    },
+    getBudgetProgressColor() {
+      const value = this.getBudgetProgressValue();
+      
+      if (value > 0.9) return 'negative';
+      if (value > 0.7) return 'warning';
+      return 'positive';
+    },
+    getBudgetCategoryColor(categoryId) {
+      const colors = {
+        transportation: 'blue',
+        accommodation: 'green',
+        food: 'orange',
+        activities: 'purple'
+      };
+      
+      return colors[categoryId] || 'primary';
+    },
+    getCategoryPercentage(categoryId) {
+      if (!this.trip.budget.total) return 0;
+      
+      const categoryAmount = this.trip.budget.categories[categoryId] || 0;
+      return categoryAmount / this.trip.budget.total;
+    },
+    acceptRecommendation(index) {
+      this.$q.notify({
+        color: 'positive',
+        message: '已接受建议',
+        icon: 'thumb_up',
+        position: 'bottom'
+      });
+      
+      this.recommendations.splice(index, 1);
+    },
+    dismissRecommendation(index) {
+      this.$q.notify({
+        color: 'grey',
+        message: '已忽略建议',
+        icon: 'thumb_down',
+        position: 'bottom'
+      });
+      
+      this.recommendations.splice(index, 1);
+    },
+    submitAiQuery() {
+      if (!this.aiQuery.trim()) return;
+      
+      // 模拟AI助手响应
+      this.aiResponse = "正在分析您的问题...";
+      
+      // 模拟API响应延迟
+      setTimeout(() => {
+        if (this.aiQuery.includes('餐厅') || this.aiQuery.includes('美食')) {
+          this.aiResponse = "根据您的行程，东京的推荐餐厅有：1. 新宿区的「一蘭拉面」- 著名连锁拉面店；2. 浅草附近的「天丼てんや」- 性价比高的天妇罗盖饭；3. 银座的「寿司大」- 正宗日式寿司体验。建议提前预约热门餐厅。";
+        } else if (this.aiQuery.includes('天气')) {
+          this.aiResponse = "根据天气预报，您行程期间东京天气如下：8月15-16日晴朗，气温28-32°C；8月17日有小雨，建议携带雨具；8月18-20日多云，气温26-30°C。建议做好防晒和防雨准备。";
+        } else if (this.aiQuery.includes('预算') || this.aiQuery.includes('节省')) {
+          this.aiResponse = "节省东京旅行预算的建议：1. 使用地铁一日/三日券；2. 选择便利店早餐；3. 午餐尝试食堂或定食；4. 购物可前往奥特莱斯；5. 利用免税店和退税服务；6. 考虑购买景点套票。";
+        } else {
+          this.aiResponse = `关于"${this.aiQuery}"，根据您的东京行程，我建议您参考东京官方旅游网站获取最新信息，或咨询酒店前台。您还需要了解其他方面的信息吗？`;
+        }
+        
+        this.aiQuery = '';
+      }, 1500);
+    },
+    useAiSuggestion(suggestion) {
+      this.aiQuery = suggestion;
+      this.submitAiQuery();
+    },
+    getActivitiesForTimeSlot(activities, timeSlot) {
+      const [hours] = timeSlot.split(':').map(Number);
+      const startHour = hours - 1;
+      const endHour = hours + 1;
+      
+      return activities.filter(activity => {
+        const [actHours] = activity.time.split(':').map(Number);
+        return actHours >= startHour && actHours < endHour;
+      });
+    },
+    findActivityIndex(activities, targetActivity) {
+      return activities.findIndex(activity => 
+        activity.name === targetActivity.name && 
+        activity.time === targetActivity.time
+      );
+    },
+    updateTodoItem() {
+      // 在实际应用中，这里应该有更新后端数据的逻辑
+      this.calculateCompletionPercentage();
       
       this.$q.notify({
         color: 'positive',
-        message: '正在打开地图应用',
-        icon: 'directions'
+        message: '清单已更新',
+        icon: 'check',
+        position: 'bottom',
+        timeout: 1000
       });
     }
-  },
-  created() {
-    // 根据ID加载行程数据
-    this.loadTripData(this.id);
-  },
-  mounted() {
-    // 页面加载后的逻辑
-    console.log('Trip detail page mounted');
   }
 }
 </script>
 
-<style scoped>
+<style>
+.trip-detail-page {
+  background-color: #f5f7fa;
+}
+
 .container {
   max-width: 1200px;
   margin: 0 auto;
+  padding: 0 16px;
 }
 
-.trip-detail-page {
-  background-color: #f8f9fa;
-  min-height: 100vh;
-}
-
-.gradient-overlay {
-  background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0) 100%);
-  padding-top: 50px;
-}
-
-.gradient-overlay-bottom {
-  background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.3) 70%, rgba(0,0,0,0) 100%);
-  padding: 8px;
-}
-
-.opacity-8 {
-  opacity: 0.8;
-}
-
-.card-hover {
-  transition: all 0.3s ease;
-  border-radius: 12px;
-  border-color: #e0e0e0;
-}
-
-.card-hover:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
-}
-
-.description-text {
-  line-height: 1.6;
-  color: #424242;
-}
-
-.stat-box {
-  padding: 12px 8px;
-  background-color: #f5f5f5;
-  border-radius: 8px;
-  transition: all 0.2s ease;
-}
-
-.stat-box:hover {
-  background-color: #e3f2fd;
-  transform: translateY(-3px);
-}
-
-.modern-tabs {
-  background-color: #f5f5f5;
-  border-radius: 8px;
-  padding: 4px;
-}
-
-.tab-subtitle {
-  font-size: 0.7rem;
-  opacity: 0.7;
-}
-
-.current-day-tab {
-  background-color: rgba(25, 118, 210, 0.1);
-  border-radius: 4px;
-}
-
-.timeline-container {
+.immersive-header {
+  height: 200px;
+  background-size: cover;
+  background-position: center;
   position: relative;
-  padding-left: 12px;
 }
 
-.timeline-item {
-  display: flex;
-  position: relative;
-  margin-bottom: 24px;
-}
-
-.timeline-item:before {
-  content: '';
-  position: absolute;
-  left: 15px;
-  top: 30px;
-  bottom: -25px;
-  width: 2px;
-  background-color: rgba(25, 118, 210, 0.2);
-  z-index: 1;
-}
-
-.timeline-item:last-child:before {
-  display: none;
-}
-
-.timeline-content {
-  flex: 1;
-  background-color: white;
-  border-radius: 12px;
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
-  position: relative;
-  overflow: hidden;
-  transition: all 0.3s ease;
-  padding-top: 36px !important; /* 为角标留出空间 */
-}
-
-.timeline-content:hover {
-  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
-  transform: translateY(-2px);
-}
-
-.timeline-content:before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 4px;
-  height: 100%;
-  background-color: #1976d2;
-}
-
-.timeline-item-current .timeline-content:before {
-  background-color: #4caf50;
-}
-
-.timeline-content {
-  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.8);
-}
-
-.timeline-content::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 40px;
-  background: linear-gradient(to bottom, rgba(0,0,0,0.03), transparent);
-  pointer-events: none;
-  z-index: 1;
-}
-
-.timeline-content .text-subtitle1 {
-  font-weight: 600;
-  color: #263238;
-  font-size: 1.1rem;
-  margin-bottom: 6px;
-  position: relative;
-  z-index: 2;
-}
-
-.location {
-  color: #757575;
-  display: flex;
-  align-items: center;
-  font-weight: 500;
-  background-color: rgba(0,0,0,0.03);
-  padding: 4px 8px;
-  border-radius: 4px;
-  display: inline-flex;
-  margin-bottom: 10px;
-}
-
-.timeline-content .q-separator {
-  opacity: 0.5;
-  background: linear-gradient(to right, transparent, #1976d2, transparent);
-  height: 1px;
-}
-
-.activity-photo {
-  width: 100px;
-  height: 75px;
-  border-radius: 8px;
-  object-fit: cover;
-  cursor: pointer;
-  transition: transform 0.2s;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-}
-
-.activity-photo:hover {
-  transform: scale(1.05);
-  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-}
-
-.description {
-  font-size: 0.95rem;
-  color: #424242;
-  white-space: pre-line;
-  line-height: 1.5;
-  padding: 8px;
-  background-color: rgba(0,0,0,0.02);
-  border-radius: 8px;
-  margin-bottom: 10px;
-}
-
-.timeline-content .q-btn {
-  border-radius: 8px;
-  transition: all 0.3s ease;
-}
-
-.timeline-content .q-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-}
-
-.note-card {
-  border-left: 3px solid #1976d2;
-  padding-left: 16px;
-  margin-bottom: 24px;
-  background-color: #fafafa;
-  border-radius: 0 8px 8px 0;
-  padding: 12px 16px 12px 16px;
-  transition: all 0.3s ease;
-}
-
-.note-card:hover {
-  background-color: #f0f7ff;
-  transform: translateX(3px);
-}
-
-.note-content {
-  font-size: 0.95rem;
-  color: #424242;
-  white-space: pre-line;
-  line-height: 1.6;
-}
-
-.photo-thumbnail {
-  transition: all 0.3s ease;
-  border: 2px solid white;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
-
-.photo-thumbnail:hover {
-  transform: scale(1.05);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-  z-index: 1;
-}
-
-.attraction-card {
-  transition: all 0.3s ease;
-  border-radius: 12px;
-  overflow: hidden;
-  cursor: pointer;
-  border: 1px solid #e0e0e0;
-}
-
-.attraction-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 16px rgba(0,0,0,0.1);
-  border-color: #bbdefb;
-}
-
-.attraction-card:hover .q-item-section {
-  background-color: rgba(25, 118, 210, 0.05);
-}
-
-.attraction-card:hover .q-item-label {
-  color: #1976d2;
-}
-
-.completed-task {
-  background-color: #f5f5f5;
-  opacity: 0.8;
-}
-
-.completed-task:hover {
-  background-color: #eeeeee;
-}
-
-.action-buttons {
-  margin-bottom: 24px;
-}
-
-.action-buttons .q-btn {
-  padding: 8px 12px;
-  height: auto;
-  transition: all 0.3s ease;
-}
-
-.action-buttons .q-btn:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 5px 15px rgba(0,0,0,0.15);
-}
-
-.budget-item {
-  border-radius: 8px;
-  padding: 8px 12px;
-  margin-bottom: 4px;
-  transition: all 0.2s ease;
-}
-
-.budget-item:hover {
-  background-color: #f5f5f5;
-}
-
-.budget-item .q-item-label {
-  font-size: 0.95rem;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes slideIn {
-  from { opacity: 0; transform: translateX(-20px); }
-  to { opacity: 1; transform: translateX(0); }
-}
-
-.timeline-item {
-  animation: fadeIn 0.5s ease-out forwards;
-  animation-delay: calc(var(--item-index, 0) * 0.1s);
-  opacity: 0;
-}
-
-.stat-box {
-  animation: fadeIn 0.5s ease-out forwards;
-  animation-delay: calc(var(--item-index, 0) * 0.1s);
-}
-
-@media (max-width: 599px) {
-  .action-buttons {
-    flex-direction: column;
-  }
-  
-  .action-buttons .q-btn {
-    margin: 4px 0;
-  }
-  
-  .timeline-content {
-    padding-top: 32px !important;
-  }
-  
-  .time-badge-corner {
-    font-size: 0.75rem;
-    padding: 3px 8px;
-  }
-  
-  .timeline-content .text-subtitle1 {
-    font-size: 1rem;
-  }
-  
-  .activity-photo {
-    width: 70px;
-    height: 60px;
-  }
-  
-  .text-h4 {
-    font-size: 1.5rem !important;
-  }
-  
-  .text-h6 {
-    font-size: 1.1rem !important;
-  }
-  
-  .stat-box {
-    padding: 8px 4px;
-  }
-  
-  .modern-tabs {
-    padding: 2px;
-  }
-  
-  .tab-subtitle {
-    display: none;
-  }
-  
-  .timeline-container {
-    padding-left: 0;
-  }
-  
-  .timeline-item:before {
-    left: 10px;
-  }
-  
-  :deep(.q-page-sticky) {
-    bottom: 70px !important;
-  }
-  
-  .trip-content {
-    padding-bottom: 80px !important;
-  }
-}
-
-@media print {
-  .q-header,
-  .q-page-sticky,
-  .map-container,
-  .q-fab,
-  .action-buttons {
-    display: none !important;
-  }
-  
-  .container {
-    width: 100%;
-    max-width: 100%;
-  }
-  
-  .trip-content {
-    padding: 0 !important;
-  }
-  
-  .col-md-8,
-  .col-md-4 {
-    width: 100% !important;
-    max-width: 100% !important;
-    flex: 0 0 100% !important;
-  }
-  
-  .card-hover {
-    box-shadow: none !important;
-    border: 1px solid #ddd !important;
-    margin-bottom: 20px !important;
-    transform: none !important;
-  }
-  
-  .timeline-content:before {
-    width: 2px !important;
-  }
-  
-  .timeline-content {
-    box-shadow: none !important;
-    border: 1px solid #ddd !important;
-  }
-  
-  .time-badge-corner {
-    box-shadow: none !important;
-    border: 1px solid #000 !important;
-  }
-  
-  .timeline-item, .stat-box {
-    opacity: 1 !important;
-    transform: none !important;
-    animation: none !important;
-  }
-  
-  .page-break {
-    page-break-before: always;
-  }
-}
-
-.dark-mode .trip-detail-page {
-  background-color: #121212;
-}
-
-.dark-mode .card-hover {
-  background-color: #1e1e1e;
-  border-color: #333;
-}
-
-.dark-mode .timeline-content {
-  background-color: #1e1e1e;
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
-}
-
-.dark-mode .time-badge-corner {
-  background-color: #333;
-  border-color: #555;
-  color: #fff;
-}
-
-.dark-mode .description-text,
-.dark-mode .description,
-.dark-mode .note-content {
-  color: #e0e0e0;
-}
-
-.dark-mode .stat-box {
-  background-color: #333;
-}
-
-.dark-mode .stat-box:hover {
-  background-color: #444;
-}
-
-:focus-visible {
-  outline: 2px solid #1976d2;
-  outline-offset: 2px;
-}
-
-.timeline-content:focus-visible,
-.attraction-card:focus-visible,
-.stat-box:focus-visible {
-  outline: 2px solid #1976d2;
-  outline-offset: 4px;
-}
-
-.loading-overlay {
+.header-overlay {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(255, 255, 255, 0.7);
+  background: linear-gradient(to bottom, rgba(0,0,0,0.5), rgba(0,0,0,0.7));
   display: flex;
-  justify-content: center;
   align-items: center;
-  z-index: 10;
+  z-index: 1;
 }
 
-.loading-overlay .q-spinner {
-  width: 50px;
-  height: 50px;
+.progress-container {
+  position: sticky;
+  top: 0;
+  z-index: 9;
 }
 
-.glossy {
-  position: relative;
+.progress-bar {
+  height: 6px;
+  background-color: #e0e0e0;
+  border-radius: 3px;
   overflow: hidden;
 }
 
-.glossy:after {
+.progress-value {
+  height: 100%;
+  background: linear-gradient(90deg, #1976d2, #42a5f5);
+  border-radius: 3px;
+  transition: width 0.6s ease;
+}
+
+.progress-steps {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+}
+
+.step {
+  text-align: center;
+  position: relative;
+  flex: 1;
+}
+
+.step-name {
+  font-size: 0.8rem;
+  color: #757575;
+  margin-bottom: 5px;
+}
+
+.step-active .step-name {
+  color: #4caf50;
+  font-weight: 500;
+}
+
+.info-card, .budget-card, .itinerary-card, .recommendations-card, .checklist-card, .ai-assistant-card {
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.info-card:hover, .budget-card:hover, .itinerary-card:hover, .recommendations-card:hover, .checklist-card:hover, .ai-assistant-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+.info-item {
+  margin-bottom: 12px;
+  display: flex;
+  align-items: flex-start;
+}
+
+.info-item .q-icon {
+  margin-right: 8px;
+  margin-top: 3px;
+}
+
+.info-label {
+  font-weight: 500;
+  margin-right: 8px;
+  color: #757575;
+}
+
+.info-value {
+  font-weight: 400;
+}
+
+.info-description {
+  margin-left: 24px;
+  color: #616161;
+  line-height: 1.5;
+}
+
+.budget-stat-card {
+  background-color: white;
+  transition: all 0.3s ease;
+}
+
+.budget-stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+}
+
+.category-item {
+  padding: 8px;
+  border-radius: 8px;
+  transition: background-color 0.2s;
+}
+
+.category-item:hover {
+  background-color: #f5f5f5;
+}
+
+.calendar-view {
+  background-color: white;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.calendar-day-header {
+  padding: 8px;
+  border-bottom: 1px solid #eee;
+  background-color: #f9f9f9;
+}
+
+.calendar-day {
+  border-right: 1px solid #eee;
+  min-width: 120px;
+}
+
+.calendar-day:last-child {
+  border-right: none;
+}
+
+.calendar-timeslot {
+  padding: 8px;
+  border-bottom: 1px solid #f0f0f0;
+  min-height: 60px;
+  display: flex;
+}
+
+.timeslot-time {
+  width: 50px;
+  flex-shrink: 0;
+}
+
+.timeslot-content {
+  flex-grow: 1;
+  position: relative;
+}
+
+.activity-item {
+  background-color: #e3f2fd;
+  border-radius: 4px;
+  padding: 8px;
+  margin-bottom: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-left: 3px solid #2196f3;
+}
+
+.activity-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.activity-sightseeing {
+  background-color: #f3e5f5;
+  border-left-color: #9c27b0;
+}
+
+.activity-food {
+  background-color: #fff8e1;
+  border-left-color: #ffc107;
+}
+
+.activity-accommodation {
+  background-color: #e8f5e9;
+  border-left-color: #4caf50;
+}
+
+.activity-transportation {
+  background-color: #e1f5fe;
+  border-left-color: #03a9f4;
+}
+
+.activity-shopping {
+  background-color: #fce4ec;
+  border-left-color: #e91e63;
+}
+
+.activity-item-sightseeing {
+  border-left: 4px solid #9c27b0;
+}
+
+.activity-item-food {
+  border-left: 4px solid #ff9800;
+}
+
+.activity-item-accommodation {
+  border-left: 4px solid #4caf50;
+}
+
+.activity-item-transportation {
+  border-left: 4px solid #2196f3;
+}
+
+.activity-item-shopping {
+  border-left: 4px solid #e91e63;
+}
+
+.recommendation-item {
+  margin-bottom: 8px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.recommendation-item:hover {
+  background-color: #f5f5f5;
+}
+
+.recommendation-time-saving {
+  border-left: 3px solid #2196f3;
+}
+
+.recommendation-budget {
+  border-left: 3px solid #4caf50;
+}
+
+.recommendation-weather {
+  border-left: 3px solid #00bcd4;
+}
+
+.recommendation-activity {
+  border-left: 3px solid #9c27b0;
+}
+
+.ai-message {
+  position: relative;
+  max-width: 80%;
+}
+
+.ai-message::before {
   content: '';
   position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: linear-gradient(
-    to bottom right, 
-    rgba(255, 255, 255, 0.3) 0%, 
-    rgba(255, 255, 255, 0) 50%, 
-    rgba(255, 255, 255, 0) 100%
-  );
-  transform: rotate(30deg);
-  pointer-events: none;
+  top: 10px;
+  left: -8px;
+  width: 0;
+  height: 0;
+  border-top: 8px solid transparent;
+  border-bottom: 8px solid transparent;
+  border-right: 8px solid #e0e0e0;
 }
 
-.card-hover {
-  transform-origin: center bottom;
-}
-
-.card-hover:hover {
-  animation: cardWiggle 0.5s ease-out;
-}
-
-@keyframes cardWiggle {
-  0%, 100% { transform: translateY(-5px) rotate(0deg); }
-  25% { transform: translateY(-7px) rotate(-0.5deg); }
-  75% { transform: translateY(-7px) rotate(0.5deg); }
-}
-
-.q-icon {
-  transition: transform 0.3s ease;
-}
-
-.q-btn:hover .q-icon, 
-.stat-box:hover .q-icon {
-  transform: rotate(10deg) scale(1.1);
-}
-
-.trip-detail-page {
-  background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
-}
-
-.activity-tag {
-  display: inline-block;
-  padding: 2px 8px;
-  border-radius: 12px;
-  font-size: 0.7rem;
-  margin-right: 4px;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.activity-tag.transport {
-  background-color: #e3f2fd;
-  color: #1976d2;
-}
-
-.activity-tag.attraction {
-  background-color: #e8f5e9;
-  color: #388e3c;
-}
-
-.activity-tag.meal {
-  background-color: #fff8e1;
-  color: #ffa000;
-}
-
-.activity-tag.rest {
-  background-color: #f3e5f5;
-  color: #8e24aa;
-}
-
-.modern-tabs .q-tab {
-  transition: transform 0.3s ease, background-color 0.3s ease;
-}
-
-.modern-tabs .q-tab:hover {
-  transform: translateY(-2px);
-  background-color: rgba(25, 118, 210, 0.05);
-}
-
-.modern-tabs .q-tab:active {
-  transform: translateY(1px);
-}
-
-.map-container {
-  position: relative;
-  overflow: hidden;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
-}
-
-.map-container:hover {
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-  transform: scale(1.02);
-}
-
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #bdbdbd;
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #9e9e9e;
-}
-
-/* 角标时间样式 */
-.time-badge-corner {
-  position: absolute;
-  top: 0;
-  right: 0;
-  background-color: #1976d2;
-  color: white;
-  padding: 4px 10px;
-  font-size: 0.8rem;
-  font-weight: 500;
-  border-radius: 0 12px 0 12px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  z-index: 2;
-}
-
-/* 活动类型标签 */
-.activity-type-badge {
-  position: absolute;
-  top: 0;
-  left: 0;
-  padding: 4px 10px;
-  font-size: 0.7rem;
-  font-weight: 500;
-  border-radius: 12px 0 12px 0;
-  z-index: 2;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.activity-type-badge.transport {
-  background-color: #e3f2fd;
-  color: #1976d2;
-}
-
-.activity-type-badge.attraction {
-  background-color: #e8f5e9;
-  color: #388e3c;
-}
-
-.activity-type-badge.meal {
-  background-color: #fff8e1;
-  color: #ffa000;
-}
-
-.activity-type-badge.rest {
-  background-color: #f3e5f5;
-  color: #8e24aa;
-}
-
-.activity-type-badge.activity {
+.completed-item {
   background-color: #f5f5f5;
-  color: #616161;
+  opacity: 0.8;
 }
 
-/* 导航按钮 */
-.navigation-btn {
-  transition: all 0.3s ease;
-  opacity: 0.7;
-}
-
-.navigation-btn:hover {
-  opacity: 1;
-  transform: scale(1.2);
-}
-
-/* 操作按钮 */
-.activity-actions {
-  border-top: 1px dashed #e0e0e0;
-  padding-top: 8px;
-  margin-top: 8px !important;
-}
-
-.activity-actions .q-btn {
-  transition: all 0.3s ease;
-}
-
-.activity-actions .q-btn:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 3px 5px rgba(0,0,0,0.1);
-}
-
-/* 导航对话框样式 */
-.navigation-details {
-  background-color: #f5f5f5;
+.rounded-borders {
   border-radius: 8px;
-  padding: 16px;
 }
 
-.navigation-path {
-  border-left: 2px dashed #1976d2;
-  margin-left: 12px;
+/* 移动端优化样式 */
+.mobile-tabs {
+  position: sticky;
+  top: 56px;
+  z-index: 8;
+  border-radius: 0 0 8px 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
-.route-info {
-  background-color: white;
-  border-radius: 6px;
+.mobile-info-item {
+  background-color: #f5f5f5;
   padding: 8px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  border-radius: 8px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
-.navigation-line {
-  border-style: dashed;
-  height: 20px;
-  margin-left: 15px;
+.mobile-info-item .info-label {
+  margin-right: 0;
+  margin-top: 4px;
+  font-size: 0.75rem;
 }
 
-/* 更新的响应式样式 */
+.mobile-info-item .info-value {
+  font-weight: 500;
+  margin-top: 2px;
+}
+
+.calendar-view-mobile {
+  padding: 0;
+}
+
+.calendar-timeslot-mobile {
+  display: flex;
+  border-bottom: 1px solid #f0f0f0;
+  padding: 8px 4px;
+}
+
+.calendar-timeslot-mobile .timeslot-time {
+  width: 40px;
+  flex-shrink: 0;
+  padding-top: 6px;
+}
+
+.calendar-timeslot-mobile .timeslot-content {
+  flex-grow: 1;
+}
+
+.suggestion-chip {
+  margin-bottom: 8px;
+}
+
+.hide-on-mobile {
+  display: flex;
+}
+
+/* 移动端响应式适配 */
 @media (max-width: 599px) {
-  .timeline-container {
-    padding-left: 0;
+  .immersive-header {
+    height: 150px;
   }
   
-  .activity-type-badge, .time-badge-corner {
-    font-size: 0.65rem;
-    padding: 3px 6px;
+  .container {
+    padding: 0 8px;
   }
   
-  .route-info {
-    padding: 6px;
+  .trip-detail-page .q-card {
+    margin-bottom: 8px;
+    border-radius: 8px;
+  }
+  
+  .hide-on-mobile {
+    display: none;
+  }
+  
+  .activity-item {
+    padding: 4px 6px;
+    font-size: 0.8rem;
+  }
+  
+  .ai-message {
+    max-width: 100%;
+  }
+  
+  .q-card-section {
+    padding: 12px;
+  }
+  
+  .q-card-actions {
+    padding: 8px;
+  }
+  
+  .info-card, .budget-card, .itinerary-card, .recommendations-card, .checklist-card, .ai-assistant-card {
+    box-shadow: none !important;
+  }
+  
+  .info-card:hover, .budget-card:hover, .itinerary-card:hover, .recommendations-card:hover, .checklist-card:hover, .ai-assistant-card:hover {
+    transform: none;
+  }
+  
+  .category-item {
+    padding: 4px;
+  }
+  
+  .suggestion-chip {
+    width: 100%;
+  }
+  
+  .ai-response-mobile {
+    max-height: 35vh;
+    overflow-y: auto;
   }
 }
 
-/* 暗色模式支持 */
-.dark-mode .navigation-details {
-  background-color: #1e1e1e;
+.bg-primary-1 {
+  background-color: rgba(25, 118, 210, 0.1);
 }
 
-.dark-mode .route-info {
+.bg-green-1 {
+  background-color: rgba(76, 175, 80, 0.1);
+}
+
+.bg-blue-1 {
+  background-color: rgba(33, 150, 243, 0.1);
+}
+
+.bg-purple-1 {
+  background-color: rgba(156, 39, 176, 0.1);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.trip-detail-page .q-card {
+  animation: fadeIn 0.5s ease-out;
+}
+
+/* 平板设备适配 */
+@media (min-width: 600px) and (max-width: 1023px) {
+  .container {
+    padding: 0 16px;
+  }
+  
+  .calendar-day {
+    min-width: 110px;
+  }
+}
+
+/* 深色模式适配 */
+.body--dark .trip-detail-page {
+  background-color: #121212;
+}
+
+.body--dark .bg-primary-1 {
+  background-color: rgba(30, 136, 229, 0.2);
+}
+
+.body--dark .bg-green-1 {
+  background-color: rgba(102, 187, 106, 0.2);
+}
+
+.body--dark .bg-blue-1 {
+  background-color: rgba(66, 165, 245, 0.2);
+}
+
+.body--dark .bg-purple-1 {
+  background-color: rgba(171, 71, 188, 0.2);
+}
+
+.body--dark .mobile-info-item {
   background-color: #333;
 }
 
-.dark-mode .activity-actions {
-  border-top-color: #424242;
+.body--dark .q-tabs {
+  background-color: #1d1d1d;
 }
 
-/* 卡片悬停效果增强 */
-.timeline-content {
-  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+/* 移动端安全区域适配 */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .mobile-tabs {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
 }
 
-.timeline-content:hover {
-  transform: translateY(-5px) scale(1.01);
-  box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+/* 打印优化 */
+@media print {
+  .trip-detail-page {
+    background-color: white;
+  }
+  
+  .immersive-header {
+    height: auto;
+    min-height: 100px;
+  }
+  
+  .q-btn {
+    display: none;
+  }
+  
+  .header-overlay {
+    background: rgba(0,0,0,0.7);
+  }
+  
+  .container {
+    max-width: 100%;
+    padding: 0;
+  }
+  
+  .q-card {
+    box-shadow: none !important;
+    border: 1px solid #ddd;
+    page-break-inside: avoid;
+  }
+  
+  .progress-container,
+  .ai-assistant-card,
+  .recommendations-card,
+  .mobile-tabs {
+    display: none;
+  }
+  
+  .row {
+    display: block;
+  }
+  
+  .col-12, .col-md-4, .col-md-8 {
+    width: 100%;
+    max-width: 100%;
+    flex: 0 0 100%;
+  }
 }
-
-/* 新的导航按钮样式 */
-.navigation-btn-new {
-  transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
-  background-color: rgba(0, 150, 136, 0.1);
-  margin-left: 8px !important;
-  font-size: 14px;
-  padding: 4px;
-  opacity: 0.9;
-}
-
-.navigation-btn-new:hover {
-  opacity: 1;
-  transform: scale(1.1);
-  background-color: rgba(0, 150, 136, 0.2);
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-}
-
-.navigation-btn-new .q-icon {
-  font-size: 16px;
-}
-</style> 
+</style>
