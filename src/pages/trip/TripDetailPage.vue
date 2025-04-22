@@ -54,24 +54,6 @@
       </div>
       
       <div v-else>
-        <!-- 移动端导航标签 -->
-        <div class="mobile-tabs q-mb-md" v-if="$q.screen.lt.md">
-          <q-tabs
-            v-model="mobileTab"
-            dense
-            class="bg-white"
-            active-color="primary"
-            indicator-color="primary"
-            align="justify"
-            narrow-indicator
-          >
-            <q-tab name="itinerary" icon="map" label="行程" />
-            <q-tab name="budget" icon="account_balance_wallet" label="预算" />
-            <q-tab name="todo" icon="checklist" label="清单" />
-            <q-tab name="ai" icon="smart_toy" label="助手" />
-          </q-tabs>
-        </div>
-      
         <!-- 桌面布局 - 两列 -->
         <div class="row q-col-gutter-md" v-if="$q.screen.gt.sm">
           <!-- 左侧信息栏 -->
@@ -1035,6 +1017,49 @@
         </q-card-actions>
       </q-card>
     </q-dialog>
+    
+    <!-- 添加悬浮按钮 -->
+    <q-page-sticky position="bottom-right" :offset="[18, 18]">
+      <q-fab
+        color="primary"
+        icon="menu"
+        direction="up"
+        :disable="loading"
+      >
+        <q-fab-action
+          @click="mobileTab = 'itinerary'"
+          :color="mobileTab === 'itinerary' ? 'primary' : 'grey-7'"
+          icon="map"
+          label="行程"
+          external-label
+          label-position="left"
+        />
+        <q-fab-action
+          @click="mobileTab = 'budget'"
+          :color="mobileTab === 'budget' ? 'green' : 'grey-7'"
+          icon="account_balance_wallet"
+          label="预算"
+          external-label
+          label-position="left"
+        />
+        <q-fab-action
+          @click="mobileTab = 'todo'"
+          :color="mobileTab === 'todo' ? 'blue' : 'grey-7'"
+          icon="checklist"
+          label="清单"
+          external-label
+          label-position="left"
+        />
+        <q-fab-action
+          @click="mobileTab = 'ai'"
+          :color="mobileTab === 'ai' ? 'purple' : 'grey-7'"
+          icon="smart_toy"
+          label="助手"
+          external-label
+          label-position="left"
+        />
+      </q-fab>
+    </q-page-sticky>
   </q-page>
 </template>
 
@@ -2138,5 +2163,18 @@ export default {
 
 .body--dark .shared-day-selector {
   background-color: #1d1d1d;
+}
+
+/* 添加到您的样式部分 */
+.q-fab .q-fab-action__label {
+  font-weight: 500;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 4px;
+  padding: 2px 8px;
+}
+
+.body--dark .q-fab .q-fab-action__label {
+  background: rgba(50, 50, 50, 0.9);
+  color: white;
 }
 </style>
