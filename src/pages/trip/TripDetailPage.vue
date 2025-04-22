@@ -561,25 +561,30 @@
                 
                 <!-- 移动端日历视图 - 滚动式 -->
                 <q-card-section v-if="itineraryView === 'calendar'" class="calendar-view-mobile">
-                  <div class="calendar-day-selector q-mb-md">
-                    <q-select
-                      v-model="selectedDay"
-                      :options="days.map((day, index) => ({ 
-                        label: `第${index + 1}天 - ${formatDate(day.date)}`, 
-                        value: index 
-                      }))"
-                      dense
-                      outlined
-                      emit-value
-                      map-options
-                      options-dense
-                      label="选择日期"
+                  <!-- 使用与列表视图相同的 q-tabs 组件 -->
+                  <q-tabs
+                    v-model="selectedDay"
+                    dense
+                    class="text-grey"
+                    active-color="primary"
+                    indicator-color="primary"
+                    align="justify"
+                    narrow-indicator
+                    scrollable
+                  >
+                    <q-tab 
+                      v-for="(day, index) in days" 
+                      :key="index"
+                      :name="index"
+                      :label="`第${index + 1}天`"
                     />
+                  </q-tabs>
+                  
+                  <div class="text-subtitle1 q-pa-md bg-grey-1">
+                    {{ days[selectedDay] ? formatDate(days[selectedDay].date) : '' }}
                   </div>
                   
                   <div class="calendar-day-activities" v-if="days[selectedDay]">
-                    <div class="text-subtitle1 q-mb-sm">{{ formatDate(days[selectedDay].date) }}</div>
-                    
                     <div 
                       v-for="(timeSlot, timeIndex) in timeSlots" 
                       :key="timeIndex"
