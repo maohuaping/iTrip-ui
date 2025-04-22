@@ -681,6 +681,234 @@
                 </q-card-section>
               </q-card>
             </q-tab-panel>
+            
+            <!-- 预算面板 -->
+            <q-tab-panel name="budget" class="q-pa-none">
+              <q-card class="budget-card q-mb-md" flat bordered>
+                <q-card-section class="bg-green-1 q-py-sm">
+                  <div class="text-subtitle1 text-green">
+                    <q-icon name="account_balance_wallet" class="q-mr-xs" />
+                    预算概览
+                  </div>
+                </q-card-section>
+                
+                <q-card-section>
+                  <div class="budget-overview">
+                    <div class="text-h5 text-weight-bold text-center text-primary">
+                      {{ trip.budget.total.toLocaleString() }} {{ trip.budget.currency }}
+                    </div>
+                    <div class="text-caption text-center q-mb-md">总预算</div>
+                    
+                    <div class="row q-col-gutter-md">
+                      <div class="col-6">
+                        <q-card flat bordered class="budget-stat-card text-center q-pa-sm">
+                          <div class="text-h6 text-positive">{{ getSpentBudget().toLocaleString() }}</div>
+                          <div class="text-caption">已花费</div>
+                        </q-card>
+                      </div>
+                      <div class="col-6">
+                        <q-card flat bordered class="budget-stat-card text-center q-pa-sm">
+                          <div class="text-h6 text-primary">{{ getRemainingBudget().toLocaleString() }}</div>
+                          <div class="text-caption">剩余预算</div>
+                        </q-card>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <q-linear-progress
+                    :value="getBudgetProgressValue()"
+                    size="15px"
+                    :color="getBudgetProgressColor()"
+                    track-color="grey-3"
+                    class="q-mt-lg rounded-borders"
+                  >
+                    <div class="absolute-full flex flex-center">
+                      <q-badge color="white" text-color="black" :label="`${Math.round(getBudgetProgressValue() * 100)}%`" />
+                    </div>
+                  </q-linear-progress>
+                  
+                  <div class="category-budget q-mt-lg">
+                    <div class="text-subtitle2 q-mb-sm">预算分配</div>
+                    
+                    <div v-for="(category, index) in budgetCategories" :key="index" class="category-item q-mb-sm">
+                      <div class="row items-center justify-between">
+                        <div class="col-auto">
+                          <q-avatar :color="getBudgetCategoryColor(category.id) + '-1'" :text-color="getBudgetCategoryColor(category.id)" size="sm">
+                            <q-icon :name="category.icon" />
+                          </q-avatar>
+                          <span class="q-ml-sm">{{ category.name }}</span>
+                        </div>
+                        <div class="col-auto">
+                          {{ trip.budget.categories[category.id].toLocaleString() }} {{ trip.budget.currency }}
+                        </div>
+                      </div>
+                      <q-linear-progress
+                        :value="getCategoryPercentage(category.id)"
+                        size="5px"
+                        :color="getBudgetCategoryColor(category.id)"
+                        class="q-mt-xs"
+                      />
+                    </div>
+                  </div>
+                </q-card-section>
+                
+                <q-card-actions align="right">
+                  <q-btn flat color="primary" label="编辑预算" icon="edit" :to="`/trip/edit/${trip.id}?tab=3`" />
+                </q-card-actions>
+              </q-card>
+            </q-tab-panel>
+            
+            <!-- 清单面板 -->
+            <q-tab-panel name="todo" class="q-pa-none">
+              <q-card class="checklist-card" flat bordered>
+                <q-card-section class="bg-blue-1 q-py-sm">
+                  <div class="text-subtitle1 text-blue">
+                    <q-icon name="checklist" class="q-mr-xs" />
+                    旅行清单
+                  </div>
+                </q-card-section>
+                
+                <q-card-section>
+                  <div class="checklist-stats q-mb-md" v-if="trip.todoList.length > 0">
+                    <q-linear-progress
+                      :value="getCompletionRate()"
+                      color="positive"
+                      size="8px"
+                      class="q-mb-xs"
+                    />
+                    <div class="text-caption text-center">
+                      完成率: {{ Math.round(getCompletionRate() * 100) }}%
+                      ({{ getCompletedItemsCount() }}/{{ trip.todoList.length }})
+                    </div>
+                  </div>
+                  
+                  <div v-if="trip.todoList.length > 0" class="checklist-items">
+                    <q-list separator>
+                      <q-item
+                        v-for="(item, index) in trip.todoList"
+                        :key="index"
+                        tag="label"
+                        v-ripple
+                        :class="{'completed-item': item.done}"
+                      >
+                        <q-item-section side>
+                          <q-checkbox v-model="item.done" color="primary" @update:model-value="updateTodoItem" />
+                        </q-item-section>
+                        <q-item-section>
+                          <q-item-label :class="{'text-strike': item.done}">{{ item.text }}</q-item-label>
+                        </q-item-section>
+                      </q-item>
+                    </q-list>
+                  </div>
+                  
+                  <div v-else class="text-center q-pa-md">
+                    <q-icon name="checklist" size="2rem" color="grey-5" />
+                    <div class="text-grey q-mt-sm">暂无待办事项</div>
+                  </div>
+                </q-card-section>
+                
+                <q-card-actions align="right">
+                  <q-btn flat color="primary" label="编辑清单" icon="edit" :to="`/trip/edit/${trip.id}?tab=4`" />
+                </q-card-actions>
+              </q-card>
+            </q-tab-panel>
+            
+            <!-- 助手面板 -->
+            <q-tab-panel name="ai" class="q-pa-none">
+              <q-card class="ai-assistant-card" flat bordered>
+                <q-card-section class="bg-blue-1 q-py-sm">
+                  <div class="text-subtitle1 text-blue">
+                    <q-icon name="smart_toy" class="q-mr-xs" />
+                    旅行助手
+                  </div>
+                </q-card-section>
+                
+                <q-card-section>
+                  <div class="ai-response q-mb-md" v-if="aiResponse">
+                    <div class="row no-wrap">
+                      <q-avatar color="primary" text-color="white" icon="smart_toy" size="md" class="q-mr-md self-start" />
+                      <div class="ai-message bg-grey-2 rounded-borders q-pa-md">{{ aiResponse }}</div>
+                    </div>
+                  </div>
+                  
+                  <div class="ai-query">
+                    <q-input 
+                      v-model="aiQuery" 
+                      filled 
+                      placeholder="询问任何与行程相关的问题..."
+                      @keyup.enter="submitAiQuery"
+                      class="custom-input"
+                    >
+                      <template v-slot:append>
+                        <q-btn round dense flat icon="send" color="primary" @click="submitAiQuery" />
+                      </template>
+                    </q-input>
+                  </div>
+                  
+                  <div class="ai-suggestions q-mt-md">
+                    <div class="text-caption q-mb-xs">常见问题:</div>
+                    <div class="row q-col-gutter-sm wrap">
+                      <div class="col-auto" v-for="(suggestion, index) in aiSuggestions" :key="index">
+                        <q-chip
+                          clickable
+                          color="primary-1"
+                          text-color="primary"
+                          @click="useAiSuggestion(suggestion)"
+                          class="suggestion-chip"
+                        >
+                          {{ suggestion }}
+                        </q-chip>
+                      </div>
+                    </div>
+                  </div>
+                </q-card-section>
+              </q-card>
+              
+              <!-- 智能建议系统 - 移动端版本 -->
+              <q-card class="recommendations-card q-mt-md" flat bordered>
+                <q-card-section class="bg-purple-1 q-py-sm">
+                  <div class="text-subtitle1 text-purple">
+                    <q-icon name="lightbulb" class="q-mr-xs" />
+                    智能建议
+                  </div>
+                </q-card-section>
+                
+                <q-card-section>
+                  <div v-if="recommendations.length > 0">
+                    <q-list>
+                      <q-item 
+                        v-for="(recommendation, index) in recommendations" 
+                        :key="index"
+                        class="recommendation-item"
+                        :class="`recommendation-${recommendation.type}`"
+                      >
+                        <q-item-section avatar>
+                          <q-avatar :color="getRecommendationColor(recommendation.type)">
+                            <q-icon :name="getRecommendationIcon(recommendation.type)" color="white" />
+                          </q-avatar>
+                        </q-item-section>
+                        
+                        <q-item-section>
+                          <q-item-label>{{ recommendation.content }}</q-item-label>
+                        </q-item-section>
+                        
+                        <q-item-section side>
+                          <div class="row q-gutter-xs">
+                            <q-btn flat round dense icon="thumb_up" color="positive" @click="acceptRecommendation(index)" />
+                            <q-btn flat round dense icon="thumb_down" color="negative" @click="dismissRecommendation(index)" />
+                          </div>
+                        </q-item-section>
+                      </q-item>
+                    </q-list>
+                  </div>
+                  
+                  <div v-else class="text-center q-pa-md">
+                    <q-icon name="lightbulb" size="2rem" color="grey-5" />
+                    <div class="text-grey q-mt-sm">暂无智能建议</div>
+                  </div>
+                </q-card-section>
+              </q-card>
+            </q-tab-panel>
           </q-tab-panels>
         </div>
       </div>
