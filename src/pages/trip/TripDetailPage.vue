@@ -262,17 +262,14 @@
                   </div>
                   
                   <div>
-                    <q-btn-toggle
-                      v-model="itineraryView"
-                      :options="[
-                        {label: '列表', value: 'list', icon: 'view_list'},
-                        {label: '日历', value: 'calendar', icon: 'calendar_month'}
-                      ]"
+                    <q-btn
+                      flat
+                      round
+                      size="sm"
+                      :icon="itineraryView === 'list' ? 'calendar_month' : 'view_list'"
                       color="primary"
-                      text-color="white"
-                      unelevated
-                      dense
-                      rounded
+                      @click="toggleItineraryView()"
+                      :title="itineraryView === 'list' ? '切换到日历视图' : '切换到列表视图'"
                     />
                   </div>
                 </div>
@@ -547,18 +544,14 @@
                     </div>
                     
                     <div>
-                      <q-btn-toggle
-                        v-model="itineraryView"
-                        :options="[
-                          {label: '', value: 'list', icon: 'view_list'},
-                          {label: '', value: 'calendar', icon: 'calendar_month'}
-                        ]"
-                        color="primary"
-                        text-color="white"
-                        unelevated
-                        dense
-                        rounded
+                      <q-btn
+                        flat
+                        round
                         size="sm"
+                        :icon="itineraryView === 'list' ? 'calendar_month' : 'view_list'"
+                        color="primary"
+                        @click="toggleItineraryView()"
+                        :title="itineraryView === 'list' ? '切换到日历视图' : '切换到列表视图'"
                       />
                     </div>
                   </div>
@@ -1627,6 +1620,9 @@ export default {
         position: 'bottom',
         timeout: 1000
       });
+    },
+    toggleItineraryView() {
+      this.itineraryView = this.itineraryView === 'list' ? 'calendar' : 'list';
     }
   }
 }
