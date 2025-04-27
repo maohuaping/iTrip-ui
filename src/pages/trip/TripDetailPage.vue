@@ -1171,15 +1171,15 @@ export default {
     loadMockData() {
       this.trip = {
         id: this.tripId,
-        name: '日本东京之旅',
-        destination: '东京',
+        name: '桐庐旅行',
+        destination: '桐庐',
         dateRange: {
           from: '2023-08-15',
           to: '2023-08-20'
         },
         travelers: 2,
         tripType: '情侣旅行',
-        description: '这是一次情侣东京旅行，计划游览主要景点和体验当地美食文化。',
+        description: '这是一次桐庐旅行，计划游览主要景点和体验当地美食文化。',
         budget: {
           total: 15000,
           currency: '¥',
@@ -1194,9 +1194,9 @@ export default {
         todoList: [
           { text: '预订机票', done: true },
           { text: '预订酒店', done: true },
-          { text: '兑换日元', done: false },
+          { text: '兑换现金', done: false },
           { text: '购买电源转换器', done: false },
-          { text: '准备护照和签证', done: true },
+          { text: '准备证件', done: true },
           { text: '购买旅行保险', done: false },
           { text: '下载离线地图', done: true }
         ]
@@ -1207,25 +1207,32 @@ export default {
           date: '2023-08-15',
           activities: [
             {
-              name: '抵达东京',
-              time: '14:30',
-              location: '成田国际机场',
+              name: '火车前往桐庐',
+              time: '09:16',
+              location: '上海虹桥→桐庐站',
               type: '交通出行',
-              note: '预定接机服务'
+              note: '票价122元/人，11:06到达桐庐站'
+            },
+            {
+              name: '吃午餐',
+              time: '12:30',
+              location: '一味大院 (距桐庐站5.5km)',
+              type: '餐饮美食',
+              note: '桐庐站下车后打车前往'
             },
             {
               name: '酒店入住',
-              time: '16:00',
-              location: '新宿希尔顿酒店',
+              time: '14:30',
+              location: '酒店 (距一味大院2.4km)',
               type: '住宿安排',
-              note: '提前确认预订'
+              note: '放行李，稍作休息'
             },
             {
-              name: '晚餐',
-              time: '18:30',
-              location: '新宿站附近拉面店',
-              type: '餐饮美食',
-              note: '品尝当地特色拉面'
+              name: '游览景点',
+              time: '16:00',
+              location: '大奇山国家森林公园 (距酒店4.5km)',
+              type: '景点游览',
+              note: '游览森林公园风景'
             }
           ]
         },
