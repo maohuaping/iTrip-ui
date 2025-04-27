@@ -912,6 +912,23 @@
               </div>
             </div>
             
+            <!-- 景点类型特有信息 -->
+            <template v-if="activityDialog.activity.type === '景点游览'">
+              <div class="col-12 col-sm-6" v-if="activityDialog.activity.openingHours">
+                <div class="text-caption text-grey">开放时间</div>
+                <div class="text-subtitle1">
+                  <q-icon name="schedule" size="xs" /> {{ activityDialog.activity.openingHours }}
+                </div>
+              </div>
+              
+              <div class="col-12 col-sm-6" v-if="activityDialog.activity.ticketPrice">
+                <div class="text-caption text-grey">门票价格</div>
+                <div class="text-subtitle1">
+                  <q-icon name="local_activity" size="xs" /> {{ activityDialog.activity.ticketPrice }}
+                </div>
+              </div>
+            </template>
+            
             <div class="col-12" v-if="activityDialog.activity.note">
               <div class="text-caption text-grey">备注</div>
               <div class="text-body1">{{ activityDialog.activity.note }}</div>
@@ -1277,7 +1294,9 @@ export default {
               time: '16:00',
               location: '大奇山国家森林公园 (距酒店4.5km)',
               type: '景点游览',
-              note: '游览森林公园风景'
+              note: '游览森林公园风景',
+              openingHours: '08:00-17:30 (最晚入园17:00)',
+              ticketPrice: '成人票65元/人，学生票半价'
             }
           ]
         },
@@ -1296,7 +1315,9 @@ export default {
               time: '10:00',
               location: '浅草寺',
               type: '景点游览',
-              note: '参观东京最古老的寺庙'
+              note: '参观东京最古老的寺庙',
+              openingHours: '06:00-17:00 (全年无休)',
+              ticketPrice: '免费参观，五重塔另收费300日元'
             },
             {
               name: '午餐',
@@ -1310,7 +1331,9 @@ export default {
               time: '14:30',
               location: '晴空塔',
               type: '景点游览',
-              note: '登顶观赏东京全景'
+              note: '登顶观赏东京全景',
+              openingHours: '10:00-21:00 (最晚入场20:00)',
+              ticketPrice: '成人票2060日元，展望台套票3400日元'
             }
           ]
         },
@@ -1329,7 +1352,9 @@ export default {
               time: '10:30',
               location: '明治神宫',
               type: '景点游览',
-              note: '体验日本传统神社文化'
+              note: '体验日本传统神社文化',
+              openingHours: '日出-日落 (夏季约5:00-18:30)',
+              ticketPrice: '神宫免费，宝物殿成人500日元'
             }
           ]
         },
