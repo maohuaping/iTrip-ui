@@ -527,9 +527,10 @@
                     />
                   </q-tabs>
                   
-                  <div class="text-subtitle1 q-pa-md bg-grey-1">
+                  <!-- 移除下面这个日期显示区域 -->
+                  <!-- <div class="text-subtitle1 q-pa-md bg-grey-1">
                     {{ days[selectedDay] ? formatDate(days[selectedDay].date) : '' }}
-                  </div>
+                  </div> -->
                 </div>
                 
                 <!-- 移动端日历视图 -->
@@ -565,13 +566,57 @@
                 <q-card-section v-else-if="itineraryView === 'list'" class="q-pa-none">
                   <q-tab-panels v-model="selectedDay" animated>
                     <q-tab-panel v-for="(day, index) in days" :key="index" :name="index" class="q-pa-none">
+                      <!-- 移除日期显示，改为半天区分 -->
+                      <div class="time-period-divider">
+                        <div class="time-period-title morning-title q-pa-sm">
+                          <q-icon name="wb_sunny" color="orange" class="q-mr-xs" /> 上午
+                        </div>
+                      </div>
+                      
                       <q-list separator>
                         <q-item 
-                          v-for="(activity, actIndex) in day.activities.sort((a, b) => a.time.localeCompare(b.time))" 
-                          :key="actIndex"
+                          v-for="activity in getMorningActivities(day.activities)"
+                          :key="activity.time"
                           clickable
                           v-ripple
-                          @click="showActivityDetails(index, actIndex)"
+                          @click="showActivityDetails(index, findActivityIndex(day.activities, activity))"
+                          :class="`activity-item-${getActivityTypeClass(activity.type)}`"
+                        >
+                          <q-item-section avatar>
+                            <q-avatar :color="`${getActivityColor(activity.type)}-2`" :text-color="getActivityColor(activity.type)">
+                              <q-icon :name="getActivityIcon(activity.type)" />
+                            </q-avatar>
+                          </q-item-section>
+                          
+                          <q-item-section>
+                            <q-item-label>{{ activity.name }}</q-item-label>
+                            <q-item-label caption lines="2">
+                              <div class="row items-center q-gutter-x-sm">
+                                <div><q-icon name="access_time" size="xs" /> {{ activity.time }}</div>
+                                <div v-if="activity.location"><q-icon name="place" size="xs" /> {{ activity.location }}</div>
+                              </div>
+                            </q-item-label>
+                          </q-item-section>
+                          
+                          <q-item-section side>
+                            <q-icon name="chevron_right" color="grey-5" />
+                          </q-item-section>
+                        </q-item>
+                      </q-list>
+                      
+                      <div class="time-period-divider">
+                        <div class="time-period-title afternoon-title q-pa-sm">
+                          <q-icon name="wb_twilight" color="deep-orange" class="q-mr-xs" /> 下午
+                        </div>
+                      </div>
+                      
+                      <q-list separator>
+                        <q-item 
+                          v-for="activity in getAfternoonActivities(day.activities)"
+                          :key="activity.time"
+                          clickable
+                          v-ripple
+                          @click="showActivityDetails(index, findActivityIndex(day.activities, activity))"
                           :class="`activity-item-${getActivityTypeClass(activity.type)}`"
                         >
                           <q-item-section avatar>
@@ -1604,6 +1649,22 @@ export default {
     },
     toggleItineraryView() {
       this.itineraryView = this.itineraryView === 'list' ? 'calendar' : 'list';
+    },
+    getMorningActivities(activities) {
+      return activities
+        .filter(activity => {
+          const hour = parseInt(activity.time.split(':')[0], 10);
+          return hour < 12;
+        })
+        .sort((a, b) => a.time.localeCompare(b.time));
+    },
+    getAfternoonActivities(activities) {
+      return activities
+        .filter(activity => {
+          const hour = parseInt(activity.time.split(':')[0], 10);
+          return hour >= 12;
+        })
+        .sort((a, b) => a.time.localeCompare(b.time));
     }
   }
 }
@@ -2149,5 +2210,43 @@ export default {
 .body--dark .q-fab .q-fab-action__label {
   background: rgba(50, 50, 50, 0.9);
   color: white;
+}
+
+.time-period-divider {
+  position: relative;
+}
+
+.time-period-title {
+  display: flex;
+  align-items: center;
+  font-weight: 500;
+  font-size: 0.9rem;
+  color: #1976d2;
+  border-left: 3px solid #1976d2;
+  padding: 10px;
+  background-color: rgba(25, 118, 210, 0.05);
+}
+
+/* 为上午加浅蓝色背景 */
+.time-period-title.morning-title {
+  background-color: #e3f2fd;
+}
+
+/* 为下午加浅橙色背景 */
+.time-period-title.afternoon-title {
+  background-color: #fff3e0;
+}
+
+/* 深色模式样式 */
+.body--dark .time-period-title {
+  background-color: rgba(25, 118, 210, 0.2);
+}
+
+/* 若上午或下午没有活动，添加提示 */
+.no-activities-message {
+  padding: 12px;
+  text-align: center;
+  color: #757575;
+  font-style: italic;
 }
 </style>
