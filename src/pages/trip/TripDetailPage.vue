@@ -21,7 +21,7 @@
         </div>
       </div>
     </div>
-
+，
     <!-- 2. 进度指示与进度展示 -->
     <div class="progress-container bg-white q-py-sm shadow-1">
       <div class="container">
@@ -480,41 +480,7 @@
           <q-tab-panels v-model="mobileTab" animated class="transparent" keep-alive>
             <!-- 行程面板 -->
             <q-tab-panel name="itinerary" class="q-pa-none">
-              <!-- 基本信息卡片 - 移动端简化版 -->
-              <q-card class="info-card q-mb-md" flat bordered>
-                <q-card-section class="q-pa-sm">
-                  <div class="row q-col-gutter-sm">
-                    <div class="col-6">
-                      <div class="mobile-info-item">
-                        <q-icon name="place" color="deep-orange" size="sm" />
-                        <div class="info-label">目的地</div>
-                        <div class="info-value">{{ trip.destination }}</div>
-                      </div>
-                    </div>
-                    <div class="col-6">
-                      <div class="mobile-info-item">
-                        <q-icon name="people" color="purple" size="sm" />
-                        <div class="info-label">人数</div>
-                        <div class="info-value">{{ trip.travelers }}人</div>
-                      </div>
-                    </div>
-                    <div class="col-6">
-                      <div class="mobile-info-item">
-                        <q-icon name="event" color="green" size="sm" />
-                        <div class="info-label">类型</div>
-                        <div class="info-value">{{ trip.tripType }}</div>
-                      </div>
-                    </div>
-                    <div class="col-6">
-                      <div class="mobile-info-item">
-                        <q-icon name="date_range" color="blue" size="sm" />
-                        <div class="info-label">天数</div>
-                        <div class="info-value">{{ getDaysBetween() }}天</div>
-                      </div>
-                    </div>
-                  </div>
-                </q-card-section>
-              </q-card>
+              <!-- 移除基本信息卡片 - 移动端简化版 -->
               
               <!-- 移动端行程安排卡片部分 -->
               <q-card class="itinerary-card q-mb-md" flat bordered>
