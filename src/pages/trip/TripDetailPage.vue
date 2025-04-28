@@ -1296,7 +1296,7 @@ export default {
               type: '景点游览',
               note: '游览森林公园风景',
               openingHours: '08:00-17:30 (最晚入园17:00)',
-              ticketPrice: '成人票65元/人，学生票半价'
+              ticketPrice: '46元/人'
             }
           ]
         },
