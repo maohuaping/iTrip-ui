@@ -1297,6 +1297,13 @@ export default {
               note: '游览森林公园风景',
               openingHours: '08:00-17:30 (最晚入园17:00)',
               ticketPrice: '46元/人'
+            },
+            {
+              name: '返回酒店',
+              time: '18:30',
+              location: '大奇山—瑶琳路小吃街4.6km，结束回酒店',
+              type: '交通出行',
+              note: '晚餐可在瑶琳路小吃街解决，然后返回酒店休息'
             }
           ]
         },
@@ -1311,29 +1318,36 @@ export default {
               note: ''
             },
             {
-              name: '游览浅草寺',
-              time: '10:00',
-              location: '浅草寺',
+              name: '游览马岭古道',
+              time: '09:30',
+              location: '马岭古道',
               type: '景点游览',
-              note: '参观东京最古老的寺庙',
-              openingHours: '06:00-17:00 (全年无休)',
-              ticketPrice: '免费参观，五重塔另收费300日元'
+              note: '全程11km，可分为三段进行，石舍村→硕坑村→声荡村',
+              openingHours: '全天开放',
+              ticketPrice: '免费'
             },
             {
               name: '午餐',
               time: '12:30',
-              location: '浅草附近餐厅',
+              location: '声荡村附近餐厅',
               type: '餐饮美食',
-              note: '尝试当地小吃'
+              note: '尝试当地特色菜'
             },
             {
-              name: '东京晴空塔',
+              name: '游览江南龙门湾',
               time: '14:30',
-              location: '晴空塔',
+              location: '江南龙门湾 (声荡村—江南龙门湾3.1km)',
               type: '景点游览',
-              note: '登顶观赏东京全景',
-              openingHours: '10:00-21:00 (最晚入场20:00)',
-              ticketPrice: '成人票2060日元，展望台套票3400日元'
+              note: '游览时间约1小时，可选择竹筏或游船',
+              openingHours: '09:00-15:30',
+              ticketPrice: '快艇120元/人 竹筏60元/人 游船80元/人 电动船80元/人 卡丁船60元/人'
+            },
+            {
+              name: '返回酒店',
+              time: '17:00',
+              location: '江南龙门湾—桐庐站16km',
+              type: '交通出行',
+              note: '约搭乘顺风车返回'
             }
           ]
         },

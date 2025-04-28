@@ -115,6 +115,20 @@
                 Flex@20190429
               </q-item-section>
             </q-item>
+            
+            <q-separator />
+            
+            <q-item clickable v-close-popup @click="copyCurrentDateTime">
+              <q-item-section>
+                当前时间 (yyyyMMddHHmmss)
+              </q-item-section>
+            </q-item>
+            
+            <q-item clickable v-close-popup @click="copyOracleTimestamp">
+              <q-item-section>
+                Oracle时间 (yyyy-MM-dd HH:mm:ss.000)
+              </q-item-section>
+            </q-item>
           </q-list>
         </q-btn-dropdown>
 
@@ -785,6 +799,49 @@ const handleTextSelection = (text: string) => {
         position: 'top'
       })
     })
+}
+
+// 复制当前时间函数
+const copyCurrentDateTime = () => {
+  const now = new Date()
+  const formattedDateTime = formatDateTime(now)
+  
+  // 调用已有的处理函数进行复制
+  handleTextSelection(formattedDateTime)
+}
+
+// 格式化日期时间为 yyyyMMddHHmmss 格式
+const formatDateTime = (date: Date): string => {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  const hours = String(date.getHours()).padStart(2, '0')
+  const minutes = String(date.getMinutes()).padStart(2, '0')
+  const seconds = String(date.getSeconds()).padStart(2, '0')
+  
+  return `${year}${month}${day}${hours}${minutes}${seconds}`
+}
+
+// 复制Oracle时间戳格式
+const copyOracleTimestamp = () => {
+  const now = new Date()
+  const formattedTimestamp = formatOracleTimestamp(now)
+  
+  // 调用已有的处理函数进行复制
+  handleTextSelection(formattedTimestamp)
+}
+
+// 格式化为Oracle时间戳格式：yyyy-MM-dd HH:mm:ss.000
+const formatOracleTimestamp = (date: Date): string => {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  const hours = String(date.getHours()).padStart(2, '0')
+  const minutes = String(date.getMinutes()).padStart(2, '0')
+  const seconds = String(date.getSeconds()).padStart(2, '0')
+  const milliseconds = String(date.getMilliseconds()).padStart(3, '0')
+  
+  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}.${milliseconds}`
 }
 </script>
 
