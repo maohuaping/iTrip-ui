@@ -15,19 +15,46 @@
           <div class="text-h6 text-primary">旅行规划</div>
         </q-toolbar-title>
 
-        <q-btn
+        <q-btn-dropdown
           flat
           dense
-          icon="search"
+          icon="notifications"
           no-caps
-          label="搜索"
+          label="提醒事项"
           class="q-mr-sm"
-          aria-label="搜索"
-          @click="openSearchDialog"
-          color="primary"
+          aria-label="提醒事项"
+          color="green-7"
         >
-          <q-tooltip>快速搜索</q-tooltip>
-        </q-btn>
+          <q-list style="min-width: 300px">
+            <q-item-label header>待办事项</q-item-label>
+            
+            <template v-if="todoItems.length > 0">
+              <q-item v-for="(todo, index) in todoItems" :key="index" clickable v-ripple>
+                <q-item-section side>
+                  <q-checkbox v-model="todo.done" @update:model-value="() => updateTodoStatus(index)" />
+                </q-item-section>
+                <q-item-section>
+                  <q-item-label :class="{'text-strike': todo.done}">{{ todo.text }}</q-item-label>
+                </q-item-section>
+              </q-item>
+            </template>
+            
+            <q-item v-else>
+              <q-item-section>
+                <q-item-label class="text-center text-grey">暂无待办事项</q-item-label>
+              </q-item-section>
+            </q-item>
+            
+            <q-separator />
+            
+            <q-item clickable v-ripple to="/work">
+              <q-item-section class="text-center text-primary">
+                查看全部
+              </q-item-section>
+            </q-item>
+          </q-list>
+          <q-tooltip>查看提醒事项</q-tooltip>
+        </q-btn-dropdown>
 
         <q-btn
           flat
@@ -312,49 +339,81 @@
 
       </q-page>
     </q-page-container>
-
-    <!-- 快速搜索对话框 -->
-    <q-dialog v-model="searchDialogOpen" persistent>
-      <q-card style="min-width: 350px">
-        <q-card-section>
-          <div class="text-h6">快速搜索</div>
-        </q-card-section>
-
-        <q-card-section class="q-pt-none">
-          <q-input
-            v-model="quickSearch"
-            label="搜索目的地或景点"
-            dense
-            outlined
-            autofocus
-            class="q-mb-md"
-          >
-            <template v-slot:append>
-              <q-icon name="search" />
-            </template>
-          </q-input>
-        </q-card-section>
-
-        <q-card-actions align="right">
-          <q-btn flat label="取消" color="primary" v-close-popup />
-          <q-btn flat label="搜索" color="primary" @click="performQuickSearch" />
-        </q-card-actions>
-      </q-card>
-    </q-dialog>
   </q-layout>
 </template>
 
 <script lang="ts">
 // 导入桐庐图片
 import tongLuImage from 'src/assets/destinations/tongLu.jpg'
+// 导入todo API
+import { getTodo } from 'src/api/todo/todo'
+import { ref, onMounted } from 'vue'
 
 export default {
   name: 'TripPage',
+  setup() {
+    const todoItems = ref([])
+    const todoApi = getTodo()
+    
+    // 获取待办事项列表
+    const fetchTodoItems = async () => {
+      try {
+        const response = await todoApi.listTodoOfMe()
+        if (response.data && response.data.success && response.data.data) {
+          // 将API返回的数据转换为组件需要的格式
+          todoItems.value = response.data.data.map(item => ({
+            id: item.id,
+            text: item.title,
+            done: item.completed
+          })).slice(0, 5) // 只显示前5个
+        }
+      } catch (error) {
+        console.error('获取待办事项失败:', error)
+      }
+    }
+    
+    // 更新待办事项状态
+    const updateTodoStatus = async (index) => {
+      try {
+        const todoItem = todoItems.value[index]
+        
+        // 确保待办项有ID
+        if (!todoItem.id) {
+          console.error('待办项缺少ID')
+          return
+        }
+        
+        if (todoItem.done) {
+          // 如果标记为完成，调用完成API
+          await todoApi.completeTodo(todoItem.id)
+        } else {
+          // 如果标记为未完成，调用更新API
+          const todoEntity = {
+            id: todoItem.id,
+            title: todoItem.text,
+            completed: false
+          }
+          await todoApi.updateTodo(todoEntity)
+        }
+      } catch (error) {
+        console.error('更新待办状态失败:', error)
+      }
+    }
+    
+    // 组件挂载时获取待办事项
+    onMounted(() => {
+      fetchTodoItems()
+    })
+    
+    return {
+      todoItems,
+      updateTodoStatus,
+      fetchTodoItems
+    }
+  },
   data () {
     return {
       leftDrawerOpen: false,
-      searchDialogOpen: false,
-      quickSearch: '',
       searchForm: {
         destination: '',
         dateRange: '',
@@ -438,15 +497,6 @@ export default {
   methods: {
     toggleLeftDrawer() {
       this.leftDrawerOpen = !this.leftDrawerOpen
-    },
-    openSearchDialog() {
-      this.searchDialogOpen = true
-    },
-    performQuickSearch() {
-      // 实现快速搜索功能
-      console.log('快速搜索:', this.quickSearch)
-      this.searchDialogOpen = false
-      // 这里可以添加搜索逻辑
     },
     onSearch() {
       // 实现搜索功能
