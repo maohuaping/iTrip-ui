@@ -55,20 +55,6 @@
           </q-list>
           <q-tooltip>查看提醒事项</q-tooltip>
         </q-btn-dropdown>
-
-        <q-btn
-          flat
-          dense
-          icon="home"
-          no-caps
-          :label="$q.screen.gt.xs ? '主页' : ''"
-          class="q-ml-sm"
-          aria-label="回到主页"
-          to="/work"
-          color="primary"
-        >
-          <q-tooltip>回到主页</q-tooltip>
-        </q-btn>
       </q-toolbar>
     </q-header>
 
@@ -88,6 +74,13 @@
         <q-separator class="q-mb-sm" />
 
         <q-list padding dense class="menu-list">
+          <q-item clickable to="/work" v-ripple>
+            <q-item-section avatar>
+              <q-icon name="home" />
+            </q-item-section>
+            <q-item-section>主页</q-item-section>
+          </q-item>
+
           <q-item clickable to="/trip/destinations" v-ripple>
             <q-item-section avatar>
               <q-icon name="place" />
