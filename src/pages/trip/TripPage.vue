@@ -15,7 +15,7 @@
           <div class="text-h6 text-primary">旅行规划</div>
         </q-toolbar-title>
 
-        <q-btn-dropdown
+        <q-btn
           flat
           dense
           icon="notifications"
@@ -24,37 +24,16 @@
           class="q-mr-sm"
           aria-label="提醒事项"
           color="green-7"
+          @click="openTodoDialog"
         >
-          <q-list style="min-width: 300px">
-            <q-item-label header>待办事项</q-item-label>
-            
-            <template v-if="todoItems.length > 0">
-              <q-item v-for="(todo, index) in todoItems" :key="index" clickable v-ripple>
-                <q-item-section side>
-                  <q-checkbox v-model="todo.done" @update:model-value="() => updateTodoStatus(index)" />
-                </q-item-section>
-                <q-item-section>
-                  <q-item-label :class="{'text-strike': todo.done}">{{ todo.text }}</q-item-label>
-                </q-item-section>
-              </q-item>
-            </template>
-            
-            <q-item v-else>
-              <q-item-section>
-                <q-item-label class="text-center text-grey">暂无待办事项</q-item-label>
-              </q-item-section>
-            </q-item>
-            
-            <q-separator />
-            
-            <q-item clickable v-ripple to="/work">
-              <q-item-section class="text-center text-primary">
-                查看全部
-              </q-item-section>
-            </q-item>
-          </q-list>
-          <q-tooltip>查看提醒事项</q-tooltip>
-        </q-btn-dropdown>
+          <q-badge
+            v-if="todoItems.length"
+            color="red"
+            floating
+          >
+            {{ todoItems.length }}
+          </q-badge>
+        </q-btn>
       </q-toolbar>
     </q-header>
 
@@ -332,6 +311,89 @@
 
       </q-page>
     </q-page-container>
+
+    <!-- 添加提醒事项对话框 -->
+    <q-dialog v-model="todoDialogOpen" position="bottom">
+      <q-card style="width: 100%; max-width: 400px">
+        <q-card-section class="row items-center q-pb-none">
+          <div class="text-h6">提醒事项</div>
+          <q-space />
+          <q-btn icon="close" flat round dense v-close-popup />
+        </q-card-section>
+
+        <q-card-section class="q-pt-sm">
+          <q-input
+            v-model="newTodoText"
+            dense
+            placeholder="添加新的提醒事项"
+            @keyup.enter="addTodo"
+          >
+            <template v-slot:append>
+              <q-btn round dense flat icon="add" @click="addTodo" />
+            </template>
+          </q-input>
+        </q-card-section>
+
+        <q-card-section class="q-pa-none">
+          <q-list separator>
+            <q-item
+              v-for="(todo, index) in todoItems"
+              :key="todo.id"
+              class="q-py-sm"
+            >
+              <q-item-section side>
+                <q-checkbox
+                  v-model="todo.done"
+                  @update:model-value="() => updateTodoStatus(index)"
+                />
+              </q-item-section>
+              
+              <q-item-section>
+                <q-item-label :class="{'text-strike': todo.done}">
+                  <q-input
+                    v-if="todo.editing"
+                    v-model="todo.editText"
+                    dense
+                    autofocus
+                    @blur="saveTodoEdit(index)"
+                    @keyup.enter="saveTodoEdit(index)"
+                  />
+                  <span v-else @click="startEdit(index)">{{ todo.text }}</span>
+                </q-item-label>
+              </q-item-section>
+
+              <q-item-section side>
+                <q-btn
+                  flat
+                  round
+                  dense
+                  color="negative"
+                  icon="delete"
+                  @click="deleteTodoItem(index)"
+                >
+                  <q-tooltip>删除</q-tooltip>
+                </q-btn>
+              </q-item-section>
+            </q-item>
+          </q-list>
+        </q-card-section>
+
+        <q-card-section v-if="todoItems.length === 0" class="text-center q-pa-lg">
+          <q-icon name="check_circle" size="3rem" color="grey-5" />
+          <p class="text-grey-7 q-mt-sm">暂无提醒事项</p>
+        </q-card-section>
+
+        <q-card-actions align="right" class="q-pa-md">
+          <q-btn
+            flat
+            color="primary"
+            label="查看全部"
+            to="/work"
+            v-close-popup
+          />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
   </q-layout>
 </template>
 
@@ -347,22 +409,90 @@ export default {
   setup() {
     const todoItems = ref([])
     const todoApi = getTodo()
+    const todoDialogOpen = ref(false)
+    const newTodoText = ref('')
     
     // 获取待办事项列表
     const fetchTodoItems = async () => {
       try {
         const response = await todoApi.listTodoOfMe()
         if (response.data && response.data.success && response.data.data) {
-          // 将API返回的数据转换为组件需要的格式
           todoItems.value = response.data.data.map(item => ({
             id: item.id,
             text: item.title,
-            done: item.completed
-          })).slice(0, 5) // 只显示前5个
+            done: item.completed,
+            editing: false,
+            editText: item.title
+          })).slice(0, 5)
         }
       } catch (error) {
         console.error('获取待办事项失败:', error)
       }
+    }
+    
+    // 添加新待办事项
+    const addTodo = async () => {
+      if (!newTodoText.value.trim()) return
+      
+      try {
+        const todoEntity = {
+          title: newTodoText.value.trim(),
+          completed: false
+        }
+        
+        await todoApi.saveTodo(todoEntity)
+        await fetchTodoItems() // 重新获取列表
+        newTodoText.value = '' // 清空输入框
+      } catch (error) {
+        console.error('添加待办事项失败:', error)
+      }
+    }
+    
+    // 开始编辑待办事项
+    const startEdit = (index) => {
+      todoItems.value[index].editing = true
+      todoItems.value[index].editText = todoItems.value[index].text
+    }
+    
+    // 保存编辑的待办事项
+    const saveTodoEdit = async (index) => {
+      const todo = todoItems.value[index]
+      if (!todo.editText.trim() || todo.editText === todo.text) {
+        todo.editing = false
+        todo.editText = todo.text
+        return
+      }
+      
+      try {
+        const todoEntity = {
+          id: todo.id,
+          title: todo.editText.trim(),
+          completed: todo.done
+        }
+        
+        await todoApi.updateTodo(todoEntity)
+        todo.text = todo.editText
+        todo.editing = false
+      } catch (error) {
+        console.error('更新待办事项失败:', error)
+      }
+    }
+    
+    // 删除待办事项
+    const deleteTodoItem = async (index) => {
+      try {
+        const todo = todoItems.value[index]
+        await todoApi.deleteTodo(todo.id)
+        await fetchTodoItems()
+      } catch (error) {
+        console.error('删除待办事项失败:', error)
+      }
+    }
+    
+    // 打开待办事项对话框
+    const openTodoDialog = () => {
+      todoDialogOpen.value = true
+      fetchTodoItems() // 打开时刷新列表
     }
     
     // 更新待办事项状态
@@ -393,14 +523,20 @@ export default {
       }
     }
     
-    // 组件挂载时获取待办事项
     onMounted(() => {
       fetchTodoItems()
     })
     
     return {
       todoItems,
+      todoDialogOpen,
+      newTodoText,
+      openTodoDialog,
+      addTodo,
       updateTodoStatus,
+      startEdit,
+      saveTodoEdit,
+      deleteTodoItem,
       fetchTodoItems
     }
   },
@@ -650,5 +786,17 @@ export default {
 /* 优化抽屉过渡 */
 .q-drawer {
   will-change: transform;
+}
+
+.q-dialog__inner > div {
+  border-radius: 12px 12px 0 0;
+}
+
+.q-item {
+  min-height: 48px;
+}
+
+.q-checkbox {
+  margin-right: 8px;
 }
 </style>
