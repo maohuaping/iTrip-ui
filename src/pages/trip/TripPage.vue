@@ -16,10 +16,8 @@
         <q-btn
           flat
           dense
+          round
           icon="notifications"
-          no-caps
-          label="提醒事项"
-          class="q-mr-sm"
           aria-label="提醒事项"
           color="green-7"
           @click="openTodoDialog"
