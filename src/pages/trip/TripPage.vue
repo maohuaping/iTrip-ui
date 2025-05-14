@@ -132,6 +132,77 @@
                 />
               </div>
             </div>
+            
+            <!-- 新增基础信息卡片区 -->
+            <div class="row q-col-gutter-md q-mb-md">
+              <!-- 总计划天数信息卡 -->
+              <div class="col-12 col-sm-6 col-md-3">
+                <q-card class="info-card bg-blue-1">
+                  <q-card-section class="q-py-sm">
+                    <div class="row items-center no-wrap">
+                      <div class="col-auto">
+                        <q-icon name="event" size="3rem" color="blue-8" class="q-mr-md" />
+                      </div>
+                      <div class="col">
+                        <div class="text-h5 text-weight-bold text-blue-9">{{ totalTripDays }}</div>
+                        <div class="text-subtitle2 text-blue-8">计划总天数</div>
+                      </div>
+                    </div>
+                  </q-card-section>
+                </q-card>
+              </div>
+              
+              <!-- 天气信息卡 -->
+              <div class="col-12 col-sm-6 col-md-3">
+                <q-card class="info-card bg-orange-1">
+                  <q-card-section class="q-py-sm">
+                    <div class="row items-center no-wrap">
+                      <div class="col-auto">
+                        <q-icon name="wb_sunny" size="3rem" color="orange-8" class="q-mr-md" />
+                      </div>
+                      <div class="col">
+                        <div class="text-h5 text-weight-bold text-orange-9">{{ weather.temp }}°C</div>
+                        <div class="text-subtitle2 text-orange-8">{{ weather.location }} {{ weather.condition }}</div>
+                      </div>
+                    </div>
+                  </q-card-section>
+                </q-card>
+              </div>
+              
+              <!-- 待准备事项信息卡 -->
+              <div class="col-12 col-sm-6 col-md-3">
+                <q-card class="info-card bg-purple-1" @click="openTodoDialog">
+                  <q-card-section class="q-py-sm">
+                    <div class="row items-center no-wrap">
+                      <div class="col-auto">
+                        <q-icon name="checklist" size="3rem" color="purple-8" class="q-mr-md" />
+                      </div>
+                      <div class="col">
+                        <div class="text-h5 text-weight-bold text-purple-9">{{ todoItems.length }}</div>
+                        <div class="text-subtitle2 text-purple-8">待办事项</div>
+                      </div>
+                    </div>
+                  </q-card-section>
+                </q-card>
+              </div>
+              
+              <!-- 行李信息卡 -->
+              <div class="col-12 col-sm-6 col-md-3">
+                <q-card class="info-card bg-green-1">
+                  <q-card-section class="q-py-sm">
+                    <div class="row items-center no-wrap">
+                      <div class="col-auto">
+                        <q-icon name="luggage" size="3rem" color="green-8" class="q-mr-md" />
+                      </div>
+                      <div class="col">
+                        <div class="text-h5 text-weight-bold text-green-9">{{ packingProgress }}%</div>
+                        <div class="text-subtitle2 text-green-8">行李准备进度</div>
+                      </div>
+                    </div>
+                  </q-card-section>
+                </q-card>
+              </div>
+            </div>
           </div>
         </div>
         
@@ -412,7 +483,7 @@
 import tongLuImage from 'src/assets/destinations/tongLu.jpg'
 // 导入todo API
 import { getTodo } from 'src/api/todo/todo'
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 
 export default {
   name: 'TripPage',
@@ -537,6 +608,46 @@ export default {
       }
     }
     
+    // 计算总旅行天数
+    const totalTripDays = computed(() => {
+      let total = 0
+      
+      // 待出发旅行的天数
+      upcomingTrips.value.forEach(trip => {
+        // 假设日期格式为 "YYYY年MM月DD日 - YYYY年MM月DD日"
+        const dates = trip.date.split(' - ')
+        if (dates.length === 2) {
+          const startDate = new Date(dates[0].replace(/年|月/g, '-').replace('日', ''))
+          const endDate = new Date(dates[1].replace(/年|月/g, '-').replace('日', ''))
+          const dayDiff = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1
+          total += dayDiff
+        }
+      })
+      
+      // 进行中旅行的天数
+      ongoingTrips.value.forEach(trip => {
+        if (trip.totalDays) {
+          total += trip.totalDays
+        }
+      })
+      
+      return total
+    })
+    
+    // 天气信息 (模拟数据，实际应通过API获取)
+    const weather = ref({
+      temp: 24,
+      condition: '晴朗',
+      location: '上海'
+    })
+    
+    // 行李准备进度
+    const packingProgress = computed(() => {
+      // 这里可以实现实际的计算逻辑
+      // 例如: 已完成的物品 / 总物品数量 * 100
+      return 75
+    })
+    
     onMounted(() => {
       fetchTodoItems()
     })
@@ -551,7 +662,10 @@ export default {
       startEdit,
       saveTodoEdit,
       deleteTodoItem,
-      fetchTodoItems
+      fetchTodoItems,
+      totalTripDays,
+      weather,
+      packingProgress
     }
   },
   data () {
@@ -814,5 +928,16 @@ export default {
 
 .q-checkbox {
   margin-right: 8px;
+}
+
+.info-card {
+  transition: all 0.3s ease;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.info-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
 }
 </style>
