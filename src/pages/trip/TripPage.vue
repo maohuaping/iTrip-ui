@@ -135,42 +135,71 @@
             
             <!-- 新增基础信息卡片区 -->
             <div class="row q-col-gutter-md q-mb-md">
-              <!-- 总计划天数信息卡 -->
-              <div class="col-12 col-sm-6 col-md-3">
-                <q-card class="info-card bg-blue-1">
-                  <q-card-section class="q-py-sm">
-                    <div class="row items-center no-wrap">
-                      <div class="col-auto">
-                        <q-icon name="event" size="3rem" color="blue-8" class="q-mr-md" />
+              <!-- 综合信息卡片 -->
+              <div class="col-12 col-md-8">
+                <q-card class="info-summary-card">
+                  <!-- 折角效果 -->
+                  <div class="corner-fold">
+                    <q-btn 
+                      flat 
+                      dense 
+                      no-caps 
+                      class="text-weight-medium" 
+                      color="white" 
+                      label="规划新旅程 +" 
+                      to="/trip/plan"
+                    />
+                  </div>
+                  
+                  <q-card-section>
+                    <div class="text-h6 text-primary q-mb-md">旅行概览</div>
+                    
+                    <div class="row q-col-gutter-md">
+                      <!-- 计划总天数 -->
+                      <div class="col-12 col-sm-4">
+                        <div class="info-item">
+                          <div class="row items-center no-wrap">
+                            <q-icon name="event" size="2.2rem" color="blue-8" class="q-mr-sm" />
+                            <div>
+                              <div class="text-h5 text-weight-bold text-blue-9">{{ totalTripDays }}</div>
+                              <div class="text-caption text-blue-8">计划总天数</div>
+                            </div>
+                          </div>
+                        </div>
                       </div>
-                      <div class="col">
-                        <div class="text-h5 text-weight-bold text-blue-9">{{ totalTripDays }}</div>
-                        <div class="text-subtitle2 text-blue-8">计划总天数</div>
+                      
+                      <!-- 天气信息 -->
+                      <div class="col-12 col-sm-4">
+                        <div class="info-item">
+                          <div class="row items-center no-wrap">
+                            <q-icon name="wb_sunny" size="2.2rem" color="orange-8" class="q-mr-sm" />
+                            <div>
+                              <div class="text-h5 text-weight-bold text-orange-9">{{ weather.temp }}°C</div>
+                              <div class="text-caption text-orange-8">{{ weather.location }} {{ weather.condition }}</div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <!-- 行李准备进度 -->
+                      <div class="col-12 col-sm-4">
+                        <div class="info-item">
+                          <div class="row items-center no-wrap">
+                            <q-icon name="luggage" size="2.2rem" color="green-8" class="q-mr-sm" />
+                            <div>
+                              <div class="text-h5 text-weight-bold text-green-9">{{ packingProgress }}%</div>
+                              <div class="text-caption text-green-8">行李准备进度</div>
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </q-card-section>
                 </q-card>
               </div>
               
-              <!-- 天气信息卡 -->
-              <div class="col-12 col-sm-6 col-md-3">
-                <q-card class="info-card bg-orange-1">
-                  <q-card-section class="q-py-sm">
-                    <div class="row items-center no-wrap">
-                      <div class="col-auto">
-                        <q-icon name="wb_sunny" size="3rem" color="orange-8" class="q-mr-md" />
-                      </div>
-                      <div class="col">
-                        <div class="text-h5 text-weight-bold text-orange-9">{{ weather.temp }}°C</div>
-                        <div class="text-subtitle2 text-orange-8">{{ weather.location }} {{ weather.condition }}</div>
-                      </div>
-                    </div>
-                  </q-card-section>
-                </q-card>
-              </div>
-              
-              <!-- 待准备事项信息卡 -->
-              <div class="col-12 col-sm-6 col-md-3">
+              <!-- 待办事项信息卡 -->
+              <div class="col-12 col-md-4">
                 <q-card class="info-card bg-purple-1" @click="openTodoDialog">
                   <q-card-section class="q-py-sm">
                     <div class="row items-center no-wrap">
@@ -180,23 +209,6 @@
                       <div class="col">
                         <div class="text-h5 text-weight-bold text-purple-9">{{ todoItems.length }}</div>
                         <div class="text-subtitle2 text-purple-8">待办事项</div>
-                      </div>
-                    </div>
-                  </q-card-section>
-                </q-card>
-              </div>
-              
-              <!-- 行李信息卡 -->
-              <div class="col-12 col-sm-6 col-md-3">
-                <q-card class="info-card bg-green-1">
-                  <q-card-section class="q-py-sm">
-                    <div class="row items-center no-wrap">
-                      <div class="col-auto">
-                        <q-icon name="luggage" size="3rem" color="green-8" class="q-mr-md" />
-                      </div>
-                      <div class="col">
-                        <div class="text-h5 text-weight-bold text-green-9">{{ packingProgress }}%</div>
-                        <div class="text-subtitle2 text-green-8">行李准备进度</div>
                       </div>
                     </div>
                   </q-card-section>
@@ -487,7 +499,7 @@ import { ref, onMounted, computed } from 'vue'
 
 export default {
   name: 'TripPage',
-  setup() {
+  setup(props, { root }) {
     const todoItems = ref([])
     const todoApi = getTodo()
     const todoDialogOpen = ref(false)
@@ -608,45 +620,16 @@ export default {
       }
     }
     
-    // 计算总旅行天数
-    const totalTripDays = computed(() => {
-      let total = 0
-      
-      // 待出发旅行的天数
-      upcomingTrips.value.forEach(trip => {
-        // 假设日期格式为 "YYYY年MM月DD日 - YYYY年MM月DD日"
-        const dates = trip.date.split(' - ')
-        if (dates.length === 2) {
-          const startDate = new Date(dates[0].replace(/年|月/g, '-').replace('日', ''))
-          const endDate = new Date(dates[1].replace(/年|月/g, '-').replace('日', ''))
-          const dayDiff = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1
-          total += dayDiff
-        }
-      })
-      
-      // 进行中旅行的天数
-      ongoingTrips.value.forEach(trip => {
-        if (trip.totalDays) {
-          total += trip.totalDays
-        }
-      })
-      
-      return total
-    })
-    
-    // 天气信息 (模拟数据，实际应通过API获取)
+    // 天气信息 (模拟数据)
     const weather = ref({
       temp: 24,
       condition: '晴朗',
       location: '上海'
     })
     
-    // 行李准备进度
-    const packingProgress = computed(() => {
-      // 这里可以实现实际的计算逻辑
-      // 例如: 已完成的物品 / 总物品数量 * 100
-      return 75
-    })
+    // 固定值
+    const packingProgress = ref(75)
+    const totalTripDays = ref(28)
     
     onMounted(() => {
       fetchTodoItems()
@@ -663,9 +646,9 @@ export default {
       saveTodoEdit,
       deleteTodoItem,
       fetchTodoItems,
-      totalTripDays,
       weather,
-      packingProgress
+      packingProgress,
+      totalTripDays
     }
   },
   data () {
@@ -939,5 +922,55 @@ export default {
 .info-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+}
+
+.info-summary-card {
+  position: relative;
+  transition: all 0.3s ease;
+  border-radius: 8px;
+  overflow: visible;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+}
+
+.info-summary-card:hover {
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.12);
+}
+
+.corner-fold {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 150px;
+  height: 50px;
+  background: linear-gradient(135deg, transparent 30px, #1976d2 0);
+  box-shadow: -2px 2px 5px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-left: 25px;
+  transform: translate(0, 0);
+  z-index: 1;
+}
+
+.corner-fold::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  border-width: 0 50px 50px 0;
+  border-style: solid;
+  border-color: transparent #f8f9fa transparent;
+  z-index: -1;
+}
+
+.info-item {
+  padding: 8px 16px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.info-item:hover {
+  background-color: rgba(0, 0, 0, 0.03);
+  transform: translateY(-2px);
 }
 </style>
