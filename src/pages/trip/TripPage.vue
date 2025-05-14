@@ -114,194 +114,208 @@
 
     <q-page-container>
       <q-page class="trip-page-content">
-        <!-- 顶部横幅 - 优化后的英雄头 -->
-        <div class="hero-banner q-px-md q-py-xl">
+        <!-- 新的简洁顶部区域 -->
+        <div class="trip-header q-pa-md">
           <div class="container">
-            <h1 class="text-h2 text-white q-mb-md hero-title">探索您的下一次冒险</h1>
-            <p class="text-subtitle1 text-white q-mb-lg hero-subtitle">规划完美旅程，创造难忘回忆</p>
-            <q-btn color="primary" label="开始规划" size="lg" class="q-px-xl hero-btn" unelevated to="/trip/plan" />
+            <div class="row items-center justify-between q-mb-md">
+              <div class="col-auto">
+                <h1 class="text-h5 q-my-none text-weight-bold text-primary">我的旅行</h1>
+              </div>
+              <div class="col-auto">
+                <q-btn 
+                  color="primary" 
+                  icon-right="add" 
+                  label="规划新旅程" 
+                  flat 
+                  to="/trip/plan" 
+                  class="q-px-sm"
+                />
+              </div>
+            </div>
           </div>
         </div>
-
+        
         <!-- 旅行状态标签页 -->
-        <div class="trips-section">
+        <div class="trips-section q-pt-none">
           <div class="container">
-            <q-tabs
-              v-model="activeTab"
-              dense
-              class="text-grey q-mt-md"
-              active-color="primary"
-              indicator-color="primary"
-              align="justify"
-              narrow-indicator
-            >
-              <q-tab name="upcoming">
-                <q-item-section>
-                  <span class="row items-center">
-                    待出发
-                    <q-badge color="primary" class="q-ml-sm">{{ upcomingTrips.length }}</q-badge>
-                  </span>
-                </q-item-section>
-              </q-tab>
-              <q-tab name="ongoing">
-                <q-item-section>
-                  <span class="row items-center">
-                    进行中
-                    <q-badge color="primary" class="q-ml-sm">{{ ongoingTrips.length }}</q-badge>
-                  </span>
-                </q-item-section>
-              </q-tab>
-              <q-tab name="completed">
-                <q-item-section>
-                  <span class="row items-center">
-                    已完成
-                    <q-badge color="primary" class="q-ml-sm">{{ completedTrips.length }}</q-badge>
-                  </span>
-                </q-item-section>
-              </q-tab>
-            </q-tabs>
+            <q-card flat class="no-shadow">
+              <q-tabs
+                v-model="activeTab"
+                dense
+                class="text-grey"
+                active-color="primary"
+                indicator-color="primary"
+                align="justify"
+                narrow-indicator
+              >
+                <q-tab name="upcoming">
+                  <q-item-section>
+                    <span class="row items-center">
+                      待出发
+                      <q-badge color="primary" class="q-ml-sm">{{ upcomingTrips.length }}</q-badge>
+                    </span>
+                  </q-item-section>
+                </q-tab>
+                <q-tab name="ongoing">
+                  <q-item-section>
+                    <span class="row items-center">
+                      进行中
+                      <q-badge color="primary" class="q-ml-sm">{{ ongoingTrips.length }}</q-badge>
+                    </span>
+                  </q-item-section>
+                </q-tab>
+                <q-tab name="completed">
+                  <q-item-section>
+                    <span class="row items-center">
+                      已完成
+                      <q-badge color="primary" class="q-ml-sm">{{ completedTrips.length }}</q-badge>
+                    </span>
+                  </q-item-section>
+                </q-tab>
+              </q-tabs>
 
-            <q-separator />
+              <q-separator />
 
-            <q-tab-panels v-model="activeTab">
-              <!-- 待出发旅行面板 -->
-              <q-tab-panel name="upcoming">
-                <div class="row q-col-gutter-md">
-                  <div v-for="(trip, index) in upcomingTrips" :key="index" class="col-12 col-sm-6 col-md-4">
-                    <q-card class="trip-card">
-                      <q-img
-                        :src="trip.image"
-                        :ratio="16/9"
-                        basic
-                      >
-                        <div class="absolute-bottom text-subtitle2 text-center bg-transparent">
-                          <q-chip
-                            color="orange"
-                            text-color="white"
-                            class="trip-chip"
-                          >
-                            {{ trip.daysLeft }} 天后出发
-                          </q-chip>
-                        </div>
-                      </q-img>
-                      <q-card-section>
-                        <div class="text-h6">{{ trip.destination }}</div>
-                        <div class="text-subtitle2 text-grey-7">{{ trip.date }}</div>
-                        <q-linear-progress
-                          :value="trip.preparationProgress"
-                          color="primary"
-                          class="q-mt-sm"
-                        />
-                        <div class="row justify-between items-center q-mt-xs">
-                          <div class="text-caption text-grey-7">准备进度</div>
-                          <div class="text-caption text-primary">{{ Math.round(trip.preparationProgress * 100) }}%</div>
-                        </div>
-                      </q-card-section>
-                      <q-card-actions align="right">
-                        <q-btn flat color="primary" label="查看详情" @click="viewTripDetail(trip)" />
-                        <q-btn flat color="secondary" label="编辑行程" />
-                      </q-card-actions>
-                    </q-card>
-                  </div>
-                </div>
-
-                <div class="text-center q-mt-lg" v-if="upcomingTrips.length === 0">
-                  <q-icon name="flight_takeoff" size="4rem" color="grey-5" />
-                  <p class="text-grey-7 q-mt-md">您目前没有待出发的旅行</p>
-                  <q-btn color="primary" label="开始规划新旅程" class="q-mt-md" to="/trip/planner" />
-                </div>
-              </q-tab-panel>
-
-              <!-- 进行中旅行面板 -->
-              <q-tab-panel name="ongoing">
-                <div class="row q-col-gutter-md">
-                  <div v-for="(trip, index) in ongoingTrips" :key="index" class="col-12">
-                    <q-card class="ongoing-trip-card">
-                      <div class="row no-wrap">
-                        <div class="col-12 col-sm-4">
-                          <q-img
-                            :src="trip.image"
-                            :ratio="4/3"
-                            class="full-height"
-                            style="border-radius: 4px 0 0 4px"
-                          />
-                        </div>
-                        <div class="col-12 col-sm-8 q-pa-md">
-                          <div class="row items-center q-mb-sm">
-                            <div class="text-h5">{{ trip.destination }}</div>
-                            <q-space />
+              <q-tab-panels v-model="activeTab">
+                <!-- 待出发旅行面板 -->
+                <q-tab-panel name="upcoming">
+                  <div class="row q-col-gutter-md">
+                    <div v-for="(trip, index) in upcomingTrips" :key="index" class="col-12 col-sm-6 col-md-4">
+                      <q-card class="trip-card">
+                        <q-img
+                          :src="trip.image"
+                          :ratio="16/9"
+                          basic
+                        >
+                          <div class="absolute-bottom text-subtitle2 text-center bg-transparent">
                             <q-chip
-                              color="green"
+                              color="orange"
                               text-color="white"
-                              icon="today"
-                              class="q-ml-sm"
+                              class="trip-chip"
                             >
-                              第 {{ trip.currentDay }} 天 / 共 {{ trip.totalDays }} 天
+                              {{ trip.daysLeft }} 天后出发
                             </q-chip>
                           </div>
-                          <div class="text-subtitle2 text-grey-7 q-mb-md">{{ trip.date }}</div>
-                          <p class="q-mb-md">{{ trip.todayPlan }}</p>
-                          <div class="row justify-between items-center">
-                            <q-btn color="primary" label="今日行程" icon="event_note" />
-                            <q-btn outline color="primary" label="添加照片" icon="add_a_photo" />
-                            <q-btn outline color="secondary" label="记录笔记" icon="edit_note" />
+                        </q-img>
+                        <q-card-section>
+                          <div class="text-h6">{{ trip.destination }}</div>
+                          <div class="text-subtitle2 text-grey-7">{{ trip.date }}</div>
+                          <q-linear-progress
+                            :value="trip.preparationProgress"
+                            color="primary"
+                            class="q-mt-sm"
+                          />
+                          <div class="row justify-between items-center q-mt-xs">
+                            <div class="text-caption text-grey-7">准备进度</div>
+                            <div class="text-caption text-primary">{{ Math.round(trip.preparationProgress * 100) }}%</div>
+                          </div>
+                        </q-card-section>
+                        <q-card-actions align="right">
+                          <q-btn flat color="primary" label="查看详情" @click="viewTripDetail(trip)" />
+                          <q-btn flat color="secondary" label="编辑行程" />
+                        </q-card-actions>
+                      </q-card>
+                    </div>
+                  </div>
+
+                  <div class="text-center q-mt-lg" v-if="upcomingTrips.length === 0">
+                    <q-icon name="flight_takeoff" size="4rem" color="grey-5" />
+                    <p class="text-grey-7 q-mt-md">您目前没有待出发的旅行</p>
+                    <q-btn color="primary" label="开始规划新旅程" class="q-mt-md" to="/trip/planner" />
+                  </div>
+                </q-tab-panel>
+
+                <!-- 进行中旅行面板 -->
+                <q-tab-panel name="ongoing">
+                  <div class="row q-col-gutter-md">
+                    <div v-for="(trip, index) in ongoingTrips" :key="index" class="col-12">
+                      <q-card class="ongoing-trip-card">
+                        <div class="row no-wrap">
+                          <div class="col-12 col-sm-4">
+                            <q-img
+                              :src="trip.image"
+                              :ratio="4/3"
+                              class="full-height"
+                              style="border-radius: 4px 0 0 4px"
+                            />
+                          </div>
+                          <div class="col-12 col-sm-8 q-pa-md">
+                            <div class="row items-center q-mb-sm">
+                              <div class="text-h5">{{ trip.destination }}</div>
+                              <q-space />
+                              <q-chip
+                                color="green"
+                                text-color="white"
+                                icon="today"
+                                class="q-ml-sm"
+                              >
+                                第 {{ trip.currentDay }} 天 / 共 {{ trip.totalDays }} 天
+                              </q-chip>
+                            </div>
+                            <div class="text-subtitle2 text-grey-7 q-mb-md">{{ trip.date }}</div>
+                            <p class="q-mb-md">{{ trip.todayPlan }}</p>
+                            <div class="row justify-between items-center">
+                              <q-btn color="primary" label="今日行程" icon="event_note" />
+                              <q-btn outline color="primary" label="添加照片" icon="add_a_photo" />
+                              <q-btn outline color="secondary" label="记录笔记" icon="edit_note" />
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    </q-card>
+                      </q-card>
+                    </div>
                   </div>
-                </div>
 
-                <div class="text-center q-mt-lg" v-if="ongoingTrips.length === 0">
-                  <q-icon name="card_travel" size="4rem" color="grey-5" />
-                  <p class="text-grey-7 q-mt-md">您目前没有进行中的旅行</p>
-                </div>
-              </q-tab-panel>
-
-              <!-- 已完成旅行面板 -->
-              <q-tab-panel name="completed">
-                <div class="row q-col-gutter-md">
-                  <div v-for="(trip, index) in completedTrips" :key="index" class="col-12 col-sm-6 col-md-4">
-                    <q-card class="completed-trip-card">
-                      <q-img
-                        :src="trip.image"
-                        :ratio="16/9"
-                      >
-                        <div class="absolute-bottom text-h6 text-center bg-transparent">
-                          <div class="bg-black-7 q-pa-sm rounded-borders">{{ trip.destination }}</div>
-                        </div>
-                      </q-img>
-                      <q-card-section>
-                        <div class="row items-center">
-                          <div class="text-subtitle2">{{ trip.date }}</div>
-                          <q-space />
-                          <q-rating
-                            v-model="trip.rating"
-                            size="1.5em"
-                            color="orange"
-                            readonly
-                          />
-                        </div>
-                        <p class="q-mt-sm text-grey-7 ellipsis-3-lines">{{ trip.summary }}</p>
-                      </q-card-section>
-                      <q-card-actions align="right">
-                        <q-btn flat color="primary" label="查看回忆" icon="photo_library" />
-                        <q-btn flat color="secondary" label="分享" icon="share" />
-                      </q-card-actions>
-                    </q-card>
+                  <div class="text-center q-mt-lg" v-if="ongoingTrips.length === 0">
+                    <q-icon name="card_travel" size="4rem" color="grey-5" />
+                    <p class="text-grey-7 q-mt-md">您目前没有进行中的旅行</p>
                   </div>
-                </div>
+                </q-tab-panel>
 
-                <div class="text-center q-mt-lg" v-if="completedTrips.length === 0">
-                  <q-icon name="flag" size="4rem" color="grey-5" />
-                  <p class="text-grey-7 q-mt-md">您还没有完成的旅行记录</p>
-                </div>
+                <!-- 已完成旅行面板 -->
+                <q-tab-panel name="completed">
+                  <div class="row q-col-gutter-md">
+                    <div v-for="(trip, index) in completedTrips" :key="index" class="col-12 col-sm-6 col-md-4">
+                      <q-card class="completed-trip-card">
+                        <q-img
+                          :src="trip.image"
+                          :ratio="16/9"
+                        >
+                          <div class="absolute-bottom text-h6 text-center bg-transparent">
+                            <div class="bg-black-7 q-pa-sm rounded-borders">{{ trip.destination }}</div>
+                          </div>
+                        </q-img>
+                        <q-card-section>
+                          <div class="row items-center">
+                            <div class="text-subtitle2">{{ trip.date }}</div>
+                            <q-space />
+                            <q-rating
+                              v-model="trip.rating"
+                              size="1.5em"
+                              color="orange"
+                              readonly
+                            />
+                          </div>
+                          <p class="q-mt-sm text-grey-7 ellipsis-3-lines">{{ trip.summary }}</p>
+                        </q-card-section>
+                        <q-card-actions align="right">
+                          <q-btn flat color="primary" label="查看回忆" icon="photo_library" />
+                          <q-btn flat color="secondary" label="分享" icon="share" />
+                        </q-card-actions>
+                      </q-card>
+                    </div>
+                  </div>
 
-                <div class="text-center q-mt-xl" v-if="completedTrips.length > 0">
-                  <q-btn outline color="primary" label="查看更多历史旅行" to="/trip/history" />
-                </div>
-              </q-tab-panel>
-            </q-tab-panels>
+                  <div class="text-center q-mt-lg" v-if="completedTrips.length === 0">
+                    <q-icon name="flag" size="4rem" color="grey-5" />
+                    <p class="text-grey-7 q-mt-md">您还没有完成的旅行记录</p>
+                  </div>
+
+                  <div class="text-center q-mt-xl" v-if="completedTrips.length > 0">
+                    <q-btn outline color="primary" label="查看更多历史旅行" to="/trip/history" />
+                  </div>
+                </q-tab-panel>
+              </q-tab-panels>
+            </q-card>
           </div>
         </div>
 
@@ -659,11 +673,12 @@ export default {
 }
 
 .hero-banner {
-  background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.6)), url('https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1');
+  background: linear-gradient(90deg, rgba(32, 55, 90, 0.9), rgba(32, 55, 90, 0.7)), 
+              url('https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  min-height: 500px;
+  min-height: 280px; /* 减小高度 */
   display: flex;
   align-items: center;
   position: relative;
@@ -671,53 +686,54 @@ export default {
   margin-bottom: 0;
 }
 
-.hero-banner::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: radial-gradient(circle at center, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.6) 100%);
-  z-index: 1;
+.hero-image {
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  transform: translateY(-5px);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  display: none; /* 在移动视图中隐藏 */
 }
 
-.hero-banner .container {
-  position: relative;
-  z-index: 2;
+.hero-image-overlay {
+  background: radial-gradient(circle at center, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.4) 100%);
+}
+
+@media (min-width: 1024px) {
+  .hero-image {
+    display: block; /* 在桌面视图中显示 */
+  }
 }
 
 .hero-title {
   font-weight: 700;
-  text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
-  animation: fadeInUp 1s ease-out;
+  text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+  animation: fadeInLeft 0.8s ease-out;
 }
 
 .hero-subtitle {
   max-width: 600px;
-  text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
-  animation: fadeInUp 1s ease-out 0.3s both;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+  animation: fadeInLeft 0.8s ease-out 0.2s both;
 }
 
 .hero-btn {
-  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
   transition: transform 0.3s, box-shadow 0.3s;
-  animation: fadeInUp 1s ease-out 0.6s both;
+  animation: fadeInLeft 0.8s ease-out 0.4s both;
 }
 
 .hero-btn:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 16px rgba(0,0,0,0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0,0,0,0.2);
 }
 
-@keyframes fadeInUp {
+@keyframes fadeInLeft {
   from {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateX(-20px);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateX(0);
   }
 }
 
