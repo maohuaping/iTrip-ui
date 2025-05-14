@@ -138,19 +138,6 @@
               <!-- 综合信息卡片 -->
               <div class="col-12 col-md-8">
                 <q-card class="info-summary-card">
-                  <!-- 折角效果 -->
-                  <div class="corner-fold">
-                    <q-btn 
-                      flat 
-                      dense 
-                      no-caps 
-                      class="text-weight-medium" 
-                      color="white" 
-                      label="规划新旅程 +" 
-                      to="/trip/plan"
-                    />
-                  </div>
-                  
                   <q-card-section>
                     <div class="text-h6 text-primary q-mb-md">旅行概览</div>
                     
@@ -934,33 +921,6 @@ export default {
 
 .info-summary-card:hover {
   box-shadow: 0 6px 15px rgba(0, 0, 0, 0.12);
-}
-
-.corner-fold {
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 150px;
-  height: 50px;
-  background: linear-gradient(135deg, transparent 30px, #1976d2 0);
-  box-shadow: -2px 2px 5px rgba(0, 0, 0, 0.1);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding-left: 25px;
-  transform: translate(0, 0);
-  z-index: 1;
-}
-
-.corner-fold::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  right: 0;
-  border-width: 0 50px 50px 0;
-  border-style: solid;
-  border-color: transparent #f8f9fa transparent;
-  z-index: -1;
 }
 
 .info-item {
