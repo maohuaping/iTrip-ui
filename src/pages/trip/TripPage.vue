@@ -114,93 +114,75 @@
 
     <q-page-container>
       <q-page class="trip-page-content">
-        <!-- 新的简洁顶部区域 -->
-        <div class="trip-header q-pa-md">
-          <div class="container">
-            <div class="row items-center justify-between q-mb-md">
-              <div class="col-auto">
-                <h1 class="text-h5 q-my-none text-weight-bold text-primary">我的旅行</h1>
-              </div>
-              <div class="col-auto">
-                <q-btn 
-                  color="primary" 
-                  icon-right="add" 
-                  label="规划新旅程" 
-                  flat 
-                  to="/trip/plan" 
-                  class="q-px-sm"
-                />
-              </div>
+        <!-- 删除顶部导航区域，但保留正确的div结构 -->
+        <div class="container">
+          <!-- 新增基础信息卡片区 -->
+          <div class="row q-col-gutter-md q-mb-md">
+            <!-- 综合信息卡片 -->
+            <div class="col-12 col-md-8">
+              <q-card class="info-summary-card">
+                <q-card-section>
+                  <div class="text-h6 text-primary q-mb-md">旅行概览</div>
+                  
+                  <div class="row q-col-gutter-md">
+                    <!-- 计划总天数 -->
+                    <div class="col-12 col-sm-4">
+                      <div class="info-item">
+                        <div class="row items-center no-wrap">
+                          <q-icon name="event" size="2.2rem" color="blue-8" class="q-mr-sm" />
+                          <div>
+                            <div class="text-h5 text-weight-bold text-blue-9">{{ totalTripDays }}</div>
+                            <div class="text-caption text-blue-8">计划总天数</div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <!-- 天气信息 -->
+                    <div class="col-12 col-sm-4">
+                      <div class="info-item">
+                        <div class="row items-center no-wrap">
+                          <q-icon name="wb_sunny" size="2.2rem" color="orange-8" class="q-mr-sm" />
+                          <div>
+                            <div class="text-h5 text-weight-bold text-orange-9">{{ weather.temp }}°C</div>
+                            <div class="text-caption text-orange-8">{{ weather.location }} {{ weather.condition }}</div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <!-- 行李准备进度 -->
+                    <div class="col-12 col-sm-4">
+                      <div class="info-item">
+                        <div class="row items-center no-wrap">
+                          <q-icon name="luggage" size="2.2rem" color="green-8" class="q-mr-sm" />
+                          <div>
+                            <div class="text-h5 text-weight-bold text-green-9">{{ packingProgress }}%</div>
+                            <div class="text-caption text-green-8">行李准备进度</div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </q-card-section>
+              </q-card>
             </div>
             
-            <!-- 新增基础信息卡片区 -->
-            <div class="row q-col-gutter-md q-mb-md">
-              <!-- 综合信息卡片 -->
-              <div class="col-12 col-md-8">
-                <q-card class="info-summary-card">
-                  <q-card-section>
-                    <div class="text-h6 text-primary q-mb-md">旅行概览</div>
-                    
-                    <div class="row q-col-gutter-md">
-                      <!-- 计划总天数 -->
-                      <div class="col-12 col-sm-4">
-                        <div class="info-item">
-                          <div class="row items-center no-wrap">
-                            <q-icon name="event" size="2.2rem" color="blue-8" class="q-mr-sm" />
-                            <div>
-                              <div class="text-h5 text-weight-bold text-blue-9">{{ totalTripDays }}</div>
-                              <div class="text-caption text-blue-8">计划总天数</div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <!-- 天气信息 -->
-                      <div class="col-12 col-sm-4">
-                        <div class="info-item">
-                          <div class="row items-center no-wrap">
-                            <q-icon name="wb_sunny" size="2.2rem" color="orange-8" class="q-mr-sm" />
-                            <div>
-                              <div class="text-h5 text-weight-bold text-orange-9">{{ weather.temp }}°C</div>
-                              <div class="text-caption text-orange-8">{{ weather.location }} {{ weather.condition }}</div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <!-- 行李准备进度 -->
-                      <div class="col-12 col-sm-4">
-                        <div class="info-item">
-                          <div class="row items-center no-wrap">
-                            <q-icon name="luggage" size="2.2rem" color="green-8" class="q-mr-sm" />
-                            <div>
-                              <div class="text-h5 text-weight-bold text-green-9">{{ packingProgress }}%</div>
-                              <div class="text-caption text-green-8">行李准备进度</div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
+            <!-- 待办事项信息卡 -->
+            <div class="col-12 col-md-4">
+              <q-card class="info-card bg-purple-1" @click="openTodoDialog">
+                <q-card-section class="q-py-sm">
+                  <div class="row items-center no-wrap">
+                    <div class="col-auto">
+                      <q-icon name="checklist" size="3rem" color="purple-8" class="q-mr-md" />
                     </div>
-                  </q-card-section>
-                </q-card>
-              </div>
-              
-              <!-- 待办事项信息卡 -->
-              <div class="col-12 col-md-4">
-                <q-card class="info-card bg-purple-1" @click="openTodoDialog">
-                  <q-card-section class="q-py-sm">
-                    <div class="row items-center no-wrap">
-                      <div class="col-auto">
-                        <q-icon name="checklist" size="3rem" color="purple-8" class="q-mr-md" />
-                      </div>
-                      <div class="col">
-                        <div class="text-h5 text-weight-bold text-purple-9">{{ todoItems.length }}</div>
-                        <div class="text-subtitle2 text-purple-8">待办事项</div>
-                      </div>
+                    <div class="col">
+                      <div class="text-h5 text-weight-bold text-purple-9">{{ todoItems.length }}</div>
+                      <div class="text-subtitle2 text-purple-8">待办事项</div>
                     </div>
-                  </q-card-section>
-                </q-card>
-              </div>
+                  </div>
+                </q-card-section>
+              </q-card>
             </div>
           </div>
         </div>
