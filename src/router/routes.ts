@@ -3,27 +3,28 @@ import type { RouteRecordRaw } from 'vue-router';
 const routes: RouteRecordRaw[] = [
   {
     path: '/',
-    component: () => import('layouts/MainLayout.vue'),
+    // component: () => import('layouts/MainLayout.vue'),
+    // children: [
+    //   { path: '', component: () => import('pages/IndexPage.vue') },
+    //   // 其他需要 MainLayout 的路由...
+    // ],
+    redirect: '/trip'
+  },
+  {
+    path: '/trip',
+    component: () => import('layouts/CleanLayout.vue'),
     children: [
-      { path: '', component: () => import('pages/IndexPage.vue') },
-      // 其他需要 MainLayout 的路由...
-    ],
+      { path: '', component: () => import('pages/trip/TripPage.vue') },
+      { path: 'plan', component: () => import('pages/trip/PlanTrip.vue') },
+      { path: 'detail/:id', component: () => import('pages/trip/TripDetailPage.vue') },
+      { path: 'edit/:id', component: () => import('pages/trip/TripEditPage.vue') }
+    ]
   },
   {
     path: '/work',
     component: () => import('layouts/CleanLayout.vue'),
     children: [
       { path: '', component: () => import('pages/work/WorkPage.vue') }
-    ]
-  },
-  {
-    path: '',
-    component: () => import('layouts/CleanLayout.vue'),
-    children: [
-      { path: '/trip', component: () => import('pages/trip/TripPage.vue') },
-      { path: '/trip/plan', component: () => import('pages/trip/PlanTrip.vue') },
-      { path: '/trip/detail/:id', component: () => import('pages/trip/TripDetailPage.vue') },
-      { path: '/trip/edit/:id', component: () => import('pages/trip/TripEditPage.vue') }
     ]
   },
   {
