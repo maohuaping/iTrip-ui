@@ -11,9 +11,7 @@
           @click="toggleLeftDrawer"
         />
 
-        <q-toolbar-title class="row items-center justify-start">
-          <div class="text-h6 text-primary">旅行规划</div>
-        </q-toolbar-title>
+        <q-space />
 
         <q-btn
           flat
