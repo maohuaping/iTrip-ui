@@ -416,14 +416,18 @@ export default {
     const fetchTodoItems = async () => {
       try {
         const response = await todoApi.listTodoOfMe()
-        if (response.data && response.data.success && response.data.data) {
-          todoItems.value = response.data.data.map(item => ({
+        console.log('API Response:', response)
+        if (response.data && response.data.success && response.data.payload) {
+          const mappedItems = response.data.payload.map(item => ({
             id: item.id,
             text: item.title,
             done: item.completed,
             editing: false,
             editText: item.title
           })).slice(0, 5)
+          console.log('Mapped Items:', mappedItems)
+          todoItems.value = mappedItems
+          console.log('Todo Items Value:', todoItems.value)
         }
       } catch (error) {
         console.error('获取待办事项失败:', error)
@@ -490,9 +494,9 @@ export default {
     }
     
     // 打开待办事项对话框
-    const openTodoDialog = () => {
+    const openTodoDialog = async () => {
       todoDialogOpen.value = true
-      fetchTodoItems() // 打开时刷新列表
+      await fetchTodoItems() // 确保等待数据加载完成
     }
     
     // 更新待办事项状态
