@@ -184,6 +184,40 @@
                 </q-card-section>
               </q-card>
             </div>
+            
+            <!-- 天气信息卡 -->
+            <div class="col-12 col-md-4">
+              <q-card class="info-card bg-blue-1">
+                <q-card-section class="q-py-sm">
+                  <div class="row items-center no-wrap">
+                    <div class="col-auto">
+                      <q-icon name="cloud" size="3rem" color="blue-8" class="q-mr-md" />
+                    </div>
+                    <div class="col">
+                      <div class="text-subtitle2 text-grey-7">桐庐未来的天气</div>
+                    </div>
+                  </div>
+                </q-card-section>
+                
+                <!-- 天气预报滚动区域 -->
+                <div class="weather-forecast-container q-px-md q-pb-sm">
+                  <div class="weather-forecast-scroll">
+                    <div 
+                      v-for="(day, index) in extendedForecast" 
+                      :key="index" 
+                      class="weather-day-item text-center"
+                    >
+                      <div class="text-caption text-weight-medium q-mb-xs text-grey-8">{{ day.name }}</div>
+                      <q-icon :name="getWeatherIcon(day.condition)" size="1.8rem" :color="day.iconColor" class="q-mb-xs" />
+                      <div class="row justify-center text-caption q-gutter-x-xs">
+                        <span class="text-weight-bold">{{ day.high }}°</span>
+                        <span class="text-grey-6">{{ day.low }}°</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </q-card>
+            </div>
           </div>
         </div>
         
@@ -591,10 +625,25 @@ export default {
     
     // 天气信息 (模拟数据)
     const weather = ref({
-      temp: 24,
+      temp: 31,
       condition: '晴朗',
-      location: '上海'
+      location: '桐庐'
     })
+    
+    // 扩展的天气预报数据 (模拟数据)
+    const extendedForecast = ref([
+      { name: '今天', high: 31, low: 23, condition: '晴朗', iconColor: 'orange' },
+      { name: '明天', high: 30, low: 22, condition: '晴朗', iconColor: 'orange' },
+      { name: '周三', high: 27, low: 21, condition: '多云', iconColor: 'blue-7' },
+      { name: '周四', high: 25, low: 20, condition: '多云', iconColor: 'blue-7' },
+      { name: '周五', high: 25, low: 19, condition: '阴天', iconColor: 'grey-7' },
+      { name: '周六', high: 24, low: 19, condition: '小雨', iconColor: 'blue-9' },
+      { name: '周日', high: 23, low: 18, condition: '小雨', iconColor: 'blue-9' },
+      { name: '下周一', high: 23, low: 17, condition: '阴天', iconColor: 'grey-7' },
+      { name: '下周二', high: 22, low: 16, condition: '阴天', iconColor: 'grey-7' },
+      { name: '下周三', high: 21, low: 15, condition: '多云', iconColor: 'blue-7' },
+      { name: '下周四', high: 21, low: 14, condition: '晴朗', iconColor: 'orange' }
+    ])
     
     // 固定值
     const packingProgress = ref(75)
@@ -616,6 +665,7 @@ export default {
       deleteTodoItem,
       fetchTodoItems,
       weather,
+      extendedForecast,
       packingProgress,
       totalTripDays
     }
@@ -727,6 +777,20 @@ export default {
     viewTripDetail(trip) {
       // 跳转到行程详情页，并传递行程ID
       this.$router.push(`/trip/detail/${trip.id || '1'}`);
+    },
+    getWeatherIcon(condition) {
+      // 根据天气状况返回对应的图标
+      const iconMap = {
+        '晴朗': 'wb_sunny',
+        '多云': 'cloud',
+        '阴天': 'cloud',
+        '小雨': 'grain',
+        '大雨': 'thunderstorm',
+        '雷雨': 'flash_on',
+        '雪': 'ac_unit'
+      }
+      
+      return iconMap[condition] || 'wb_sunny'
     }
   }
 }
@@ -914,5 +978,64 @@ export default {
 .info-item:hover {
   background-color: rgba(0, 0, 0, 0.03);
   transform: translateY(-2px);
+}
+
+.weather-forecast {
+  padding-top: 8px;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.weather-day-card {
+  padding: 6px 4px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.weather-day-card:hover {
+  background-color: rgba(0, 0, 0, 0.04);
+  transform: scale(1.05);
+}
+
+.weather-card {
+  border-radius: 12px;
+  background-color: #f5f7fa;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+}
+
+.current-weather {
+  margin-top: 8px;
+  margin-bottom: 16px;
+}
+
+.weather-forecast-container {
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  padding-top: 8px;
+}
+
+.weather-forecast-scroll {
+  display: flex;
+  overflow-x: auto;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+  padding-bottom: 4px;
+  margin-bottom: -4px; /* 抵消padding，防止出现空白区域 */
+}
+
+.weather-forecast-scroll::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+.weather-day-item {
+  flex: 0 0 auto;
+  padding: 12px 8px;
+  min-width: 60px;
+  border-radius: 8px;
+  margin-right: 10px;
+  transition: all 0.2s ease;
+}
+
+.weather-day-item:hover {
+  background-color: rgba(0, 0, 0, 0.04);
 }
 </style>
