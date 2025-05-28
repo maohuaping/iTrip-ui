@@ -131,8 +131,8 @@ const openNavigation = (location: string) => {
   }
   
   // 提取并显示参数
-  const params = mapUrl.split('?')[1]
-  alert(`导航参数：\n${params.split('&').join('\n')}`)
+//   const params = mapUrl.split('?')[1]
+//   alert(`导航参数：\n${params.split('&').join('\n')}`)
   
   // 尝试打开地图
   window.location.href = mapUrl
