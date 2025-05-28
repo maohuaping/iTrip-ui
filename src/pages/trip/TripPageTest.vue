@@ -131,7 +131,8 @@ const openNavigation = (location: string, index: number) => {
   let mapUrl
   if (isIOS) {
     // iOS 使用 iosamap:// scheme
-    mapUrl = `iosamap://path?sourceApplication=myapp&sname=${encodeURIComponent('桐庐站')}&dname=${encodeURIComponent('一味大院')}&dev=0&t=0`
+    // mapUrl = `iosamap://path?sourceApplication=myapp&sname=${encodeURIComponent('桐庐站')}&dname=${encodeURIComponent('一味大院')}&dev=0&t=0`
+    mapUrl = `iosamap://path?sourceApplication=myapp&sname=${encodeURIComponent('桐庐站')}&slat=&slon=&dname=${encodeURIComponent('一味大院')}&dlat=&dlon=&dev=0&t=0`
   } else {
     // 其他设备使用网页版导航
     mapUrl = `https://uri.amap.com/navigation?to=,,${encodeURIComponent(destination)}`
