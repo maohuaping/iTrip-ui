@@ -110,11 +110,29 @@ const openNavigation = (location: string) => {
   // 提取目的地，去除括号内的距离信息
   const destination = location.split('(')[0].trim()
   
-  // 构建高德地图 URL
-  const aMapUrl = `https://uri.amap.com/navigation?to=,,${encodeURIComponent(destination)}&mode=car&policy=1&src=myapp&coordinate=gaode&callnative=0`
+  // 检测是否为 iOS 设备
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
   
-  // 打开新窗口
-  window.open(aMapUrl, '_blank')
+  // 构建高德地图 URL
+  let mapUrl
+  if (isIOS) {
+    // iOS 使用 iosamap:// scheme
+    mapUrl = `iosamap://path?sourceApplication=myapp&dlat=&dlon=&dname=${encodeURIComponent(destination)}&dev=0&t=0`
+    
+    // 如果无法打开高德地图 App，则跳转到 App Store
+    setTimeout(() => {
+      const hidden = document.hidden || document.webkitHidden
+      if (!hidden) {
+        window.location.href = 'https://apps.apple.com/cn/app/id461703208'
+      }
+    }, 2000)
+  } else {
+    // 其他设备使用网页版导航
+    mapUrl = `https://uri.amap.com/navigation?to=,,${encodeURIComponent(destination)}&mode=car&policy=1&src=myapp&coordinate=gaode&callnative=0`
+  }
+  
+  // 尝试打开地图
+  window.location.href = mapUrl
 }
 </script>
 
