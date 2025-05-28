@@ -181,7 +181,12 @@ const openNavigation = (location: string) => {
   width: 50px;
   height: 50px;
   border-radius: 25px;
-  background-color: #e0e5e0;
+  background-color: #f4f6f4;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='11' fill='%23ffffff' stroke='%232e5a2e' stroke-width='1.5'/%3E%3Cpath d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16z' fill='%232e5a2e'/%3E%3Cpath d='M12 5.5L14.5 14.5L12 12L9.5 14.5z' fill='%23ff6b6b'/%3E%3Cpath d='M12 18.5L9.5 9.5L12 12L14.5 9.5z' fill='%232e5a2e'/%3E%3C/svg%3E");
+  background-size: 100%;
+  background-position: center;
+  background-repeat: no-repeat;
+  box-shadow: 0 2px 8px rgba(46, 90, 46, 0.15);
 }
 
 .info .name {
@@ -213,6 +218,44 @@ const openNavigation = (location: string) => {
   font-size: 16px;
   font-weight: bold;
   color: #404040;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.trip-title::after {
+  content: "进行中";
+  font-size: 12px;
+  font-weight: normal;
+  color: #2e5a2e;
+  background-color: rgba(46, 90, 46, 0.1);
+  padding: 2px 8px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+}
+
+.trip-title::after::before {
+  content: "";
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  background-color: #2e5a2e;
+  border-radius: 50%;
+  margin-right: 4px;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+  100% {
+    opacity: 1;
+  }
 }
 
 .trip-meta {
