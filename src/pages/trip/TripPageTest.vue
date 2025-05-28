@@ -84,7 +84,8 @@ const days = ref([
       {
         name: '吃午餐',
         time: '12:30',
-        location: '一味大院 (距桐庐站5.5km)',
+        // location: '一味大院 (距桐庐站5.5km)',
+        location: '桐庐站->一味大院 (距桐庐站5.5km)',
         type: '餐饮美食',
         note: '桐庐站下车后打车前往'
       },
