@@ -75,9 +75,16 @@ const days = ref([
     date: '2023-08-15',
     activities: [
       {
-        name: '火车前往桐庐',
+        name: '去火车站',
+        time: '08:16',
+        location: '上海虹桥站',
+        type: '交通出行',
+        note: '滴滴打车前往火车站'
+      },
+      {
+        name: '到达桐庐',
         time: '09:16',
-        location: '上海虹桥→桐庐站',
+        location: '桐庐站',
         type: '交通出行',
         note: '票价122元/人，11:06到达桐庐站'
       },
