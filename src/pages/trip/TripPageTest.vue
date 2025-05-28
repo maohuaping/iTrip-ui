@@ -34,21 +34,21 @@
       <button class="func-btn">酒店预定</button>
       <button class="func-btn">门票购买</button>
       <button class="func-btn">天气查看</button>
-      <button class="func-btn">账单统计</button>
+      <button class="func-btn">高德导航</button>
       <button class="func-btn">滴滴打车</button>
-      <button class="func-btn">周边景点</button>
+      <button class="func-btn">账单统计</button>
     </div>
 
     <!-- 日期选择 -->
     <div class="date-selector">
-      <div class="date-item" 
-           :class="{ active: selectedDayIndex === 0 }" 
+      <div class="date-item"
+           :class="{ active: selectedDayIndex === 0 }"
            @click="selectDay(0)">
         <div class="date-day">第一天</div>
         <div class="date-full">8月15日</div>
       </div>
-      <div class="date-item" 
-           :class="{ active: selectedDayIndex === 1 }" 
+      <div class="date-item"
+           :class="{ active: selectedDayIndex === 1 }"
            @click="selectDay(1)">
         <div class="date-day">第二天</div>
         <div class="date-full">8月16日</div>
@@ -57,8 +57,8 @@
 
     <!-- 行程列表 -->
     <div class="schedule-list">
-      <div class="schedule-item" 
-           v-for="(activity, index) in todayActivities" 
+      <div class="schedule-item"
+           v-for="(activity, index) in todayActivities"
            :key="activity.time"
            @click="openNavigation(activity.location)">
         <div class="schedule-content">
@@ -165,10 +165,10 @@ const todayActivities = computed(() => {
 const openNavigation = (location: string) => {
   // 提取目的地，去除括号内的距离信息
   const destination = location.split('(')[0].trim()
-  
+
   // 检测是否为 iOS 设备
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
-  
+
   // 构建高德地图 URL
   let mapUrl
   if (isIOS) {
@@ -178,11 +178,11 @@ const openNavigation = (location: string) => {
     // 其他设备使用网页版导航
     mapUrl = `https://uri.amap.com/navigation?to=,,${encodeURIComponent(destination)}&mode=car&policy=1&src=myapp&coordinate=gaode&callnative=0`
   }
-  
+
   // 提取并显示参数
 //   const params = mapUrl.split('?')[1]
 //   alert(`导航参数：\n${params.split('&').join('\n')}`)
-  
+
   // 尝试打开地图
   window.location.href = mapUrl
 }
