@@ -43,7 +43,7 @@
       <div class="schedule-item" 
            v-for="(activity, index) in todayActivities" 
            :key="activity.time"
-           @click="openNavigation(activity.location, index)">
+           @click="openNavigation(activity.location)">
         <div class="schedule-content">
           <div class="destination">{{ activity.name }}</div>
           <div class="location">{{ activity.location }}</div>
@@ -113,16 +113,9 @@ const todayActivities = computed(() => {
 })
 
 // 打开高德地图导航
-const openNavigation = (location: string, index: number) => {
+const openNavigation = (location: string) => {
   // 提取目的地，去除括号内的距离信息
   const destination = location.split('(')[0].trim()
-  
-  // 获取起始点（如果存在）
-  let startPoint = ''
-  if (index > 0) {
-    const prevActivity = todayActivities.value[index - 1]
-    startPoint = prevActivity.location.split('(')[0].trim()
-  }
   
   // 检测是否为 iOS 设备
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
@@ -130,16 +123,11 @@ const openNavigation = (location: string, index: number) => {
   // 构建高德地图 URL
   let mapUrl
   if (isIOS) {
-    // iOS 使用 iosamap:// scheme
-    // mapUrl = `iosamap://path?sourceApplication=myapp&sname=${encodeURIComponent('桐庐站')}&dname=${encodeURIComponent('一味大院')}&dev=0&t=0`
-    mapUrl = `iosamap://path?sourceApplication=myapp&sname=${encodeURIComponent('桐庐站')}&slat=&slon=&dname=${encodeURIComponent('一味大院')}&dlat=&dlon=&dev=0&t=0`
+    // iOS 使用 iosamap:// scheme，只指定终点
+    mapUrl = `iosamap://path?sourceApplication=myapp&dlat=&dlon=&dname=${encodeURIComponent(destination)}&dev=0&t=0`
   } else {
     // 其他设备使用网页版导航
-    mapUrl = `https://uri.amap.com/navigation?to=,,${encodeURIComponent(destination)}`
-    if (startPoint) {
-      mapUrl += `&from=,,${encodeURIComponent(startPoint)}`
-    }
-    mapUrl += '&mode=car&policy=1&src=myapp&coordinate=gaode&callnative=0'
+    mapUrl = `https://uri.amap.com/navigation?to=,,${encodeURIComponent(destination)}&mode=car&policy=1&src=myapp&coordinate=gaode&callnative=0`
   }
   
   // 提取并显示参数
