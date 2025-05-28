@@ -79,7 +79,7 @@ const days = ref([
         time: '08:16',
         location: '上海虹桥站',
         type: '交通出行',
-        note: '滴滴打车前往火车站'
+        note: '滴滴打车'
       },
       {
         name: '到达桐庐',
@@ -143,6 +143,10 @@ const openNavigation = (location: string, index: number) => {
     }
     mapUrl += '&mode=car&policy=1&src=myapp&coordinate=gaode&callnative=0'
   }
+  
+  // 提取并显示参数
+  const params = mapUrl.split('?')[1]
+  alert(`导航参数：\n${params.split('&').join('\n')}`)
   
   // 尝试打开地图
   window.location.href = mapUrl
