@@ -84,6 +84,14 @@
             <q-item-section>旅行博客</q-item-section>
           </q-item>
 
+          <!-- 添加测试入口 -->
+          <q-item clickable to="/trip/test" v-ripple>
+            <q-item-section avatar>
+              <q-icon name="bug_report" />
+            </q-item-section>
+            <q-item-section>测试页面</q-item-section>
+          </q-item>
+
           <q-separator class="q-my-sm" />
 
           <div class="text-subtitle2 q-pa-sm q-pb-xs text-weight-medium">我的旅行</div>
