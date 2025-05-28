@@ -131,13 +131,7 @@ const openNavigation = (location: string, index: number) => {
   let mapUrl
   if (isIOS) {
     // iOS 使用 iosamap:// scheme
-    if (startPoint) {
-      // 指定起终点的导航
-      mapUrl = `iosamap://navi?sourceApplication=myapp&poiname=${encodeURIComponent(destination)}&poiid=&lat=&lon=&dev=0&style=2`
-    } else {
-      // 仅指定终点的导航
-      mapUrl = `iosamap://navi?sourceApplication=myapp&poiname=${encodeURIComponent(destination)}&poiid=&dev=0&style=2`
-    }
+    mapUrl = `iosamap://path?sourceApplication=myapp&sname=${encodeURIComponent('桐庐站')}&dname=${encodeURIComponent('一味大院')}&dev=0&t=0`
   } else {
     // 其他设备使用网页版导航
     mapUrl = `https://uri.amap.com/navigation?to=,,${encodeURIComponent(destination)}`
