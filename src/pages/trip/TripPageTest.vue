@@ -118,14 +118,6 @@ const openNavigation = (location: string) => {
   if (isIOS) {
     // iOS 使用 iosamap:// scheme
     mapUrl = `iosamap://path?sourceApplication=myapp&dlat=&dlon=&dname=${encodeURIComponent(destination)}&dev=0&t=0`
-    
-    // 如果无法打开高德地图 App，则跳转到 App Store
-    setTimeout(() => {
-      const hidden = document.hidden || document.webkitHidden
-      if (!hidden) {
-        window.location.href = 'https://apps.apple.com/cn/app/id461703208'
-      }
-    }, 2000)
   } else {
     // 其他设备使用网页版导航
     mapUrl = `https://uri.amap.com/navigation?to=,,${encodeURIComponent(destination)}&mode=car&policy=1&src=myapp&coordinate=gaode&callnative=0`
