@@ -38,6 +38,18 @@
       <button class="func-btn">周边景点</button>
     </div>
 
+    <!-- 日期选择 -->
+    <div class="date-selector">
+      <div class="date-item active">
+        <div class="date-day">第一天</div>
+        <div class="date-full">8月15日</div>
+      </div>
+      <div class="date-item">
+        <div class="date-day">第二天</div>
+        <div class="date-full">8月16日</div>
+      </div>
+    </div>
+
     <!-- 行程列表 -->
     <div class="schedule-list">
       <div class="schedule-item" 
@@ -329,5 +341,39 @@ const openNavigation = (location: string) => {
 .time {
   color: #2e5a2e;
   font-size: 16px;
+}
+
+.date-selector {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+  padding: 0 4px;
+}
+
+.date-item {
+  background: white;
+  border-radius: 12px;
+  padding: 12px 20px;
+  flex: 1;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.date-item.active {
+  background: #2e5a2e;
+  color: white;
+}
+
+.date-day {
+  font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+
+.date-full {
+  font-size: 14px;
+  opacity: 0.8;
 }
 </style>
