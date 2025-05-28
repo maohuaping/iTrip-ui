@@ -4,6 +4,7 @@
     <div class="nav-tabs">
       <div class="tab active">旅游</div>
       <div class="tab">待办</div>
+      <div class="tab">摸金</div>
     </div>
 
     <!-- 用户信息卡片 -->
@@ -40,11 +41,15 @@
 
     <!-- 日期选择 -->
     <div class="date-selector">
-      <div class="date-item active">
+      <div class="date-item" 
+           :class="{ active: selectedDayIndex === 0 }" 
+           @click="selectDay(0)">
         <div class="date-day">第一天</div>
         <div class="date-full">8月15日</div>
       </div>
-      <div class="date-item">
+      <div class="date-item" 
+           :class="{ active: selectedDayIndex === 1 }" 
+           @click="selectDay(1)">
         <div class="date-day">第二天</div>
         <div class="date-full">8月16日</div>
       </div>
@@ -109,8 +114,40 @@ const days = ref([
       },
       // ... 其他活动
     ]
+  },
+  {
+    date: '2023-08-16',
+    activities: [
+      {
+        name: '早餐',
+        time: '08:30',
+        location: '桐庐大酒店',
+        type: '餐饮美食',
+        note: '酒店自助早餐'
+      },
+      {
+        name: '瑶琳仙境',
+        time: '10:00',
+        location: '瑶琳仙境景区 (距酒店12km)',
+        type: '景点游览',
+        note: '门票120元/人'
+      },
+      {
+        name: '午餐',
+        time: '12:30',
+        location: '农家乐 (距景区1km)',
+        type: '餐饮美食',
+        note: '当地特色菜'
+      }
+    ]
   }
 ])
+
+const selectedDayIndex = ref(0)
+
+const selectDay = (index: number) => {
+  selectedDayIndex.value = index
+}
 
 // 计算行程天数
 const tripDuration = computed(() => {
@@ -121,7 +158,7 @@ const tripDuration = computed(() => {
 
 // 获取今天的活动
 const todayActivities = computed(() => {
-  return days.value[0].activities // 这里简化处理，显示第一天的活动
+  return days.value[selectedDayIndex.value].activities
 })
 
 // 打开高德地图导航
@@ -353,12 +390,16 @@ const openNavigation = (location: string) => {
 .date-item {
   background: white;
   border-radius: 12px;
-  padding: 12px 20px;
+  padding: 8px 16px;
   flex: 1;
   text-align: center;
   cursor: pointer;
   transition: all 0.3s ease;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
 }
 
 .date-item.active {
@@ -367,13 +408,13 @@ const openNavigation = (location: string) => {
 }
 
 .date-day {
-  font-size: 16px;
+  font-size: 14px;
   font-weight: bold;
-  margin-bottom: 4px;
+  margin-bottom: 0;
 }
 
 .date-full {
-  font-size: 14px;
+  font-size: 13px;
   opacity: 0.8;
 }
 </style>
