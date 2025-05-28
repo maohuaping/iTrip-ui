@@ -17,7 +17,8 @@ const routes: RouteRecordRaw[] = [
       { path: '', component: () => import('pages/trip/TripPage.vue') },
       { path: 'plan', component: () => import('pages/trip/PlanTrip.vue') },
       { path: 'detail/:id', component: () => import('pages/trip/TripDetailPage.vue') },
-      { path: 'edit/:id', component: () => import('pages/trip/TripEditPage.vue') }
+      { path: 'edit/:id', component: () => import('pages/trip/TripEditPage.vue') },
+      { path: 'test', component: () => import('pages/trip/TripPageTest.vue') }
     ]
   },
   {
