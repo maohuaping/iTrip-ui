@@ -41,9 +41,9 @@
     <!-- 行程列表 -->
     <div class="schedule-list">
       <div class="schedule-item" 
-           v-for="activity in todayActivities" 
+           v-for="(activity, index) in todayActivities" 
            :key="activity.time"
-           @click="openNavigation(activity.location)">
+           @click="openNavigation(activity.location, index)">
         <div class="schedule-content">
           <div class="destination">{{ activity.name }}</div>
           <div class="location">{{ activity.location }}</div>
@@ -84,8 +84,7 @@ const days = ref([
       {
         name: '吃午餐',
         time: '12:30',
-        // location: '一味大院 (距桐庐站5.5km)',
-        location: '桐庐站->一味大院 (距桐庐站5.5km)',
+        location: '一味大院 (距桐庐站5.5km)',
         type: '餐饮美食',
         note: '桐庐站下车后打车前往'
       },
@@ -107,9 +106,16 @@ const todayActivities = computed(() => {
 })
 
 // 打开高德地图导航
-const openNavigation = (location: string) => {
+const openNavigation = (location: string, index: number) => {
   // 提取目的地，去除括号内的距离信息
   const destination = location.split('(')[0].trim()
+  
+  // 获取起始点（如果存在）
+  let startPoint = ''
+  if (index > 0) {
+    const prevActivity = todayActivities.value[index - 1]
+    startPoint = prevActivity.location.split('(')[0].trim()
+  }
   
   // 检测是否为 iOS 设备
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
@@ -118,10 +124,17 @@ const openNavigation = (location: string) => {
   let mapUrl
   if (isIOS) {
     // iOS 使用 iosamap:// scheme
-    mapUrl = `iosamap://path?sourceApplication=myapp&dlat=&dlon=&dname=${encodeURIComponent(destination)}&dev=0&t=0`
+    mapUrl = `iosamap://path?sourceApplication=myapp&dname=${encodeURIComponent(destination)}`
+    if (startPoint) {
+      mapUrl += `&sname=${encodeURIComponent(startPoint)}`
+    }
   } else {
     // 其他设备使用网页版导航
-    mapUrl = `https://uri.amap.com/navigation?to=,,${encodeURIComponent(destination)}&mode=car&policy=1&src=myapp&coordinate=gaode&callnative=0`
+    mapUrl = `https://uri.amap.com/navigation?to=,,${encodeURIComponent(destination)}`
+    if (startPoint) {
+      mapUrl += `&from=,,${encodeURIComponent(startPoint)}`
+    }
+    mapUrl += '&mode=car&policy=1&src=myapp&coordinate=gaode&callnative=0'
   }
   
   // 尝试打开地图
