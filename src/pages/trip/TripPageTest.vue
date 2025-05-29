@@ -213,7 +213,7 @@ const openNavigation = (location: string) => {
   window.location.href = mapUrl
 }
 
-// 监听滚动位置
+// 修改滚动处理函数，同时更新selectedTrip
 const handleScroll = (e: Event) => {
   const container = e.target as HTMLElement
   const scrollLeft = container.scrollLeft
@@ -221,6 +221,9 @@ const handleScroll = (e: Event) => {
 
   // 根据滚动位置计算当前显示的卡片索引
   currentCardIndex.value = Math.round(scrollLeft / cardWidth)
+  
+  // 根据索引更新选中的行程
+  selectedTrip.value = currentCardIndex.value === 0 ? 'tonglu' : 'shanghai'
 }
 
 onMounted(() => {
@@ -261,6 +264,8 @@ onMounted(() => {
   padding: 16px;
   margin-bottom: 20px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  box-sizing: border-box;
+  width: 100%;
 }
 
 .user-info {
@@ -295,17 +300,20 @@ onMounted(() => {
 
 .trip-cards-wrapper {
   margin-bottom: 20px;
+  padding: 0 4px;
+  box-sizing: border-box;
+  width: 100%;
 }
 
 .trip-cards {
   display: flex;
-  gap: 12px;
   overflow-x: auto;
   padding: 0 4px;
   margin-bottom: 8px;
   scrollbar-width: none;
   -ms-overflow-style: none;
   scroll-snap-type: x mandatory;
+  gap: 12px;
 }
 
 .trip-cards::-webkit-scrollbar {
@@ -313,14 +321,21 @@ onMounted(() => {
 }
 
 .trip-card {
-  scroll-snap-align: start;
+  scroll-snap-align: center;
   background: white;
   border-radius: 16px;
   padding: 16px;
-  min-width: 280px; /* 设置最小宽度确保卡片不会太窄 */
+  flex-shrink: 0;
+  width: calc(100% - 8px);
   cursor: pointer;
   transition: all 0.3s ease;
   border: 2px solid transparent;
+  box-sizing: border-box;
+  margin-right: 0;
+}
+
+.trip-card:last-child {
+  margin-right: 4px;
 }
 
 .trip-card.active {
