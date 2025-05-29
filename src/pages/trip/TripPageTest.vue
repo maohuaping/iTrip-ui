@@ -19,13 +19,31 @@
     </div>
 
     <!-- 行程卡片 -->
-    <div class="trip-card">
-      <div class="trip-header">
-        <div class="trip-title">{{ trip.name }}</div>
-        <div class="trip-meta">
-          <span>{{ tripDuration }}天</span>
-          <span>同行好友 {{ trip.travelers }}</span>
+    <div class="trip-cards-wrapper">
+      <div class="trip-cards">
+        <div class="trip-card" :class="{ active: selectedTrip === 'tonglu' }" @click="selectTrip('tonglu')" ref="tongluCard">
+          <div class="trip-header">
+            <div class="trip-title">{{ trip.name }}</div>
+            <div class="trip-meta">
+              <span>{{ tripDuration }}天</span>
+              <span>同行好友 {{ trip.travelers }}</span>
+            </div>
+          </div>
         </div>
+        
+        <div class="trip-card" :class="{ active: selectedTrip === 'shanghai' }" @click="selectTrip('shanghai')" ref="shanghaiCard">
+          <div class="trip-header">
+            <div class="trip-title">上海旅行</div>
+            <div class="trip-meta">
+              <span>3天</span>
+              <span>同行好友 3</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="dots-indicator">
+        <div class="indicator-pill" :class="{ active: currentCardIndex === 0 }"></div>
+        <div class="indicator-pill" :class="{ active: currentCardIndex === 1 }"></div>
       </div>
     </div>
 
@@ -72,7 +90,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 
 const trip = ref({
   id: '1',
@@ -144,9 +162,17 @@ const days = ref([
 ])
 
 const selectedDayIndex = ref(0)
+const selectedTrip = ref('tonglu')
+const currentCardIndex = ref(0)
+const tongluCard = ref<HTMLElement | null>(null)
+const shanghaiCard = ref<HTMLElement | null>(null)
 
 const selectDay = (index: number) => {
   selectedDayIndex.value = index
+}
+
+const selectTrip = (tripId: string) => {
+  selectedTrip.value = tripId
 }
 
 // 计算行程天数
@@ -186,6 +212,23 @@ const openNavigation = (location: string) => {
   // 尝试打开地图
   window.location.href = mapUrl
 }
+
+// 监听滚动位置
+const handleScroll = (e: Event) => {
+  const container = e.target as HTMLElement
+  const scrollLeft = container.scrollLeft
+  const cardWidth = container.offsetWidth
+
+  // 根据滚动位置计算当前显示的卡片索引
+  currentCardIndex.value = Math.round(scrollLeft / cardWidth)
+}
+
+onMounted(() => {
+  const container = document.querySelector('.trip-cards')
+  if (container) {
+    container.addEventListener('scroll', handleScroll)
+  }
+})
 </script>
 
 <style scoped>
@@ -250,11 +293,59 @@ const openNavigation = (location: string) => {
   margin-top: 4px;
 }
 
+.trip-cards-wrapper {
+  margin-bottom: 20px;
+}
+
+.trip-cards {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding: 0 4px;
+  margin-bottom: 8px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  scroll-snap-type: x mandatory;
+}
+
+.trip-cards::-webkit-scrollbar {
+  display: none; /* Chrome and Safari */
+}
+
 .trip-card {
+  scroll-snap-align: start;
   background: white;
   border-radius: 16px;
   padding: 16px;
-  margin-bottom: 20px;
+  min-width: 280px; /* 设置最小宽度确保卡片不会太窄 */
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+}
+
+.trip-card.active {
+  border-color: #2e5a2e;
+  background-color: #f9faf9;
+}
+
+.dots-indicator {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin: 12px auto 0;
+}
+
+.indicator-pill {
+  height: 4px;
+  width: 12px;
+  border-radius: 2px;
+  background-color: #e0e0e0;
+  transition: all 0.3s ease;
+}
+
+.indicator-pill.active {
+  width: 24px;
+  background-color: #2e5a2e;
 }
 
 .trip-header {
