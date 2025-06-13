@@ -11,185 +11,142 @@
           @click="toggleLeftDrawer"
         />
 
-        <q-toolbar-title class="row items-center justify-start">
-          <div class="countdown-container">
-            <q-badge color="amber" text-color="black" class="countdown-badge">
-              <q-icon name="schedule" size="xs" class="q-mr-xs" />
-              <span class="countdown-label">截止倒计时:</span>
-              <span class="countdown-digits">{{ countdownTime.days }}</span>天
-              <span class="countdown-digits">{{ countdownTime.hours }}</span>时
-              <span class="countdown-digits">{{ countdownTime.minutes }}</span>分
-              <span class="countdown-digits">{{ countdownTime.seconds }}</span>秒
-            </q-badge>
-          </div>
-        </q-toolbar-title>
+        <q-toolbar-title class="row items-center justify-center">
+          <!-- 添加待办列表下拉按钮 -->
+          <q-btn-dropdown
+            flat
+            color="green-7"
+            no-caps
+            dense
+            class="q-mr-sm todo-dropdown"
+            label="待办事项"
+            icon="checklist"
+          >
+            <q-list style="min-width: 250px">
+              <q-item-label header>今日待办</q-item-label>
 
-        <!-- 添加待办列表下拉按钮 -->
-        <q-btn-dropdown
-          flat
-          color="green-7"
-          no-caps
-          dense
-          class="q-mr-sm todo-dropdown"
-          label="待办事项"
-          icon="checklist"
-        >
-          <q-list style="min-width: 250px">
-            <q-item-label header>今日待办</q-item-label>
-            
-            <template v-if="todoItems.length > 0">
-              <q-item v-for="(item, index) in todoItems" :key="index" tag="label" v-ripple>
-                <q-item-section side>
-                  <q-checkbox v-model="item.done" color="green-7" @update:model-value="updateTodoStatus(index)" />
-                </q-item-section>
+              <template v-if="todoItems.length > 0">
+                <q-item v-for="(item, index) in todoItems" :key="index" tag="label" v-ripple>
+                  <q-item-section side>
+                    <q-checkbox v-model="item.done" color="green-7" @update:model-value="updateTodoStatus(index)" />
+                  </q-item-section>
+                  <q-item-section>
+                    <q-item-label :class="{'text-strike': item.done}">{{ item.text }}</q-item-label>
+                    <q-item-label caption v-if="item.dueTime">{{ item.dueTime }}</q-item-label>
+                  </q-item-section>
+                  <q-item-section side>
+                    <q-btn flat round dense icon="delete" color="grey-7" size="sm" @click.stop="removeTodo(index)" />
+                  </q-item-section>
+                </q-item>
+              </template>
+
+              <q-item v-else>
                 <q-item-section>
-                  <q-item-label :class="{'text-strike': item.done}">{{ item.text }}</q-item-label>
-                  <q-item-label caption v-if="item.dueTime">{{ item.dueTime }}</q-item-label>
-                </q-item-section>
-                <q-item-section side>
-                  <q-btn flat round dense icon="delete" color="grey-7" size="sm" @click.stop="removeTodo(index)" />
+                  <q-item-label class="text-center text-grey-7">暂无待办事项</q-item-label>
                 </q-item-section>
               </q-item>
-            </template>
-            
-            <q-item v-else>
-              <q-item-section>
-                <q-item-label class="text-center text-grey-7">暂无待办事项</q-item-label>
-              </q-item-section>
-            </q-item>
-            
-            <q-separator />
-            
-            <q-item>
-              <q-item-section>
-                <q-input 
-                  v-model="newTodo" 
-                  dense 
-                  placeholder="添加新待办..."
-                  @keyup.enter="addTodo"
-                  class="new-todo-input"
-                >
-                  <template v-slot:append>
-                    <q-btn round dense flat icon="add" color="green-7" @click="addTodo" />
-                  </template>
-                </q-input>
-              </q-item-section>
-            </q-item>
-          </q-list>
-        </q-btn-dropdown>
 
-        <!-- 使用Quasar的split button组件 - 改进版 -->
-        <q-btn-dropdown
-          flat
-          color="primary"
-          no-caps
-          dense
-          class="q-mr-sm copy-btn-dropdown"
-          :label="selectedText || 'Flex20190429'"
-          icon="content_copy"
-          dropdown-icon="arrow_drop_down"
-          split
-          @click="handleTextSelection(selectedText || 'Flex20190429')"
-        >
-          <q-list>
-            <q-item clickable v-close-popup @click="handleTextSelection('Flex20190429')">
-              <q-item-section>
-                Flex20190429
-              </q-item-section>
-            </q-item>
+              <q-separator />
 
-            <q-item clickable v-close-popup @click="handleTextSelection('Media@20240218')">
-              <q-item-section>
-                Media@20240218
-              </q-item-section>
-            </q-item>
+              <q-item>
+                <q-item-section>
+                  <q-input
+                    v-model="newTodo"
+                    dense
+                    placeholder="添加新待办..."
+                    @keyup.enter="addTodo"
+                    class="new-todo-input"
+                  >
+                    <template v-slot:append>
+                      <q-btn round dense flat icon="add" color="green-7" @click="addTodo" />
+                    </template>
+                  </q-input>
+                </q-item-section>
+              </q-item>
+            </q-list>
+          </q-btn-dropdown>
 
-            <q-item clickable v-close-popup @click="handleTextSelection('Pi20240219*')">
-              <q-item-section>
-                Pi20240219*
-              </q-item-section>
-            </q-item>
-
-            <q-item clickable v-close-popup @click="handleTextSelection('Flex@20190429')">
-              <q-item-section>
-                Flex@20190429
-              </q-item-section>
-            </q-item>
-            
-            <q-separator />
-            
-            <q-item clickable v-close-popup @click="copyCurrentDateTime">
-              <q-item-section>
-                当前时间 (yyyyMMddHHmmss)
-              </q-item-section>
-            </q-item>
-            
-            <q-item clickable v-close-popup @click="copyOracleTimestamp">
-              <q-item-section>
-                Oracle时间 (yyyy-MM-dd HH:mm:ss.000)
-              </q-item-section>
-            </q-item>
-          </q-list>
-        </q-btn-dropdown>
-
-        <div class="status-info">
-          <q-chip
-            outline
+          <!-- 使用Quasar的split button组件 - 改进版 -->
+          <q-btn-dropdown
+            flat
             color="primary"
-            text-color="primary"
-            icon="task_alt"
-            class="status-chip"
+            no-caps
+            dense
+            class="q-mr-sm copy-btn-dropdown"
+            :label="selectedText || 'Flex20190429'"
+            icon="content_copy"
+            dropdown-icon="arrow_drop_down"
+            split
+            @click="handleTextSelection(selectedText || 'Flex20190429')"
           >
-            已完成: {{ statusInfo.completed }}
-          </q-chip>
+            <q-list>
+              <q-item clickable v-close-popup @click="handleTextSelection('Flex20190429')">
+                <q-item-section>
+                  Flex20190429
+                </q-item-section>
+              </q-item>
 
-          <q-chip
-            outline
-            color="orange"
-            text-color="orange"
-            icon="pending"
-            class="status-chip"
+              <q-item clickable v-close-popup @click="handleTextSelection('Media@20240218')">
+                <q-item-section>
+                  Media@20240218
+                </q-item-section>
+              </q-item>
+
+              <q-item clickable v-close-popup @click="handleTextSelection('Pi20240219*')">
+                <q-item-section>
+                  Pi20240219*
+                </q-item-section>
+              </q-item>
+
+              <q-item clickable v-close-popup @click="handleTextSelection('Flex@20190429')">
+                <q-item-section>
+                  Flex@20190429
+                </q-item-section>
+              </q-item>
+
+              <q-separator />
+
+              <q-item clickable v-close-popup @click="copyCurrentDateTime">
+                <q-item-section>
+                  当前时间 (yyyyMMddHHmmss)
+                </q-item-section>
+              </q-item>
+
+              <q-item clickable v-close-popup @click="copyOracleTimestamp">
+                <q-item-section>
+                  Oracle时间 (yyyy-MM-dd HH:mm:ss.000)
+                </q-item-section>
+              </q-item>
+            </q-list>
+          </q-btn-dropdown>
+
+          <!-- 主页按钮移到最右侧 -->
+          <q-btn
+            flat
+            dense
+            icon="home"
+            no-caps
+            :label="$q.screen.gt.xs ? '主页' : ''"
+            class="q-ml-sm"
+            aria-label="回到主页"
+            to="/trip"
+            color="primary"
           >
-            待处理: {{ statusInfo.pending }}
-          </q-chip>
+            <q-tooltip>回到主页</q-tooltip>
+          </q-btn>
 
-          <q-chip
-            outline
-            color="blue-grey"
-            text-color="blue-grey"
-            icon="inventory"
-            class="status-chip"
+          <!-- 添加暗黑主题切换按钮 -->
+          <q-btn
+            flat
+            dense
+            :icon="isDark ? 'light_mode' : 'dark_mode'"
+            aria-label="切换主题"
+            class="q-ml-sm"
+            @click="toggleDarkMode"
           >
-            总任务: {{ statusInfo.tasks }}
-          </q-chip>
-        </div>
-
-        <!-- 主页按钮移到最右侧 -->
-        <q-btn
-          flat
-          dense
-          icon="home"
-          no-caps
-          :label="$q.screen.gt.xs ? '主页' : ''"
-          class="q-ml-sm"
-          aria-label="回到主页"
-          to="/trip"
-          color="primary"
-        >
-          <q-tooltip>回到主页</q-tooltip>
-        </q-btn>
-
-        <!-- 添加暗黑主题切换按钮 -->
-        <q-btn
-          flat
-          dense
-          :icon="isDark ? 'light_mode' : 'dark_mode'"
-          aria-label="切换主题"
-          class="q-ml-sm"
-          @click="toggleDarkMode"
-        >
-          <q-tooltip>{{ isDark ? '切换到亮色模式' : '切换到暗色模式' }}</q-tooltip>
-        </q-btn>
+            <q-tooltip>{{ isDark ? '切换到亮色模式' : '切换到暗色模式' }}</q-tooltip>
+          </q-btn>
+        </q-toolbar-title>
       </q-toolbar>
     </q-header>
 
@@ -407,38 +364,6 @@ const statusInfo = ref({
   pending: 3
 })
 
-// 倒计时相关
-const countdownTime = ref({
-  days: 0,
-  hours: 0,
-  minutes: 0,
-  seconds: 0
-})
-
-// 修改为2025年5月10日08:30
-const targetDate = new Date('2025-05-10T08:30:00+08:00')
-
-let countdownInterval: number | undefined
-
-// 计算倒计时
-const calculateCountdown = () => {
-  const now = new Date()
-  const difference = targetDate.getTime() - now.getTime()
-
-  if (difference <= 0) {
-    // 如果已经到期
-    countdownTime.value = { days: 0, hours: 0, minutes: 0, seconds: 0 }
-    return
-  }
-
-  const days = Math.floor(difference / (1000 * 60 * 60 * 24))
-  const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
-  const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60))
-  const seconds = Math.floor((difference % (1000 * 60)) / 1000)
-
-  countdownTime.value = { days, hours, minutes, seconds }
-}
-
 // URL列表数据
 const urlList = ref<UrlItem[]>([])
 const loading = ref(true)
@@ -653,20 +578,20 @@ const addTodo = async () => {
         priority: 0,
         category: '工作'
       }
-      
+
       // 调用API保存待办事项
       const response = await todoApi.saveTodo(todoEntity)
-      
+
       if (response.data?.success) {
         $q.notify({
           color: 'positive',
           message: '待办事项添加成功',
           icon: 'check_circle'
         })
-        
+
         // 重新获取待办列表
         fetchTodos()
-        
+
         // 清空输入
         newTodo.value = ''
       }
@@ -685,13 +610,13 @@ const addTodo = async () => {
 const updateTodoStatus = async (index: number) => {
   try {
     const todoItem = todoItems.value[index]
-    
+
     // 确保待办项有ID
     if (!todoItem.id) {
       console.error('待办项缺少ID')
       return
     }
-    
+
     if (todoItem.done) {
       // 如果标记为完成，调用完成API
       await todoApi.completeTodo(todoItem.id)
@@ -704,7 +629,7 @@ const updateTodoStatus = async (index: number) => {
       }
       await todoApi.updateTodo(todoEntity)
     }
-    
+
     $q.notify({
       color: 'positive',
       message: todoItem.done ? '已完成待办事项' : '已恢复待办事项',
@@ -726,19 +651,19 @@ const updateTodoStatus = async (index: number) => {
 const removeTodo = async (index: number) => {
   try {
     const todoItem = todoItems.value[index]
-    
+
     // 确保待办项有ID
     if (!todoItem.id) {
       console.error('待办项缺少ID')
       return
     }
-    
+
     // 调用API删除待办事项
     await todoApi.deleteTodo(todoItem.id)
-    
+
     // 从列表中移除
     todoItems.value.splice(index, 1)
-    
+
     $q.notify({
       color: 'positive',
       message: '已删除待办事项',
@@ -760,17 +685,6 @@ const removeTodo = async (index: number) => {
 onMounted(() => {
   fetchUrlList()
   fetchTodos() // 从API获取待办事项
-  
-  // 初始化倒计时
-  calculateCountdown()
-  countdownInterval = setInterval(calculateCountdown, 1000)
-})
-
-// 清除定时器
-onUnmounted(() => {
-  if (countdownInterval) {
-    clearInterval(countdownInterval)
-  }
 })
 
 // 当前选中的文本
@@ -805,7 +719,7 @@ const handleTextSelection = (text: string) => {
 const copyCurrentDateTime = () => {
   const now = new Date()
   const formattedDateTime = formatDateTime(now)
-  
+
   // 调用已有的处理函数进行复制
   handleTextSelection(formattedDateTime)
 }
@@ -818,7 +732,7 @@ const formatDateTime = (date: Date): string => {
   const hours = String(date.getHours()).padStart(2, '0')
   const minutes = String(date.getMinutes()).padStart(2, '0')
   const seconds = String(date.getSeconds()).padStart(2, '0')
-  
+
   return `${year}${month}${day}${hours}${minutes}${seconds}`
 }
 
@@ -826,7 +740,7 @@ const formatDateTime = (date: Date): string => {
 const copyOracleTimestamp = () => {
   const now = new Date()
   const formattedTimestamp = formatOracleTimestamp(now)
-  
+
   // 调用已有的处理函数进行复制
   handleTextSelection(formattedTimestamp)
 }
@@ -840,7 +754,7 @@ const formatOracleTimestamp = (date: Date): string => {
   const minutes = String(date.getMinutes()).padStart(2, '0')
   const seconds = String(date.getSeconds()).padStart(2, '0')
   const milliseconds = String(date.getMilliseconds()).padStart(3, '0')
-  
+
   return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}.${milliseconds}`
 }
 </script>
@@ -1224,64 +1138,6 @@ section {
   }
 }
 
-// 倒计时样式
-.countdown-container {
-  display: flex;
-  align-items: center;
-}
-
-.countdown-badge {
-  padding: 6px 10px;
-  border-radius: 16px;
-  display: flex;
-  align-items: center;
-  font-size: 0.8rem;
-  font-weight: 400;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
-}
-
-.countdown-label {
-  margin-right: 6px;
-  font-weight: 500;
-}
-
-.countdown-digits {
-  font-family: 'Roboto Mono', monospace;
-  font-weight: 600;
-  padding: 0 2px;
-  min-width: 22px;
-  text-align: center;
-  display: inline-block;
-  margin: 0 2px;
-}
-
-// 响应式调整
-@media (max-width: 768px) {
-  .countdown-label {
-    display: none;
-  }
-
-  .countdown-badge {
-    padding: 4px 8px;
-  }
-}
-
-// 增强复制按钮分割线的样式
-.copy-btn-dropdown {
-  :deep(.q-btn-dropdown__arrow-container) {
-    border-left: 1px solid rgba(25, 118, 210, 0.4);
-    margin-left: 4px;
-    padding-left: 4px;
-  }
-
-  &:hover {
-    :deep(.q-btn-dropdown__arrow-container) {
-      border-left-color: rgba(25, 118, 210, 0.7);
-    }
-  }
-}
-
 // 待办事项下拉样式
 .todo-dropdown {
   .q-btn-dropdown__arrow-container {
@@ -1299,7 +1155,7 @@ section {
 
 .new-todo-input {
   border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-  
+
   :deep(.q-field__control) {
     box-shadow: none;
   }
