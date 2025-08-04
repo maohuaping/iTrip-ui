@@ -40,6 +40,13 @@ const routes: RouteRecordRaw[] = [
       { path: '', component: () => import('pages/holiday/HolidayPage.vue') }
     ]
   },
+  {
+    path: '/todo',
+    component: () => import('layouts/CleanLayout.vue'),
+    children: [
+      { path: '', component: () => import('pages/todo/index.vue') }
+    ]
+  },
 
 
   // Always leave this as last one,

@@ -11,6 +11,17 @@
           @click="toggleLeftDrawer"
         />
 
+        <q-btn
+          flat
+          dense
+          icon="link"
+          color="primary"
+          class="q-ml-sm"
+          @click="handleTodoLink"
+        >
+          <q-tooltip>虚拟机</q-tooltip>
+        </q-btn>
+
         <q-toolbar-title class="row items-center justify-center">
           <!-- 添加待办列表下拉按钮 -->
           <q-btn-dropdown
@@ -146,6 +157,7 @@
           >
             <q-tooltip>{{ isDark ? '切换到亮色模式' : '切换到暗色模式' }}</q-tooltip>
           </q-btn>
+
         </q-toolbar-title>
       </q-toolbar>
     </q-header>
@@ -343,6 +355,37 @@ const toggleDarkMode = () => {
   localStorage.setItem('darkMode', isDark.value ? 'true' : 'false')
 }
 
+const handleTodoLink = async () => {
+  try {
+    const response = await urlApi.getUrlByCondition({ name: "虚拟机" });
+    const urlList = response.data?.payload;
+    if (urlList && Array.isArray(urlList) && urlList.length > 0) {
+      const firstUrl = urlList[0];
+      if (firstUrl?.address) {
+        window.open(firstUrl.address, '_blank'); // 新窗口打开
+      } else {
+        $q.notify({
+          color: 'negative',
+          message: '未获取到跳转链接',
+          icon: 'error'
+        });
+      }
+    } else {
+      $q.notify({
+        color: 'negative',
+        message: '未获取到跳转链接',
+        icon: 'error'
+      });
+    }
+  } catch (error) {
+    $q.notify({
+      color: 'negative',
+      message: '获取链接失败',
+      icon: 'error'
+    });
+  }
+};
+
 // 在组件挂载时恢复用户的主题偏好
 onMounted(() => {
   const savedDarkMode = localStorage.getItem('darkMode')
@@ -483,7 +526,7 @@ const saveNewUrl = async () => {
 const fetchUrlList = async () => {
   try {
     loading.value = true
-    const response = await urlApi.listUrlOfMe()
+    const response = await urlApi.getUrlByCondition({})
 
     // 检查返回的数据格式是否符合预期
     if (response.data?.payload) {
