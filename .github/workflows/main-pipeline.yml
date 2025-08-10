@@ -1,0 +1,69 @@
+name: Build & Deploy Frontend
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'  # 根据你的 engines 配置
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint code
+        run: npm run lint
+
+      - name: Format check
+        run: npm run format -- --check
+
+      - name: Run tests
+        run: npm run test
+
+      - name: Build production
+        run: npm run build
+        env:
+          NODE_ENV: production
+      
+      - name: Verify build output
+        run: |
+          if [ ! -d "dist/spa" ]; then
+            echo "Build output directory not found"
+            ls -la dist/
+            exit 1
+          fi
+          echo "Build successful! Contents:"
+          ls -la dist/spa/
+
+      - name: Upload build files to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          source: "target/*.jar"
+          target: "/opt/1panel/apps/java"
+          strip_components: 1
+
+      - name: Restart web server
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script: |
+            container_name="app"
+            docker restart $container_name

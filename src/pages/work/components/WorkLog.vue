@@ -231,9 +231,9 @@ const requirementOptions = ref<{ label: string; value: string }[]>([])
 async function fetchRequirementOptions() {
   try {
     const response = await requirementApi.getAllRequirementNames()
-    if (response.data.success && response.data.payload) {
+    if (response.data.isOk && response.data.okData) {
       // 将API返回的字符串数组转换为选项格式
-      requirementOptions.value = response.data.payload.map(name => ({
+      requirementOptions.value = response.data.okData.map(name => ({
         label: name,
         value: name
       }))
@@ -289,9 +289,9 @@ async function fetchLogs() {
   try {
     // 假设后端API已经提供按日期降序排序的数据
     const response = await workLogApi.listWorkLogOfMe()
-    if (response.data.success && response.data.payload) {
+    if (response.data.isOk && response.data.okData) {
       // 直接使用后端返回的已排序数据
-      logs.value = response.data.payload.map(item => ({
+      logs.value = response.data.okData.map(item => ({
         id: item.id,
         content: item.content || '',
         date: item.logDate || formatDateForInput(new Date(item.createdAt || new Date()))
@@ -351,7 +351,7 @@ async function deleteLog() {
 
     try {
       const response = await workLogApi.deleteWorkLog(logToDelete.id)
-      if (response.data.success) {
+      if (response.data.isOk) {
         logs.value.splice(deleteIndex.value, 1)
         $q.notify({
           color: 'positive',
@@ -361,7 +361,7 @@ async function deleteLog() {
       } else {
         $q.notify({
           color: 'negative',
-          message: '删除失败: ' + (response.data.payload || '未知错误'),
+          message: '删除失败: ' + (response.data.okData || '未知错误'),
           icon: 'error'
         })
       }
@@ -425,7 +425,7 @@ async function addNewLog() {
 
   try {
     const response = await workLogApi.saveWorkLog(newLog)
-    if (response.data.success) {
+    if (response.data.isOk) {
       // 重新获取最新的日志列表
       await fetchLogs()
 
@@ -444,7 +444,7 @@ async function addNewLog() {
     } else {
       $q.notify({
         color: 'negative',
-        message: '添加失败: ' + (response.data.payload || '未知错误'),
+        message: '添加失败: ' + (response.data.failMsg || '未知错误'),
         icon: 'error'
       })
     }
@@ -549,7 +549,7 @@ onMounted(() => {
       icon: 'error'
     })
   })
-  
+
   fetchRequirementOptions().catch(error => {
     console.error('获取需求选项时出错:', error)
     $q.notify({

@@ -210,12 +210,12 @@ const handleRegister = async () => {
       code: form.value.verificationCode
     });
 
-    if (response.data?.success) {
+    if (response.data?.isOk) {
       $q.notify({
         message: '注册成功',
         type: 'positive'
       });
-      
+
       // 注册成功后导航到登录页面
       void router.push('/login');
     } else {

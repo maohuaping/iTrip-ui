@@ -7,8 +7,11 @@
  */
 import type {
   GetUrlByConditionInParam,
-  ResultBoolean,
+  ResultListString,
   ResultListSysUrl,
+  ResultString,
+  ResultSysUrl,
+  SaveUrlInParam,
   SysUrl,
 } from '../api.schemas';
 
@@ -18,8 +21,30 @@ export const getUrl = () => {
   /**
    * @summary 删除URL
    */
-  const deleteUrl = (id: number) => {
-    return customInstance<ResultBoolean>({ url: `/api/url/${id}`, method: 'POST' });
+  const deleteUrl = (id: string) => {
+    return customInstance<ResultString>({ url: `/api/url/${id}/deleteUrl`, method: 'POST' });
+  };
+  /**
+   * @summary 修改URL
+   */
+  const updateUrl = (sysUrl: SysUrl) => {
+    return customInstance<ResultSysUrl>({
+      url: `/api/url/updateUrl`,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      data: sysUrl,
+    });
+  };
+  /**
+   * @summary 新增URL
+   */
+  const saveUrl = (saveUrlInParam: SaveUrlInParam) => {
+    return customInstance<ResultSysUrl>({
+      url: `/api/url/saveUrl`,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      data: saveUrlInParam,
+    });
   };
   /**
    * @summary 根据条件来查询URL
@@ -33,45 +58,23 @@ export const getUrl = () => {
     });
   };
   /**
-   * @summary 修改URL
+   * @summary 获取URL的分类
    */
-  const updateUrl = (sysUrl: SysUrl) => {
-    return customInstance<ResultBoolean>({
-      url: `/api/updateUrl`,
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      data: sysUrl,
-    });
+  const getUrlTag = () => {
+    return customInstance<ResultListString>({ url: `/api/url/getUrlTag`, method: 'GET' });
   };
-  /**
-   * @summary 新增URL
-   */
-  const saveUrl = (sysUrl: SysUrl) => {
-    return customInstance<ResultBoolean>({
-      url: `/api/saveUrl`,
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      data: sysUrl,
-    });
-  };
-  /**
-   * @summary 获取当前用户的URL列表
-   */
-  const listUrlOfMe = () => {
-    return customInstance<ResultListSysUrl>({ url: `/api/url/list`, method: 'GET' });
-  };
-  return { deleteUrl, getUrlByCondition, updateUrl, saveUrl, listUrlOfMe };
+  return { deleteUrl, updateUrl, saveUrl, getUrlByCondition, getUrlTag };
 };
 export type DeleteUrlResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getUrl>['deleteUrl']>>
->;
-export type GetUrlByConditionResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getUrl>['getUrlByCondition']>>
 >;
 export type UpdateUrlResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getUrl>['updateUrl']>>
 >;
 export type SaveUrlResult = NonNullable<Awaited<ReturnType<ReturnType<typeof getUrl>['saveUrl']>>>;
-export type ListUrlOfMeResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getUrl>['listUrlOfMe']>>
+export type GetUrlByConditionResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getUrl>['getUrlByCondition']>>
+>;
+export type GetUrlTagResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getUrl>['getUrlTag']>>
 >;

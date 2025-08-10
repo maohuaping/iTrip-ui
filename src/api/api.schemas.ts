@@ -5,14 +5,13 @@
  * 前端提供UI，后端提供API
  * OpenAPI spec version: 1.0
  */
-/**
- * API 统一返回格式
- */
 export interface ResultString {
   /** 是否成功 */
-  success?: boolean;
-  /** 数据或错误信息 */
-  payload?: string;
+  isOk?: boolean;
+  /** 成功数据 */
+  okData?: string;
+  /** 失败消息 */
+  failMsg?: string;
 }
 
 /**
@@ -37,14 +36,13 @@ export interface WorkLogEntity {
   userId?: number;
 }
 
-/**
- * API 统一返回格式
- */
 export interface ResultBoolean {
   /** 是否成功 */
-  success?: boolean;
-  /** 数据或错误信息 */
-  payload?: boolean;
+  isOk?: boolean;
+  /** 成功数据 */
+  okData?: boolean;
+  /** 失败消息 */
+  failMsg?: string;
 }
 
 /**
@@ -124,26 +122,6 @@ export interface RequirementEntity {
 }
 
 /**
- * 开发日志信息
- */
-export interface DevLog {
-  /** 主键ID */
-  id?: number;
-  /** 创建人 */
-  createdBy?: number;
-  /** 创建时间 */
-  createdAt?: string;
-  /** 更新人 */
-  updatedBy?: number;
-  /** 更新时间 */
-  updatedAt?: string;
-  /** 日志内容 */
-  content?: string;
-  /** 进度 */
-  progress?: number;
-}
-
-/**
  * 每日任务信息
  */
 export interface DailyTask {
@@ -177,59 +155,20 @@ export interface DailyTask {
   remarks?: string;
 }
 
-export interface UpdatePasswordRequestDTO {
-  email?: string;
-  /**
-   * @minLength 6
-   * @maxLength 6
-   */
-  code?: string;
-  /**
-   * @minLength 6
-   * @maxLength 20
-   */
-  newPwd: string;
-}
-
 /**
- * 数据或错误信息
+ * 成功数据
  */
-export type ResultObjectPayload = { [key: string]: unknown };
+export type ResultObjectOkData = { [key: string]: unknown };
 
-/**
- * API 统一返回格式
- */
 export interface ResultObject {
   /** 是否成功 */
-  success?: boolean;
-  /** 数据或错误信息 */
-  payload?: ResultObjectPayload;
+  isOk?: boolean;
+  /** 成功数据 */
+  okData?: ResultObjectOkData;
+  /** 失败消息 */
+  failMsg?: string;
 }
 
-export interface GetUrlByConditionInParam {
-  /** URL所属分组 */
-  tag?: string;
-  /** URL名称 */
-  name?: string;
-  /** URL地址 */
-  address?: string;
-  /** 用户ID */
-  userId?: string;
-}
-
-/**
- * API 统一返回格式
- */
-export interface ResultListSysUrl {
-  /** 是否成功 */
-  success?: boolean;
-  /** 数据或错误信息 */
-  payload?: SysUrl[];
-}
-
-/**
- * 平台跳转URL
- */
 export interface SysUrl {
   /** 主键ID */
   id?: number;
@@ -247,6 +186,81 @@ export interface SysUrl {
   name?: string;
   /** URL地址 */
   address?: string;
+  /** 用户ID */
+  userId?: number;
+}
+
+export interface ResultSysUrl {
+  /** 是否成功 */
+  isOk?: boolean;
+  okData?: SysUrl;
+  /** 失败消息 */
+  failMsg?: string;
+}
+
+export interface SaveUrlInParam {
+  /** URL所属分组 */
+  tag?: string;
+  /** URL名称 */
+  name?: string;
+  /** URL地址 */
+  address?: string;
+}
+
+export interface GetUrlByConditionInParam {
+  /** URL所属分组 */
+  tag?: string;
+  /** URL名称 */
+  name?: string;
+  /** URL地址 */
+  address?: string;
+  /** 用户ID */
+  userId?: string;
+}
+
+export interface ResultListSysUrl {
+  /** 是否成功 */
+  isOk?: boolean;
+  /** 成功数据 */
+  okData?: SysUrl[];
+  /** 失败消息 */
+  failMsg?: string;
+}
+
+export interface GetTodoByConditionInParam {
+  /** 主键ID */
+  id?: string;
+  /** 类别/标签 */
+  category?: string;
+  /** 用户ID */
+  userId?: string;
+}
+
+export interface ResultListTodoVO {
+  /** 是否成功 */
+  isOk?: boolean;
+  /** 成功数据 */
+  okData?: TodoVO[];
+  /** 失败消息 */
+  failMsg?: string;
+}
+
+/**
+ * 成功数据
+ */
+export interface TodoVO {
+  /** 主键ID */
+  id?: string;
+  /** 待办事项名称 */
+  title?: string;
+  /** 待办事项描述 */
+  description?: string;
+  /** 是否完成 */
+  completed?: boolean;
+  /** 优先级 */
+  priority?: number;
+  /** 类别/标签 */
+  category?: string;
   /** 用户ID */
   userId?: number;
 }
@@ -311,13 +325,12 @@ export interface Todo {
   userId?: number;
 }
 
-/**
- * API 统一返回格式
- */
 export interface ResultTodo {
   /** 是否成功 */
-  success?: boolean;
-  payload?: Todo;
+  isOk?: boolean;
+  okData?: Todo;
+  /** 失败消息 */
+  failMsg?: string;
 }
 
 /**
@@ -328,13 +341,12 @@ export interface ScanIdentifyRequestDTO {
   content: string;
 }
 
-/**
- * API 统一返回格式
- */
 export interface ResultScanIdentifyResponseVO {
   /** 是否成功 */
-  success?: boolean;
-  payload?: ScanIdentifyResponseVO;
+  isOk?: boolean;
+  okData?: ScanIdentifyResponseVO;
+  /** 失败消息 */
+  failMsg?: string;
 }
 
 /**
@@ -394,10 +406,95 @@ export interface SubscriptionRequestDTO {
   expirationTime?: number;
 }
 
+/**
+ * 开发日志信息
+ */
+export interface DevLog {
+  /** 主键ID */
+  id?: number;
+  /** 创建人 */
+  createdBy?: number;
+  /** 创建时间 */
+  createdAt?: string;
+  /** 更新人 */
+  updatedBy?: number;
+  /** 更新时间 */
+  updatedAt?: string;
+  /** 日志内容 */
+  content?: string;
+  /** 进度 */
+  progress?: number;
+}
+
+/**
+ * 分页参数
+ */
+export interface PageParam {
+  /** 当前页 */
+  current?: number;
+  /** 每页显示条数，默认 10 */
+  size?: number;
+}
+
+export interface QueryDevLogInParam {
+  /** 主键ID */
+  id?: string;
+  pageParam?: PageParam;
+}
+
+/**
+ * 开发日志响应
+ */
+export interface DevLogVO {
+  /** 日志ID */
+  id?: number;
+  /** 日志内容 */
+  content?: string;
+  /** 进度 */
+  progress?: number;
+  /** 创建时间 */
+  createdAt?: string;
+  /** 更新时间 */
+  updatedAt?: string;
+}
+
+/**
+ * 成功数据
+ */
+export interface IPageDevLogVO {
+  size?: number;
+  pages?: number;
+  total?: number;
+  current?: number;
+  records?: DevLogVO[];
+}
+
+export interface ResultIPageDevLogVO {
+  /** 是否成功 */
+  isOk?: boolean;
+  okData?: IPageDevLogVO;
+  /** 失败消息 */
+  failMsg?: string;
+}
+
 export interface RegisterRequestDTO {
   email?: string;
   code?: string;
   password?: string;
+}
+
+export interface UpdatePasswordRequestDTO {
+  email?: string;
+  /**
+   * @minLength 6
+   * @maxLength 6
+   */
+  code?: string;
+  /**
+   * @minLength 6
+   * @maxLength 20
+   */
+  newPwd: string;
 }
 
 export interface UserLoginRequestDTO {
@@ -405,13 +502,12 @@ export interface UserLoginRequestDTO {
   password: string;
 }
 
-/**
- * API 统一返回格式
- */
 export interface ResultUserLoginResponseVO {
   /** 是否成功 */
-  success?: boolean;
-  payload?: UserLoginResponseVO;
+  isOk?: boolean;
+  okData?: UserLoginResponseVO;
+  /** 失败消息 */
+  failMsg?: string;
 }
 
 /**
@@ -439,23 +535,21 @@ export interface VerifyCodeRequestDTO {
   email: string;
 }
 
-/**
- * API 统一返回格式
- */
 export interface ResultWorkLogEntity {
   /** 是否成功 */
-  success?: boolean;
-  payload?: WorkLogEntity;
+  isOk?: boolean;
+  okData?: WorkLogEntity;
+  /** 失败消息 */
+  failMsg?: string;
 }
 
-/**
- * API 统一返回格式
- */
 export interface ResultListWorkLogEntity {
   /** 是否成功 */
-  success?: boolean;
-  /** 数据或错误信息 */
-  payload?: WorkLogEntity[];
+  isOk?: boolean;
+  /** 成功数据 */
+  okData?: WorkLogEntity[];
+  /** 失败消息 */
+  failMsg?: string;
 }
 
 export type JSONConfigKeyComparator = { [key: string]: unknown };
@@ -483,31 +577,37 @@ export interface JSONObject {
   [key: string]: { [key: string]: unknown };
 }
 
-/**
- * API 统一返回格式
- */
 export interface ResultJSONObject {
   /** 是否成功 */
-  success?: boolean;
-  payload?: JSONObject;
+  isOk?: boolean;
+  okData?: JSONObject;
+  /** 失败消息 */
+  failMsg?: string;
 }
 
-/**
- * API 统一返回格式
- */
 export interface ResultUserSettingsEntity {
   /** 是否成功 */
-  success?: boolean;
-  payload?: UserSettingsEntity;
+  isOk?: boolean;
+  okData?: UserSettingsEntity;
+  /** 失败消息 */
+  failMsg?: string;
 }
 
-/**
- * API 统一返回格式
- */
 export interface ResultUserResponseVO {
   /** 是否成功 */
-  success?: boolean;
-  payload?: UserResponseVO;
+  isOk?: boolean;
+  okData?: UserResponseVO;
+  /** 失败消息 */
+  failMsg?: string;
+}
+
+export interface ResultListString {
+  /** 是否成功 */
+  isOk?: boolean;
+  /** 成功数据 */
+  okData?: string[];
+  /** 失败消息 */
+  failMsg?: string;
 }
 
 /**
@@ -524,13 +624,12 @@ export interface Attraction {
   bestTime?: string;
 }
 
-/**
- * API 统一返回格式
- */
 export interface ResultTravelGuideDTO {
   /** 是否成功 */
-  success?: boolean;
-  payload?: TravelGuideDTO;
+  isOk?: boolean;
+  okData?: TravelGuideDTO;
+  /** 失败消息 */
+  failMsg?: string;
 }
 
 /**
@@ -547,163 +646,274 @@ export interface TravelGuideDTO {
   tips?: string;
 }
 
-/**
- * API 统一返回格式
- */
-export interface ResultListTodoVO {
-  /** 是否成功 */
-  success?: boolean;
-  /** 数据或错误信息 */
-  payload?: TodoVO[];
-}
-
-/**
- * 数据或错误信息
- */
-export interface TodoVO {
-  /** 主键ID */
-  id?: string;
-  /** 待办事项名称 */
-  title?: string;
-  /** 待办事项描述 */
-  description?: string;
-  /** 是否完成 */
-  completed?: boolean;
-  /** 优先级 */
-  priority?: number;
-  /** 类别/标签 */
-  category?: string;
-  /** 用户ID */
-  userId?: number;
-}
-
-/**
- * API 统一返回格式
- */
 export interface ResultSysConfig {
   /** 是否成功 */
-  success?: boolean;
-  payload?: SysConfig;
+  isOk?: boolean;
+  okData?: SysConfig;
+  /** 失败消息 */
+  failMsg?: string;
 }
 
-/**
- * API 统一返回格式
- */
 export interface ResultListSysConfig {
   /** 是否成功 */
-  success?: boolean;
-  /** 数据或错误信息 */
-  payload?: SysConfig[];
+  isOk?: boolean;
+  /** 成功数据 */
+  okData?: SysConfig[];
+  /** 失败消息 */
+  failMsg?: string;
 }
 
-/**
- * API 统一返回格式
- */
 export interface ResultRequirementEntity {
   /** 是否成功 */
-  success?: boolean;
-  payload?: RequirementEntity;
+  isOk?: boolean;
+  okData?: RequirementEntity;
+  /** 失败消息 */
+  failMsg?: string;
 }
 
-/**
- * API 统一返回格式
- */
-export interface ResultListString {
-  /** 是否成功 */
-  success?: boolean;
-  /** 数据或错误信息 */
-  payload?: string[];
-}
-
-/**
- * API 统一返回格式
- */
 export interface ResultListRequirementEntity {
   /** 是否成功 */
-  success?: boolean;
-  /** 数据或错误信息 */
-  payload?: RequirementEntity[];
+  isOk?: boolean;
+  /** 成功数据 */
+  okData?: RequirementEntity[];
+  /** 失败消息 */
+  failMsg?: string;
 }
 
 /**
- * 分页参数
+ * DeepSeek API响应详情
  */
-export interface PageParam {
-  current?: number;
-  size?: number;
-}
-
-export interface QueryDevLogInParam {
-  pageParam?: PageParam;
-}
-
-/**
- * 开发日志响应
- */
-export interface DevLogVO {
-  /** 日志ID */
-  id?: number;
-  /** 日志内容 */
-  content?: string;
-  /** 进度 */
-  progress?: number;
+export interface DeepSeekApiResponse {
+  /** 响应ID */
+  id?: string;
+  /** 模型名称 */
+  model?: string;
   /** 创建时间 */
-  createdAt?: string;
-  /** 更新时间 */
-  updatedAt?: string;
+  created?: number;
+  usage?: TokenUsage;
+  /** 完成原因 */
+  finishReason?: string;
 }
 
 /**
- * 数据或错误信息
+ * 单个优化建议
  */
-export interface IPageDevLogVO {
-  size?: number;
-  pages?: number;
-  total?: number;
-  current?: number;
-  records?: DevLogVO[];
+export interface OptimizationSuggestion {
+  /** 优化类型 */
+  type?: string;
+  /** 优化前内容 */
+  before?: string;
+  /** 优化后内容 */
+  after?: string;
+  /** 优化原因 */
+  reason?: string;
+  /** 优先级 HIGH/MEDIUM/LOW */
+  priority?: string;
 }
 
 /**
- * API 统一返回格式
+ * AI提示词优化响应
  */
-export interface ResultIPageDevLogVO {
+export interface PromptOptimizationResponseVO {
+  /** 原始提示词 */
+  originalPrompt?: string;
+  /** 优化目标 */
+  optimizationGoal?: string;
+  /** 优化后的提示词 */
+  optimizedPrompt?: string;
+  /** 优化说明 */
+  optimizationExplanation?: string;
+  /** 优化建议列表 */
+  optimizations?: OptimizationSuggestion[];
+  /** 原始AI响应内容 */
+  rawResponse?: string;
+  /** 保存的Markdown文件相对路径 */
+  savedFilePath?: string;
+  /** 保存的Markdown文件绝对路径 */
+  savedFileAbsolutePath?: string;
+  /** 文件保存状态 */
+  fileSaved?: boolean;
+  /** 生成耗时（毫秒） */
+  durationMs?: number;
+  /** 生成耗时（秒） */
+  durationSeconds?: number;
+  /** 邮件发送状态 */
+  emailSent?: boolean;
+  apiResponse?: DeepSeekApiResponse;
+}
+
+export interface ResultPromptOptimizationResponseVO {
   /** 是否成功 */
-  success?: boolean;
-  payload?: IPageDevLogVO;
+  isOk?: boolean;
+  okData?: PromptOptimizationResponseVO;
+  /** 失败消息 */
+  failMsg?: string;
 }
 
 /**
- * API 统一返回格式
+ * Token使用情况
  */
-export interface ResultDevLog {
+export interface TokenUsage {
+  /** 提示词Token数量 */
+  promptTokens?: number;
+  /** 生成内容Token数量 */
+  completionTokens?: number;
+  /** 总Token数量 */
+  totalTokens?: number;
+}
+
+/**
+ * 代码示例
+ */
+export interface CodeExample {
+  /** 示例标题 */
+  title?: string;
+  /** 代码内容 */
+  code?: string;
+  /** 示例说明 */
+  explanation?: string;
+  /** 关键知识点 */
+  keyPoints?: string[];
+}
+
+/**
+ * Hutool工具推荐
+ */
+export interface HutoolRecommendation {
+  /** 工具类名称 */
+  toolClass?: string;
+  /** 推荐方法 */
+  method?: string;
+  /** 使用说明 */
+  description?: string;
+  /** 代码示例 */
+  codeExample?: string;
+  /** 优势说明 */
+  advantage?: string;
+}
+
+/**
+ * Java开发最佳实践建议响应
+ */
+export interface JavaBestPracticeResponseVO {
+  /** 输入的开发问题描述 */
+  inputQuestion?: string;
+  /** 问题分类 */
+  category?: string;
+  /** 分类说明 */
+  categoryDescription?: string;
+  /** 最佳实践建议列表 */
+  suggestions?: PracticeSuggestion[];
+  /** Hutool工具推荐 */
+  hutoolRecommendations?: HutoolRecommendation[];
+  /** 代码示例 */
+  codeExamples?: CodeExample[];
+  /** 原始AI响应内容 */
+  rawResponse?: string;
+  /** 保存的Markdown文件相对路径 */
+  savedFilePath?: string;
+  /** 保存的Markdown文件绝对路径 */
+  savedFileAbsolutePath?: string;
+  /** 文件保存状态 */
+  fileSaved?: boolean;
+  /** 生成耗时（毫秒） */
+  durationMs?: number;
+  /** 生成耗时（秒） */
+  durationSeconds?: number;
+  /** 邮件发送状态 */
+  emailSent?: boolean;
+  apiResponse?: DeepSeekApiResponse;
+}
+
+/**
+ * 实践建议
+ */
+export interface PracticeSuggestion {
+  /** 建议标题 */
+  title?: string;
+  /** 建议详细描述 */
+  description?: string;
+  /** 优先级 (HIGH/MEDIUM/LOW) */
+  priority?: string;
+  /** 适用场景 */
+  scenario?: string;
+}
+
+export interface ResultJavaBestPracticeResponseVO {
   /** 是否成功 */
-  success?: boolean;
-  payload?: DevLog;
+  isOk?: boolean;
+  okData?: JavaBestPracticeResponseVO;
+  /** 失败消息 */
+  failMsg?: string;
 }
 
 /**
- * API 统一返回格式
+ * 单个命名建议
  */
+export interface NamingSuggestion {
+  /** 推荐的命名 */
+  name?: string;
+  /** 命名说明（包含含义和选择理由） */
+  description?: string;
+}
+
+export interface ResultVariableNamingResponseVO {
+  /** 是否成功 */
+  isOk?: boolean;
+  okData?: VariableNamingResponseVO;
+  /** 失败消息 */
+  failMsg?: string;
+}
+
+/**
+ * 变量命名响应VO
+ */
+export interface VariableNamingResponseVO {
+  /** 输入的中文描述 */
+  inputDescription?: string;
+  /** 检测到的命名类型 */
+  detectedType?: string;
+  /** 检测原因 */
+  detectionReason?: string;
+  /** 命名建议列表 */
+  suggestions?: NamingSuggestion[];
+  /** 原始AI文本内容（已从JSON中提取） */
+  rawResponse?: string;
+  apiResponse?: DeepSeekApiResponse;
+}
+
+/**
+ * 成功数据
+ */
+export interface NamingTypeSuggestion {
+  type?: string;
+  reason?: string;
+}
+
+export interface ResultNamingTypeSuggestion {
+  /** 是否成功 */
+  isOk?: boolean;
+  okData?: NamingTypeSuggestion;
+  /** 失败消息 */
+  failMsg?: string;
+}
+
 export interface ResultDailyTask {
   /** 是否成功 */
-  success?: boolean;
-  payload?: DailyTask;
+  isOk?: boolean;
+  okData?: DailyTask;
+  /** 失败消息 */
+  failMsg?: string;
 }
 
-/**
- * API 统一返回格式
- */
 export interface ResultListDailyTask {
   /** 是否成功 */
-  success?: boolean;
-  /** 数据或错误信息 */
-  payload?: DailyTask[];
+  isOk?: boolean;
+  /** 成功数据 */
+  okData?: DailyTask[];
+  /** 失败消息 */
+  failMsg?: string;
 }
-
-export type DevelopmentLogListParams = {
-  inParam: QueryDevLogInParam;
-};
 
 export type UpdateShowTicketsParams = {
   /**
@@ -725,10 +935,6 @@ export type GetTravelGuideParams = {
   destination?: string;
 };
 
-export type GetTestTokenParams = {
-  hours?: number;
-};
-
 export type GetSignedUrlParams = {
   objectName: string;
 };
@@ -737,8 +943,26 @@ export type GetPublicUrlParams = {
   objectName: string;
 };
 
-export type CallDeepSeekParams = {
-  prompt: string;
+export type OptimizePromptParams = {
+  originalPrompt: string;
+  optimizationGoal?: string;
+  model?: string;
+};
+
+export type GetJavaBestPracticesParams = {
+  question: string;
+  focusArea?: string;
+  model?: string;
+};
+
+export type GetAiNameSuggestionParams = {
+  description: string;
+  type?: string;
+  model?: string;
+};
+
+export type DetectNamingTypeParams = {
+  description: string;
 };
 
 export type TestDeleteParams = {

@@ -61,7 +61,7 @@ export const customInstance = <T>(config: AxiosRequestConfig): Promise<AxiosResp
           default:
             Notify.create({
               type: 'negative',
-              message: error.response.data?.payload || '请求失败',
+              message: error.response.data?.okData || '请求失败',
               position: 'top',
             });
         }

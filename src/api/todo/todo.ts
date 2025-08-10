@@ -6,9 +6,9 @@
  * OpenAPI spec version: 1.0
  */
 import type {
+  GetTodoByConditionInParam,
   ResultBoolean,
   ResultListTodoVO,
-  ResultObject,
   ResultString,
   ResultTodo,
   Todo,
@@ -18,72 +18,54 @@ import { customInstance } from '../../boot/orval-client';
 
 export const getTodo = () => {
   /**
-   * @summary 根据ID获取待办事项
+   * @summary 根据条件来查询待办
    */
-  const getTodoById = (id: string) => {
-    return customInstance<ResultTodo>({ url: `/api/todo/${id}`, method: 'GET' });
+  const getTodoByCondition = (getTodoByConditionInParam: GetTodoByConditionInParam) => {
+    return customInstance<ResultListTodoVO>({
+      url: `/api/url/getTodoByCondition`,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      data: getTodoByConditionInParam,
+    });
   };
   /**
-   * @summary 删除待办事项
+   * @summary 删除待办
    */
   const deleteTodo = (id: string) => {
-    return customInstance<ResultString>({ url: `/api/todo/${id}`, method: 'POST' });
+    return customInstance<ResultString>({ url: `/api/todo/${id}/deleteTodo`, method: 'POST' });
   };
   /**
-   * @summary 标记待办事项为已完成
+   * @summary 标记待办为已完成
    */
-  const completeTodo = (id: number) => {
-    return customInstance<ResultObject>({ url: `/api/todo/${id}/complete`, method: 'POST' });
+  const completeTodo = (id: string) => {
+    return customInstance<ResultString>({ url: `/api/todo/${id}/completeTodo`, method: 'POST' });
   };
   /**
-   * @summary 更新待办事项
+   * @summary 更新待办
    */
   const updateTodo = (todo: Todo) => {
     return customInstance<ResultBoolean>({
-      url: `/api/todo/update`,
+      url: `/api/todo/updateTodo`,
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       data: todo,
     });
   };
   /**
-   * @summary 新增待办事项
+   * @summary 新增待办
    */
   const saveTodo = (todo: Todo) => {
     return customInstance<ResultTodo>({
-      url: `/api/todo/save`,
+      url: `/api/todo/saveTodo`,
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       data: todo,
     });
   };
-  /**
-   * @summary 获取当前用户的待办
-   */
-  const listTodoOfMe = () => {
-    return customInstance<ResultListTodoVO>({ url: `/api/todo/list`, method: 'GET' });
-  };
-  /**
-   * @summary 按类别获取待办事项
-   */
-  const listTodoByCategory = (category: string) => {
-    return customInstance<ResultListTodoVO>({
-      url: `/api/todo/by-category/${category}`,
-      method: 'GET',
-    });
-  };
-  return {
-    getTodoById,
-    deleteTodo,
-    completeTodo,
-    updateTodo,
-    saveTodo,
-    listTodoOfMe,
-    listTodoByCategory,
-  };
+  return { getTodoByCondition, deleteTodo, completeTodo, updateTodo, saveTodo };
 };
-export type GetTodoByIdResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getTodo>['getTodoById']>>
+export type GetTodoByConditionResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getTodo>['getTodoByCondition']>>
 >;
 export type DeleteTodoResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getTodo>['deleteTodo']>>
@@ -96,10 +78,4 @@ export type UpdateTodoResult = NonNullable<
 >;
 export type SaveTodoResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getTodo>['saveTodo']>>
->;
-export type ListTodoOfMeResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getTodo>['listTodoOfMe']>>
->;
-export type ListTodoByCategoryResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getTodo>['listTodoByCategory']>>
 >;

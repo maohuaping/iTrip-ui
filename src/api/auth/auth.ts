@@ -19,17 +19,6 @@ import { customInstance } from '../../boot/orval-client';
 
 export const getAuth = () => {
   /**
-   * @summary 忘记密码-修改密码
-   */
-  const updatePassword = (updatePasswordRequestDTO: UpdatePasswordRequestDTO) => {
-    return customInstance<ResultBoolean>({
-      url: `/api/auth/password`,
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      data: updatePasswordRequestDTO,
-    });
-  };
-  /**
    * @summary 注册
    */
   const register = (registerRequestDTO: RegisterRequestDTO) => {
@@ -38,6 +27,17 @@ export const getAuth = () => {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       data: registerRequestDTO,
+    });
+  };
+  /**
+   * @summary 忘记密码-修改密码
+   */
+  const updatePassword = (updatePasswordRequestDTO: UpdatePasswordRequestDTO) => {
+    return customInstance<ResultBoolean>({
+      url: `/api/auth/password`,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      data: updatePasswordRequestDTO,
     });
   };
   /**
@@ -68,13 +68,13 @@ export const getAuth = () => {
   const getVapidPublicKey = () => {
     return customInstance<ResultString>({ url: `/api/auth/vapidPublicKey`, method: 'GET' });
   };
-  return { updatePassword, register, login, sendVerifyCode, getVapidPublicKey };
+  return { register, updatePassword, login, sendVerifyCode, getVapidPublicKey };
 };
-export type UpdatePasswordResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getAuth>['updatePassword']>>
->;
 export type RegisterResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getAuth>['register']>>
+>;
+export type UpdatePasswordResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getAuth>['updatePassword']>>
 >;
 export type LoginResult = NonNullable<Awaited<ReturnType<ReturnType<typeof getAuth>['login']>>>;
 export type SendVerifyCodeResult = NonNullable<

@@ -95,8 +95,8 @@ const handleLogin = async () => {
       password: form.value.password
     });
 
-    if (response.data.success && response.data.payload) {
-      const { token, user } = response.data.payload;
+    if (response.data.isOk && response.data.okData) {
+      const { token, user } = response.data.okData;
 
       // 保存token到localStorage或sessionStorage
       if (rememberMe.value) {

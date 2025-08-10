@@ -385,9 +385,9 @@ const fetchTasks = async (): Promise<void> => {
   try {
     const response = await requirementApi.getCurrentUserRequirement()
 
-    if (response.data?.success && response.data.payload) {
+    if (response.data?.isOk && response.data.okData) {
       // 确保将API返回的数据正确地映射到TaskItem类型
-      const allTasks: TaskItem[] = response.data.payload.map((item: RequirementEntity) => {
+      const allTasks: TaskItem[] = response.data.okData.map((item: RequirementEntity) => {
         // 创建符合 TaskItem 类型的对象
         const taskItem: TaskItem = {
           id: item.requirementId || (item.id?.toString() || ''),
@@ -583,7 +583,7 @@ const handleRequirementClick = async (item: TaskItem, fileName: string): Promise
   if (!fileName) {
     return; // 如果文件名不存在，直接返回
   }
-  
+
   // 确保文件名被正确处理（去除可能的空格）
   const trimmedFileName = fileName.trim();
   const fullPath = `${requirementBasePath}${trimmedFileName}`;
@@ -593,7 +593,7 @@ const handleRequirementClick = async (item: TaskItem, fileName: string): Promise
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
-    
+
     const result = await response.json();
 
     if (result.success) {
@@ -782,7 +782,7 @@ const resetNewTaskForm = (): void => {
 const createTask = async (): Promise<void> => {
   try {
     // 明确转换systemCategory类型
-    const systemCategory: SystemType = 
+    const systemCategory: SystemType =
       newTask.value.type.value === 'incoming' ? 'callin' : 'callout';
 
     // 使用创建的本地接口
@@ -800,7 +800,7 @@ const createTask = async (): Promise<void> => {
 
     const response = await requirementApi.saveRequirement(requirementEntity);
 
-    if (response.data?.success) {
+    if (response.data?.isOk) {
       $q.notify({
         message: '任务创建成功',
         color: 'positive',
@@ -817,7 +817,7 @@ const createTask = async (): Promise<void> => {
       resetNewTaskForm()
     } else {
       $q.notify({
-        message: '任务创建失败: ' + (response.data?.payload || '未知错误'),
+        message: '任务创建失败: ' + (response.data?.okData || '未知错误'),
         color: 'negative',
         position: 'top',
         timeout: 1500

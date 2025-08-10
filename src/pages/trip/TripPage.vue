@@ -131,7 +131,7 @@
               <q-card class="info-summary-card">
                 <q-card-section>
                   <div class="text-h6 text-primary q-mb-md">旅行概览</div>
-                  
+
                   <div class="row q-col-gutter-md">
                     <!-- 计划总天数 -->
                     <div class="col-12 col-sm-4">
@@ -145,7 +145,7 @@
                         </div>
                       </div>
                     </div>
-                    
+
                     <!-- 天气信息 -->
                     <div class="col-12 col-sm-4">
                       <div class="info-item">
@@ -158,7 +158,7 @@
                         </div>
                       </div>
                     </div>
-                    
+
                     <!-- 行李准备进度 -->
                     <div class="col-12 col-sm-4">
                       <div class="info-item">
@@ -175,7 +175,7 @@
                 </q-card-section>
               </q-card>
             </div>
-            
+
             <!-- 待办事项信息卡 -->
             <div class="col-12 col-md-4">
               <q-card class="info-card bg-purple-1" @click="openTodoDialog">
@@ -192,7 +192,7 @@
                 </q-card-section>
               </q-card>
             </div>
-            
+
             <!-- 天气信息卡 -->
             <div class="col-12 col-md-4">
               <q-card class="info-card bg-blue-1">
@@ -206,13 +206,13 @@
                     </div>
                   </div>
                 </q-card-section>
-                
+
                 <!-- 天气预报滚动区域 -->
                 <div class="weather-forecast-container q-px-md q-pb-sm">
                   <div class="weather-forecast-scroll">
-                    <div 
-                      v-for="(day, index) in extendedForecast" 
-                      :key="index" 
+                    <div
+                      v-for="(day, index) in extendedForecast"
+                      :key="index"
                       class="weather-day-item text-center"
                     >
                       <div class="text-caption text-weight-medium q-mb-xs text-grey-8">{{ day.name }}</div>
@@ -228,7 +228,7 @@
             </div>
           </div>
         </div>
-        
+
         <!-- 旅行状态标签页 -->
         <div class="trips-section q-pt-none">
           <div class="container">
@@ -451,7 +451,7 @@
                   @update:model-value="() => updateTodoStatus(index)"
                 />
               </q-item-section>
-              
+
               <q-item-section>
                 <q-item-label :class="{'text-strike': todo.done}">
                   <q-input
@@ -515,39 +515,36 @@ export default {
     const todoApi = getTodo()
     const todoDialogOpen = ref(false)
     const newTodoText = ref('')
-    
+
     // 获取待办事项列表
     const fetchTodoItems = async () => {
       try {
-        const response = await todoApi.listTodoOfMe()
-        console.log('API Response:', response)
-        if (response.data && response.data.success && response.data.payload) {
-          const mappedItems = response.data.payload.map(item => ({
+        const response = await todoApi.getTodoByCondition()
+        if (response.data.isOk && response.data.okData) {
+          const mappedItems = response.data.okData.map(item => ({
             id: item.id,
             text: item.title,
             done: item.completed,
             editing: false,
             editText: item.title
           })).slice(0, 5)
-          console.log('Mapped Items:', mappedItems)
           todoItems.value = mappedItems
-          console.log('Todo Items Value:', todoItems.value)
         }
       } catch (error) {
         console.error('获取待办事项失败:', error)
       }
     }
-    
+
     // 添加新待办事项
     const addTodo = async () => {
       if (!newTodoText.value.trim()) return
-      
+
       try {
         const todoEntity = {
           title: newTodoText.value.trim(),
           completed: false
         }
-        
+
         await todoApi.saveTodo(todoEntity)
         await fetchTodoItems() // 重新获取列表
         newTodoText.value = '' // 清空输入框
@@ -555,13 +552,13 @@ export default {
         console.error('添加待办事项失败:', error)
       }
     }
-    
+
     // 开始编辑待办事项
     const startEdit = (index) => {
       todoItems.value[index].editing = true
       todoItems.value[index].editText = todoItems.value[index].text
     }
-    
+
     // 保存编辑的待办事项
     const saveTodoEdit = async (index) => {
       const todo = todoItems.value[index]
@@ -570,14 +567,14 @@ export default {
         todo.editText = todo.text
         return
       }
-      
+
       try {
         const todoEntity = {
           id: todo.id,
           title: todo.editText.trim(),
           completed: todo.done
         }
-        
+
         await todoApi.updateTodo(todoEntity)
         todo.text = todo.editText
         todo.editing = false
@@ -585,7 +582,7 @@ export default {
         console.error('更新待办事项失败:', error)
       }
     }
-    
+
     // 删除待办事项
     const deleteTodoItem = async (index) => {
       try {
@@ -596,24 +593,24 @@ export default {
         console.error('删除待办事项失败:', error)
       }
     }
-    
+
     // 打开待办事项对话框
     const openTodoDialog = async () => {
       todoDialogOpen.value = true
       await fetchTodoItems() // 确保等待数据加载完成
     }
-    
+
     // 更新待办事项状态
     const updateTodoStatus = async (index) => {
       try {
         const todoItem = todoItems.value[index]
-        
+
         // 确保待办项有ID
         if (!todoItem.id) {
           console.error('待办项缺少ID')
           return
         }
-        
+
         if (todoItem.done) {
           // 如果标记为完成，调用完成API
           await todoApi.completeTodo(todoItem.id)
@@ -630,14 +627,14 @@ export default {
         console.error('更新待办状态失败:', error)
       }
     }
-    
+
     // 天气信息 (模拟数据)
     const weather = ref({
       temp: 31,
       condition: '晴朗',
       location: '桐庐'
     })
-    
+
     // 扩展的天气预报数据 (模拟数据)
     const extendedForecast = ref([
       { name: '今天', high: 31, low: 23, condition: '晴朗', iconColor: 'orange' },
@@ -652,15 +649,15 @@ export default {
       { name: '下周三', high: 21, low: 15, condition: '多云', iconColor: 'blue-7' },
       { name: '下周四', high: 21, low: 14, condition: '晴朗', iconColor: 'orange' }
     ])
-    
+
     // 固定值
     const packingProgress = ref(75)
     const totalTripDays = ref(28)
-    
+
     onMounted(() => {
       fetchTodoItems()
     })
-    
+
     return {
       todoItems,
       todoDialogOpen,
@@ -797,7 +794,7 @@ export default {
         '雷雨': 'flash_on',
         '雪': 'ac_unit'
       }
-      
+
       return iconMap[condition] || 'wb_sunny'
     }
   }
@@ -811,7 +808,7 @@ export default {
 }
 
 .hero-banner {
-  background: linear-gradient(90deg, rgba(32, 55, 90, 0.9), rgba(32, 55, 90, 0.7)), 
+  background: linear-gradient(90deg, rgba(32, 55, 90, 0.9), rgba(32, 55, 90, 0.7)),
               url('https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1');
   background-size: cover;
   background-position: center;

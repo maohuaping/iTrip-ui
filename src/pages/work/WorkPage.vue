@@ -259,6 +259,9 @@
             <!-- 任务列表部分 -->
             <TaskList />
 
+            <!-- 命名建议部分 -->
+            <NamingSuggestion />
+
             <!-- 工作日志部分 -->
             <WorkLog />
           </div>
@@ -288,13 +291,37 @@
             outlined
             class="q-mb-md"
           />
-          <q-input
+          <q-select
             v-model="newUrl.tag"
+            :options="tagOptions"
             label="分类标签"
             dense
             outlined
+            use-input
+            use-chips
+            input-debounce="300"
+            new-value-mode="add-unique"
+            @filter="filterTagOptions"
+            @input-value="onTagInputValue"
             class="q-mb-md"
-          />
+            hint="可选择现有分类或输入新分类"
+          >
+            <template v-slot:no-option>
+              <q-item>
+                <q-item-section class="text-grey">
+                  没有找到匹配的分类，输入回车创建新分类
+                </q-item-section>
+              </q-item>
+            </template>
+            
+            <template v-slot:option="scope">
+              <q-item v-bind="scope.itemProps">
+                <q-item-section>
+                  <q-item-label>{{ scope.opt }}</q-item-label>
+                </q-item-section>
+              </q-item>
+            </template>
+          </q-select>
         </q-card-section>
 
         <q-card-actions align="right">
@@ -311,6 +338,7 @@ import { ref, onMounted, onUnmounted, computed, reactive, watch } from 'vue'
 import { useQuasar } from 'quasar'
 import TaskList from './components/TaskList.vue'
 import WorkLog from './components/WorkLog.vue'
+import NamingSuggestion from './components/NamingSuggestion.vue'
 import { getUrl } from 'src/api/url/url'
 import { getTodo } from 'src/api/todo/todo'
 
@@ -358,7 +386,7 @@ const toggleDarkMode = () => {
 const handleTodoLink = async () => {
   try {
     const response = await urlApi.getUrlByCondition({ name: "虚拟机" });
-    const urlList = response.data?.payload;
+    const urlList = response.data?.okData;
     if (urlList && Array.isArray(urlList) && urlList.length > 0) {
       const firstUrl = urlList[0];
       if (firstUrl?.address) {
@@ -480,13 +508,16 @@ const toggleAllGroups = () => {
 }
 
 // 打开添加URL对话框
-const openAddUrlDialog = () => {
+const openAddUrlDialog = async () => {
   newUrl.value = {
     name: '',
     address: '',
     tag: ''
   }
   addUrlDialog.value = true
+  
+  // 获取最新的标签选项
+  await fetchTagOptions()
 }
 
 // 保存新URL
@@ -529,8 +560,8 @@ const fetchUrlList = async () => {
     const response = await urlApi.getUrlByCondition({})
 
     // 检查返回的数据格式是否符合预期
-    if (response.data?.payload) {
-      urlList.value = response.data.payload
+    if (response.data?.okData) {
+      urlList.value = response.data.okData
     } else if (response.data?.data) {
       // 兼容旧的API返回格式
       urlList.value = response.data.data
@@ -589,10 +620,9 @@ const newTodo = ref('')
 // 获取待办事项列表
 const fetchTodos = async () => {
   try {
-    const response = await todoApi.listTodoOfMe()
-    if (response.data?.payload) {
-      // 将API返回的数据格式转换为组件使用的格式
-      todoItems.value = response.data.payload.map(item => ({
+    const response = await todoApi.getTodoByCondition( {})
+    if (response.data.okData) {
+      todoItems.value = response.data.okData.map(item => ({
         text: item.title || '',
         done: item.completed || false,
         id: item.id,
@@ -625,7 +655,7 @@ const addTodo = async () => {
       // 调用API保存待办事项
       const response = await todoApi.saveTodo(todoEntity)
 
-      if (response.data?.success) {
+      if (response.data?.isOk) {
         $q.notify({
           color: 'positive',
           message: '待办事项添加成功',
@@ -799,6 +829,52 @@ const formatOracleTimestamp = (date: Date): string => {
   const milliseconds = String(date.getMilliseconds()).padStart(3, '0')
 
   return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}.${milliseconds}`
+}
+
+// 标签选项
+const tagOptions = ref<string[]>([])
+const allTagOptions = ref<string[]>([])
+
+// 获取标签分类
+const fetchTagOptions = async () => {
+  try {
+    const response = await urlApi.getUrlTag()
+    if (response.data?.isOk && response.data.okData) {
+      allTagOptions.value = response.data.okData
+      tagOptions.value = [...allTagOptions.value]
+    }
+  } catch (error) {
+    console.error('获取标签分类失败:', error)
+    // 如果获取失败，使用默认分类
+    allTagOptions.value = ['工具', '学习', '娱乐', '工作', '其他']
+    tagOptions.value = [...allTagOptions.value]
+  }
+}
+
+// 过滤标签选项
+const filterTagOptions = (val: string, update: (fn: () => void) => void) => {
+  update(() => {
+    if (val === '') {
+      tagOptions.value = [...allTagOptions.value]
+    } else {
+      const needle = val.toLowerCase()
+      tagOptions.value = allTagOptions.value.filter(
+        tag => tag.toLowerCase().includes(needle)
+      )
+    }
+  })
+}
+
+// 处理标签输入值
+const onTagInputValue = (val: string) => {
+  // 这里可以添加自定义逻辑，比如验证输入格式等
+  if (val && val.length > 20) {
+    $q.notify({
+      color: 'warning',
+      message: '标签名称不能超过20个字符',
+      icon: 'warning'
+    })
+  }
 }
 </script>
 
