@@ -22,17 +22,72 @@ jobs:
       - name: Install dependencies
         run: yarn install --frozen-lockfile
 
-      - name: Build production
-        run: yarn build
+      - name: Check project structure
+        run: |
+          echo "=== Project Structure ==="
+          ls -la
+          echo ""
+          echo "=== Source Directory ==="
+          ls -la src/
+          echo ""
+          echo "=== Package.json scripts ==="
+          cat package.json | grep -A 10 "scripts"
+
+      - name: Build production (with verbose output)
+        run: |
+          echo "=== Starting build process ==="
+          echo "Node version: $(node --version)"
+          echo "Yarn version: $(yarn --version)"
+          echo "Current directory: $(pwd)"
+          echo ""
+          echo "=== Running yarn build ==="
+          yarn build --verbose 2>&1 | tee build.log
+          echo "Build exit code: $?"
         env:
           NODE_ENV: production
       
+      - name: Debug build failure
+        if: failure()
+        run: |
+          echo "=== Build failed! Debug information ==="
+          echo ""
+          echo "=== Build log (last 50 lines) ==="
+          tail -50 build.log || echo "No build.log found"
+          echo ""
+          echo "=== Check dist directory ==="
+          ls -la dist/ || echo "No dist directory"
+          echo ""
+          echo "=== Check for any generated files ==="
+          find . -name "*.log" -type f | head -10
+          echo ""
+          echo "=== Check Quasar CLI ==="
+          yarn quasar --version || echo "Quasar CLI not available"
+
       - name: Verify build output
         run: |
+          echo "=== Verifying build output ==="
           if [ ! -d "dist/spa" ]; then
-            echo "Build failed - dist/spa not found"
-            ls -la
+            echo "❌ Build output directory 'dist/spa' not found"
+            echo ""
+            echo "Available directories:"
+            ls -la dist/ || echo "dist directory does not exist"
+            echo ""
+            echo "Root directory contents:"
+            ls -la ./
             exit 1
           fi
-          echo "Build successful!"
+          echo "✅ Build successful! Contents:"
           ls -la dist/spa/
+          echo ""
+          echo "Total size:"
+          du -sh dist/spa/
+
+      - name: Upload build logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-logs-${{ github.run_number }}
+          path: |
+            *.log
+            dist/
+          retention-days: 7
