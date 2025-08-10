@@ -47,7 +47,13 @@ const routes: RouteRecordRaw[] = [
       { path: '', component: () => import('pages/todo/index.vue') }
     ]
   },
-
+  {
+    path: '/ai',
+    component: () => import('layouts/CleanLayout.vue'),
+    children: [
+      { path: '', component: () => import('pages/ai/AiTestPage.vue') }
+    ]
+  },
 
   // Always leave this as last one,
   // but you can also remove it

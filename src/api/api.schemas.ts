@@ -463,10 +463,10 @@ export interface DevLogVO {
  */
 export interface IPageDevLogVO {
   size?: number;
-  pages?: number;
-  total?: number;
-  current?: number;
   records?: DevLogVO[];
+  current?: number;
+  total?: number;
+  pages?: number;
 }
 
 export interface ResultIPageDevLogVO {
@@ -676,6 +676,23 @@ export interface ResultListRequirementEntity {
   isOk?: boolean;
   /** 成功数据 */
   okData?: RequirementEntity[];
+  /** 失败消息 */
+  failMsg?: string;
+}
+
+export interface ResultDailyTask {
+  /** 是否成功 */
+  isOk?: boolean;
+  okData?: DailyTask;
+  /** 失败消息 */
+  failMsg?: string;
+}
+
+export interface ResultListDailyTask {
+  /** 是否成功 */
+  isOk?: boolean;
+  /** 成功数据 */
+  okData?: DailyTask[];
   /** 失败消息 */
   failMsg?: string;
 }
@@ -894,23 +911,6 @@ export interface ResultNamingTypeSuggestion {
   /** 是否成功 */
   isOk?: boolean;
   okData?: NamingTypeSuggestion;
-  /** 失败消息 */
-  failMsg?: string;
-}
-
-export interface ResultDailyTask {
-  /** 是否成功 */
-  isOk?: boolean;
-  okData?: DailyTask;
-  /** 失败消息 */
-  failMsg?: string;
-}
-
-export interface ResultListDailyTask {
-  /** 是否成功 */
-  isOk?: boolean;
-  /** 成功数据 */
-  okData?: DailyTask[];
   /** 失败消息 */
   failMsg?: string;
 }

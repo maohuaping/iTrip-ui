@@ -24,7 +24,7 @@ export const getAi = () => {
    */
   const optimizePrompt = (params: OptimizePromptParams) => {
     return customInstance<ResultPromptOptimizationResponseVO>({
-      url: `/api/optimizePrompt`,
+      url: `/api/ai/optimizePrompt`,
       method: 'GET',
       params,
     });
@@ -34,7 +34,7 @@ export const getAi = () => {
    */
   const getJavaBestPractices = (params: GetJavaBestPracticesParams) => {
     return customInstance<ResultJavaBestPracticeResponseVO>({
-      url: `/api/getJavaBestPractices`,
+      url: `/api/ai/getJavaBestPractices`,
       method: 'GET',
       params,
     });
@@ -44,7 +44,7 @@ export const getAi = () => {
    */
   const getAiNameSuggestion = (params: GetAiNameSuggestionParams) => {
     return customInstance<ResultVariableNamingResponseVO>({
-      url: `/api/getAiNameSuggestion`,
+      url: `/api/ai/getAiNameSuggestion`,
       method: 'GET',
       params,
     });
@@ -54,7 +54,7 @@ export const getAi = () => {
    */
   const detectNamingType = (params: DetectNamingTypeParams) => {
     return customInstance<ResultNamingTypeSuggestion>({
-      url: `/api/detectNamingType`,
+      url: `/api/ai/detectNamingType`,
       method: 'GET',
       params,
     });
