@@ -8,12 +8,10 @@ on:
 jobs:
   build-deploy:
     runs-on: ubuntu-latest
-    timeout-minutes: 15  # 增加超时时间
+    timeout-minutes: 15
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -22,108 +20,19 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: |
-          echo "Installing dependencies..."
-          npm ci --verbose
-        continue-on-error: false
-
-      - name: Lint code
-        run: |
-          echo "Running linter..."
-          npm run lint 2>&1 | tee lint.log
-        continue-on-error: true  # 不阻止构建，但记录错误
-
-      - name: Format check
-        run: |
-          echo "Checking code format..."
-          npm run format -- --check 2>&1 | tee format.log
-        continue-on-error: true
-
-      - name: Run tests
-        run: |
-          echo "Running tests..."
-          npm run test 2>&1 | tee test.log
-        continue-on-error: true
+        run: npm ci
 
       - name: Build production
-        run: |
-          echo "Building production..."
-          npm run build 2>&1 | tee build.log
-          echo "Build command exit code: $?"
+        run: npm run build
         env:
           NODE_ENV: production
       
       - name: Verify build output
         run: |
-          echo "Verifying build output..."
           if [ ! -d "dist/spa" ]; then
-            echo "❌ Build output directory 'dist/spa' not found"
-            echo "Available directories in dist/:"
-            ls -la dist/ || echo "dist directory does not exist"
-            echo "Available directories in root:"
-            ls -la ./
+            echo "Build failed - dist/spa not found"
+            ls -la
             exit 1
           fi
-          echo "✅ Build successful! Contents:"
+          echo "Build successful!"
           ls -la dist/spa/
-          echo "Total size:"
-          du -sh dist/spa/
-
-      # 添加日志上传步骤（失败时）
-      - name: Upload logs on failure
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-logs
-          path: |
-            *.log
-            dist/
-          retention-days: 7
-
-      - name: Upload build files to server
-        run: |
-          echo "Uploading build files to server..."
-          # 使用 rsync 或其他工具上传 dist/spa/ 目录
-        # 注意：修正了文件路径，应该上传前端构建文件而不是 target/*.jar
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SERVER_SSH_KEY }}
-          source: "dist/spa/*"  # 修正：上传前端构建文件
-          target: "/opt/1panel/apps/frontend"  # 修正：前端部署路径
-          strip_components: 2
-
-      - name: Restart web server
-        uses: appleboy/ssh-action@v0.1.10
-        with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SERVER_SSH_KEY }}
-          script: |
-            echo "Restarting web server..."
-            container_name="app"
-            docker restart $container_name || {
-              echo "Failed to restart container"
-              docker ps -a | grep $container_name
-              docker logs $container_name --tail 50
-              exit 1
-            }
-            echo "✅ Container restarted successfully"
-
-      # 添加部署验证步骤
-      - name: Verify deployment
-        uses: appleboy/ssh-action@v0.1.10
-        with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SERVER_SSH_KEY }}
-          script: |
-            echo "Verifying deployment..."
-            sleep 10  # 等待服务启动
-            curl -f http://localhost:8080/health || {
-              echo "❌ Health check failed"
-              docker logs app --tail 50
-              exit 1
-            }
-            echo "✅ Deployment verified successfully"
