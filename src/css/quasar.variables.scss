@@ -12,14 +12,36 @@
 // to match your app's branding.
 // Tip: Use the "Theme Builder" on Quasar's documentation website.
 
-$primary   : #1976D2;
-$secondary : #26A69A;
-$accent    : #9C27B0;
+//$primary   : #1976D2;
+//$secondary : #26A69A;
+//$accent    : #9C27B0;
+//
+//$dark      : #1D1D1D;
+//$dark-page : #121212;
+//
+//$positive  : #21BA45;
+//$negative  : #C10015;
+//$info      : #31CCEC;
+//$warning   : #F2C037;
 
-$dark      : #1D1D1D;
-$dark-page : #121212;
+// --- 1. 定义我们的 “Cursor 灰紫” 调色板 ---
+$cursor-bg:       #18161F;  // 主背景色 (非常深的木炭紫)
+$cursor-surface:  #201E28;  // 卡片/表层颜色 (比背景稍亮)
+$cursor-primary:  #9f54ff;  // 主要高亮色 (鲜艳的紫色)
+$cursor-secondary:#5a3a8a;  // 次要颜色 (更暗的紫色)
+$cursor-accent:   #ff54c8;  // 点缀色 (亮粉色，可选)
+$cursor-text:     #E0DDE7;  // 主要文字颜色 (偏暖的灰白色)
+$cursor-muted:    #8c8899;  // 减弱/次要文字颜色 (灰紫色)
+$cursor-border:   #33303D;  // 边框颜色
 
-$positive  : #21BA45;
-$negative  : #C10015;
-$info      : #31CCEC;
-$warning   : #F2C037;
+$primary:       $cursor-primary;
+$secondary:     $cursor-secondary;
+$accent:        $cursor-accent;
+
+$dark:          $cursor-surface; // Quasar 的 $dark 变量，通常用于深色组件的背景
+
+// 你也可以微调一下语义化颜色，让它们更融入主题
+//$positive:      #2EB872;
+//$negative:      #E14A68;
+//$info:          #4885ED;
+//$warning:       #F4B400;
