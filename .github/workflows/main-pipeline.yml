@@ -1,4 +1,4 @@
-name: Build & Deploy Frontend
+name: 部署 工作流
 
 on:
   push:
