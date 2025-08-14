@@ -1,1 +1,7 @@
 // app global css in SCSS form
+
+/* 强制隐藏 html 和 body 的垂直滚动条 */
+html, body {
+  overflow-y: hidden !important;
+}
+
