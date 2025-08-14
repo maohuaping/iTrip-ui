@@ -15,34 +15,16 @@ export const getEmail = () => {
     return customInstance<void>({ url: `/api/email/sendWeiboSignEmail`, method: 'GET' });
   };
   /**
-   * @summary 待办提醒
+   * @summary 待办
    */
   const sendTodoEmail = () => {
     return customInstance<void>({ url: `/api/email/sendTodoEmail`, method: 'GET' });
   };
-  /**
-   * @summary 今日提醒
-   */
-  const sendTodayEmail = () => {
-    return customInstance<void>({ url: `/api/email/sendTodayEmail`, method: 'GET' });
-  };
-  /**
-   * @summary 红包使用提醒
-   */
-  const sendRedPackageEmail = () => {
-    return customInstance<void>({ url: `/api/email/sendRedPackageEmail`, method: 'GET' });
-  };
-  return { sendWeiboSignEmail, sendTodoEmail, sendTodayEmail, sendRedPackageEmail };
+  return { sendWeiboSignEmail, sendTodoEmail };
 };
 export type SendWeiboSignEmailResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getEmail>['sendWeiboSignEmail']>>
 >;
 export type SendTodoEmailResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getEmail>['sendTodoEmail']>>
->;
-export type SendTodayEmailResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getEmail>['sendTodayEmail']>>
->;
-export type SendRedPackageEmailResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getEmail>['sendRedPackageEmail']>>
 >;

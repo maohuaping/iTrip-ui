@@ -7,9 +7,11 @@
  */
 import type {
   DetectNamingTypeParams,
-  GetAiNameSuggestionParams,
   GetJavaBestPracticesParams,
+  GetNameSuggestionParams,
+  GetRawResponseParams,
   OptimizePromptParams,
+  ResultJSONObject,
   ResultJavaBestPracticeResponseVO,
   ResultNamingTypeSuggestion,
   ResultPromptOptimizationResponseVO,
@@ -20,11 +22,27 @@ import { customInstance } from '../../boot/orval-client';
 
 export const getAi = () => {
   /**
+   * @summary DeepSeek计费
+   */
+  const queryBalance = () => {
+    return customInstance<ResultJSONObject>({ url: `/api/ai/queryBalance`, method: 'GET' });
+  };
+  /**
    * @summary 优化AI提示词
    */
   const optimizePrompt = (params: OptimizePromptParams) => {
     return customInstance<ResultPromptOptimizationResponseVO>({
       url: `/api/ai/optimizePrompt`,
+      method: 'GET',
+      params,
+    });
+  };
+  /**
+   * @summary 获取原生的响应
+   */
+  const getRawResponse = (params: GetRawResponseParams) => {
+    return customInstance<ResultJSONObject>({
+      url: `/api/ai/getRawResponse`,
       method: 'GET',
       params,
     });
@@ -40,9 +58,9 @@ export const getAi = () => {
     });
   };
   /**
-   * @summary 获取AI命名建议
+   * @summary 获取命名建议
    */
-  const getAiNameSuggestion = (params: GetAiNameSuggestionParams) => {
+  const getNameSuggestion = (params: GetNameSuggestionParams) => {
     return customInstance<ResultVariableNamingResponseVO>({
       url: `/api/ai/getAiNameSuggestion`,
       method: 'GET',
@@ -59,16 +77,29 @@ export const getAi = () => {
       params,
     });
   };
-  return { optimizePrompt, getJavaBestPractices, getAiNameSuggestion, detectNamingType };
+  return {
+    queryBalance,
+    optimizePrompt,
+    getRawResponse,
+    getJavaBestPractices,
+    getNameSuggestion,
+    detectNamingType,
+  };
 };
+export type QueryBalanceResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getAi>['queryBalance']>>
+>;
 export type OptimizePromptResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getAi>['optimizePrompt']>>
+>;
+export type GetRawResponseResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getAi>['getRawResponse']>>
 >;
 export type GetJavaBestPracticesResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getAi>['getJavaBestPractices']>>
 >;
-export type GetAiNameSuggestionResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getAi>['getAiNameSuggestion']>>
+export type GetNameSuggestionResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getAi>['getNameSuggestion']>>
 >;
 export type DetectNamingTypeResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getAi>['detectNamingType']>>

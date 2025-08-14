@@ -944,8 +944,13 @@ export type GetPublicUrlParams = {
 };
 
 export type OptimizePromptParams = {
-  originalPrompt: string;
+  rawPrompt: string;
   optimizationGoal?: string;
+  model?: string;
+};
+
+export type GetRawResponseParams = {
+  rowPrompt: string;
   model?: string;
 };
 
@@ -955,7 +960,7 @@ export type GetJavaBestPracticesParams = {
   model?: string;
 };
 
-export type GetAiNameSuggestionParams = {
+export type GetNameSuggestionParams = {
   description: string;
   type?: string;
   model?: string;
