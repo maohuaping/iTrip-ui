@@ -802,6 +802,42 @@ export default {
 </script>
 
 <style scoped>
+
+/*
+ * 核心修复：
+ * 1. 让 QLayout 的容器高度充满整个屏幕，并且不允许它自己产生滚动条。
+ * 2. :deep() 用于穿透 scoped 限制，修改 Quasar 的内部组件样式。
+*/
+:deep(.q-layout) {
+  height: 100vh !important;
+  overflow-y: hidden !important;
+}
+
+/*
+ * 2. 找到 q-page 元素，让它来负责内容的滚动。
+ * - height: 0; 和 flex-grow: 1; 是一个 flexbox 技巧，
+ * 能让 q-page 自动填满 QHeader 和 QFooter 之外的所有剩余空间。
+ * - overflow-y: auto; 表示当内容超出 q-page 的高度时，
+ * 在 q-page 内部显示滚动条，而不是在整个窗口上。
+*/
+:deep(.q-page) {
+  display: flex;
+  flex-direction: column;
+  height: 0;
+  flex-grow: 1;
+  overflow-y: auto;
+}
+
+/*
+ * 3. 如果 q-page 内部还有一层 div 作为主要容器，也需要确保它能正确伸缩。
+ * 你的代码里有一个 .container 或 .trip-page-content。
+*/
+.trip-page-content { /* 或者你的其他顶层class */
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+
 .container {
   max-width: 1200px;
   margin: 0 auto;
