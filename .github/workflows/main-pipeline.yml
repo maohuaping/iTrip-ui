@@ -1,4 +1,4 @@
-name: 部署 工作流
+name: 1.部署 流水线
 
 on:
   push:
@@ -10,30 +10,19 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - name: Checkout code
+      - name: 检出代码
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      - name: 构建配置Node.js环境
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'yarn'
 
-      - name: Install dependencies
+      - name: 安装依赖
         run: yarn install --frozen-lockfile
 
-      - name: Check project structure
-        run: |
-          echo "=== Project Structure ==="
-          ls -la
-          echo ""
-          echo "=== Source Directory ==="
-          ls -la src/
-          echo ""
-          echo "=== Package.json scripts ==="
-          cat package.json | grep -A 10 "scripts"
-
-      - name: Build production (with verbose output)
+      - name: 构建
         run: |
           echo "=== Starting build process ==="
           echo "Node version: $(node --version)"
@@ -45,44 +34,18 @@ jobs:
           echo "Build exit code: $?"
         env:
           NODE_ENV: production
-      
-      - name: Debug build failure
-        if: failure()
-        run: |
-          echo "=== Build failed! Debug information ==="
-          echo ""
-          echo "=== Build log (last 50 lines) ==="
-          tail -50 build.log || echo "No build.log found"
-          echo ""
-          echo "=== Check dist directory ==="
-          ls -la dist/ || echo "No dist directory"
-          echo ""
-          echo "=== Check for any generated files ==="
-          find . -name "*.log" -type f | head -10
-          echo ""
-          echo "=== Check Quasar CLI ==="
-          yarn quasar --version || echo "Quasar CLI not available"
 
-      - name: Verify build output
-        run: |
-          echo "=== Verifying build output ==="
-          if [ ! -d "dist/spa" ]; then
-            echo "❌ Build output directory 'dist/spa' not found"
-            echo ""
-            echo "Available directories:"
-            ls -la dist/ || echo "dist directory does not exist"
-            echo ""
-            echo "Root directory contents:"
-            ls -la ./
-            exit 1
-          fi
-          echo "✅ Build successful! Contents:"
-          ls -la dist/spa/
-          echo ""
-          echo "Total size:"
-          du -sh dist/spa/
+      - name: 上传前端构建文件到服务器
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          source: "dist/spa/**"
+          target: "/opt/1panel/www/sites/twofast.cn/index"
+          strip_components: 2
 
-      - name: Upload build logs
+      - name: 上传构建日志
         if: always()
         uses: actions/upload-artifact@v4
         with:
