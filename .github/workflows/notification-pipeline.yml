@@ -2,7 +2,7 @@ name: 2.通知 流水线
 
 on:
   workflow_run:
-    workflows: ["Build & Deploy"]
+    workflows: ["1.部署 流水线"]
     types:
       - completed
 
@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ github.event.workflow_run.conclusion != 'skipped' }}
     steps:
-      - name: Get workflow details
+      - name: 获取工作流明细
         id: workflow_details
         run: |
           set -e

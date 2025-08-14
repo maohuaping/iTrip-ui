@@ -8,12 +8,12 @@ on:
 jobs:
   build-deploy:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 2
     steps:
       - name: 检出代码
         uses: actions/checkout@v4
 
-      - name: 构建配置Node.js环境
+      - name: 配置Node.js环境
         uses: actions/setup-node@v4
         with:
           node-version: '22'
@@ -24,14 +24,13 @@ jobs:
 
       - name: 构建
         run: |
-          echo "=== Starting build process ==="
-          echo "Node version: $(node --version)"
-          echo "Yarn version: $(yarn --version)"
-          echo "Current directory: $(pwd)"
+          echo "=== 开始构建流程 ==="
+          echo "Node 版本: $(node --version)"
+          echo "Yarn 版本: $(yarn --version)"
+          echo "当前目录: $(pwd)"
           echo ""
-          echo "=== Running yarn build ==="
+          echo "=== 执行 yarn build ==="
           yarn build --verbose 2>&1 | tee build.log
-          echo "Build exit code: $?"
         env:
           NODE_ENV: production
 
@@ -41,17 +40,6 @@ jobs:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
-          # passphrase: ${{ secrets.SSH_PASSPHRASE }}
           source: "dist/spa/**"
           target: "/opt/1panel/www/sites/twofast.cn/index"
           strip_components: 2
-
-      - name: 上传构建日志
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-logs-${{ github.run_number }}
-          path: |
-            *.log
-            dist/
-          retention-days: 7
