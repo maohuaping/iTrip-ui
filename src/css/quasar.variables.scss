@@ -2,46 +2,60 @@
 // --------------------------------------------------
 // To customize the look and feel of this app, you can override
 // the Sass/SCSS variables found in Quasar's source Sass/SCSS files.
-
 // Check documentation for full list of Quasar variables
-
 // Your own variables (that are declared here) and Quasar's own
 // ones will be available out of the box in your .vue/.scss/.sass files
-
 // It's highly recommended to change the default colors
 // to match your app's branding.
 // Tip: Use the "Theme Builder" on Quasar's documentation website.
-
-//$primary   : #1976D2;
-//$secondary : #26A69A;
-//$accent    : #9C27B0;
-//
-//$dark      : #1D1D1D;
-//$dark-page : #121212;
-//
-//$positive  : #21BA45;
-//$negative  : #C10015;
-//$info      : #31CCEC;
-//$warning   : #F2C037;
-
-// --- 1. 定义我们的 “Cursor 灰紫” 调色板 ---
-$cursor-bg:       #18161F;  // 主背景色 (非常深的木炭紫)
-$cursor-surface:  #201E28;  // 卡片/表层颜色 (比背景稍亮)
-$cursor-primary:  #9f54ff;  // 主要高亮色 (鲜艳的紫色)
-$cursor-secondary:#5a3a8a;  // 次要颜色 (更暗的紫色)
-$cursor-accent:   #ff54c8;  // 点缀色 (亮粉色，可选)
-$cursor-text:     #E0DDE7;  // 主要文字颜色 (偏暖的灰白色)
-$cursor-muted:    #8c8899;  // 减弱/次要文字颜色 (灰紫色)
-$cursor-border:   #33303D;  // 边框颜色
-
-$primary:       $cursor-primary;
-$secondary:     $cursor-secondary;
-$accent:        $cursor-accent;
-
-$dark:          $cursor-surface; // Quasar 的 $dark 变量，通常用于深色组件的背景
-
-// 你也可以微调一下语义化颜色，让它们更融入主题
-//$positive:      #2EB872;
-//$negative:      #E14A68;
-//$info:          #4885ED;
-//$warning:       #F4B400;
+// --- 1. 定义我们的 "Cursor 灰紫" 调色板 ---
+$cursor-bg : #18161F; // 主背景色 (非常深的木炭紫)
+$cursor-surface : #201E28; // 卡片/表层颜色 (比背景稍亮)
+$cursor-primary : #9f54ff; // 主要高亮色 (鲜艳的紫色)
+$cursor-secondary:#5a3a8a; // 次要颜色 (更暗的紫色)
+$cursor-accent : #ff54c8; // 点缀色 (亮粉色，可选)
+$cursor-text : #E0DDE7; // 主要文字颜色 (偏暖的灰白色)
+$cursor-muted : #8c8899; // 减弱/次要文字颜色 (灰紫色)
+$cursor-border : #33303D; // 边框颜色
+// --- 2. 核心 Quasar 变量映射 ---
+$primary : $cursor-primary; // 主要按钮、链接等
+$secondary : $cursor-secondary; // 次要按钮、边框等
+$accent : $cursor-accent; // 强调色、特殊元素等
+$dark : $cursor-surface; // Quasar 的 $dark 变量，用于深色组件背景
+// --- 3. 语义化颜色，与主色调协调 ---
+$positive : #7c3aed; // 成功色 (深紫色，与主色调协调)
+$negative : #dc2626; // 错误色 (深红色，保持警示性)
+$info : #3b82f6; // 信息色 (蓝色，与紫色形成对比)
+$warning : #f59e0b; // 警告色 (橙色，与紫色形成对比)
+// --- 4. 扩展的 Cursor 色调系统 ---
+$cursor-success: #7c3aed; // 成功状态 (深紫色)
+$cursor-error : #dc2626; // 错误状态 (深红色)
+$cursor-info : #3b82f6; // 信息状态 (蓝色)
+$cursor-warning: #f59e0b; // 警告状态 (橙色)
+// --- 5. 背景和表面颜色 ---
+$body-bg : $cursor-bg; // 页面主体背景
+$card-bg : $cursor-surface; // 卡片背景
+$toolbar-bg : $cursor-surface; // 工具栏背景
+$drawer-bg : $cursor-bg; // 抽屉背景
+// --- 6. 文字颜色 ---
+$text-color : $cursor-text; // 主要文字颜色
+$text-muted : $cursor-muted; // 次要文字颜色
+$text-disabled: #4c4b57; // 禁用状态文字颜色
+// --- 7. 边框和分割线 ---
+$border-color : $cursor-border; // 主要边框颜色
+$separator-color: $cursor-border; // 分割线颜色
+// --- 8. 阴影和深度 ---
+$shadow-color : rgba(24, 22, 31, 0.3); // 基于 cursor-bg 的阴影
+$elevation-1 : 0 1px 3px rgba(24, 22, 31, 0.12),
+0 1px 2px rgba(24, 22, 31, 0.24);
+$elevation-2 : 0 3px 6px rgba(24, 22, 31, 0.16),
+0 3px 6px rgba(24, 22, 31, 0.23);
+$elevation-3 : 0 10px 20px rgba(24, 22, 31, 0.19),
+0 6px 6px rgba(24, 22, 31, 0.23);
+// --- 9. 交互状态颜色 ---
+$hover-bg : rgba(159, 84, 255, 0.1); // 悬停背景 (基于 primary)
+$active-bg : rgba(159, 84, 255, 0.2); // 激活背景
+$focus-ring : rgba(159, 84, 255, 0.3); // 焦点环
+// --- 10. 渐变和特殊效果 ---
+$gradient-primary: linear-gradient(135deg, $cursor-primary 0%, $cursor-secondary 100%);
+$gradient-surface: linear-gradient(135deg, $cursor-bg 0%, $cursor-surface 100%);
