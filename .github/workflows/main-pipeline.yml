@@ -22,19 +22,18 @@ jobs:
       - name: 安装依赖
         run: yarn install --frozen-lockfile
 
-      - name: 构建
+      - name: 构建dist产物
         run: |
           echo "=== 开始构建流程 ==="
           echo "Node 版本: $(node --version)"
           echo "Yarn 版本: $(yarn --version)"
           echo "当前目录: $(pwd)"
-          echo ""
           echo "=== 执行 yarn build ==="
-          yarn build --verbose 2>&1 | tee build.log
+          yarn build --verbose
         env:
           NODE_ENV: production
 
-      - name: 上传前端构建文件到服务器
+      - name: 上传dist产物到服务器
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.SERVER_HOST }}
