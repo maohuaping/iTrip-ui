@@ -51,7 +51,7 @@ const routes: RouteRecordRaw[] = [
     path: '/ai',
     component: () => import('layouts/CleanLayout.vue'),
     children: [
-      { path: '', component: () => import('pages/ai/AiTestPage.vue') }
+      { path: '', component: () => import('pages/ai/AiPage.vue') }
     ]
   },
 

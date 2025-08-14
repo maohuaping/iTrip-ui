@@ -7,25 +7,13 @@
 
     <!-- 功能选择 -->
     <div class="function-tabs">
-      <div 
-        class="tab" 
-        :class="{ active: activeTab === 'detect' }" 
-        @click="switchTab('detect')"
-      >
+      <div class="tab" :class="{ active: activeTab === 'detect' }" @click="switchTab('detect')">
         智能检测
       </div>
-      <div 
-        class="tab" 
-        :class="{ active: activeTab === 'practices' }" 
-        @click="switchTab('practices')"
-      >
+      <div class="tab" :class="{ active: activeTab === 'practices' }" @click="switchTab('practices')">
         开发建议
       </div>
-      <div 
-        class="tab" 
-        :class="{ active: activeTab === 'prompt' }" 
-        @click="switchTab('prompt')"
-      >
+      <div class="tab" :class="{ active: activeTab === 'prompt' }" @click="switchTab('prompt')">
         提示词优化
       </div>
     </div>
@@ -35,16 +23,12 @@
       <h2>命名类型智能检测</h2>
       <div class="form-group">
         <label>业务描述 *</label>
-        <textarea 
-          v-model="detectForm.description" 
-          placeholder="请输入业务描述，例如：计算用户年龄、处理订单支付、验证用户权限"
-          rows="3"
-        ></textarea>
+        <textarea v-model="detectForm.description" placeholder="请输入业务描述，例如：计算用户年龄、处理订单支付、验证用户权限" rows="3"></textarea>
       </div>
       <button @click="submitDetectNamingType" class="action-btn" :disabled="detecting">
         {{ detecting ? '分析中...' : '开始分析' }}
       </button>
-      
+
       <!-- 检测结果 -->
       <div v-if="detectResult" class="result-section">
         <h3>检测结果</h3>
@@ -66,11 +50,8 @@
       <h2>Java开发最佳实践</h2>
       <div class="form-group">
         <label>问题描述 *</label>
-        <textarea 
-          v-model="practicesForm.question" 
-          placeholder="请描述您的Java开发问题，例如：如何优化数据库查询性能、如何设计缓存策略"
-          rows="3"
-        ></textarea>
+        <textarea v-model="practicesForm.question" placeholder="请描述您的Java开发问题，例如：如何优化数据库查询性能、如何设计缓存策略"
+          rows="3"></textarea>
       </div>
       <div class="form-group">
         <label>关注领域</label>
@@ -92,11 +73,7 @@
       <h2>AI提示词优化</h2>
       <div class="form-group">
         <label>原始提示词 *</label>
-        <textarea 
-          v-model="promptForm.originalPrompt" 
-          placeholder="请输入您想要优化的提示词，例如：帮我写一个Java方法"
-          rows="4"
-        ></textarea>
+        <textarea v-model="promptForm.rawPrompt" placeholder="请输入您想要优化的提示词，例如：帮我写一个Java方法" rows="4"></textarea>
       </div>
       <div class="form-group">
         <label>优化目标</label>
@@ -181,7 +158,7 @@ const practicesForm = ref({
 })
 
 const promptForm = ref({
-  originalPrompt: '',
+  rawPrompt: '',
   optimizationGoal: 'general'
 })
 
@@ -210,23 +187,22 @@ const submitDetectNamingType = async () => {
   detecting.value = true
   error.value = ''
   detectResult.value = null
-  
+
   try {
     const params: DetectNamingTypeParams = {
-      description: detectForm.value.description,
-      model: DEFAULT_MODEL
+      description: detectForm.value.description
     }
-    
+
     const response = await aiApi.detectNamingType(params)
     console.log('智能检测结果:', response)
-    
+
     // 修改：正确处理axios响应结构
     const apiData = response.data
-    
+
     if (apiData?.isOk && apiData?.okData) {
       detectResult.value = {
-        type: apiData.okData.type,
-        reason: apiData.okData.reason
+        type: apiData.okData.type || '未知类型',
+        reason: apiData.okData.reason || '暂无说明'
       }
       console.log('成功设置检测结果:', detectResult.value)
     } else if (apiData?.failMsg) {
@@ -234,7 +210,7 @@ const submitDetectNamingType = async () => {
     } else {
       error.value = '检测失败: 未知错误'
     }
-    
+
   } catch (err: any) {
     error.value = `检测失败: ${err.message || err}`
     console.error('智能检测失败:', err)
@@ -247,21 +223,21 @@ const submitDetectNamingType = async () => {
 const submitTask = async (apiCall: () => Promise<any>, taskType: string) => {
   error.value = ''
   taskSubmitted.value = false
-  
+
   try {
     // 生成任务ID
     const taskId = generateTaskId()
     lastTaskId.value = taskId
     lastTaskType.value = taskType
-    
+
     console.log(`提交${taskType}任务，任务ID: ${taskId}`)
-    
+
     // 实际调用API
     const response = await apiCall()
     console.log('API调用成功:', response)
-    
+
     taskSubmitted.value = true
-    
+
   } catch (err: any) {
     error.value = `任务提交失败: ${err.message || err}`
     console.error(`${taskType} 任务提交失败:`, err)
@@ -286,14 +262,14 @@ const submitJavaBestPractices = async () => {
 }
 
 const submitOptimizePrompt = async () => {
-  if (!promptForm.value.originalPrompt.trim()) {
+  if (!promptForm.value.rawPrompt.trim()) {
     error.value = '原始提示词不能为空'
     return
   }
 
   await submitTask(async () => {
     const params: OptimizePromptParams = {
-      originalPrompt: promptForm.value.originalPrompt,
+      rawPrompt: promptForm.value.rawPrompt,
       optimizationGoal: promptForm.value.optimizationGoal,
       model: DEFAULT_MODEL
     }
@@ -330,12 +306,15 @@ const switchTab = (tab: string) => {
 }
 </script>
 
-<style scoped>
+<style scoped lang="scss">
+// 引入 Quasar 变量
+@import 'src/css/quasar.variables.scss';
+
 .ai-assistant-page {
   max-width: 800px;
   margin: 0 auto;
   padding: 20px;
-  background-color: #f5f7fa;
+  background-color: $body-bg;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -345,10 +324,10 @@ const switchTab = (tab: string) => {
   text-align: center;
   margin-bottom: 24px;
   padding: 20px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: $gradient-primary;
   border-radius: 16px;
-  color: white;
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  color: $text-color;
+  box-shadow: $elevation-2;
 }
 
 .title {
@@ -367,11 +346,11 @@ const switchTab = (tab: string) => {
 
 .function-tabs {
   display: flex;
-  background: white;
+  background: $card-bg;
   border-radius: 16px;
   padding: 6px;
   margin-bottom: 20px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  box-shadow: $elevation-1;
   overflow-x: auto;
 }
 
@@ -386,26 +365,26 @@ const switchTab = (tab: string) => {
   font-size: 14px;
   white-space: nowrap;
   min-width: 100px;
-  color: #64748b;
+  color: $text-muted;
 }
 
 .tab:hover {
-  background-color: #f1f5f9;
-  color: #475569;
+  background-color: $hover-bg;
+  color: $text-color;
 }
 
 .tab.active {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
+  background: $gradient-primary;
+  color: $text-color;
+  box-shadow: $elevation-2;
 }
 
 .function-section {
-  background: white;
+  background: $card-bg;
   border-radius: 16px;
   padding: 24px;
   margin-bottom: 20px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  box-shadow: $elevation-1;
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -414,7 +393,7 @@ const switchTab = (tab: string) => {
 
 .function-section h2 {
   margin: 0 0 20px 0;
-  color: #1e293b;
+  color: $text-color;
   font-size: 20px;
   font-weight: 700;
   text-align: center;
@@ -428,7 +407,7 @@ const switchTab = (tab: string) => {
   display: block;
   margin-bottom: 8px;
   font-weight: 600;
-  color: #374151;
+  color: $text-color;
   font-size: 14px;
 }
 
@@ -436,21 +415,22 @@ const switchTab = (tab: string) => {
 .form-group select {
   width: 100%;
   padding: 12px 14px;
-  border: 2px solid #e2e8f0;
+  border: 2px solid $border-color;
   border-radius: 12px;
   font-size: 14px;
   font-family: inherit;
   transition: all 0.3s ease;
   box-sizing: border-box;
-  background: #fafbfc;
+  background: $card-bg;
+  color: $text-color;
 }
 
 .form-group textarea:focus,
 .form-group select:focus {
   outline: none;
-  border-color: #667eea;
-  background: white;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  border-color: $primary;
+  background: $cursor-bg;
+  box-shadow: 0 0 0 3px $focus-ring;
 }
 
 .form-group textarea {
@@ -460,8 +440,8 @@ const switchTab = (tab: string) => {
 }
 
 .action-btn {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  background: $gradient-primary;
+  color: $text-color;
   border: none;
   padding: 14px 28px;
   border-radius: 12px;
@@ -469,14 +449,14 @@ const switchTab = (tab: string) => {
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  box-shadow: $elevation-2;
   width: 100%;
   margin-top: 8px;
 }
 
 .action-btn:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+  box-shadow: $elevation-3;
 }
 
 .action-btn:disabled {
@@ -487,30 +467,30 @@ const switchTab = (tab: string) => {
 
 .success-section,
 .error-section {
-  background: white;
+  background: $card-bg;
   border-radius: 16px;
   padding: 24px;
   margin-bottom: 20px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  box-shadow: $elevation-1;
 }
 
 .success-section h3 {
   margin: 0 0 16px 0;
-  color: #059669;
+  color: $cursor-success;
   font-size: 18px;
   font-weight: 700;
 }
 
 .error-section h3 {
   margin: 0 0 16px 0;
-  color: #dc2626;
+  color: $cursor-error;
   font-size: 18px;
   font-weight: 700;
 }
 
 .success-box {
-  background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
-  border: 2px solid #34d399;
+  background: linear-gradient(135deg, rgba($cursor-success, 0.1) 0%, rgba($cursor-success, 0.05) 100%);
+  border: 2px solid $cursor-success;
   border-radius: 16px;
   padding: 20px;
   display: flex;
@@ -530,12 +510,12 @@ const switchTab = (tab: string) => {
 .success-title {
   font-size: 16px;
   font-weight: 600;
-  color: #059669;
+  color: $cursor-success;
   margin: 0 0 10px 0;
 }
 
 .success-description {
-  color: #374151;
+  color: $text-color;
   margin: 6px 0;
   line-height: 1.5;
   font-size: 14px;
@@ -543,26 +523,27 @@ const switchTab = (tab: string) => {
 
 .task-id {
   font-family: 'Monaco', 'Menlo', 'JetBrains Mono', monospace;
-  background: #e5e7eb;
+  background: $border-color;
   padding: 2px 6px;
   border-radius: 4px;
   font-size: 13px;
   font-weight: 600;
+  color: $text-color;
 }
 
 .success-notice {
-  background: #fef3c7;
-  border: 1px solid #f59e0b;
+  background: rgba($cursor-warning, 0.1);
+  border: 1px solid $cursor-warning;
   border-radius: 8px;
   padding: 10px;
   margin-top: 12px;
-  color: #92400e;
+  color: $cursor-warning;
   font-size: 13px;
 }
 
 .error-box {
-  background: #fef2f2;
-  border: 1px solid #fecaca;
+  background: rgba($cursor-error, 0.1);
+  border: 1px solid $cursor-error;
   border-radius: 12px;
   padding: 16px;
   margin-bottom: 16px;
@@ -576,12 +557,12 @@ const switchTab = (tab: string) => {
   line-height: 1.5;
   white-space: pre-wrap;
   word-wrap: break-word;
-  color: #374151;
+  color: $text-color;
 }
 
 .clear-btn {
-  background: #6b7280;
-  color: white;
+  background: $text-muted;
+  color: $text-color;
   border: none;
   padding: 10px 20px;
   border-radius: 8px;
@@ -592,26 +573,26 @@ const switchTab = (tab: string) => {
 }
 
 .clear-btn:hover {
-  background: #4b5563;
+  background: $text-disabled;
 }
 
 /* 新增检测结果样式 */
 .result-section {
   margin-top: 20px;
   padding-top: 20px;
-  border-top: 2px solid #e2e8f0;
+  border-top: 2px solid $border-color;
 }
 
 .result-section h3 {
   margin: 0 0 16px 0;
-  color: #059669;
+  color: $cursor-success;
   font-size: 18px;
   font-weight: 700;
 }
 
 .result-box {
-  background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
-  border: 2px solid #34d399;
+  background: linear-gradient(135deg, rgba($cursor-success, 0.1) 0%, rgba($cursor-success, 0.05) 100%);
+  border: 2px solid $cursor-success;
   border-radius: 16px;
   padding: 20px;
 }
@@ -629,13 +610,13 @@ const switchTab = (tab: string) => {
 
 .result-label {
   font-weight: 600;
-  color: #059669;
+  color: $cursor-success;
   min-width: 80px;
   flex-shrink: 0;
 }
 
 .result-value {
-  color: #374151;
+  color: $text-color;
   flex: 1;
 }
 
@@ -645,53 +626,53 @@ const switchTab = (tab: string) => {
     padding: 16px;
     justify-content: center;
   }
-  
+
   .header {
     padding: 16px;
     margin-bottom: 20px;
   }
-  
+
   .title {
     font-size: 24px;
   }
-  
+
   .subtitle {
     font-size: 13px;
   }
-  
+
   .function-tabs {
     margin-bottom: 16px;
   }
-  
+
   .tab {
     padding: 10px 12px;
     font-size: 13px;
     min-width: 80px;
   }
-  
+
   .function-section {
     padding: 20px;
     margin-bottom: 16px;
     min-height: 50vh;
     justify-content: center;
   }
-  
+
   .function-section h2 {
     font-size: 18px;
     margin-bottom: 16px;
   }
-  
+
   .success-box {
     flex-direction: column;
     text-align: center;
     padding: 16px;
   }
-  
+
   .success-icon {
     font-size: 24px;
     align-self: center;
   }
-  
+
   .action-btn {
     font-size: 15px;
     padding: 12px 24px;
@@ -702,7 +683,7 @@ const switchTab = (tab: string) => {
   .function-section {
     min-height: 45vh;
   }
-  
+
   .form-group textarea {
     min-height: 70px;
   }
