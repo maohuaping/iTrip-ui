@@ -114,7 +114,10 @@ export default defineConfig((/* ctx */) => {
       // Quasar plugins
       plugins: [
         'Notify'  // 添加 Notify 插件
-      ]
+      ],
+
+      // --- 在这里手动添加 sassVariables 配置 ---
+      sassVariables: 'src/css/quasar.variables.scss'
     },
 
     // animations: 'all', // --- includes all animations
