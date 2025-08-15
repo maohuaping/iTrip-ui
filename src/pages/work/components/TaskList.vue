@@ -114,7 +114,7 @@
       </q-card>
 
       <!-- 任务列表 -->
-      <q-card flat bordered class="task-list-card q-mb-lg">
+      <q-card flat bordered class="filter-card q-mb-lg">
         <q-card-section class="q-pa-md">
           <!-- 数据区域 -->
           <div class="row q-col-gutter-md">
@@ -1119,17 +1119,6 @@ defineOptions({
 
   .q-card-section {
     padding: 16px;
-  }
-}
-
-// 任务列表卡片样式
-.task-list-card {
-  background: white;
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  border-radius: 12px;
-
-  .q-card-section {
-    padding: 20px;
   }
 }
 
