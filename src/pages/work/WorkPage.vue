@@ -2,37 +2,16 @@
   <q-layout view="lHh Lpr lFf">
     <q-header elevated class="bg-white text-dark">
       <q-toolbar>
-        <q-btn
-          flat
-          dense
-          round
-          icon="menu"
-          aria-label="Menu"
-          @click="toggleLeftDrawer"
-        />
+        <q-btn flat dense round icon="menu" aria-label="Menu" @click="toggleLeftDrawer" />
 
-        <q-btn
-          flat
-          dense
-          icon="link"
-          color="primary"
-          class="q-ml-sm"
-          @click="handleTodoLink"
-        >
+        <q-btn flat dense icon="link" color="primary" class="q-ml-sm" @click="handleTodoLink">
           <q-tooltip>虚拟机</q-tooltip>
         </q-btn>
 
         <q-toolbar-title class="row items-center justify-center">
           <!-- 添加待办列表下拉按钮 -->
-          <q-btn-dropdown
-            flat
-            color="green-7"
-            no-caps
-            dense
-            class="q-mr-sm todo-dropdown"
-            label="待办事项"
-            icon="checklist"
-          >
+          <q-btn-dropdown flat color="green-7" no-caps dense class="q-mr-sm todo-dropdown" label="待办事项"
+            icon="checklist">
             <q-list style="min-width: 250px">
               <q-item-label header>今日待办</q-item-label>
 
@@ -42,7 +21,7 @@
                     <q-checkbox v-model="item.done" color="green-7" @update:model-value="updateTodoStatus(index)" />
                   </q-item-section>
                   <q-item-section>
-                    <q-item-label :class="{'text-strike': item.done}">{{ item.text }}</q-item-label>
+                    <q-item-label :class="{ 'text-strike': item.done }">{{ item.text }}</q-item-label>
                     <q-item-label caption v-if="item.dueTime">{{ item.dueTime }}</q-item-label>
                   </q-item-section>
                   <q-item-section side>
@@ -61,13 +40,7 @@
 
               <q-item>
                 <q-item-section>
-                  <q-input
-                    v-model="newTodo"
-                    dense
-                    placeholder="添加新待办..."
-                    @keyup.enter="addTodo"
-                    class="new-todo-input"
-                  >
+                  <q-input v-model="newTodo" dense placeholder="添加新待办..." @keyup.enter="addTodo" class="new-todo-input">
                     <template v-slot:append>
                       <q-btn round dense flat icon="add" color="green-7" @click="addTodo" />
                     </template>
@@ -78,18 +51,9 @@
           </q-btn-dropdown>
 
           <!-- 使用Quasar的split button组件 - 改进版 -->
-          <q-btn-dropdown
-            flat
-            color="primary"
-            no-caps
-            dense
-            class="q-mr-sm copy-btn-dropdown"
-            :label="selectedText || 'Flex20190429'"
-            icon="content_copy"
-            dropdown-icon="arrow_drop_down"
-            split
-            @click="handleTextSelection(selectedText || 'Flex20190429')"
-          >
+          <q-btn-dropdown flat color="primary" no-caps dense class="q-mr-sm copy-btn-dropdown"
+            :label="selectedText || 'Flex20190429'" icon="content_copy" dropdown-icon="arrow_drop_down" split
+            @click="handleTextSelection(selectedText || 'Flex20190429')">
             <q-list>
               <q-item clickable v-close-popup @click="handleTextSelection('Flex20190429')">
                 <q-item-section>
@@ -132,29 +96,14 @@
           </q-btn-dropdown>
 
           <!-- 主页按钮移到最右侧 -->
-          <q-btn
-            flat
-            dense
-            icon="home"
-            no-caps
-            :label="$q.screen.gt.xs ? '主页' : ''"
-            class="q-ml-sm"
-            aria-label="回到主页"
-            to="/trip"
-            color="primary"
-          >
+          <q-btn flat dense icon="home" no-caps :label="$q.screen.gt.xs ? '主页' : ''" class="q-ml-sm" aria-label="回到主页"
+            to="/trip" color="primary">
             <q-tooltip>回到主页</q-tooltip>
           </q-btn>
 
           <!-- 添加暗黑主题切换按钮 -->
-          <q-btn
-            flat
-            dense
-            :icon="isDark ? 'light_mode' : 'dark_mode'"
-            aria-label="切换主题"
-            class="q-ml-sm"
-            @click="toggleDarkMode"
-          >
+          <q-btn flat dense :icon="isDark ? 'light_mode' : 'dark_mode'" aria-label="切换主题" class="q-ml-sm"
+            @click="toggleDarkMode">
             <q-tooltip>{{ isDark ? '切换到亮色模式' : '切换到暗色模式' }}</q-tooltip>
           </q-btn>
 
@@ -162,13 +111,7 @@
       </q-toolbar>
     </q-header>
 
-    <q-drawer
-      v-model="leftDrawerOpen"
-      show-if-above
-      bordered
-      :width="240"
-      class="narrow-drawer"
-    >
+    <q-drawer v-model="leftDrawerOpen" show-if-above bordered :width="240" class="narrow-drawer">
       <q-list>
         <div class="drawer-header q-px-md">
           <q-item-label header class="q-py-sm">
@@ -176,15 +119,8 @@
           </q-item-label>
 
           <div class="expand-actions q-py-sm">
-            <q-btn
-              flat
-              dense
-              no-caps
-              class="expand-btn"
-              :color="allExpanded ? 'primary' : 'blue-7'"
-              :label="allExpanded ? '全部收起' : '全部展开'"
-              @click="toggleAllGroups"
-            />
+            <q-btn flat dense no-caps class="expand-btn" :color="allExpanded ? 'primary' : 'blue-7'"
+              :label="allExpanded ? '全部收起' : '全部展开'" @click="toggleAllGroups" />
           </div>
         </div>
 
@@ -192,15 +128,9 @@
 
         <template v-if="!loading">
           <!-- 使用expand-icon="none"隐藏默认箭头 -->
-          <q-expansion-item
-            v-for="(group, tag) in groupedUrls"
-            :key="tag"
-            :model-value="expandedGroups[tag] || false"
-            @update:model-value="(val) => updateExpandedState(tag, val)"
-            header-class="cursor-pointer group-header"
-            expand-separator
-            expand-icon="none"
-          >
+          <q-expansion-item v-for="(group, tag) in groupedUrls" :key="tag" :model-value="expandedGroups[tag] || false"
+            @update:model-value="(val) => updateExpandedState(tag, val)" header-class="cursor-pointer group-header"
+            expand-separator expand-icon="none">
             <template v-slot:header>
               <q-item-section avatar>
                 <q-icon name="folder" />
@@ -212,15 +142,8 @@
             </template>
 
             <q-list class="submenu-list">
-              <q-item
-                v-for="url in group"
-                :key="url.id"
-                clickable
-                tag="a"
-                :href="url.address"
-                target="_blank"
-                class="url-item"
-              >
+              <q-item v-for="url in group" :key="url.id" clickable tag="a" :href="url.address" target="_blank"
+                class="url-item">
                 <q-item-section avatar>
                   <q-icon name="link" />
                 </q-item-section>
@@ -277,35 +200,11 @@
         </q-card-section>
 
         <q-card-section class="q-pt-none">
-          <q-input
-            v-model="newUrl.name"
-            label="名称"
-            dense
-            outlined
-            class="q-mb-md"
-          />
-          <q-input
-            v-model="newUrl.address"
-            label="链接地址"
-            dense
-            outlined
-            class="q-mb-md"
-          />
-          <q-select
-            v-model="newUrl.tag"
-            :options="tagOptions"
-            label="分类标签"
-            dense
-            outlined
-            use-input
-            use-chips
-            input-debounce="300"
-            new-value-mode="add-unique"
-            @filter="filterTagOptions"
-            @input-value="onTagInputValue"
-            class="q-mb-md"
-            hint="可选择现有分类或输入新分类"
-          >
+          <q-input v-model="newUrl.name" label="名称" dense outlined class="q-mb-md" />
+          <q-input v-model="newUrl.address" label="链接地址" dense outlined class="q-mb-md" />
+          <q-select v-model="newUrl.tag" :options="tagOptions" label="分类标签" dense outlined use-input use-chips
+            input-debounce="300" new-value-mode="add-unique" @filter="filterTagOptions" @input-value="onTagInputValue"
+            class="q-mb-md" hint="可选择现有分类或输入新分类">
             <template v-slot:no-option>
               <q-item>
                 <q-item-section class="text-grey">
@@ -313,7 +212,7 @@
                 </q-item-section>
               </q-item>
             </template>
-            
+
             <template v-slot:option="scope">
               <q-item v-bind="scope.itemProps">
                 <q-item-section>
@@ -515,7 +414,7 @@ const openAddUrlDialog = async () => {
     tag: ''
   }
   addUrlDialog.value = true
-  
+
   // 获取最新的标签选项
   await fetchTagOptions()
 }
@@ -620,7 +519,7 @@ const newTodo = ref('')
 // 获取待办事项列表
 const fetchTodos = async () => {
   try {
-    const response = await todoApi.getTodoByCondition( {})
+    const response = await todoApi.getTodoByCondition({})
     if (response.data.okData) {
       todoItems.value = response.data.okData.map(item => ({
         text: item.title || '',
@@ -963,7 +862,8 @@ const onTagInputValue = (val: string) => {
   z-index: 10;
 }
 
-.header-left, .header-right {
+.header-left,
+.header-right {
   display: flex;
   align-items: center;
 }
@@ -987,7 +887,7 @@ const onTagInputValue = (val: string) => {
 
 .work-page-content {
   flex: 1;
-  background: #f8fafc;
+  background: $cursor-bg; // 使用颜色系统的主背景色
 }
 
 .status-info {
@@ -1037,29 +937,29 @@ const onTagInputValue = (val: string) => {
   }
 }
 
-// 玻璃效果修改为适合白色背景的样式
+// 玻璃效果修改为使用颜色系统
 .glass {
-  background: rgba(255, 255, 255, 0.8);
+  background: rgba($cursor-surface, 0.8);
   backdrop-filter: blur(8px);
-  border: 1px solid rgba(0, 0, 0, 0.1);
+  border: 1px solid $cursor-border;
 }
 
 .glass-card {
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba($cursor-surface, 0.9);
   backdrop-filter: blur(8px);
-  border: 1px solid rgba(0, 0, 0, 0.05);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  border: 1px solid $cursor-border;
+  box-shadow: $elevation-1;
 }
 
-// 自定义样式 - 更新颜色以适应白色背景
+// 自定义样式 - 使用颜色系统
 .task-card {
   transition: all 0.3s ease;
   border-radius: 8px;
 
   &:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    box-shadow: $elevation-2;
     transform: translateY(-2px);
-    background: rgba(255, 255, 255, 1);
+    background: $cursor-surface;
   }
 }
 
@@ -1069,9 +969,9 @@ const onTagInputValue = (val: string) => {
   border-radius: 8px;
 
   &:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    box-shadow: $elevation-2;
     transform: translateY(-2px);
-    background: rgba(255, 255, 255, 1);
+    background: $cursor-surface;
   }
 }
 
@@ -1103,7 +1003,11 @@ section {
 
 // 暗色主题输入框改为亮色主题
 .dark-field {
-  .q-field__native, .q-field__prefix, .q-field__suffix, .q-field__input {
+
+  .q-field__native,
+  .q-field__prefix,
+  .q-field__suffix,
+  .q-field__input {
     color: #333;
   }
 }
@@ -1155,7 +1059,7 @@ section {
 
 // 边框底部
 .border-bottom {
-  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  border-bottom: 1px solid $cursor-border; // 使用颜色系统的边框颜色
 }
 
 // 任务项样式
@@ -1184,22 +1088,22 @@ section {
   margin-right: 8px;
 
   &.incoming-dot {
-    background: #1976D2;
+    background: $cursor-primary; // 使用颜色系统的主要颜色
   }
 
   &.outgoing-dot {
-    background: #26A69A;
+    background: $cursor-secondary; // 使用颜色系统的次要颜色
   }
 }
 
 // 呼入任务项左边框
 .task-item:has(.incoming-dot) {
-  border-left-color: #1976D2;
+  border-left-color: $cursor-primary; // 使用颜色系统的主要颜色
 }
 
 // 呼出任务项左边框
 .task-item:has(.outgoing-dot) {
-  border-left-color: #26A69A;
+  border-left-color: $cursor-secondary; // 使用颜色系统的次要颜色
 }
 
 // 添加侧边栏过渡效果
@@ -1230,7 +1134,8 @@ section {
 }
 
 .url-item {
-  padding-left: 40px; /* 减少链接项的缩进 */
+  padding-left: 40px;
+  /* 减少链接项的缩进 */
 }
 
 .submenu-list {
