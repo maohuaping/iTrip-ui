@@ -445,23 +445,37 @@ const handlePageChange = (page: number) => {
   }
 }
 
-// 搜索处理 - 简化版本，只根据表头条件查询一次
+// 搜索处理 - 优化版本，只进行一次搜索
 const handleSearch = () => {
-  // 如果选择了系统分类，只查询对应的任务类型
+  // 根据系统分类选择，只进行一次搜索
   if (filterParams.value.systemCategory === 'callin') {
+    // 只搜索呼入任务
     fetchIncomingTasks()
     // 清空呼出任务数据
     outgoingTasks.value = []
     outgoingPagination.value.total = 0
   } else if (filterParams.value.systemCategory === 'callout') {
+    // 只搜索呼出任务
     fetchOutgoingTasks()
     // 清空呼入任务数据
     incomingTasks.value = []
     incomingPagination.value.total = 0
   } else {
-    // 没有选择系统分类，查询所有
-    fetchIncomingTasks()
-    fetchOutgoingTasks()
+    // 没有选择系统分类时，根据其他过滤条件智能判断
+    // 如果设置了需求编号、需求名称等具体条件，优先搜索呼入任务
+    if (filterParams.value.requirementId || filterParams.value.requirementName ||
+      filterParams.value.relatedRequirementDocs || filterParams.value.relatedDesignDocs) {
+      fetchIncomingTasks()
+      // 清空呼出任务数据
+      outgoingTasks.value = []
+      outgoingPagination.value.total = 0
+    } else {
+      // 没有具体过滤条件时，默认搜索呼入任务（通常呼入任务更常见）
+      fetchIncomingTasks()
+      // 清空呼出任务数据
+      outgoingTasks.value = []
+      outgoingPagination.value.total = 0
+    }
   }
 }
 
