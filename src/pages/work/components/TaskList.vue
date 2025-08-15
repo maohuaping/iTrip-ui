@@ -17,22 +17,116 @@
         <q-tab name="incoming" class="q-px-md">
           <q-icon name="call_received" class="q-mr-xs" />
           呼入任务
-          <q-badge color="primary" floating rounded>{{ incomingTasks.length }}</q-badge>
+          <q-badge color="primary" floating rounded>{{ incomingPagination.total || 0 }}</q-badge>
         </q-tab>
         <q-tab name="outgoing" class="q-px-md">
           <q-icon name="call_made" class="q-mr-xs" />
           呼出任务
-          <q-badge color="teal" floating rounded>{{ outgoingTasks.length }}</q-badge>
+          <q-badge color="teal" floating rounded>{{ outgoingPagination.total || 0 }}</q-badge>
         </q-tab>
       </q-tabs>
 
       <q-separator class="q-mb-md" />
 
+      <!-- 过滤查询表头 -->
+      <div class="filter-header q-mb-lg">
+        <div class="row q-col-gutter-md items-end">
+          <!-- 需求编号搜索 -->
+          <div class="col-12 col-sm-6 col-md-3">
+            <q-input v-model="filterParams.requirementId" label="需求编号" outlined dense clearable placeholder="请输入需求编号"
+              class="light-field" @update:model-value="handleFilterChange">
+              <template v-slot:prepend>
+                <q-icon name="tag" size="16px" />
+              </template>
+            </q-input>
+          </div>
+
+          <!-- 需求名称搜索 -->
+          <div class="col-12 col-sm-6 col-md-3">
+            <q-input v-model="filterParams.requirementName" label="需求名称" outlined dense clearable placeholder="请输入需求名称"
+              class="light-field" @update:model-value="handleFilterChange">
+              <template v-slot:prepend>
+                <q-icon name="description" size="16px" />
+              </template>
+            </q-input>
+          </div>
+
+          <!-- 系统分类选择 -->
+          <div class="col-12 col-sm-6 col-md-2">
+            <q-select v-model="filterParams.systemCategory" :options="systemCategoryOptions" label="系统分类" outlined dense
+              clearable class="light-field" @update:model-value="handleFilterChange">
+              <template v-slot:prepend>
+                <q-icon name="category" size="16px" />
+              </template>
+            </q-select>
+          </div>
+
+          <!-- 操作按钮 -->
+          <div class="col-12 col-sm-6 col-md-4">
+            <div class="row q-gutter-sm">
+              <q-btn color="primary" icon="search" label="搜索" dense unelevated @click="handleSearch" />
+              <q-btn color="secondary" icon="refresh" label="重置" dense unelevated @click="handleReset" />
+              <q-btn color="accent" icon="filter_list" label="高级筛选" dense unelevated
+                @click="showAdvancedFilter = !showAdvancedFilter" />
+            </div>
+          </div>
+        </div>
+
+        <!-- 高级筛选区域 -->
+        <div v-show="showAdvancedFilter" class="advanced-filter q-mt-md">
+          <q-separator class="q-mb-md" />
+          <div class="row q-col-gutter-md items-end">
+            <!-- 需求文档搜索 -->
+            <div class="col-12 col-sm-6 col-md-3">
+              <q-input v-model="filterParams.relatedRequirementDocs" label="需求文档" outlined dense clearable
+                placeholder="请输入需求文档名称" class="light-field" @update:model-value="handleFilterChange">
+                <template v-slot:prepend>
+                  <q-icon name="article" size="16px" />
+                </template>
+              </q-input>
+            </div>
+
+            <!-- 设计文档搜索 -->
+            <div class="col-12 col-sm-6 col-md-3">
+              <q-input v-model="filterParams.relatedDesignDocs" label="设计文档" outlined dense clearable
+                placeholder="请输入设计文档名称" class="light-field" @update:model-value="handleFilterChange">
+                <template v-slot:prepend>
+                  <q-icon name="design_services" size="16px" />
+                </template>
+              </q-input>
+            </div>
+
+            <!-- 创建时间范围 -->
+            <div class="col-12 col-sm-6 col-md-3">
+              <q-input v-model="filterParams.createdAtRange" label="创建时间" outlined dense readonly placeholder="选择时间范围"
+                class="light-field" @click="showDatePicker = true">
+                <template v-slot:prepend>
+                  <q-icon name="event" size="16px" />
+                </template>
+                <template v-slot:append>
+                  <q-icon name="calendar_today" size="16px" class="cursor-pointer" />
+                </template>
+              </q-input>
+            </div>
+
+            <!-- 状态筛选 -->
+            <div class="col-12 col-sm-6 col-md-3">
+              <q-select v-model="filterParams.status" :options="statusOptions" label="状态" outlined dense clearable
+                class="light-field" @update:model-value="handleFilterChange">
+                <template v-slot:prepend>
+                  <q-icon name="flag" size="16px" />
+                </template>
+              </q-select>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- 任务卡片样式优化 -->
       <q-tab-panels v-model="activeTab" animated>
         <q-tab-panel name="incoming" class="q-pa-none">
           <div class="row q-col-gutter-md">
-            <div v-for="task in visibleIncomingTasks" :key="task.id" class="col-12">
+            <div v-for="task in incomingTasks" :key="task.id" class="col-12">
               <q-card flat bordered class="task-card">
                 <q-card-section>
                   <div class="row items-center no-wrap">
@@ -63,22 +157,17 @@
             </div>
           </div>
 
-          <!-- 展示更多按钮 -->
-          <div v-if="incomingTasks.length > maxVisibleTasks && !showAllIncomingTasks" class="text-center q-mt-md">
-            <q-btn flat color="primary" :label="`查看更多 (${incomingTasks.length - maxVisibleTasks})`"
-              @click="showAllIncomingTasks = true" icon-right="expand_more" />
-          </div>
-
-          <!-- 收起按钮 -->
-          <div v-if="showAllIncomingTasks && incomingTasks.length > maxVisibleTasks" class="text-center q-mt-md">
-            <q-btn flat color="primary" label="收起" @click="showAllIncomingTasks = false" icon-right="expand_less" />
+          <!-- 分页组件 -->
+          <div class="q-mt-lg">
+            <q-pagination v-model="incomingPagination.current" :max="incomingPagination.pages || 1" :max-pages="6"
+              boundary-numbers direction-links @update:model-value="handleIncomingPageChange" />
           </div>
         </q-tab-panel>
 
         <!-- 呼出任务面板 -->
         <q-tab-panel name="outgoing" class="q-pa-none">
           <div class="row q-col-gutter-md">
-            <div v-for="task in visibleOutgoingTasks" :key="task.id" class="col-12">
+            <div v-for="task in outgoingTasks" :key="task.id" class="col-12">
               <q-card flat bordered class="task-card">
                 <q-card-section>
                   <div class="row items-center no-wrap">
@@ -109,15 +198,10 @@
             </div>
           </div>
 
-          <!-- 展示更多按钮 -->
-          <div v-if="outgoingTasks.length > maxVisibleTasks && !showAllOutgoingTasks" class="text-center q-mt-md">
-            <q-btn flat color="primary" :label="`查看更多 (${outgoingTasks.length - maxVisibleTasks})`"
-              @click="showAllOutgoingTasks = true" icon-right="expand_more" />
-          </div>
-
-          <!-- 收起按钮 -->
-          <div v-if="showAllOutgoingTasks && outgoingTasks.length > maxVisibleTasks" class="text-center q-mt-md">
-            <q-btn flat color="primary" label="收起" @click="showAllOutgoingTasks = false" icon-right="expand_less" />
+          <!-- 分页组件 -->
+          <div class="q-mt-lg">
+            <q-pagination v-model="outgoingPagination.current" :max="outgoingPagination.pages || 1" :max-pages="6"
+              boundary-numbers direction-links @update:model-value="handleOutgoingPageChange" />
           </div>
         </q-tab-panel>
       </q-tab-panels>
@@ -212,14 +296,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { useQuasar } from 'quasar'
-import { getTask } from 'src/api/task/task' // 使用task中的接口
-import type { RequirementEntity } from 'src/api/api.schemas'
+import { getDevTask } from 'src/api/dev-task/dev-task'
+import type { DevTask, QueryDevTaskInParam, IPageDevTask } from 'src/api/api.schemas'
 
 // 初始化
 const $q = useQuasar()
-const taskApi = getTask() // 使用task API
+const devTaskApi = getDevTask()
 
 // 活动标签页
 const activeTab = ref('incoming')
@@ -228,66 +312,198 @@ const activeTab = ref('incoming')
 const showNewTaskDialog = ref(false)
 
 // 任务数据
-const incomingTasks = ref<Array<TaskItem>>([])
-const outgoingTasks = ref<Array<TaskItem>>([])
+const incomingTasks = ref<DevTask[]>([])
+const outgoingTasks = ref<DevTask[]>([])
 
-// 控制展开/收起状态
-const maxVisibleTasks = 4 // 默认显示的任务数量
-const showAllIncomingTasks = ref(false)
-const showAllOutgoingTasks = ref(false)
-
-// 计算要显示的任务列表
-const visibleIncomingTasks = computed(() => {
-  return showAllIncomingTasks.value
-    ? incomingTasks.value
-    : incomingTasks.value.slice(0, maxVisibleTasks)
+// 分页数据
+const incomingPagination = ref<IPageDevTask>({
+  current: 1,
+  size: 10,
+  total: 0,
+  pages: 0
 })
 
-const visibleOutgoingTasks = computed(() => {
-  return showAllOutgoingTasks.value
-    ? outgoingTasks.value
-    : outgoingTasks.value.slice(0, maxVisibleTasks)
+const outgoingPagination = ref<IPageDevTask>({
+  current: 1,
+  size: 10,
+  total: 0,
+  pages: 0
 })
 
-// 获取任务数据
-const fetchTasks = async (): Promise<void> => {
+// 过滤参数
+const filterParams = ref({
+  requirementId: '',
+  requirementName: '',
+  systemCategory: '',
+  relatedRequirementDocs: '',
+  relatedDesignDocs: '',
+  createdAtRange: '',
+  status: ''
+})
+
+// 控制高级筛选显示
+const showAdvancedFilter = ref(false)
+const showDatePicker = ref(false)
+
+// 监听标签页切换，重新加载数据
+watch(activeTab, () => {
+  if (activeTab.value === 'incoming') {
+    fetchIncomingTasks()
+  } else {
+    fetchOutgoingTasks()
+  }
+})
+
+// 获取呼入任务数据
+const fetchIncomingTasks = async (): Promise<void> => {
   try {
-    const response = await taskApi.getCurrentUserRequirement() // 使用task中的接口
+    const params: QueryDevTaskInParam = {
+      systemCategory: 'callin',
+      pageParam: {
+        current: incomingPagination.value.current || 1,
+        size: incomingPagination.value.size || 10
+      }
+    }
+
+    // 添加过滤条件
+    if (filterParams.value.requirementId) {
+      params.requirementId = filterParams.value.requirementId
+    }
+    if (filterParams.value.requirementName) {
+      params.requirementName = filterParams.value.requirementName
+    }
+    if (filterParams.value.relatedRequirementDocs) {
+      params.relatedRequirementDocs = filterParams.value.relatedRequirementDocs
+    }
+    if (filterParams.value.relatedDesignDocs) {
+      params.relatedDesignDocs = filterParams.value.relatedDesignDocs
+    }
+
+    const response = await devTaskApi.queryDevTask(params)
 
     if (response.data?.isOk && response.data.okData) {
-      // 确保将API返回的数据正确地映射到TaskItem类型
-      const allTasks: TaskItem[] = response.data.okData.map((item: RequirementEntity) => {
-        // 创建符合 TaskItem 类型的对象
-        const taskItem: TaskItem = {
-          id: item.requirementId || (item.id?.toString() || ''),
-          requirementId: item.requirementId || '',
-          requirementName: item.requirementName || '',
-          systemCategory: (item.systemCategory || 'other') as SystemType,
-          relatedRequirementDocs: item.relatedRequirementDocs,
-          relatedDesignDocs: item.relatedDesignDocs
-        };
-        return taskItem;
-      });
-
-      incomingTasks.value = allTasks.filter(task => task.systemCategory === 'callin')
-      outgoingTasks.value = allTasks.filter(task => task.systemCategory === 'callout')
+      incomingTasks.value = response.data.okData.records || []
+      incomingPagination.value = {
+        current: response.data.okData.current || 1,
+        size: response.data.okData.size || 10,
+        total: response.data.okData.total || 0,
+        pages: response.data.okData.pages || 0
+      }
     }
   } catch (error) {
-    console.error('获取任务列表失败:', error)
+    console.error('获取呼入任务列表失败:', error)
+    $q.notify({
+      message: '加载呼入任务列表出错',
+      color: 'negative',
+      position: 'top',
+      timeout: 1500
+    })
+  }
+}
+
+// 获取呼出任务数据
+const fetchOutgoingTasks = async (): Promise<void> => {
+  try {
+    const params: QueryDevTaskInParam = {
+      systemCategory: 'callout',
+      pageParam: {
+        current: outgoingPagination.value.current || 1,
+        size: outgoingPagination.value.size || 10
+      }
+    }
+
+    // 添加过滤条件
+    if (filterParams.value.requirementId) {
+      params.requirementId = filterParams.value.requirementId
+    }
+    if (filterParams.value.requirementName) {
+      params.requirementName = filterParams.value.requirementName
+    }
+    if (filterParams.value.relatedRequirementDocs) {
+      params.relatedRequirementDocs = filterParams.value.relatedRequirementDocs
+    }
+    if (filterParams.value.relatedDesignDocs) {
+      params.relatedDesignDocs = filterParams.value.relatedDesignDocs
+    }
+
+    const response = await devTaskApi.queryDevTask(params)
+
+    if (response.data?.isOk && response.data.okData) {
+      outgoingTasks.value = response.data.okData.records || []
+      outgoingPagination.value = {
+        current: response.data.okData.current || 1,
+        size: response.data.okData.size || 10,
+        total: response.data.okData.total || 0,
+        pages: response.data.okData.pages || 0
+      }
+    }
+  } catch (error) {
+    console.error('获取呼出任务列表失败:', error)
+    $q.notify({
+      message: '加载呼出任务列表出错',
+      color: 'negative',
+      position: 'top',
+      timeout: 1500
+    })
+  }
+}
+
+// 处理呼入任务分页变化
+const handleIncomingPageChange = (page: number) => {
+  incomingPagination.value.current = page
+  fetchIncomingTasks()
+}
+
+// 处理呼出任务分页变化
+const handleOutgoingPageChange = (page: number) => {
+  outgoingPagination.value.current = page
+  fetchOutgoingTasks()
+}
+
+// 处理过滤条件变化
+const handleFilterChange = () => {
+  // 重置分页到第一页
+  if (activeTab.value === 'incoming') {
+    incomingPagination.value.current = 1
+  } else {
+    outgoingPagination.value.current = 1
+  }
+}
+
+// 搜索处理
+const handleSearch = () => {
+  if (activeTab.value === 'incoming') {
+    fetchIncomingTasks()
+  } else {
+    fetchOutgoingTasks()
+  }
+}
+
+// 重置过滤条件
+const handleReset = () => {
+  filterParams.value = {
+    requirementId: '',
+    requirementName: '',
+    systemCategory: '',
+    relatedRequirementDocs: '',
+    relatedDesignDocs: '',
+    createdAtRange: '',
+    status: ''
+  }
+
+  // 重置分页
+  if (activeTab.value === 'incoming') {
+    incomingPagination.value.current = 1
+    fetchIncomingTasks()
+  } else {
+    outgoingPagination.value.current = 1
+    fetchOutgoingTasks()
   }
 }
 
 // 在组件挂载时获取数据
 onMounted(() => {
-  fetchTasks().catch(error => {
-    console.error('获取任务列表失败:', error)
-    $q.notify({
-      message: '加载任务列表出错',
-      color: 'negative',
-      position: 'top',
-      timeout: 1500
-    })
-  })
+  fetchIncomingTasks()
 })
 
 // 添加 requirementBasePath 常量
@@ -301,31 +517,14 @@ interface TaskTag {
   icon?: string;
   clickable?: boolean;
   onClick?: () => void | Promise<void>;
-  index?: number; // 添加可选的index属性
+  index?: number;
 }
 
-// 定义TaskItem接口
-interface TaskItem {
-  id: string;
-  requirementId: string;
-  requirementName: string;
-  systemCategory: SystemType;
-  relatedRequirementDocs?: string | undefined;
-  relatedDesignDocs?: string | undefined;
-  [key: string]: string | undefined; // 移除冗余的 SystemType，因为它已经是 string 的子类型
-}
-
-// 添加本地任务需求接口定义，用于本地创建任务
-interface TaskRequirementEntity {
-  requirementId: string;
-  requirementName: string;
-  systemCategory: SystemType;
-  relatedRequirementDocs?: string;
-  relatedDesignDocs?: string;
-}
+// 确保SystemType类型定义正确
+type SystemType = 'callin' | 'callout' | 'other'
 
 // 修改getTaskTags函数添加返回类型
-const getTaskTags = (task: TaskItem): TaskTag[] => {
+const getTaskTags = (task: DevTask): TaskTag[] => {
   const tags: TaskTag[] = []
 
   // Git分支标签 - 添加图标
@@ -336,7 +535,7 @@ const getTaskTags = (task: TaskItem): TaskTag[] => {
       textColor: 'blue-8',
       icon: 'call_split',
       clickable: true,
-      onClick: () => handleSystemClick(task.systemCategory, task.requirementId)
+      onClick: () => handleSystemClick(task.systemCategory || 'other', task.requirementId || '')
     })
   }
 
@@ -345,7 +544,9 @@ const getTaskTags = (task: TaskItem): TaskTag[] => {
     let reqDocs: string[] = [];
     try {
       // 尝试多种分隔方式，确保能正确分割
-      if (task.relatedRequirementDocs.includes(',')) {
+      if (task.relatedRequirementDocs.includes(';')) {
+        reqDocs = task.relatedRequirementDocs.split(';');
+      } else if (task.relatedRequirementDocs.includes(',')) {
         reqDocs = task.relatedRequirementDocs.split(',');
       } else {
         reqDocs = [task.relatedRequirementDocs];
@@ -379,7 +580,7 @@ const getTaskTags = (task: TaskItem): TaskTag[] => {
             textColor: 'green-8',
             icon: 'description',
             clickable: true,
-            index: index, // 确保key唯一
+            index: index,
             onClick: () => void handleRequirementClick(task, trimmedDoc)
           });
         }
@@ -391,7 +592,9 @@ const getTaskTags = (task: TaskItem): TaskTag[] => {
   if (task.relatedDesignDocs) {
     let designDocs: string[] = [];
     try {
-      if (task.relatedDesignDocs.includes(',')) {
+      if (task.relatedDesignDocs.includes(';')) {
+        designDocs = task.relatedDesignDocs.split(';');
+      } else if (task.relatedDesignDocs.includes(',')) {
         designDocs = task.relatedDesignDocs.split(',');
       } else {
         designDocs = [task.relatedDesignDocs];
@@ -421,7 +624,7 @@ const getTaskTags = (task: TaskItem): TaskTag[] => {
             textColor: 'purple-8',
             icon: 'article',
             clickable: true,
-            index: index, // 确保key唯一
+            index: index,
             onClick: () => void handleRequirementClick(task, trimmedDoc)
           });
         }
@@ -448,9 +651,9 @@ const handleSystemClick = (system: SystemType, branch: string): void => {
 }
 
 // 修改handleRequirementClick函数，明确设置参数类型
-const handleRequirementClick = async (item: TaskItem, fileName: string): Promise<void> => {
+const handleRequirementClick = async (item: DevTask, fileName: string): Promise<void> => {
   if (!fileName) {
-    return; // 如果文件名不存在，直接返回
+    return;
   }
 
   // 确保文件名被正确处理（去除可能的空格）
@@ -484,9 +687,6 @@ const handleRequirementClick = async (item: TaskItem, fileName: string): Promise
     });
   }
 };
-
-// 确保SystemType类型定义正确
-type SystemType = 'callin' | 'callout' | 'other'
 
 // 复制文本到剪贴板
 const copyToClipboard = (text: string): void => {
@@ -579,7 +779,7 @@ const handleFileUpload = (type: 'requirement' | 'design', event: Event): void =>
   const files = target.files
 
   if (files && files.length > 0) {
-    const file = files[0]!  // 添加非空断言
+    const file = files[0]!
     const fileName = file.name
 
     // 添加文件名到对应的文档数组
@@ -589,7 +789,7 @@ const handleFileUpload = (type: 'requirement' | 'design', event: Event): void =>
       newTask.value.docsList.design.push(fileName)
     }
 
-    // 同时更新单文档字段，用逗号分隔的文件名列表
+    // 同时更新单文档字段，用分号分隔的文件名列表
     updateDocNamesFromList(type)
 
     // 清空文件输入框，方便下次选择同一个文件
@@ -608,9 +808,9 @@ const handleFileUpload = (type: 'requirement' | 'design', event: Event): void =>
 // 添加从数组更新到字符串函数的返回类型
 const updateDocNamesFromList = (type: 'requirement' | 'design'): void => {
   if (type === 'requirement') {
-    newTask.value.docNames.requirement = newTask.value.docsList.requirement.join(',')
+    newTask.value.docNames.requirement = newTask.value.docsList.requirement.join(';')
   } else if (type === 'design') {
-    newTask.value.docNames.design = newTask.value.docsList.design.join(',')
+    newTask.value.docNames.design = newTask.value.docsList.design.join(';')
   }
 }
 
@@ -647,27 +847,27 @@ const resetNewTaskForm = (): void => {
   }
 }
 
-// 修改创建任务方法，使用重置函数
+// 修改创建任务方法，使用dev-task API
 const createTask = async (): Promise<void> => {
   try {
     // 明确转换systemCategory类型
     const systemCategory: SystemType =
       newTask.value.type.value === 'incoming' ? 'callin' : 'callout';
 
-    // 使用创建的本地接口
-    const requirementEntity = {
+    // 使用DevTask接口
+    const devTask: DevTask = {
       requirementId: newTask.value.id,
       requirementName: newTask.value.title,
-      systemCategory, // 使用转换后的类型
+      systemCategory,
       relatedRequirementDocs: newTask.value.docsList.requirement.length > 0
-        ? newTask.value.docsList.requirement.join(',')
+        ? newTask.value.docsList.requirement.join(';')
         : '',
       relatedDesignDocs: newTask.value.docsList.design.length > 0
-        ? newTask.value.docsList.design.join(',')
+        ? newTask.value.docsList.design.join(';')
         : ''
-    } as RequirementEntity;
+    };
 
-    const response = await taskApi.saveRequirement(requirementEntity); // 使用task中的接口
+    const response = await devTaskApi.saveDevTask(devTask);
 
     if (response.data?.isOk) {
       $q.notify({
@@ -678,15 +878,17 @@ const createTask = async (): Promise<void> => {
       })
 
       // 重新获取任务列表
-      fetchTasks().catch(error => {
-        console.error('获取任务列表失败:', error)
-      })
+      if (activeTab.value === 'incoming') {
+        fetchIncomingTasks()
+      } else {
+        fetchOutgoingTasks()
+      }
 
       // 使用重置函数
       resetNewTaskForm()
     } else {
       $q.notify({
-        message: '任务创建失败: ' + (response.data?.okData || '未知错误'),
+        message: '任务创建失败: ' + (response.data?.failMsg || '未知错误'),
         color: 'negative',
         position: 'top',
         timeout: 1500
@@ -711,6 +913,21 @@ const openNewTaskDialog = (): void => {
 // 添加文件上传相关的ref
 const requirementFileInput = ref<HTMLInputElement | null>(null)
 const designFileInput = ref<HTMLInputElement | null>(null)
+
+// 添加系统分类选项
+const systemCategoryOptions = [
+  { label: '呼入系统', value: 'callin' },
+  { label: '呼出系统', value: 'callout' },
+  { label: '其他系统', value: 'other' }
+]
+
+// 添加状态选项
+const statusOptions = [
+  { label: '进行中', value: 'in_progress' },
+  { label: '已完成', value: 'completed' },
+  { label: '已暂停', value: 'paused' },
+  { label: '已取消', value: 'cancelled' }
+]
 
 defineOptions({
   name: 'TaskList'
@@ -892,6 +1109,37 @@ defineOptions({
 
   :deep(.q-chip__content) {
     padding: 0 4px;
+  }
+}
+
+// 过滤表头样式
+.filter-header {
+  background: rgba($cursor-surface, 0.5);
+  border-radius: 12px;
+  padding: 20px;
+  border: 1px solid rgba($cursor-border, 0.1);
+
+  .advanced-filter {
+    transition: all 0.3s ease;
+  }
+}
+
+// 搜索按钮组样式
+.q-btn {
+  &.q-btn--dense {
+    padding: 8px 16px;
+    font-size: 0.875rem;
+  }
+}
+
+// 响应式调整
+@media (max-width: 768px) {
+  .filter-header {
+    .row {
+      .col {
+        margin-bottom: 16px;
+      }
+    }
   }
 }
 </style>

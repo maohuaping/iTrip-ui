@@ -327,34 +327,6 @@ export interface ResultTodo {
 }
 
 /**
- * 需求
- */
-export interface DevTask {
-  /** 主键ID */
-  id?: number;
-  /** 创建人 */
-  createdBy?: number;
-  /** 创建时间 */
-  createdAt?: string;
-  /** 更新人 */
-  updatedBy?: number;
-  /** 更新时间 */
-  updatedAt?: string;
-  /** 需求号 */
-  requirementId?: string;
-  /** 需求名称 */
-  requirementName?: string;
-  /** 需求关联的需求文档名称。如果关联多个需求文档，会以;进行分隔 */
-  relatedRequirementDocs?: string;
-  /** 需求关联的设计文档名称。如果关联多个设计文档，会以;进行分隔 */
-  relatedDesignDocs?: string;
-  /** 需求所属的系统分类 */
-  systemCategory?: string;
-  /** 需求的归属用户ID */
-  userId?: number;
-}
-
-/**
  * 扫码识别请求
  */
 export interface ScanIdentifyRequestDTO {
@@ -428,6 +400,81 @@ export interface SubscriptionRequestDTO {
 }
 
 /**
+ * 需求
+ */
+export interface DevTask {
+  /** 主键ID */
+  id?: number;
+  /** 创建人 */
+  createdBy?: number;
+  /** 创建时间 */
+  createdAt?: string;
+  /** 更新人 */
+  updatedBy?: number;
+  /** 更新时间 */
+  updatedAt?: string;
+  /** 需求号 */
+  requirementId?: string;
+  /** 需求名称 */
+  requirementName?: string;
+  /** 需求关联的需求文档名称。如果关联多个需求文档，会以;进行分隔 */
+  relatedRequirementDocs?: string;
+  /** 需求关联的设计文档名称。如果关联多个设计文档，会以;进行分隔 */
+  relatedDesignDocs?: string;
+  /** 需求所属的系统分类 */
+  systemCategory?: string;
+  /** 需求的归属用户ID */
+  userId?: number;
+}
+
+/**
+ * 分页参数
+ */
+export interface PageParam {
+  /** 当前页 */
+  current?: number;
+  /** 每页显示条数，默认 10 */
+  size?: number;
+}
+
+export interface QueryDevTaskInParam {
+  /** 主键ID */
+  id?: string;
+  /** 需求号 */
+  requirementId?: string;
+  /** 需求名称 */
+  requirementName?: string;
+  /** 需求关联的需求文档名称。如果关联多个需求文档，会以;进行分隔 */
+  relatedRequirementDocs?: string;
+  /** 需求关联的设计文档名称。如果关联多个设计文档，会以;进行分隔 */
+  relatedDesignDocs?: string;
+  /** 需求所属的系统分类 */
+  systemCategory?: string;
+  /** 需求的归属用户ID */
+  userId?: number;
+  pageParam?: PageParam;
+}
+
+/**
+ * 成功数据
+ */
+export interface IPageDevTask {
+  size?: number;
+  pages?: number;
+  total?: number;
+  current?: number;
+  records?: DevTask[];
+}
+
+export interface ResultIPageDevTask {
+  /** 是否成功 */
+  isOk?: boolean;
+  okData?: IPageDevTask;
+  /** 失败消息 */
+  failMsg?: string;
+}
+
+/**
  * 开发日志信息
  */
 export interface DevLog {
@@ -445,16 +492,6 @@ export interface DevLog {
   content?: string;
   /** 进度 */
   progress?: number;
-}
-
-/**
- * 分页参数
- */
-export interface PageParam {
-  /** 当前页 */
-  current?: number;
-  /** 每页显示条数，默认 10 */
-  size?: number;
 }
 
 export interface QueryDevLogInParam {
@@ -484,10 +521,10 @@ export interface DevLogVO {
  */
 export interface IPageDevLogVO {
   size?: number;
-  records?: DevLogVO[];
-  current?: number;
-  total?: number;
   pages?: number;
+  total?: number;
+  current?: number;
+  records?: DevLogVO[];
 }
 
 export interface ResultIPageDevLogVO {
@@ -667,23 +704,6 @@ export interface TravelGuideDTO {
   tips?: string;
 }
 
-export interface ResultDevTask {
-  /** 是否成功 */
-  isOk?: boolean;
-  okData?: DevTask;
-  /** 失败消息 */
-  failMsg?: string;
-}
-
-export interface ResultListDevTask {
-  /** 是否成功 */
-  isOk?: boolean;
-  /** 成功数据 */
-  okData?: DevTask[];
-  /** 失败消息 */
-  failMsg?: string;
-}
-
 export interface ResultSysConfig {
   /** 是否成功 */
   isOk?: boolean;
@@ -697,6 +717,23 @@ export interface ResultListSysConfig {
   isOk?: boolean;
   /** 成功数据 */
   okData?: SysConfig[];
+  /** 失败消息 */
+  failMsg?: string;
+}
+
+export interface ResultDevTask {
+  /** 是否成功 */
+  isOk?: boolean;
+  okData?: DevTask;
+  /** 失败消息 */
+  failMsg?: string;
+}
+
+export interface ResultListDevTask {
+  /** 是否成功 */
+  isOk?: boolean;
+  /** 成功数据 */
+  okData?: DevTask[];
   /** 失败消息 */
   failMsg?: string;
 }
