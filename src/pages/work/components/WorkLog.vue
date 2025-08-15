@@ -1,5 +1,5 @@
 <template>
-  <section id="worklog" class="q-mb-xl glass rounded-xl overflow-hidden shadow-2xl">
+  <section id="worklog" class="q-mb-xl glass rounded-xl shadow-2xl">
     <div class="q-pa-md">
       <div class="section-header q-pb-md flex justify-between items-center">
         <h2 class="text-h5 text-weight-bold q-my-none">
@@ -136,13 +136,13 @@
 import { ref, watch, onMounted, computed } from 'vue'
 import { useQuasar } from 'quasar'
 import { getWorkLog } from '../../../api/work-log/work-log'
-import { getRequirement } from 'src/api/requirement/requirement';
+import { getTask } from 'src/api/task/task' // 使用task中的接口
 import type { WorkLogEntity } from 'src/api/api.schemas';
 
 // 初始化通知
 const $q = useQuasar()
 const workLogApi = getWorkLog()
-const requirementApi = getRequirement()
+const taskApi = getTask() // 使用task API
 
 // 定义日志接口
 interface WorkLogItem {
@@ -164,7 +164,7 @@ const requirementOptions = ref<{ label: string; value: string }[]>([])
 // 获取需求类型列表
 async function fetchRequirementOptions() {
   try {
-    const response = await requirementApi.getAllRequirementNames()
+    const response = await taskApi.getAllRequirementNames() // 使用task中的接口
     if (response.data.isOk && response.data.okData) {
       // 将API返回的字符串数组转换为选项格式
       requirementOptions.value = response.data.okData.map(name => ({

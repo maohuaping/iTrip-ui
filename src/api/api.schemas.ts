@@ -94,34 +94,6 @@ export interface SysConfig {
 }
 
 /**
- * 需求
- */
-export interface RequirementEntity {
-  /** 主键ID */
-  id?: number;
-  /** 创建人 */
-  createdBy?: number;
-  /** 创建时间 */
-  createdAt?: string;
-  /** 更新人 */
-  updatedBy?: number;
-  /** 更新时间 */
-  updatedAt?: string;
-  /** 需求号 */
-  requirementId?: string;
-  /** 需求名称 */
-  requirementName?: string;
-  /** 需求关联的需求文档名称。如果关联多个需求文档，会以;进行分隔 */
-  relatedRequirementDocs?: string;
-  /** 需求关联的设计文档名称。如果关联多个设计文档，会以;进行分隔 */
-  relatedDesignDocs?: string;
-  /** 需求所属的系统分类 */
-  systemCategory?: string;
-  /** 需求的归属用户ID */
-  userId?: number;
-}
-
-/**
  * 每日任务信息
  */
 export interface DailyTask {
@@ -169,6 +141,28 @@ export interface ResultObject {
   failMsg?: string;
 }
 
+export interface UpdateUrlInParam {
+  /** 主键ID */
+  id?: string;
+  /** URL所属分组 */
+  tag?: string;
+  /** URL名称 */
+  name?: string;
+  /** URL地址 */
+  address?: string;
+}
+
+export interface ResultSysUrl {
+  /** 是否成功 */
+  isOk?: boolean;
+  okData?: SysUrl;
+  /** 失败消息 */
+  failMsg?: string;
+}
+
+/**
+ * 成功数据
+ */
 export interface SysUrl {
   /** 主键ID */
   id?: number;
@@ -190,12 +184,11 @@ export interface SysUrl {
   userId?: number;
 }
 
-export interface ResultSysUrl {
-  /** 是否成功 */
-  isOk?: boolean;
-  okData?: SysUrl;
-  /** 失败消息 */
-  failMsg?: string;
+export interface UpdateUrlCategoryInParam {
+  /** 旧分类名称 */
+  oldTag: string;
+  /** 新分类名称 */
+  newTag: string;
 }
 
 export interface SaveUrlInParam {
@@ -331,6 +324,34 @@ export interface ResultTodo {
   okData?: Todo;
   /** 失败消息 */
   failMsg?: string;
+}
+
+/**
+ * 需求
+ */
+export interface DevTask {
+  /** 主键ID */
+  id?: number;
+  /** 创建人 */
+  createdBy?: number;
+  /** 创建时间 */
+  createdAt?: string;
+  /** 更新人 */
+  updatedBy?: number;
+  /** 更新时间 */
+  updatedAt?: string;
+  /** 需求号 */
+  requirementId?: string;
+  /** 需求名称 */
+  requirementName?: string;
+  /** 需求关联的需求文档名称。如果关联多个需求文档，会以;进行分隔 */
+  relatedRequirementDocs?: string;
+  /** 需求关联的设计文档名称。如果关联多个设计文档，会以;进行分隔 */
+  relatedDesignDocs?: string;
+  /** 需求所属的系统分类 */
+  systemCategory?: string;
+  /** 需求的归属用户ID */
+  userId?: number;
 }
 
 /**
@@ -646,6 +667,23 @@ export interface TravelGuideDTO {
   tips?: string;
 }
 
+export interface ResultDevTask {
+  /** 是否成功 */
+  isOk?: boolean;
+  okData?: DevTask;
+  /** 失败消息 */
+  failMsg?: string;
+}
+
+export interface ResultListDevTask {
+  /** 是否成功 */
+  isOk?: boolean;
+  /** 成功数据 */
+  okData?: DevTask[];
+  /** 失败消息 */
+  failMsg?: string;
+}
+
 export interface ResultSysConfig {
   /** 是否成功 */
   isOk?: boolean;
@@ -659,23 +697,6 @@ export interface ResultListSysConfig {
   isOk?: boolean;
   /** 成功数据 */
   okData?: SysConfig[];
-  /** 失败消息 */
-  failMsg?: string;
-}
-
-export interface ResultRequirementEntity {
-  /** 是否成功 */
-  isOk?: boolean;
-  okData?: RequirementEntity;
-  /** 失败消息 */
-  failMsg?: string;
-}
-
-export interface ResultListRequirementEntity {
-  /** 是否成功 */
-  isOk?: boolean;
-  /** 成功数据 */
-  okData?: RequirementEntity[];
   /** 失败消息 */
   failMsg?: string;
 }

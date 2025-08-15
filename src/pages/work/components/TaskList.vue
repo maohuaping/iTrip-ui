@@ -214,12 +214,12 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import { useQuasar } from 'quasar'
-import { getRequirement } from 'src/api/requirement/requirement'
+import { getTask } from 'src/api/task/task' // 使用task中的接口
 import type { RequirementEntity } from 'src/api/api.schemas'
 
 // 初始化
 const $q = useQuasar()
-const requirementApi = getRequirement()
+const taskApi = getTask() // 使用task API
 
 // 活动标签页
 const activeTab = ref('incoming')
@@ -252,7 +252,7 @@ const visibleOutgoingTasks = computed(() => {
 // 获取任务数据
 const fetchTasks = async (): Promise<void> => {
   try {
-    const response = await requirementApi.getCurrentUserRequirement()
+    const response = await taskApi.getCurrentUserRequirement() // 使用task中的接口
 
     if (response.data?.isOk && response.data.okData) {
       // 确保将API返回的数据正确地映射到TaskItem类型
@@ -665,9 +665,9 @@ const createTask = async (): Promise<void> => {
       relatedDesignDocs: newTask.value.docsList.design.length > 0
         ? newTask.value.docsList.design.join(',')
         : ''
-    } as TaskRequirementEntity;
+    } as RequirementEntity;
 
-    const response = await requirementApi.saveRequirement(requirementEntity);
+    const response = await taskApi.saveRequirement(requirementEntity); // 使用task中的接口
 
     if (response.data?.isOk) {
       $q.notify({
@@ -873,7 +873,7 @@ defineOptions({
 
   .ellipsis {
     white-space: nowrap;
-    overflow: hidden;
+    overflow: hidden; // 这里保留，因为是文本省略号
     text-overflow: ellipsis;
     flex: 1;
   }

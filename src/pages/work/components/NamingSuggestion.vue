@@ -1,5 +1,5 @@
 <template>
-  <section id="naming-suggestion" class="q-mb-xl glass rounded-xl overflow-hidden shadow-2xl">
+  <section id="naming-suggestion" class="q-mb-xl glass rounded-xl shadow-2xl">
     <div class="q-pa-lg">
       <!-- 标题栏 -->
       <div class="row justify-between items-center q-mb-lg">
@@ -115,6 +115,7 @@
 import { ref, onMounted } from 'vue'
 import { useQuasar } from 'quasar'
 import { getAi } from 'src/api/ai/ai'
+import type { NamingSuggestion, VariableNamingResponseVO } from 'src/api/api.schemas'
 
 // 定义建议类型（根据API响应结构）
 interface NamingSuggestion {
@@ -202,13 +203,13 @@ const getNamingSuggestions = async () => {
   })
 
   try {
-    // 使用AI命名建议接口
-    const response = await aiApi.getAiNameSuggestion({
+    // 使用正确的AI命名建议接口
+    const response = await aiApi.getNameSuggestion({
       description: chineseInput.value.trim()
     })
 
     if (response.data?.isOk && response.data.okData) {
-      const aiResponse = response.data.okData
+      const aiResponse: VariableNamingResponseVO = response.data.okData
 
       // 设置检测类型和原因
       if (aiResponse.detectedType) {
@@ -220,7 +221,7 @@ const getNamingSuggestions = async () => {
 
       // 直接使用API返回的建议
       if (aiResponse.suggestions && Array.isArray(aiResponse.suggestions)) {
-        suggestions.value = aiResponse.suggestions.map(suggestion => ({
+        suggestions.value = aiResponse.suggestions.map((suggestion: NamingSuggestion) => ({
           name: suggestion.name || '',
           description: suggestion.description || ''
         }))
@@ -450,7 +451,7 @@ defineOptions({
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
-  overflow: hidden;
+  overflow: hidden; // 这里保留，因为是文本省略号
 }
 
 .copy-indicator {
@@ -485,7 +486,6 @@ defineOptions({
   transition: all 0.3s ease;
   border: 1px solid rgba(0, 0, 0, 0.08);
   border-radius: 8px;
-  overflow: hidden;
   background: rgba(255, 255, 255, 0.9);
 
   &:hover {

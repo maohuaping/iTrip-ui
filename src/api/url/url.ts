@@ -12,7 +12,8 @@ import type {
   ResultString,
   ResultSysUrl,
   SaveUrlInParam,
-  SysUrl,
+  UpdateUrlCategoryInParam,
+  UpdateUrlInParam,
 } from '../api.schemas';
 
 import { customInstance } from '../../boot/orval-client';
@@ -27,12 +28,23 @@ export const getUrl = () => {
   /**
    * @summary 修改URL
    */
-  const updateUrl = (sysUrl: SysUrl) => {
+  const updateUrl = (updateUrlInParam: UpdateUrlInParam) => {
     return customInstance<ResultSysUrl>({
       url: `/api/url/updateUrl`,
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      data: sysUrl,
+      data: updateUrlInParam,
+    });
+  };
+  /**
+   * @summary 批量更改URL目录分类
+   */
+  const updateUrlCategory = (updateUrlCategoryInParam: UpdateUrlCategoryInParam) => {
+    return customInstance<ResultString>({
+      url: `/api/url/updateUrlCategory`,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      data: updateUrlCategoryInParam,
     });
   };
   /**
@@ -63,13 +75,16 @@ export const getUrl = () => {
   const getUrlTag = () => {
     return customInstance<ResultListString>({ url: `/api/url/getUrlTag`, method: 'GET' });
   };
-  return { deleteUrl, updateUrl, saveUrl, getUrlByCondition, getUrlTag };
+  return { deleteUrl, updateUrl, updateUrlCategory, saveUrl, getUrlByCondition, getUrlTag };
 };
 export type DeleteUrlResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getUrl>['deleteUrl']>>
 >;
 export type UpdateUrlResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getUrl>['updateUrl']>>
+>;
+export type UpdateUrlCategoryResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getUrl>['updateUrlCategory']>>
 >;
 export type SaveUrlResult = NonNullable<Awaited<ReturnType<ReturnType<typeof getUrl>['saveUrl']>>>;
 export type GetUrlByConditionResult = NonNullable<

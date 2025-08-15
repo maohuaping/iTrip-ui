@@ -176,8 +176,8 @@
     </q-drawer>
 
     <q-page-container>
-      <q-page class="work-page-content">
-        <div class="q-pa-md">
+      <q-page>
+        <div class="work-page-content q-pa-md">
           <div class="q-mx-auto" style="max-width: 1200px">
             <!-- 任务列表部分 -->
             <TaskList />
@@ -240,30 +240,24 @@ import WorkLog from './components/WorkLog.vue'
 import NamingSuggestion from './components/NamingSuggestion.vue'
 import { getUrl } from 'src/api/url/url'
 import { getTodo } from 'src/api/todo/todo'
+import type { SysUrl, TodoVO } from 'src/api/api.schemas'
 
 // 添加组件名称以解决ESLint警告
 defineOptions({
   name: 'WorkPage'
 })
 
-// 定义待办事项类型
+// 定义待办事项类型 - 使用正确的接口类型
 interface TodoItem {
+  id?: string // 使用string类型，与TodoVO一致
   text: string
   done: boolean
   dueTime?: string
 }
 
-// 定义URL数据类型
-interface UrlItem {
-  id: number
-  createdBy: number
-  createdAt: string
-  updatedBy: number
-  updatedAt: string
-  tag: string
-  name: string
-  address: string
-  userId: number
+// 定义URL数据类型 - 使用正确的接口类型
+interface UrlItem extends SysUrl {
+  id: number // 确保id是必选的
 }
 
 const $q = useQuasar()
@@ -358,7 +352,7 @@ const groupedUrls = computed(() => {
     if (!groups[tag]) {
       groups[tag] = []
     }
-    groups[tag].push(url)
+    groups[tag]!.push(url) // 添加非空断言
   })
 
   return groups
@@ -459,11 +453,12 @@ const fetchUrlList = async () => {
     const response = await urlApi.getUrlByCondition({})
 
     // 检查返回的数据格式是否符合预期
-    if (response.data?.okData) {
-      urlList.value = response.data.okData
-    } else if (response.data?.data) {
-      // 兼容旧的API返回格式
-      urlList.value = response.data.data
+    if (response.data?.isOk && response.data.okData) {
+      // 确保每个URL都有id
+      urlList.value = response.data.okData.map(url => ({
+        ...url,
+        id: url.id || 0 // 提供默认值
+      })) as UrlItem[]
     } else {
       // 模拟数据用于测试
       urlList.value = mockData.payload
@@ -520,12 +515,12 @@ const newTodo = ref('')
 const fetchTodos = async () => {
   try {
     const response = await todoApi.getTodoByCondition({})
-    if (response.data.okData) {
-      todoItems.value = response.data.okData.map(item => ({
+    if (response.data?.okData) {
+      todoItems.value = response.data.okData.map((item: TodoVO) => ({
         text: item.title || '',
         done: item.completed || false,
-        id: item.id,
-        dueTime: item.dueDate ? new Date(item.dueDate).toLocaleString() : undefined
+        id: item.id, // 直接使用string类型的id
+        dueTime: undefined // TodoVO中没有dueDate字段
       }))
     }
   } catch (error) {
@@ -584,7 +579,7 @@ const updateTodoStatus = async (index: number) => {
     const todoItem = todoItems.value[index]
 
     // 确保待办项有ID
-    if (!todoItem.id) {
+    if (!todoItem?.id) {
       console.error('待办项缺少ID')
       return
     }
@@ -625,7 +620,7 @@ const removeTodo = async (index: number) => {
     const todoItem = todoItems.value[index]
 
     // 确保待办项有ID
-    if (!todoItem.id) {
+    if (!todoItem?.id) {
       console.error('待办项缺少ID')
       return
     }
@@ -886,8 +881,8 @@ const onTagInputValue = (val: string) => {
 }
 
 .work-page-content {
-  flex: 1;
   background: $cursor-bg; // 使用颜色系统的主背景色
+  // 移除 min-height: 100%，让内容自然扩展
 }
 
 .status-info {
