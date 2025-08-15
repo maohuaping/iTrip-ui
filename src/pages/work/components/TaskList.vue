@@ -11,23 +11,6 @@
           rounded />
       </div>
 
-      <!-- 标签页样式优化 - 增加背景和间距 -->
-      <div class="tabs-container q-mb-md">
-        <q-tabs v-model="activeTab" class="text-weight-medium tabs-custom" active-color="primary"
-          indicator-color="primary" align="left" narrow-indicator dense>
-          <q-tab name="incoming" class="q-px-md q-py-sm">
-            <q-icon name="call_received" class="q-mr-xs" />
-            呼入任务
-            <q-badge color="primary" floating rounded>{{ incomingPagination.total || 0 }}</q-badge>
-          </q-tab>
-          <q-tab name="outgoing" class="q-px-md q-py-sm">
-            <q-icon name="call_made" class="q-mr-xs" />
-            呼出任务
-            <q-badge color="teal" floating rounded>{{ outgoingPagination.total || 0 }}</q-badge>
-          </q-tab>
-        </q-tabs>
-      </div>
-
       <!-- 过滤查询表头 - 使用卡片样式 -->
       <q-card flat bordered class="filter-card q-mb-lg">
         <q-card-section class="q-pa-md">
@@ -129,89 +112,75 @@
         </q-card-section>
       </q-card>
 
-      <!-- 任务卡片样式优化 -->
-      <q-tab-panels v-model="activeTab" animated>
-        <q-tab-panel name="incoming" class="q-pa-none">
-          <div class="row q-col-gutter-md">
-            <div v-for="task in incomingTasks" :key="task.id || `incoming-${Math.random()}`" class="col-12">
-              <q-card flat bordered class="task-card">
-                <q-card-section>
-                  <div class="row items-center no-wrap">
-                    <div class="col">
-                      <div class="row items-center q-gutter-x-sm">
-                        <q-avatar size="32px" color="primary" text-color="white" icon="assignment" />
-                        <div class="column">
-                          <div class="text-subtitle1 text-weight-medium text-cursor-text ellipsis cursor-pointer"
-                            @click="copyToClipboard(task.requirementName || '')" title="点击复制任务名称">
-                            {{ task.requirementName || '未命名任务' }}
-                          </div>
-                          <div class="text-caption text-grey-7 cursor-pointer"
-                            @click="copyToClipboard(task.requirementId || '')" title="点击复制需求编号">
-                            #{{ task.requirementId || '无编号' }}
-                          </div>
+      <!-- 任务统计信息 -->
+      <div class="task-stats q-mb-md">
+        <div class="row q-gutter-md">
+          <div class="col-auto">
+            <q-chip color="primary" text-color="white" icon="call_received">
+              呼入任务: {{ incomingPagination.total || 0 }}
+            </q-chip>
+          </div>
+          <div class="col-auto">
+            <q-chip color="teal" text-color="white" icon="call_made">
+              呼出任务: {{ outgoingPagination.total || 0 }}
+            </q-chip>
+          </div>
+          <div class="col-auto">
+            <q-chip color="info" text-color="white" icon="assignment">
+              总计: {{ (incomingPagination.total || 0) + (outgoingPagination.total || 0) }}
+            </q-chip>
+          </div>
+        </div>
+      </div>
+
+      <!-- 任务列表 -->
+      <div class="task-list">
+        <div class="row q-col-gutter-md">
+          <div v-for="task in allTasks" :key="task.id || `task-${Math.random()}`" class="col-12">
+            <q-card flat bordered class="task-card">
+              <q-card-section>
+                <div class="row items-center no-wrap">
+                  <div class="col">
+                    <div class="row items-center q-gutter-x-sm">
+                      <q-avatar size="32px" :color="task.systemCategory === 'callin' ? 'primary' : 'teal'"
+                        text-color="white" icon="assignment" />
+                      <div class="column">
+                        <div class="text-subtitle1 text-weight-medium text-cursor-text ellipsis cursor-pointer"
+                          @click="copyToClipboard(task.requirementName || '')" title="点击复制任务名称">
+                          {{ task.requirementName || '未命名任务' }}
+                        </div>
+                        <div class="text-caption text-grey-7 cursor-pointer"
+                          @click="copyToClipboard(task.requirementId || '')" title="点击复制需求编号">
+                          #{{ task.requirementId || '无编号' }}
+                        </div>
+                        <!-- 系统分类标签 -->
+                        <div class="q-mt-xs">
+                          <q-chip :color="task.systemCategory === 'callin' ? 'primary' : 'teal'" text-color="white"
+                            size="sm" dense>
+                            {{ task.systemCategory === 'callin' ? '呼入任务' : '呼出任务' }}
+                          </q-chip>
                         </div>
                       </div>
                     </div>
-
-                    <div class="row items-center q-gutter-x-sm q-ml-md">
-                      <q-chip v-for="tag in getTaskTags(task)" :key="tag.label + (tag.index || '')" dense size="md"
-                        :icon="tag.icon" :color="tag.color" :text-color="tag.textColor" :label="tag.label"
-                        :clickable="!!tag.clickable" @click="tag.onClick ? tag.onClick() : null" class="task-tag" />
-                    </div>
                   </div>
-                </q-card-section>
-              </q-card>
-            </div>
-          </div>
 
-          <!-- 分页组件 -->
-          <div class="q-mt-lg">
-            <q-pagination v-model="incomingPagination.current" :max="incomingPagination.pages || 1" :max-pages="6"
-              boundary-numbers direction-links @update:model-value="handleIncomingPageChange" />
-          </div>
-        </q-tab-panel>
-
-        <!-- 呼出任务面板 -->
-        <q-tab-panel name="outgoing" class="q-pa-none">
-          <div class="row q-col-gutter-md">
-            <div v-for="task in outgoingTasks" :key="task.id || `outgoing-${Math.random()}`" class="col-12">
-              <q-card flat bordered class="task-card">
-                <q-card-section>
-                  <div class="row items-center no-wrap">
-                    <div class="col">
-                      <div class="row items-center q-gutter-x-sm">
-                        <q-avatar size="32px" color="teal" text-color="white" icon="assignment" />
-                        <div class="column">
-                          <div class="text-subtitle1 text-weight-medium text-cursor-text ellipsis cursor-pointer"
-                            @click="copyToClipboard(task.requirementName || '')" title="点击复制任务名称">
-                            {{ task.requirementName || '未命名任务' }}
-                          </div>
-                          <div class="text-caption text-grey-7 cursor-pointer"
-                            @click="copyToClipboard(task.requirementId || '')" title="点击复制需求编号">
-                            #{{ task.requirementId || '无编号' }}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div class="row items-center q-gutter-x-sm q-ml-md">
-                      <q-chip v-for="tag in getTaskTags(task)" :key="tag.label + (tag.index || '')" dense size="md"
-                        :icon="tag.icon" :color="tag.color" :text-color="tag.textColor" :label="tag.label"
-                        :clickable="!!tag.clickable" @click="tag.onClick ? tag.onClick() : null" class="task-tag" />
-                    </div>
+                  <div class="row items-center q-gutter-x-sm q-ml-md">
+                    <q-chip v-for="tag in getTaskTags(task)" :key="tag.label + (tag.index || '')" dense size="md"
+                      :icon="tag.icon" :color="tag.color" :text-color="tag.textColor" :label="tag.label"
+                      :clickable="!!tag.clickable" @click="tag.onClick ? tag.onClick() : null" class="task-tag" />
                   </div>
-                </q-card-section>
-              </q-card>
-            </div>
+                </div>
+              </q-card-section>
+            </q-card>
           </div>
+        </div>
 
-          <!-- 分页组件 -->
-          <div class="q-mt-lg">
-            <q-pagination v-model="outgoingPagination.current" :max="outgoingPagination.pages || 1" :max-pages="6"
-              boundary-numbers direction-links @update:model-value="handleOutgoingPageChange" />
-          </div>
-        </q-tab-panel>
-      </q-tab-panels>
+        <!-- 分页组件 -->
+        <div class="q-mt-lg">
+          <q-pagination v-model="currentPagination.current" :max="currentPagination.pages || 1" :max-pages="6"
+            boundary-numbers direction-links @update:model-value="handlePageChange" />
+        </div>
+      </div>
     </div>
   </section>
 
@@ -312,15 +281,17 @@ import type { DevTask, QueryDevTaskInParam, IPageDevTask } from 'src/api/api.sch
 const $q = useQuasar()
 const devTaskApi = getDevTask()
 
-// 活动标签页
-const activeTab = ref('incoming')
-
 // 控制新建任务对话框的显示
 const showNewTaskDialog = ref(false)
 
 // 任务数据
 const incomingTasks = ref<DevTask[]>([])
 const outgoingTasks = ref<DevTask[]>([])
+
+// 合并所有任务的计算属性
+const allTasks = computed(() => {
+  return [...incomingTasks.value, ...outgoingTasks.value]
+})
 
 // 分页数据
 const incomingPagination = ref<IPageDevTask>({
@@ -337,6 +308,19 @@ const outgoingPagination = ref<IPageDevTask>({
   pages: 0
 })
 
+// 当前分页状态（用于显示）
+const currentPagination = computed(() => {
+  const total = (incomingPagination.value.total || 0) + (outgoingPagination.value.total || 0)
+  const maxPages = Math.max(incomingPagination.value.pages || 0, outgoingPagination.value.pages || 0)
+
+  return {
+    current: Math.max(incomingPagination.value.current || 1, outgoingPagination.value.current || 1),
+    size: 20, // 合并后的每页大小
+    total,
+    pages: maxPages
+  }
+})
+
 // 过滤参数
 const filterParams = ref({
   requirementId: '',
@@ -351,15 +335,6 @@ const filterParams = ref({
 // 控制高级筛选显示
 const showAdvancedFilter = ref(false)
 const showDatePicker = ref(false)
-
-// 监听标签页切换，重新加载数据
-watch(activeTab, () => {
-  if (activeTab.value === 'incoming') {
-    fetchIncomingTasks()
-  } else {
-    fetchOutgoingTasks()
-  }
-})
 
 // 获取呼入任务数据
 const fetchIncomingTasks = async (): Promise<void> => {
@@ -455,35 +430,32 @@ const fetchOutgoingTasks = async (): Promise<void> => {
   }
 }
 
-// 处理呼入任务分页变化
-const handleIncomingPageChange = (page: number) => {
-  incomingPagination.value.current = page
-  fetchIncomingTasks()
-}
+// 统一的分页处理
+const handlePageChange = (page: number) => {
+  // 根据当前页计算应该更新哪个分页
+  const pageSize = 10
+  const incomingPages = Math.ceil((incomingPagination.value.total || 0) / pageSize)
 
-// 处理呼出任务分页变化
-const handleOutgoingPageChange = (page: number) => {
-  outgoingPagination.value.current = page
-  fetchOutgoingTasks()
+  if (page <= incomingPages) {
+    incomingPagination.value.current = page
+    fetchIncomingTasks()
+  } else {
+    outgoingPagination.value.current = page - incomingPages
+    fetchOutgoingTasks()
+  }
 }
 
 // 处理过滤条件变化
 const handleFilterChange = () => {
   // 重置分页到第一页
-  if (activeTab.value === 'incoming') {
-    incomingPagination.value.current = 1
-  } else {
-    outgoingPagination.value.current = 1
-  }
+  incomingPagination.value.current = 1
+  outgoingPagination.value.current = 1
 }
 
 // 搜索处理
 const handleSearch = () => {
-  if (activeTab.value === 'incoming') {
-    fetchIncomingTasks()
-  } else {
-    fetchOutgoingTasks()
-  }
+  fetchIncomingTasks()
+  fetchOutgoingTasks()
 }
 
 // 重置过滤条件
@@ -499,18 +471,16 @@ const handleReset = () => {
   }
 
   // 重置分页
-  if (activeTab.value === 'incoming') {
-    incomingPagination.value.current = 1
-    fetchIncomingTasks()
-  } else {
-    outgoingPagination.value.current = 1
-    fetchOutgoingTasks()
-  }
+  incomingPagination.value.current = 1
+  outgoingPagination.value.current = 1
+  fetchIncomingTasks()
+  fetchOutgoingTasks()
 }
 
 // 在组件挂载时获取数据
 onMounted(() => {
   fetchIncomingTasks()
+  fetchOutgoingTasks()
 })
 
 // 添加 requirementBasePath 常量
@@ -885,11 +855,8 @@ const createTask = async (): Promise<void> => {
       })
 
       // 重新获取任务列表
-      if (activeTab.value === 'incoming') {
-        fetchIncomingTasks()
-      } else {
-        fetchOutgoingTasks()
-      }
+      fetchIncomingTasks()
+      fetchOutgoingTasks()
 
       // 使用重置函数
       resetNewTaskForm()
@@ -1147,6 +1114,20 @@ defineOptions({
         margin-bottom: 16px;
       }
     }
+  }
+}
+
+// 任务统计样式
+.task-stats {
+  .q-chip {
+    font-weight: 500;
+  }
+}
+
+// 任务列表样式
+.task-list {
+  .task-card {
+    margin-bottom: 16px;
   }
 }
 </style>
