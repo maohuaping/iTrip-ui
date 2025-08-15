@@ -8,14 +8,14 @@
 // It's highly recommended to change the default colors
 // to match your app's branding.
 // Tip: Use the "Theme Builder" on Quasar's documentation website.
-// --- 1. 定义我们的 "Cursor 灰紫" 调色板 ---
-$cursor-bg: #1a1a2e; // 主背景色 (更现代的深蓝紫)
-$cursor-surface: #16213e; // 卡片/表层颜色 (更亮的蓝紫)
-$cursor-primary: #a855f7; // 主要高亮色 (更轻的现代紫色)
-$cursor-secondary: #7c3aed; // 次要颜色 (更亮的紫色)
-$cursor-accent: #ec4899; // 点缀色 (更柔和的粉色)
-$cursor-text: #f1f5f9; // 主要文字颜色 (更亮的灰白色)
-$cursor-muted: #94a3b8; // 减弱/次要文字颜色 (更现代的灰色)
+// --- 1. 定义我们的 "Cursor 现代蓝绿" 调色板 ---
+$cursor-bg: #1a1c21; // 主背景色 (底版)
+$cursor-surface: #1a1c21; // 卡片/表层颜色 (底版)
+$cursor-primary: #94bece; // 主要高亮色 (柔和蓝灰色)
+$cursor-secondary: #7ba8b8; // 次要颜色 (深蓝灰色)
+$cursor-accent: #10b981; // 点缀色 (现代绿色)
+$cursor-text: #525968; // 主要文字颜色 (一级标题)
+$cursor-muted: #525968; // 减弱/次要文字颜色 (一级标题)
 $cursor-border: #334155; // 边框颜色 (更亮的边框)
 // --- 2. 核心 Quasar 变量映射 ---
 $primary: $cursor-primary; // 主要按钮、链接等
@@ -53,9 +53,9 @@ $elevation-2: 0 4px 6px rgba(26, 26, 46, 0.1),
 $elevation-3: 0 10px 25px rgba(26, 26, 46, 0.15),
 0 4px 10px rgba(26, 26, 46, 0.1);
 // --- 9. 交互状态颜色 ---
-$hover-bg: rgba(168, 85, 247, 0.08); // 悬停背景 (基于 primary，更轻)
-$active-bg: rgba(168, 85, 247, 0.15); // 激活背景
-$focus-ring: rgba(168, 85, 247, 0.25); // 焦点环
+$hover-bg: rgba(148, 190, 206, 0.08); // 悬停背景 (基于 primary，更轻)
+$active-bg: rgba(148, 190, 206, 0.15); // 激活背景
+$focus-ring: rgba(148, 190, 206, 0.25); // 焦点环
 // --- 10. 渐变和特殊效果 ---
 $gradient-primary: linear-gradient(135deg, $cursor-primary 0%, $cursor-secondary 100%);
 $gradient-surface: linear-gradient(135deg, $cursor-bg 0%, $cursor-surface 100%);
