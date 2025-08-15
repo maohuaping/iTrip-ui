@@ -445,25 +445,19 @@ const handlePageChange = (page: number) => {
   }
 }
 
-// 搜索处理 - 完全根据过滤条件决定
+// 搜索处理 - 简化版本，只根据表头条件查询一次
 const handleSearch = () => {
-  // 如果选择了特定的系统分类，只查询对应的任务类型
-  if (filterParams.value.systemCategory) {
-    if (filterParams.value.systemCategory === 'callin') {
-      fetchIncomingTasks()
-      // 清空呼出任务数据，避免显示旧数据
-      outgoingTasks.value = []
-      outgoingPagination.value.total = 0
-    } else if (filterParams.value.systemCategory === 'callout') {
-      fetchOutgoingTasks()
-      // 清空呼入任务数据，避免显示旧数据
-      incomingTasks.value = []
-      incomingPagination.value.total = 0
-    } else {
-      // 其他系统分类，查询所有
-      fetchIncomingTasks()
-      fetchOutgoingTasks()
-    }
+  // 如果选择了系统分类，只查询对应的任务类型
+  if (filterParams.value.systemCategory === 'callin') {
+    fetchIncomingTasks()
+    // 清空呼出任务数据
+    outgoingTasks.value = []
+    outgoingPagination.value.total = 0
+  } else if (filterParams.value.systemCategory === 'callout') {
+    fetchOutgoingTasks()
+    // 清空呼入任务数据
+    incomingTasks.value = []
+    incomingPagination.value.total = 0
   } else {
     // 没有选择系统分类，查询所有
     fetchIncomingTasks()
@@ -492,24 +486,11 @@ const handleReset = () => {
   fetchOutgoingTasks()
 }
 
-// 处理过滤条件变化 - 实时筛选
+// 处理过滤条件变化 - 只重置分页，不自动查询
 const handleFilterChange = () => {
-  // 重置分页到第一页
+  // 只重置分页到第一页，不自动查询
   incomingPagination.value.current = 1
   outgoingPagination.value.current = 1
-
-  // 如果选择了系统分类，立即进行筛选
-  if (filterParams.value.systemCategory) {
-    if (filterParams.value.systemCategory === 'callin') {
-      fetchIncomingTasks()
-      outgoingTasks.value = []
-      outgoingPagination.value.total = 0
-    } else if (filterParams.value.systemCategory === 'callout') {
-      fetchOutgoingTasks()
-      incomingTasks.value = []
-      incomingPagination.value.total = 0
-    }
-  }
 }
 
 // 在组件挂载时获取数据
