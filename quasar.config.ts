@@ -1,4 +1,4 @@
-// Configuration for your app
+// 应用配置文件
 // https://v2.quasar.dev/quasar-cli-vite/quasar-config-file
 
 import { defineConfig } from '#q-app/wrappers';
@@ -8,8 +8,8 @@ export default defineConfig((/* ctx */) => {
     // https://v2.quasar.dev/quasar-cli-vite/prefetch-feature
     // preFetch: true,
 
-    // app boot file (/src/boot)
-    // --> boot files are part of "main.js"
+    // 应用启动文件 (/src/boot)
+    // --> 启动文件是 "main.js" 的一部分
     // https://v2.quasar.dev/quasar-cli-vite/boot-files
     boot: [
       'axios'
@@ -28,13 +28,13 @@ export default defineConfig((/* ctx */) => {
       // 'eva-icons',
       // 'themify',
       // 'line-awesome',
-      // 'roboto-font-latin-ext', // this or either 'roboto-font', NEVER both!
-      'material-icons', // optional, you are not bound to it
+      // 'roboto-font-latin-ext', // 这个或者 'roboto-font'，永远不要同时使用！
+      'material-icons', // 可选的，你不必绑定它
 
-      'roboto-font', // optional, you are not bound to it
+      'roboto-font', // 可选的，你不必绑定它
     ],
 
-    // Full list of options: https://v2.quasar.dev/quasar-cli-vite/quasar-config-file#build
+    // 完整选项列表: https://v2.quasar.dev/quasar-cli-vite/quasar-config-file#build
     build: {
       target: {
         browser: [ 'es2022', 'firefox115', 'chrome115', 'safari14' ],
@@ -47,12 +47,12 @@ export default defineConfig((/* ctx */) => {
         // extendTsConfig (tsConfig) {}
       },
 
-      vueRouterMode: 'history', // available values: 'hash', 'history'
+      vueRouterMode: 'history', // 可用值: 'hash', 'history'
       // vueRouterBase,
       // vueDevtools,
       // vueOptionsAPI: false,
 
-      // rebuildCache: true, // rebuilds Vite/linter/etc cache on startup
+      // rebuildCache: true, // 启动时重建 Vite/检查器等缓存
 
       // publicPath: '/',
       // analyze: true,
@@ -81,10 +81,10 @@ export default defineConfig((/* ctx */) => {
       ]
     },
 
-    // Full list of options: https://v2.quasar.dev/quasar-cli-vite/quasar-config-file#devserver
+    // 完整选项列表: https://v2.quasar.dev/quasar-cli-vite/quasar-config-file#devserver
     devServer: {
       // https: true,
-      // open: true // opens browser window automatically
+      // open: true // 自动打开浏览器窗口
       proxy: {
         // 将 /api 开头的请求代理到后端服务器
         '/api': {
@@ -101,17 +101,17 @@ export default defineConfig((/* ctx */) => {
         dark: true
       },
 
-      // iconSet: 'material-icons', // Quasar icon set
-      // lang: 'en-US', // Quasar language pack
+      // iconSet: 'material-icons', // Quasar 图标集
+      // lang: 'en-US', // Quasar 语言包
 
-      // For special cases outside of where the auto-import strategy can have an impact
-      // (like functional components as one of the examples),
-      // you can manually specify Quasar components/directives to be available everywhere:
+      // 对于自动导入策略无法影响的特殊情况
+      // (比如函数式组件作为示例之一)，
+      // 你可以手动指定 Quasar 组件/指令在任何地方都可用:
       //
       // components: [],
       // directives: [],
 
-      // Quasar plugins
+      // Quasar 插件
       plugins: [
         'Notify'  // 添加 Notify 插件
       ],
@@ -120,7 +120,7 @@ export default defineConfig((/* ctx */) => {
       sassVariables: 'src/css/quasar.variables.scss'
     },
 
-    // animations: 'all', // --- includes all animations
+    // animations: 'all', // --- 包含所有动画
     // https://v2.quasar.dev/options/animations
     animations: [],
 
@@ -139,11 +139,11 @@ export default defineConfig((/* ctx */) => {
 
     // https://v2.quasar.dev/quasar-cli-vite/developing-ssr/configuring-ssr
     ssr: {
-      prodPort: 3000, // The default port that the production server should use
-                      // (gets superseded if process.env.PORT is specified at runtime)
+      prodPort: 3000, // 生产服务器应该使用的默认端口
+                      // (如果在运行时指定了 process.env.PORT，则会被覆盖)
 
       middlewares: [
-        'render' // keep this as last one
+        'render' // 保持这个作为最后一个
       ],
 
       // extendPackageJson (json) {},
@@ -155,7 +155,7 @@ export default defineConfig((/* ctx */) => {
       // manualPostHydrationTrigger: true,
 
       pwa: false
-      // pwaOfflineHtmlFilename: 'offline.html', // do NOT use index.html as name!
+      // pwaOfflineHtmlFilename: 'offline.html', // 不要使用 index.html 作为名称！
 
       // pwaExtendGenerateSWOptions (cfg) {},
       // pwaExtendInjectManifestOptions (cfg) {}
@@ -163,7 +163,7 @@ export default defineConfig((/* ctx */) => {
 
     // https://v2.quasar.dev/quasar-cli-vite/developing-pwa/configuring-pwa
     pwa: {
-      workboxMode: 'GenerateSW' // 'GenerateSW' or 'InjectManifest'
+      workboxMode: 'GenerateSW' // 'GenerateSW' 或 'InjectManifest'
       // swFilename: 'sw.js',
       // manifestFilename: 'manifest.json',
       // extendManifestJson (json) {},
@@ -174,30 +174,30 @@ export default defineConfig((/* ctx */) => {
       // extendInjectManifestOptions (cfg) {}
     },
 
-    // Full list of options: https://v2.quasar.dev/quasar-cli-vite/developing-cordova-apps/configuring-cordova
+    // 完整选项列表: https://v2.quasar.dev/quasar-cli-vite/developing-cordova-apps/configuring-cordova
     cordova: {
-      // noIosLegacyBuildFlag: true, // uncomment only if you know what you are doing
+      // noIosLegacyBuildFlag: true, // 只有在你知道你在做什么时才取消注释
     },
 
-    // Full list of options: https://v2.quasar.dev/quasar-cli-vite/developing-capacitor-apps/configuring-capacitor
+    // 完整选项列表: https://v2.quasar.dev/quasar-cli-vite/developing-capacitor-apps/configuring-capacitor
     capacitor: {
       hideSplashscreen: true
     },
 
-    // Full list of options: https://v2.quasar.dev/quasar-cli-vite/developing-electron-apps/configuring-electron
+    // 完整选项列表: https://v2.quasar.dev/quasar-cli-vite/developing-electron-apps/configuring-electron
     electron: {
       // extendElectronMainConf (esbuildConf) {},
       // extendElectronPreloadConf (esbuildConf) {},
 
       // extendPackageJson (json) {},
 
-      // Electron preload scripts (if any) from /src-electron, WITHOUT file extension
+      // 来自 /src-electron 的 Electron 预加载脚本（如果有的话），不带文件扩展名
       preloadScripts: [ 'electron-preload' ],
 
-      // specify the debugging port to use for the Electron app when running in development mode
+      // 指定在开发模式下运行 Electron 应用时使用的调试端口
       inspectPort: 5858,
 
-      bundler: 'packager', // 'packager' or 'builder'
+      bundler: 'packager', // 'packager' 或 'builder'
 
       packager: {
         // https://github.com/electron-userland/electron-packager/blob/master/docs/api.md#options
@@ -208,7 +208,7 @@ export default defineConfig((/* ctx */) => {
         // osxSign: '',
         // protocol: 'myapp://path',
 
-        // Windows only
+        // 仅限 Windows
         // win32metadata: { ... }
       },
 
@@ -219,16 +219,16 @@ export default defineConfig((/* ctx */) => {
       }
     },
 
-    // Full list of options: https://v2.quasar.dev/quasar-cli-vite/developing-browser-extensions/configuring-bex
+    // 完整选项列表: https://v2.quasar.dev/quasar-cli-vite/developing-browser-extensions/configuring-bex
     bex: {
       // extendBexScriptsConf (esbuildConf) {},
       // extendBexManifestJson (json) {},
 
       /**
-       * The list of extra scripts (js/ts) not in your bex manifest that you want to
-       * compile and use in your browser extension. Maybe dynamic use them?
+       * 不在你的 bex 清单中的额外脚本（js/ts）列表，你想要
+       * 编译并在你的浏览器扩展中使用。也许动态使用它们？
        *
-       * Each entry in the list should be a relative filename to /src-bex/
+       * 列表中的每个条目应该是相对于 /src-bex/ 的文件名
        *
        * @example [ 'my-script.ts', 'sub-folder/my-other-script.js' ]
        */
