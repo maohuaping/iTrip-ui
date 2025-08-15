@@ -11,122 +11,129 @@
           rounded />
       </div>
 
-      <!-- 标签页样式优化 -->
-      <q-tabs v-model="activeTab" class="text-weight-medium" active-color="primary" indicator-color="primary"
-        align="left" narrow-indicator dense>
-        <q-tab name="incoming" class="q-px-md">
-          <q-icon name="call_received" class="q-mr-xs" />
-          呼入任务
-          <q-badge color="primary" floating rounded>{{ incomingPagination.total || 0 }}</q-badge>
-        </q-tab>
-        <q-tab name="outgoing" class="q-px-md">
-          <q-icon name="call_made" class="q-mr-xs" />
-          呼出任务
-          <q-badge color="teal" floating rounded>{{ outgoingPagination.total || 0 }}</q-badge>
-        </q-tab>
-      </q-tabs>
+      <!-- 标签页样式优化 - 增加背景和间距 -->
+      <div class="tabs-container q-mb-md">
+        <q-tabs v-model="activeTab" class="text-weight-medium tabs-custom" active-color="primary"
+          indicator-color="primary" align="left" narrow-indicator dense>
+          <q-tab name="incoming" class="q-px-md q-py-sm">
+            <q-icon name="call_received" class="q-mr-xs" />
+            呼入任务
+            <q-badge color="primary" floating rounded>{{ incomingPagination.total || 0 }}</q-badge>
+          </q-tab>
+          <q-tab name="outgoing" class="q-px-md q-py-sm">
+            <q-icon name="call_made" class="q-mr-xs" />
+            呼出任务
+            <q-badge color="teal" floating rounded>{{ outgoingPagination.total || 0 }}</q-badge>
+          </q-tab>
+        </q-tabs>
+      </div>
 
-      <q-separator class="q-mb-md" />
-
-      <!-- 过滤查询表头 -->
-      <div class="filter-header q-mb-lg">
-        <div class="row q-col-gutter-md items-end">
-          <!-- 需求编号搜索 -->
-          <div class="col-12 col-sm-6 col-md-3">
-            <q-input v-model="filterParams.requirementId" label="需求编号" outlined dense clearable placeholder="请输入需求编号"
-              class="light-field" @update:model-value="handleFilterChange">
-              <template v-slot:prepend>
-                <q-icon name="tag" size="16px" />
-              </template>
-            </q-input>
+      <!-- 过滤查询表头 - 使用卡片样式 -->
+      <q-card flat bordered class="filter-card q-mb-lg">
+        <q-card-section class="q-pa-md">
+          <div class="text-subtitle2 text-weight-medium q-mb-md">
+            <q-icon name="filter_list" class="q-mr-sm" />
+            筛选条件
           </div>
 
-          <!-- 需求名称搜索 -->
-          <div class="col-12 col-sm-6 col-md-3">
-            <q-input v-model="filterParams.requirementName" label="需求名称" outlined dense clearable placeholder="请输入需求名称"
-              class="light-field" @update:model-value="handleFilterChange">
-              <template v-slot:prepend>
-                <q-icon name="description" size="16px" />
-              </template>
-            </q-input>
-          </div>
-
-          <!-- 系统分类选择 -->
-          <div class="col-12 col-sm-6 col-md-2">
-            <q-select v-model="filterParams.systemCategory" :options="systemCategoryOptions" label="系统分类" outlined dense
-              clearable class="light-field" @update:model-value="handleFilterChange">
-              <template v-slot:prepend>
-                <q-icon name="category" size="16px" />
-              </template>
-            </q-select>
-          </div>
-
-          <!-- 操作按钮 -->
-          <div class="col-12 col-sm-6 col-md-4">
-            <div class="row q-gutter-sm">
-              <q-btn color="primary" icon="search" label="搜索" dense unelevated @click="handleSearch" />
-              <q-btn color="secondary" icon="refresh" label="重置" dense unelevated @click="handleReset" />
-              <q-btn color="accent" icon="filter_list" label="高级筛选" dense unelevated
-                @click="showAdvancedFilter = !showAdvancedFilter" />
-            </div>
-          </div>
-        </div>
-
-        <!-- 高级筛选区域 -->
-        <div v-show="showAdvancedFilter" class="advanced-filter q-mt-md">
-          <q-separator class="q-mb-md" />
           <div class="row q-col-gutter-md items-end">
-            <!-- 需求文档搜索 -->
+            <!-- 需求编号搜索 -->
             <div class="col-12 col-sm-6 col-md-3">
-              <q-input v-model="filterParams.relatedRequirementDocs" label="需求文档" outlined dense clearable
-                placeholder="请输入需求文档名称" class="light-field" @update:model-value="handleFilterChange">
-                <template v-slot:prepend>
-                  <q-icon name="article" size="16px" />
-                </template>
-              </q-input>
-            </div>
-
-            <!-- 设计文档搜索 -->
-            <div class="col-12 col-sm-6 col-md-3">
-              <q-input v-model="filterParams.relatedDesignDocs" label="设计文档" outlined dense clearable
-                placeholder="请输入设计文档名称" class="light-field" @update:model-value="handleFilterChange">
-                <template v-slot:prepend>
-                  <q-icon name="design_services" size="16px" />
-                </template>
-              </q-input>
-            </div>
-
-            <!-- 创建时间范围 -->
-            <div class="col-12 col-sm-6 col-md-3">
-              <q-input v-model="filterParams.createdAtRange" label="创建时间" outlined dense readonly placeholder="选择时间范围"
-                class="light-field" @click="showDatePicker = true">
-                <template v-slot:prepend>
-                  <q-icon name="event" size="16px" />
-                </template>
-                <template v-slot:append>
-                  <q-icon name="calendar_today" size="16px" class="cursor-pointer" />
-                </template>
-              </q-input>
-            </div>
-
-            <!-- 状态筛选 -->
-            <div class="col-12 col-sm-6 col-md-3">
-              <q-select v-model="filterParams.status" :options="statusOptions" label="状态" outlined dense clearable
+              <q-input v-model="filterParams.requirementId" label="需求编号" outlined dense clearable placeholder="请输入需求编号"
                 class="light-field" @update:model-value="handleFilterChange">
                 <template v-slot:prepend>
-                  <q-icon name="flag" size="16px" />
+                  <q-icon name="tag" size="16px" />
+                </template>
+              </q-input>
+            </div>
+
+            <!-- 需求名称搜索 -->
+            <div class="col-12 col-sm-6 col-md-3">
+              <q-input v-model="filterParams.requirementName" label="需求名称" outlined dense clearable
+                placeholder="请输入需求名称" class="light-field" @update:model-value="handleFilterChange">
+                <template v-slot:prepend>
+                  <q-icon name="description" size="16px" />
+                </template>
+              </q-input>
+            </div>
+
+            <!-- 系统分类选择 -->
+            <div class="col-12 col-sm-6 col-md-2">
+              <q-select v-model="filterParams.systemCategory" :options="systemCategoryOptions" label="系统分类" outlined
+                dense clearable class="light-field" @update:model-value="handleFilterChange">
+                <template v-slot:prepend>
+                  <q-icon name="category" size="16px" />
                 </template>
               </q-select>
             </div>
+
+            <!-- 操作按钮 -->
+            <div class="col-12 col-sm-6 col-md-4">
+              <div class="row q-gutter-sm">
+                <q-btn color="primary" icon="search" label="搜索" dense unelevated @click="handleSearch" />
+                <q-btn color="secondary" icon="refresh" label="重置" dense unelevated @click="handleReset" />
+                <q-btn color="accent" icon="filter_list" label="高级筛选" dense unelevated
+                  @click="showAdvancedFilter = !showAdvancedFilter" />
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
+
+          <!-- 高级筛选区域 -->
+          <div v-show="showAdvancedFilter" class="advanced-filter q-mt-md">
+            <q-separator class="q-mb-md" />
+            <div class="row q-col-gutter-md items-end">
+              <!-- 需求文档搜索 -->
+              <div class="col-12 col-sm-6 col-md-3">
+                <q-input v-model="filterParams.relatedRequirementDocs" label="需求文档" outlined dense clearable
+                  placeholder="请输入需求文档名称" class="light-field" @update:model-value="handleFilterChange">
+                  <template v-slot:prepend>
+                    <q-icon name="article" size="16px" />
+                  </template>
+                </q-input>
+              </div>
+
+              <!-- 设计文档搜索 -->
+              <div class="col-12 col-sm-6 col-md-3">
+                <q-input v-model="filterParams.relatedDesignDocs" label="设计文档" outlined dense clearable
+                  placeholder="请输入设计文档名称" class="light-field" @update:model-value="handleFilterChange">
+                  <template v-slot:prepend>
+                    <q-icon name="design_services" size="16px" />
+                  </template>
+                </q-input>
+              </div>
+
+              <!-- 创建时间范围 -->
+              <div class="col-12 col-sm-6 col-md-3">
+                <q-input v-model="filterParams.createdAtRange" label="创建时间" outlined dense readonly placeholder="选择时间范围"
+                  class="light-field" @click="showDatePicker = true">
+                  <template v-slot:prepend>
+                    <q-icon name="event" size="16px" />
+                  </template>
+                  <template v-slot:append>
+                    <q-icon name="calendar_today" size="16px" class="cursor-pointer" />
+                  </template>
+                </q-input>
+              </div>
+
+              <!-- 状态筛选 -->
+              <div class="col-12 col-sm-6 col-md-3">
+                <q-select v-model="filterParams.status" :options="statusOptions" label="状态" outlined dense clearable
+                  class="light-field" @update:model-value="handleFilterChange">
+                  <template v-slot:prepend>
+                    <q-icon name="flag" size="16px" />
+                  </template>
+                </q-select>
+              </div>
+            </div>
+          </div>
+        </q-card-section>
+      </q-card>
 
       <!-- 任务卡片样式优化 -->
       <q-tab-panels v-model="activeTab" animated>
         <q-tab-panel name="incoming" class="q-pa-none">
           <div class="row q-col-gutter-md">
-            <div v-for="task in incomingTasks" :key="task.id" class="col-12">
+            <div v-for="task in incomingTasks" :key="task.id || `incoming-${Math.random()}`" class="col-12">
               <q-card flat bordered class="task-card">
                 <q-card-section>
                   <div class="row items-center no-wrap">
@@ -135,12 +142,12 @@
                         <q-avatar size="32px" color="primary" text-color="white" icon="assignment" />
                         <div class="column">
                           <div class="text-subtitle1 text-weight-medium text-cursor-text ellipsis cursor-pointer"
-                            @click="copyToClipboard(task.requirementName)" title="点击复制任务名称">
-                            {{ task.requirementName }}
+                            @click="copyToClipboard(task.requirementName || '')" title="点击复制任务名称">
+                            {{ task.requirementName || '未命名任务' }}
                           </div>
                           <div class="text-caption text-grey-7 cursor-pointer"
-                            @click="copyToClipboard(task.requirementId)" title="点击复制需求编号">
-                            #{{ task.requirementId }}
+                            @click="copyToClipboard(task.requirementId || '')" title="点击复制需求编号">
+                            #{{ task.requirementId || '无编号' }}
                           </div>
                         </div>
                       </div>
@@ -167,7 +174,7 @@
         <!-- 呼出任务面板 -->
         <q-tab-panel name="outgoing" class="q-pa-none">
           <div class="row q-col-gutter-md">
-            <div v-for="task in outgoingTasks" :key="task.id" class="col-12">
+            <div v-for="task in outgoingTasks" :key="task.id || `outgoing-${Math.random()}`" class="col-12">
               <q-card flat bordered class="task-card">
                 <q-card-section>
                   <div class="row items-center no-wrap">
@@ -176,12 +183,12 @@
                         <q-avatar size="32px" color="teal" text-color="white" icon="assignment" />
                         <div class="column">
                           <div class="text-subtitle1 text-weight-medium text-cursor-text ellipsis cursor-pointer"
-                            @click="copyToClipboard(task.requirementName)" title="点击复制任务名称">
-                            {{ task.requirementName }}
+                            @click="copyToClipboard(task.requirementName || '')" title="点击复制任务名称">
+                            {{ task.requirementName || '未命名任务' }}
                           </div>
                           <div class="text-caption text-grey-7 cursor-pointer"
-                            @click="copyToClipboard(task.requirementId)" title="点击复制需求编号">
-                            #{{ task.requirementId }}
+                            @click="copyToClipboard(task.requirementId || '')" title="点击复制需求编号">
+                            #{{ task.requirementId || '无编号' }}
                           </div>
                         </div>
                       </div>
@@ -535,7 +542,7 @@ const getTaskTags = (task: DevTask): TaskTag[] => {
       textColor: 'blue-8',
       icon: 'call_split',
       clickable: true,
-      onClick: () => handleSystemClick(task.systemCategory || 'other', task.requirementId || '')
+      onClick: () => handleSystemClick((task.systemCategory as SystemType) || 'other', task.requirementId || '')
     })
   }
 
@@ -635,9 +642,9 @@ const getTaskTags = (task: DevTask): TaskTag[] => {
   return tags;
 }
 
-// 定义handleSystemClick返回类型
-const handleSystemClick = (system: SystemType, branch: string): void => {
-  if (system === 'other') return
+// 修改handleSystemClick函数，确保类型安全
+const handleSystemClick = (system: string, branch: string): void => {
+  if (system === 'other' || !branch) return
 
   const baseUrls: Partial<Record<SystemType, string>> = {
     callin: 'http://code.devops.piccnet/picc/_source/picc/picc__picc-life-ccin/Flex-Media/-/branches',

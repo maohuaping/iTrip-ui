@@ -136,17 +136,17 @@
 import { ref, watch, onMounted, computed } from 'vue'
 import { useQuasar } from 'quasar'
 import { getWorkLog } from '../../../api/work-log/work-log'
-import { getTask } from 'src/api/task/task' // 使用task中的接口
-import type { WorkLogEntity } from 'src/api/api.schemas';
+import { getDevLog } from 'src/api/dev-log/dev-log' // 改为使用 dev-log 接口
+import type { DevLog } from 'src/api/api.schemas'; // 改为使用 DevLog 类型
 
 // 初始化通知
 const $q = useQuasar()
 const workLogApi = getWorkLog()
-const taskApi = getTask() // 使用task API
+const devLogApi = getDevLog() // 改为使用 dev-log API
 
 // 定义日志接口
 interface WorkLogItem {
-  id?: number | undefined  // 明确指定id可以是undefined
+  id?: number | undefined
   title: string
   content: string
   date: string
@@ -161,23 +161,20 @@ interface LogItemEntry {
 // 需求类型选项
 const requirementOptions = ref<{ label: string; value: string }[]>([])
 
-// 获取需求类型列表
+// 获取需求类型列表 - 暂时使用静态数据，因为 dev-log 接口没有获取需求名称的方法
 async function fetchRequirementOptions() {
   try {
-    const response = await taskApi.getAllRequirementNames() // 使用task中的接口
-    if (response.data.isOk && response.data.okData) {
-      // 将API返回的字符串数组转换为选项格式
-      requirementOptions.value = response.data.okData.map(name => ({
-        label: name,
-        value: name
-      }))
-    } else {
-      $q.notify({
-        color: 'negative',
-        message: '获取需求类型失败',
-        icon: 'error'
-      })
-    }
+    // 使用静态的需求类型选项，因为 dev-log 接口没有提供获取需求名称的方法
+    requirementOptions.value = [
+      { label: '功能开发', value: '功能开发' },
+      { label: 'Bug修复', value: 'Bug修复' },
+      { label: '代码重构', value: '代码重构' },
+      { label: '性能优化', value: '性能优化' },
+      { label: '文档编写', value: '文档编写' },
+      { label: '测试用例', value: '测试用例' },
+      { label: '部署发布', value: '部署发布' },
+      { label: '其他任务', value: '其他任务' }
+    ]
   } catch (error) {
     $q.notify({
       color: 'negative',
@@ -284,8 +281,8 @@ async function deleteLog() {
     }
 
     try {
-      const response = await workLogApi.deleteWorkLog(logToDelete.id)
-      if (response.data.isOk) {
+      const response = await devLogApi.deleteDevLog(logToDelete.id.toString()) // 使用 dev-log API，转换为字符串
+      if (response.data?.isOk) {
         logs.value.splice(deleteIndex.value, 1)
         $q.notify({
           color: 'positive',
@@ -295,7 +292,7 @@ async function deleteLog() {
       } else {
         $q.notify({
           color: 'negative',
-          message: '删除失败: ' + (response.data.okData || '未知错误'),
+          message: '删除失败: ' + (response.data?.okData || '未知错误'),
           icon: 'error'
         })
       }
@@ -352,14 +349,15 @@ async function addNewLog() {
     .map(item => `【${item.type}】${item.content}`)
     .join('\n')
 
-  const newLog: WorkLogEntity = {
+  // 使用 DevLog 类型
+  const newLog: DevLog = {
     content: combinedContent,
-    logDate: formatDateForInput(new Date())
+    progress: 0 // 设置默认进度
   }
 
   try {
-    const response = await workLogApi.saveWorkLog(newLog)
-    if (response.data.isOk) {
+    const response = await devLogApi.saveDevLog(newLog) // 使用 dev-log API
+    if (response.data?.isOk) {
       // 重新获取最新的日志列表
       await fetchLogs()
 
@@ -378,7 +376,7 @@ async function addNewLog() {
     } else {
       $q.notify({
         color: 'negative',
-        message: '添加失败: ' + (response.data.failMsg || '未知错误'),
+        message: '添加失败: ' + (response.data?.failMsg || '未知错误'),
         icon: 'error'
       })
     }
