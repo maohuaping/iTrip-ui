@@ -413,7 +413,7 @@ export interface DevTask {
   updatedBy?: number;
   /** 更新时间 */
   updatedAt?: string;
-  /** 需求号 */
+  /** 需求编号 */
   requirementId?: string;
   /** 需求名称 */
   requirementName?: string;
@@ -421,7 +421,7 @@ export interface DevTask {
   relatedRequirementDocs?: string;
   /** 需求关联的设计文档名称。如果关联多个设计文档，会以;进行分隔 */
   relatedDesignDocs?: string;
-  /** 需求所属的系统分类 */
+  /** 系统分类 */
   systemCategory?: string;
   /** 需求的归属用户ID */
   userId?: number;
@@ -448,28 +448,44 @@ export interface QueryDevTaskInParam {
   relatedRequirementDocs?: string;
   /** 需求关联的设计文档名称。如果关联多个设计文档，会以;进行分隔 */
   relatedDesignDocs?: string;
-  /** 需求所属的系统分类 */
+  /** 系统分类 */
   systemCategory?: string;
   /** 需求的归属用户ID */
   userId?: number;
   pageParam?: PageParam;
 }
 
+export interface DevTaskVO {
+  /** 需求编号 */
+  requirementId?: string;
+  /** 需求名称 */
+  requirementName?: string;
+  /** 需求关联的需求文档名称。如果关联多个需求文档，会以;进行分隔 */
+  relatedRequirementDocs?: string;
+  /** 需求关联的设计文档名称。如果关联多个设计文档，会以;进行分隔 */
+  relatedDesignDocs?: string;
+  /** 系统分类 */
+  systemCategory?: string;
+  systemCategoryDesc?: string;
+  /** 需求的归属用户ID */
+  userId?: number;
+}
+
 /**
  * 成功数据
  */
-export interface IPageDevTask {
+export interface IPageDevTaskVO {
   size?: number;
-  pages?: number;
-  total?: number;
+  records?: DevTaskVO[];
   current?: number;
-  records?: DevTask[];
+  total?: number;
+  pages?: number;
 }
 
-export interface ResultIPageDevTask {
+export interface ResultIPageDevTaskVO {
   /** 是否成功 */
   isOk?: boolean;
-  okData?: IPageDevTask;
+  okData?: IPageDevTaskVO;
   /** 失败消息 */
   failMsg?: string;
 }
@@ -521,10 +537,10 @@ export interface DevLogVO {
  */
 export interface IPageDevLogVO {
   size?: number;
-  pages?: number;
-  total?: number;
-  current?: number;
   records?: DevLogVO[];
+  current?: number;
+  total?: number;
+  pages?: number;
 }
 
 export interface ResultIPageDevLogVO {

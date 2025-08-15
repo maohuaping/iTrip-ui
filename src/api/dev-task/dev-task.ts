@@ -10,7 +10,7 @@ import type {
   QueryDevTaskInParam,
   ResultBoolean,
   ResultDevTask,
-  ResultIPageDevTask,
+  ResultIPageDevTaskVO,
   ResultListDevTask,
   ResultListString,
 } from '../api.schemas';
@@ -33,7 +33,7 @@ export const getDevTask = () => {
    * @summary 分页查询开发任务
    */
   const queryDevTask = (queryDevTaskInParam: QueryDevTaskInParam) => {
-    return customInstance<ResultIPageDevTask>({
+    return customInstance<ResultIPageDevTaskVO>({
       url: `/api/devTask/queryDevTask`,
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

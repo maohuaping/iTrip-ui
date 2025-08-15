@@ -182,11 +182,9 @@
 
               <!-- 系统分类列 -->
               <div class="data-cell system-category">
-                <q-chip :color="task.systemCategory === 'callin' ? 'info' : 'accent'" text-color="white" size="sm" dense
-                  class="system-chip">
-                  <q-icon :name="task.systemCategory === 'callin' ? 'call_in' : 'call_out'" class="q-mr-xs" />
-                  {{ task.systemCategory === 'callin' ? '呼入' : '呼出' }}
-                </q-chip>
+                <div class="system-category-text">
+                  {{ task.systemCategory === 'callin' ? '呼入' : task.systemCategory === 'callout' ? '呼出' : '其他' }}
+                </div>
               </div>
 
               <!-- 关联文档列 -->
@@ -1293,13 +1291,9 @@ defineOptions({
     }
 
     &.system-category {
-      .system-chip {
+      .system-category-text {
         font-weight: 500;
         cursor: pointer;
-
-        &:hover {
-          opacity: 0.9;
-        }
       }
     }
 
