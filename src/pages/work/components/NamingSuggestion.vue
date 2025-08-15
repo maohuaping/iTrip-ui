@@ -10,33 +10,14 @@
             自动检测命名类型 • AI智能生成 • 一键复制
           </div>
         </h2>
-        <q-btn
-          color="primary"
-          size="md"
-          icon="psychology"
-          label="智能生成"
-          @click="getNamingSuggestions"
-          :loading="isLoading"
-          :disable="!chineseInput.trim()"
-          class="q-px-md"
-          unelevated
-          rounded
-        />
+        <q-btn color="primary" size="md" icon="psychology" label="智能生成" @click="getNamingSuggestions"
+          :loading="isLoading" :disable="!chineseInput.trim()" class="q-px-md" unelevated rounded />
       </div>
 
       <!-- 输入区域 -->
       <div class="q-mb-lg">
-        <q-input
-          v-model="chineseInput"
-          label="输入中文描述"
-          placeholder="请输入需要命名的中文描述，例如：用户登录、数据查询、下载文件等"
-          outlined
-          type="textarea"
-          rows="2"
-          class="naming-input"
-          clearable
-          @keyup.ctrl.enter="getNamingSuggestions"
-        >
+        <q-input v-model="chineseInput" label="输入中文描述" placeholder="请输入需要命名的中文描述，例如：用户登录、数据查询、下载文件等" outlined
+          type="textarea" rows="2" class="naming-input" clearable @keyup.ctrl.enter="getNamingSuggestions">
           <template v-slot:hint>
             <div class="text-caption">
               <q-icon name="auto_awesome" size="14px" class="q-mr-xs" />
@@ -49,13 +30,8 @@
 
       <!-- 检测类型显示 -->
       <div v-if="detectedType" class="q-mb-md">
-        <q-chip 
-          color="primary" 
-          text-color="white" 
-          icon="auto_awesome"
-          size="sm"
-          :label="`检测类型：${getDetectedTypeLabel(detectedType)}`"
-        />
+        <q-chip color="primary" text-color="white" icon="auto_awesome" size="sm"
+          :label="`检测类型：${getDetectedTypeLabel(detectedType)}`" />
         <div v-if="detectionReason" class="text-caption text-grey-6 q-mt-xs q-ml-sm">
           {{ detectionReason }}
         </div>
@@ -68,15 +44,11 @@
           命名建议
           <q-badge color="positive" :label="suggestions.length" class="q-ml-sm" />
         </div>
-        
+
         <!-- 紧凑的卡片布局 -->
         <div class="suggestions-grid">
-          <div 
-            v-for="(suggestion, index) in suggestions"
-            :key="index"
-            class="suggestion-item"
-            @click="copySuggestion(suggestion.name)"
-          >
+          <div v-for="(suggestion, index) in suggestions" :key="index" class="suggestion-item"
+            @click="copySuggestion(suggestion.name)">
             <div class="suggestion-content">
               <div class="suggestion-name">{{ suggestion.name }}</div>
               <div class="suggestion-desc">{{ suggestion.description }}</div>
@@ -106,28 +78,12 @@
         <div class="text-subtitle2 text-weight-medium q-mb-md">
           <q-icon name="history" class="q-mr-xs" />
           搜索历史
-          <q-btn 
-            flat 
-            dense 
-            size="sm" 
-            color="grey-7" 
-            label="清空" 
-            @click="clearHistory"
-            class="q-ml-sm"
-          />
+          <q-btn flat dense size="sm" color="grey-7" label="清空" @click="clearHistory" class="q-ml-sm" />
         </div>
-        
+
         <div class="history-chips">
-          <q-chip
-            v-for="(item, index) in searchHistory.slice(0, 10)"
-            :key="index"
-            clickable
-            color="grey-3"
-            text-color="grey-8"
-            @click="loadFromHistory(item)"
-            class="q-ma-xs"
-            size="sm"
-          >
+          <q-chip v-for="(item, index) in searchHistory.slice(0, 10)" :key="index" clickable color="grey-3"
+            text-color="grey-8" @click="loadFromHistory(item)" class="q-ma-xs" size="sm">
             {{ item }}
           </q-chip>
         </div>
@@ -139,16 +95,10 @@
           <q-icon name="lightbulb" class="q-mr-xs" color="amber" />
           智能检测示例
         </div>
-        
+
         <div class="example-grid">
-          <q-card 
-            v-for="example in examples" 
-            :key="example.input"
-            flat 
-            bordered 
-            class="example-card cursor-pointer"
-            @click="tryExample(example.input)"
-          >
+          <q-card v-for="example in examples" :key="example.input" flat bordered class="example-card cursor-pointer"
+            @click="tryExample(example.input)">
             <q-card-section class="q-pa-sm">
               <div class="text-caption text-primary q-mb-xs">{{ example.type }}</div>
               <div class="text-body2 text-weight-medium">{{ example.input }}</div>
@@ -237,12 +187,12 @@ const getNamingSuggestions = async () => {
 
   isLoading.value = true
   hasSearched.value = true
-  
+
   // 清空之前的结果
   suggestions.value = []
   detectedType.value = ''
   detectionReason.value = ''
-  
+
   // 显示调用中的提示
   $q.notify({
     color: 'info',
@@ -250,16 +200,16 @@ const getNamingSuggestions = async () => {
     icon: 'cloud_sync',
     timeout: 2000
   })
-  
+
   try {
     // 使用AI命名建议接口
     const response = await aiApi.getAiNameSuggestion({
       description: chineseInput.value.trim()
     })
-    
+
     if (response.data?.isOk && response.data.okData) {
       const aiResponse = response.data.okData
-      
+
       // 设置检测类型和原因
       if (aiResponse.detectedType) {
         detectedType.value = aiResponse.detectedType
@@ -267,17 +217,17 @@ const getNamingSuggestions = async () => {
       if (aiResponse.detectionReason) {
         detectionReason.value = aiResponse.detectionReason
       }
-      
+
       // 直接使用API返回的建议
       if (aiResponse.suggestions && Array.isArray(aiResponse.suggestions)) {
         suggestions.value = aiResponse.suggestions.map(suggestion => ({
           name: suggestion.name || '',
           description: suggestion.description || ''
         }))
-        
+
         // 保存到搜索历史
         saveToHistory(chineseInput.value.trim())
-        
+
         $q.notify({
           color: 'positive',
           message: `✨ 成功生成 ${suggestions.value.length} 个命名建议！点击即可复制`,
@@ -355,13 +305,13 @@ const getDetectedTypeLabel = (type: string): string => {
 // 保存到搜索历史
 const saveToHistory = (term: string) => {
   if (!term || searchHistory.value.includes(term)) return
-  
+
   searchHistory.value.unshift(term)
   // 保持最多20条历史记录
   if (searchHistory.value.length > 20) {
     searchHistory.value = searchHistory.value.slice(0, 20)
   }
-  
+
   // 保存到localStorage
   localStorage.setItem('naming_search_history', JSON.stringify(searchHistory.value))
 }
@@ -407,7 +357,7 @@ defineOptions({
   :deep(.q-field__native) {
     font-size: 1rem;
   }
-  
+
   :deep(.q-field__control) {
     min-height: 60px;
   }
@@ -422,6 +372,7 @@ defineOptions({
     opacity: 0;
     transform: translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -433,15 +384,15 @@ defineOptions({
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 12px;
-  
+
   @media (min-width: 1200px) {
     grid-template-columns: repeat(4, 1fr);
   }
-  
+
   @media (min-width: 768px) and (max-width: 1199px) {
     grid-template-columns: repeat(3, 1fr);
   }
-  
+
   @media (max-width: 767px) {
     grid-template-columns: repeat(2, 1fr);
     gap: 8px;
@@ -463,14 +414,14 @@ defineOptions({
 
   &:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-    border-color: rgba(25, 118, 210, 0.3);
-    background: rgba(255, 255, 255, 1);
-    
+    box-shadow: $elevation-2;
+    border-color: rgba($cursor-primary, 0.3);
+    background: $cursor-surface;
+
     .suggestion-name {
-      color: #1976d2;
+      color: $cursor-primary;
     }
-    
+
     .copy-indicator {
       opacity: 1;
       transform: scale(1.1);
@@ -486,7 +437,7 @@ defineOptions({
 .suggestion-name {
   font-size: 0.95rem;
   font-weight: 600;
-  color: #2c3e50;
+  color: $cursor-text;
   margin-bottom: 4px;
   transition: color 0.2s ease;
   word-break: break-word;
@@ -494,7 +445,7 @@ defineOptions({
 
 .suggestion-desc {
   font-size: 0.8rem;
-  color: #6c757d;
+  color: $cursor-muted;
   line-height: 1.3;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -504,7 +455,7 @@ defineOptions({
 
 .copy-indicator {
   opacity: 0.4;
-  color: #1976d2;
+  color: $cursor-primary;
   transition: all 0.2s ease;
   flex-shrink: 0;
   margin-left: 8px;
@@ -513,10 +464,10 @@ defineOptions({
 .history-chips {
   max-height: 120px;
   overflow-y: auto;
-  
+
   :deep(.q-chip) {
     transition: all 0.2s ease;
-    
+
     &:hover {
       transform: translateY(-1px);
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
@@ -544,4 +495,4 @@ defineOptions({
     background: rgba(255, 255, 255, 1);
   }
 }
-</style> 
+</style>

@@ -6,15 +6,8 @@
           <q-icon name="task_alt" size="28px" class="q-mr-sm" />
           工作日志
         </h2>
-        <q-btn
-          color="primary"
-          label="添加日志"
-          icon="add"
-          rounded
-          unelevated
-          @click="showNewLogDialog = true"
-          :disable="isLoading"
-        />
+        <q-btn color="primary" label="添加日志" icon="add" rounded unelevated @click="showNewLogDialog = true"
+          :disable="isLoading" />
       </div>
 
       <!-- 加载状态 -->
@@ -25,11 +18,7 @@
 
       <!-- 日志列表 -->
       <div class="work-logs q-mt-md" v-else-if="logs.length > 0">
-        <div
-          v-for="(log, index) in visibleLogs"
-          :key="index"
-          class="work-log-item q-mb-md"
-        >
+        <div v-for="(log, index) in visibleLogs" :key="index" class="work-log-item q-mb-md">
           <q-card flat bordered class="log-card">
             <q-card-section>
               <div class="row justify-between items-start">
@@ -46,25 +35,10 @@
 
                 <div class="col-3 text-right">
                   <div class="q-mt-sm">
-                    <q-btn
-                      flat
-                      round
-                      dense
-                      color="blue-7"
-                      icon="content_copy"
-                      @click="copyLog(log)"
-                      class="q-mr-xs"
-                    >
+                    <q-btn flat round dense color="blue-7" icon="content_copy" @click="copyLog(log)" class="q-mr-xs">
                       <q-tooltip>复制内容</q-tooltip>
                     </q-btn>
-                    <q-btn
-                      flat
-                      round
-                      dense
-                      color="negative"
-                      icon="delete"
-                      @click="confirmDelete(index)"
-                    >
+                    <q-btn flat round dense color="negative" icon="delete" @click="confirmDelete(index)">
                       <q-tooltip>删除日志</q-tooltip>
                     </q-btn>
                   </div>
@@ -76,24 +50,12 @@
 
         <!-- 展示更多按钮 -->
         <div v-if="logs.length > maxVisibleLogs && !showAllLogs" class="text-center q-mt-md">
-          <q-btn
-            flat
-            color="primary"
-            label="查看更多"
-            @click="showAllLogs = true"
-            icon-right="expand_more"
-          />
+          <q-btn flat color="primary" label="查看更多" @click="showAllLogs = true" icon-right="expand_more" />
         </div>
 
         <!-- 收起按钮 -->
         <div v-if="showAllLogs && logs.length > maxVisibleLogs" class="text-center q-mt-md">
-          <q-btn
-            flat
-            color="primary"
-            label="收起"
-            @click="showAllLogs = false"
-            icon-right="expand_less"
-          />
+          <q-btn flat color="primary" label="收起" @click="showAllLogs = false" icon-right="expand_less" />
         </div>
       </div>
 
@@ -121,49 +83,21 @@
               <div v-for="(item, index) in logItems" :key="index" class="q-mb-md">
                 <div class="row q-col-gutter-sm">
                   <div class="col-4">
-                    <q-select
-                      v-model="item.type"
-                      :options="requirementOptions"
-                      label="需求"
-                      outlined
-                      dense
-                      map-options
-                      emit-value
-                      :rules="[val => !!val || '请选择需求']"
-                    />
+                    <q-select v-model="item.type" :options="requirementOptions" label="需求" outlined dense map-options
+                      emit-value :rules="[val => !!val || '请选择需求']" />
                   </div>
                   <div class="col-7">
-                    <q-input
-                      v-model="item.content"
-                      label="内容"
-                      outlined
-                      dense
-                      :rules="[val => !!val || '请输入内容']"
-                    />
+                    <q-input v-model="item.content" label="内容" outlined dense :rules="[val => !!val || '请输入内容']" />
                   </div>
                   <div class="col-1 flex items-center">
-                    <q-btn
-                      v-if="index > 0"
-                      flat
-                      round
-                      dense
-                      color="negative"
-                      icon="remove_circle"
-                      @click="removeLogItem(index)"
-                    />
+                    <q-btn v-if="index > 0" flat round dense color="negative" icon="remove_circle"
+                      @click="removeLogItem(index)" />
                   </div>
                 </div>
               </div>
 
               <div class="q-mt-sm">
-                <q-btn
-                  outline
-                  color="primary"
-                  icon="add"
-                  label="添加需求项"
-                  size="sm"
-                  @click="addLogItem"
-                />
+                <q-btn outline color="primary" icon="add" label="添加需求项" size="sm" @click="addLogItem" />
               </div>
             </div>
 
@@ -569,22 +503,22 @@ defineOptions({
 <style lang="scss" scoped>
 .log-card {
   transition: all 0.3s ease;
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba($cursor-surface, 0.9);
 
   &:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    box-shadow: $elevation-2;
     transform: translateY(-2px);
   }
 }
 
 .log-content {
-  color: #555;
+  color: $cursor-text; // 使用变量系统
   line-height: 1.5;
   white-space: pre-line;
 }
 
 .section-header {
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  border-bottom: 1px solid $cursor-border; // 使用变量系统
 }
 
 .date-title {
@@ -602,19 +536,19 @@ defineOptions({
   border-radius: 2px;
 
   &.today {
-    background-color: #F44336; // 红色，今天
+    background-color: $cursor-error; // 使用变量系统
   }
 
   &.yesterday {
-    background-color: #FF9800; // 橙色，昨天
+    background-color: $cursor-warning; // 使用变量系统
   }
 
   &.day-before-yesterday {
-    background-color: #FFC107; // 黄色，前天
+    background-color: $cursor-warning; // 使用变量系统
   }
 
   &.older {
-    background-color: #2196F3; // 蓝色，更早日期
+    background-color: $cursor-info; // 使用变量系统
   }
 }
 </style>

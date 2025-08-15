@@ -8,15 +8,14 @@
 // 强烈建议更改默认颜色
 // 以匹配你的应用品牌。
 // 提示：在 Quasar 文档网站上使用"主题构建器"。
-
 // --- 1. 定义我们的 "Cursor 现代蓝绿" 调色板 ---
 $cursor-bg: #1a1c21; // 主背景色 (底版)
 $cursor-surface: #1a1c21; // 卡片/表层颜色 (底版)
 $cursor-primary: #94bece; // 主要高亮色 (柔和蓝灰色)
 $cursor-secondary: #7ba8b8; // 次要颜色 (深蓝灰色)
 $cursor-accent: #10b981; // 点缀色 (现代绿色)
-$cursor-text: #525968; // 主要文字颜色 (一级标题)
-$cursor-muted: #525968; // 减弱/次要文字颜色 (一级标题)
+$cursor-text: #7D889F; // 主要文字颜色
+$cursor-muted: #7D889F; // 减弱/次要文字颜色
 $cursor-border: #334155; // 边框颜色 (更亮的边框)
 // --- 2. 核心 Quasar 变量映射 ---
 $primary: $cursor-primary; // 主要按钮、链接等
@@ -39,8 +38,8 @@ $card-bg: $cursor-surface; // 卡片背景
 $toolbar-bg: $cursor-surface; // 工具栏背景
 $drawer-bg: $cursor-bg; // 抽屉背景
 // --- 6. 文字颜色 ---
-$text-color: $cursor-text; // 主要文字颜色
-$text-muted: $cursor-muted; // 次要文字颜色
+$text-color: #7D889F; // 主要文字颜色
+$text-muted: #7D889F; // 次要文字颜色
 $text-disabled: #64748b; // 禁用状态文字颜色
 // --- 7. 边框和分割线 ---
 $border-color: $cursor-border; // 主要边框颜色

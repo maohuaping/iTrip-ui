@@ -7,28 +7,13 @@
           <q-icon name="task_alt" size="28px" class="q-mr-sm" />
           任务列表
         </h2>
-        <q-btn
-          color="primary"
-          size="md"
-          icon="add"
-          label="新建任务"
-          @click="openNewTaskDialog"
-          class="q-px-md"
-          unelevated
-          rounded
-        />
+        <q-btn color="primary" size="md" icon="add" label="新建任务" @click="openNewTaskDialog" class="q-px-md" unelevated
+          rounded />
       </div>
 
       <!-- 标签页样式优化 -->
-      <q-tabs
-        v-model="activeTab"
-        class="text-weight-medium"
-        active-color="primary"
-        indicator-color="primary"
-        align="left"
-        narrow-indicator
-        dense
-      >
+      <q-tabs v-model="activeTab" class="text-weight-medium" active-color="primary" indicator-color="primary"
+        align="left" narrow-indicator dense>
         <q-tab name="incoming" class="q-px-md">
           <q-icon name="call_received" class="q-mr-xs" />
           呼入任务
@@ -47,10 +32,7 @@
       <q-tab-panels v-model="activeTab" animated>
         <q-tab-panel name="incoming" class="q-pa-none">
           <div class="row q-col-gutter-md">
-            <div v-for="task in visibleIncomingTasks"
-                 :key="task.id"
-                 class="col-12"
-            >
+            <div v-for="task in visibleIncomingTasks" :key="task.id" class="col-12">
               <q-card flat bordered class="task-card">
                 <q-card-section>
                   <div class="row items-center no-wrap">
@@ -58,18 +40,12 @@
                       <div class="row items-center q-gutter-x-sm">
                         <q-avatar size="32px" color="primary" text-color="white" icon="assignment" />
                         <div class="column">
-                          <div
-                            class="text-subtitle1 text-weight-medium text-dark ellipsis cursor-pointer"
-                            @click="copyToClipboard(task.requirementName)"
-                            title="点击复制任务名称"
-                          >
+                          <div class="text-subtitle1 text-weight-medium text-cursor-text ellipsis cursor-pointer"
+                            @click="copyToClipboard(task.requirementName)" title="点击复制任务名称">
                             {{ task.requirementName }}
                           </div>
-                          <div
-                            class="text-caption text-grey-7 cursor-pointer"
-                            @click="copyToClipboard(task.requirementId)"
-                            title="点击复制需求编号"
-                          >
+                          <div class="text-caption text-grey-7 cursor-pointer"
+                            @click="copyToClipboard(task.requirementId)" title="点击复制需求编号">
                             #{{ task.requirementId }}
                           </div>
                         </div>
@@ -77,19 +53,9 @@
                     </div>
 
                     <div class="row items-center q-gutter-x-sm q-ml-md">
-                      <q-chip
-                        v-for="tag in getTaskTags(task)"
-                        :key="tag.label + (tag.index || '')"
-                        dense
-                        size="md"
-                        :icon="tag.icon"
-                        :color="tag.color"
-                        :text-color="tag.textColor"
-                        :label="tag.label"
-                        :clickable="!!tag.clickable"
-                        @click="tag.onClick ? tag.onClick() : null"
-                        class="task-tag"
-                      />
+                      <q-chip v-for="tag in getTaskTags(task)" :key="tag.label + (tag.index || '')" dense size="md"
+                        :icon="tag.icon" :color="tag.color" :text-color="tag.textColor" :label="tag.label"
+                        :clickable="!!tag.clickable" @click="tag.onClick ? tag.onClick() : null" class="task-tag" />
                     </div>
                   </div>
                 </q-card-section>
@@ -99,34 +65,20 @@
 
           <!-- 展示更多按钮 -->
           <div v-if="incomingTasks.length > maxVisibleTasks && !showAllIncomingTasks" class="text-center q-mt-md">
-            <q-btn
-              flat
-              color="primary"
-              :label="`查看更多 (${incomingTasks.length - maxVisibleTasks})`"
-              @click="showAllIncomingTasks = true"
-              icon-right="expand_more"
-            />
+            <q-btn flat color="primary" :label="`查看更多 (${incomingTasks.length - maxVisibleTasks})`"
+              @click="showAllIncomingTasks = true" icon-right="expand_more" />
           </div>
 
           <!-- 收起按钮 -->
           <div v-if="showAllIncomingTasks && incomingTasks.length > maxVisibleTasks" class="text-center q-mt-md">
-            <q-btn
-              flat
-              color="primary"
-              label="收起"
-              @click="showAllIncomingTasks = false"
-              icon-right="expand_less"
-            />
+            <q-btn flat color="primary" label="收起" @click="showAllIncomingTasks = false" icon-right="expand_less" />
           </div>
         </q-tab-panel>
 
         <!-- 呼出任务面板 -->
         <q-tab-panel name="outgoing" class="q-pa-none">
           <div class="row q-col-gutter-md">
-            <div v-for="task in visibleOutgoingTasks"
-                 :key="task.id"
-                 class="col-12"
-            >
+            <div v-for="task in visibleOutgoingTasks" :key="task.id" class="col-12">
               <q-card flat bordered class="task-card">
                 <q-card-section>
                   <div class="row items-center no-wrap">
@@ -134,18 +86,12 @@
                       <div class="row items-center q-gutter-x-sm">
                         <q-avatar size="32px" color="teal" text-color="white" icon="assignment" />
                         <div class="column">
-                          <div
-                            class="text-subtitle1 text-weight-medium text-dark ellipsis cursor-pointer"
-                            @click="copyToClipboard(task.requirementName)"
-                            title="点击复制任务名称"
-                          >
+                          <div class="text-subtitle1 text-weight-medium text-cursor-text ellipsis cursor-pointer"
+                            @click="copyToClipboard(task.requirementName)" title="点击复制任务名称">
                             {{ task.requirementName }}
                           </div>
-                          <div
-                            class="text-caption text-grey-7 cursor-pointer"
-                            @click="copyToClipboard(task.requirementId)"
-                            title="点击复制需求编号"
-                          >
+                          <div class="text-caption text-grey-7 cursor-pointer"
+                            @click="copyToClipboard(task.requirementId)" title="点击复制需求编号">
                             #{{ task.requirementId }}
                           </div>
                         </div>
@@ -153,19 +99,9 @@
                     </div>
 
                     <div class="row items-center q-gutter-x-sm q-ml-md">
-                      <q-chip
-                        v-for="tag in getTaskTags(task)"
-                        :key="tag.label + (tag.index || '')"
-                        dense
-                        size="md"
-                        :icon="tag.icon"
-                        :color="tag.color"
-                        :text-color="tag.textColor"
-                        :label="tag.label"
-                        :clickable="!!tag.clickable"
-                        @click="tag.onClick ? tag.onClick() : null"
-                        class="task-tag"
-                      />
+                      <q-chip v-for="tag in getTaskTags(task)" :key="tag.label + (tag.index || '')" dense size="md"
+                        :icon="tag.icon" :color="tag.color" :text-color="tag.textColor" :label="tag.label"
+                        :clickable="!!tag.clickable" @click="tag.onClick ? tag.onClick() : null" class="task-tag" />
                     </div>
                   </div>
                 </q-card-section>
@@ -175,24 +111,13 @@
 
           <!-- 展示更多按钮 -->
           <div v-if="outgoingTasks.length > maxVisibleTasks && !showAllOutgoingTasks" class="text-center q-mt-md">
-            <q-btn
-              flat
-              color="primary"
-              :label="`查看更多 (${outgoingTasks.length - maxVisibleTasks})`"
-              @click="showAllOutgoingTasks = true"
-              icon-right="expand_more"
-            />
+            <q-btn flat color="primary" :label="`查看更多 (${outgoingTasks.length - maxVisibleTasks})`"
+              @click="showAllOutgoingTasks = true" icon-right="expand_more" />
           </div>
 
           <!-- 收起按钮 -->
           <div v-if="showAllOutgoingTasks && outgoingTasks.length > maxVisibleTasks" class="text-center q-mt-md">
-            <q-btn
-              flat
-              color="primary"
-              label="收起"
-              @click="showAllOutgoingTasks = false"
-              icon-right="expand_less"
-            />
+            <q-btn flat color="primary" label="收起" @click="showAllOutgoingTasks = false" icon-right="expand_less" />
           </div>
         </q-tab-panel>
       </q-tab-panels>
@@ -203,7 +128,7 @@
   <q-dialog v-model="showNewTaskDialog">
     <q-card style="min-width: 500px; background: white;">
       <q-card-section class="bg-grey-2 q-pb-sm border-bottom">
-        <div class="text-h6 text-dark">新建任务</div>
+        <div class="text-h6 text-cursor-text">新建任务</div>
         <q-space />
         <q-btn icon="close" flat round dense v-close-popup class="absolute-top-right q-mt-sm q-mr-sm" color="grey-7" />
       </q-card-section>
@@ -212,57 +137,32 @@
         <!-- 任务类型和编号 -->
         <div class="row q-col-gutter-md q-mb-md">
           <div class="col-5">
-            <q-select
-              v-model="newTask.type"
-              :options="taskTypes"
-              label="任务类型"
-              outlined
-              dense
-              class="light-field"
-            />
+            <q-select v-model="newTask.type" :options="taskTypes" label="任务类型" outlined dense class="light-field" />
           </div>
           <div class="col-7">
-            <q-input
-              v-model="newTask.id"
-              label="任务编号"
-              outlined
-              dense
-              class="light-field"
-            />
+            <q-input v-model="newTask.id" label="任务编号" outlined dense class="light-field" />
           </div>
         </div>
 
         <!-- 任务标题 -->
-        <q-input
-          v-model="newTask.title"
-          label="任务标题"
-          outlined
-          dense
-          class="light-field q-mb-md"
-          placeholder="请输入任务标题"
-        />
+        <q-input v-model="newTask.title" label="任务标题" outlined dense class="light-field q-mb-md"
+          placeholder="请输入任务标题" />
 
         <!-- 关联文档 -->
         <div class="q-mb-md">
           <div class="row justify-between items-center q-mb-xs">
-            <div class="text-subtitle2 text-dark">关联文档</div>
+            <div class="text-subtitle2 text-cursor-text">关联文档</div>
             <div class="text-caption text-grey-7">点击标签上传相关文档</div>
           </div>
 
           <div class="row q-gutter-sm q-mb-md">
-            <div
-              class="doc-label doc-requirement cursor-pointer"
-              :class="{ 'doc-active': hasRequirementDocs }"
-              @click="triggerFileUpload('requirement')"
-            >
+            <div class="doc-label doc-requirement cursor-pointer" :class="{ 'doc-active': hasRequirementDocs }"
+              @click="triggerFileUpload('requirement')">
               需求
             </div>
 
-            <div
-              class="doc-label doc-design cursor-pointer"
-              :class="{ 'doc-active': hasDesignDocs }"
-              @click="triggerFileUpload('design')"
-            >
+            <div class="doc-label doc-design cursor-pointer" :class="{ 'doc-active': hasDesignDocs }"
+              @click="triggerFileUpload('design')">
               设计
             </div>
           </div>
@@ -273,22 +173,12 @@
             <div v-if="newTask.docsList.requirement.length > 0">
               <div class="text-caption text-weight-medium q-mb-xs">需求文档:</div>
               <div class="q-gutter-y-sm">
-                <div
-                  v-for="(doc, index) in newTask.docsList.requirement"
-                  :key="index"
-                  class="uploaded-doc requirement-doc"
-                >
+                <div v-for="(doc, index) in newTask.docsList.requirement" :key="index"
+                  class="uploaded-doc requirement-doc">
                   <q-icon name="description" size="18px" class="q-mr-xs" />
                   <span class="ellipsis">{{ doc }}</span>
-                  <q-btn
-                    flat
-                    round
-                    dense
-                    icon="close"
-                    size="xs"
-                    @click="removeDoc('requirement', index)"
-                    class="q-ml-xs"
-                  />
+                  <q-btn flat round dense icon="close" size="xs" @click="removeDoc('requirement', index)"
+                    class="q-ml-xs" />
                 </div>
               </div>
             </div>
@@ -297,40 +187,19 @@
             <div v-if="newTask.docsList.design.length > 0" class="q-mt-sm">
               <div class="text-caption text-weight-medium q-mb-xs">设计文档:</div>
               <div class="q-gutter-y-sm">
-                <div
-                  v-for="(doc, index) in newTask.docsList.design"
-                  :key="index"
-                  class="uploaded-doc design-doc"
-                >
+                <div v-for="(doc, index) in newTask.docsList.design" :key="index" class="uploaded-doc design-doc">
                   <q-icon name="description" size="18px" class="q-mr-xs" />
                   <span class="ellipsis">{{ doc }}</span>
-                  <q-btn
-                    flat
-                    round
-                    dense
-                    icon="close"
-                    size="xs"
-                    @click="removeDoc('design', index)"
-                    class="q-ml-xs"
-                  />
+                  <q-btn flat round dense icon="close" size="xs" @click="removeDoc('design', index)" class="q-ml-xs" />
                 </div>
               </div>
             </div>
           </div>
 
           <!-- 隐藏的文件上传输入框 -->
-          <input
-            type="file"
-            ref="requirementFileInput"
-            @change="handleFileUpload('requirement', $event)"
-            style="display: none"
-          />
-          <input
-            type="file"
-            ref="designFileInput"
-            @change="handleFileUpload('design', $event)"
-            style="display: none"
-          />
+          <input type="file" ref="requirementFileInput" @change="handleFileUpload('requirement', $event)"
+            style="display: none" />
+          <input type="file" ref="designFileInput" @change="handleFileUpload('design', $event)" style="display: none" />
         </div>
       </q-card-section>
 
@@ -791,11 +660,11 @@ const createTask = async (): Promise<void> => {
       requirementName: newTask.value.title,
       systemCategory, // 使用转换后的类型
       relatedRequirementDocs: newTask.value.docsList.requirement.length > 0
-                              ? newTask.value.docsList.requirement.join(',')
-                              : '',
+        ? newTask.value.docsList.requirement.join(',')
+        : '',
       relatedDesignDocs: newTask.value.docsList.design.length > 0
-                         ? newTask.value.docsList.design.join(',')
-                         : ''
+        ? newTask.value.docsList.design.join(',')
+        : ''
     } as TaskRequirementEntity;
 
     const response = await requirementApi.saveRequirement(requirementEntity);
@@ -910,17 +779,21 @@ defineOptions({
 
 // 添加新建任务对话框相关样式
 .light-field {
-  .q-field__native, .q-field__prefix, .q-field__suffix, .q-field__input {
-    color: #333 !important;
+
+  .q-field__native,
+  .q-field__prefix,
+  .q-field__suffix,
+  .q-field__input {
+    color: $cursor-text !important; // 使用变量系统
   }
 
   .q-field__label {
-    color: rgba(0, 0, 0, 0.7) !important;
+    color: $cursor-muted !important; // 使用变量系统
   }
 
   &.q-field--outlined .q-field__control {
-    background-color: white !important;
-    border-color: rgba(0, 0, 0, 0.2) !important;
+    background-color: $cursor-surface !important; // 使用变量系统
+    border-color: $cursor-border !important; // 使用变量系统
   }
 }
 
@@ -932,31 +805,31 @@ defineOptions({
   transition: all 0.2s ease;
 
   &.doc-requirement {
-    background: rgba(59, 130, 246, 0.2);
-    color: #1e40af;
+    background: rgba($cursor-info, 0.2);
+    color: $cursor-info; // 使用变量系统
 
     &:hover {
-      background: rgba(59, 130, 246, 0.3);
+      background: rgba($cursor-info, 0.3);
     }
 
     &.doc-active {
-      background: rgba(59, 130, 246, 0.5);
-      color: #1e40af;
+      background: rgba($cursor-info, 0.5);
+      color: $cursor-info; // 使用变量系统
       font-weight: 500;
     }
   }
 
   &.doc-design {
-    background: rgba(168, 85, 247, 0.2);
-    color: #6b21a8;
+    background: rgba($cursor-accent, 0.2);
+    color: $cursor-accent; // 使用变量系统
 
     &:hover {
-      background: rgba(168, 85, 247, 0.3);
+      background: rgba($cursor-accent, 0.3);
     }
 
     &.doc-active {
-      background: rgba(168, 85, 247, 0.5);
-      color: #6b21a8;
+      background: rgba($cursor-accent, 0.5);
+      color: $cursor-accent; // 使用变量系统
       font-weight: 500;
     }
   }
@@ -984,18 +857,18 @@ defineOptions({
   padding: 6px 12px;
   border-radius: 8px;
   font-size: 0.9rem;
-  background-color: rgba(0, 0, 0, 0.05);
+  background-color: rgba($cursor-border, 0.05);
   margin-top: 8px;
   max-width: 100%;
 
   &.requirement-doc {
-    color: #1e40af;
-    background-color: rgba(59, 130, 246, 0.1);
+    color: $cursor-info; // 使用变量系统
+    background-color: rgba($cursor-info, 0.1);
   }
 
   &.design-doc {
-    color: #6b21a8;
-    background-color: rgba(168, 85, 247, 0.1);
+    color: $cursor-accent; // 使用变量系统
+    background-color: rgba($cursor-accent, 0.1);
   }
 
   .ellipsis {

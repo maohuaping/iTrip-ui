@@ -1,6 +1,6 @@
 <template>
   <q-layout view="lHh Lpr lFf">
-    <q-header elevated class="bg-white text-dark">
+    <q-header elevated class="bg-white text-cursor-text">
       <q-toolbar>
         <q-btn flat dense round icon="menu" aria-label="Menu" @click="toggleLeftDrawer" />
 
@@ -870,19 +870,19 @@ const onTagInputValue = (val: string) => {
 
 .toggle-menu-btn {
   margin-right: 16px;
-  color: #1976D2;
+  color: $cursor-primary; // 使用变量系统
   transition: all 0.3s ease;
   z-index: 100;
 
   &:hover {
-    background: rgba(25, 118, 210, 0.1);
+    background: rgba($cursor-primary, 0.1);
   }
 }
 
 .page-title {
   font-size: 1.2rem;
   font-weight: 500;
-  color: #2c3e50;
+  color: $cursor-text; // 使用变量系统
 }
 
 .work-page-content {
@@ -905,11 +905,11 @@ const onTagInputValue = (val: string) => {
 
   .action-btn {
     margin-left: 4px;
-    color: #718096;
+    color: $cursor-muted; // 使用变量系统
 
     &:hover {
-      color: #1976D2;
-      background: rgba(25, 118, 210, 0.1);
+      color: $cursor-primary; // 使用变量系统
+      background: rgba($cursor-primary, 0.1);
     }
   }
 }
@@ -1008,7 +1008,7 @@ section {
   .q-field__prefix,
   .q-field__suffix,
   .q-field__input {
-    color: #333;
+    color: $cursor-text; // 使用变量系统
   }
 }
 
@@ -1026,20 +1026,20 @@ section {
   transition: all 0.2s ease;
 
   &.doc-requirement {
-    background: rgba(59, 130, 246, 0.2);
-    color: #93c5fd;
+    background: rgba($cursor-info, 0.2);
+    color: $cursor-info; // 使用变量系统
 
     &:hover {
-      background: rgba(59, 130, 246, 0.3);
+      background: rgba($cursor-info, 0.3);
     }
   }
 
   &.doc-design {
-    background: rgba(168, 85, 247, 0.2);
-    color: #d8b4fe;
+    background: rgba($cursor-accent, 0.2);
+    color: $cursor-accent; // 使用变量系统
 
     &:hover {
-      background: rgba(168, 85, 247, 0.3);
+      background: rgba($cursor-accent, 0.3);
     }
   }
 }
@@ -1067,16 +1067,16 @@ section {
   padding: 16px;
   border-radius: 8px;
   border-left: 4px solid transparent;
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba($cursor-surface, 0.9);
   margin-bottom: 12px;
   transition: all 0.3s ease;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  box-shadow: $elevation-1;
   cursor: pointer;
 
   &:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    box-shadow: $elevation-2;
     transform: translateY(-2px);
-    background: rgba(255, 255, 255, 1);
+    background: $cursor-surface;
   }
 }
 
@@ -1117,77 +1117,225 @@ section {
   transform: translateX(-200px);
 }
 
-.group-header {
-  font-weight: 500;
-}
-
-.add-url-btn {
-  color: #1976D2;
-}
-
-.expand-btn {
-  font-size: 0.8rem;
-
-  &:hover {
-    background: rgba(25, 118, 210, 0.1);
-  }
-}
-
-.url-item {
-  padding-left: 40px;
-  /* 减少链接项的缩进 */
-}
-
-.submenu-list {
-  padding: 0;
-
-  :deep(.q-item) {
-    padding-top: 4px;
-    padding-bottom: 4px;
-  }
-}
-
+// 侧边栏样式 - 使用颜色变量系统
 .narrow-drawer {
+  background: $cursor-bg; // 使用变量系统的背景色
+  border-right: 1px solid $cursor-border; // 使用变量系统的边框色
+
   :deep(.q-item) {
     padding: 8px 8px;
+    color: $cursor-text; // 使用变量系统的文字颜色
+    transition: all 0.2s ease;
+
+    &:hover {
+      background: $hover-bg; // 使用变量系统的悬停背景
+      color: $cursor-primary; // 悬停时使用主要颜色
+    }
+
+    &.q-item--active {
+      background: $active-bg; // 使用变量系统的激活背景
+      color: $cursor-primary; // 激活状态使用主要颜色
+    }
   }
 
   :deep(.q-item__section--avatar) {
     min-width: 40px;
     padding-right: 8px;
+    color: $cursor-text; // 图标颜色使用文字颜色
   }
 
   :deep(.q-expansion-item__content) {
     padding: 0;
+    background: rgba($cursor-bg, 0.5); // 子菜单背景
+  }
+
+  :deep(.q-expansion-item__header) {
+    color: $cursor-text; // 展开项标题颜色
+
+    &:hover {
+      background: $hover-bg;
+      color: $cursor-primary;
+    }
   }
 }
 
-// 待办事项下拉样式
+// 分组标题样式
+.group-header {
+  font-weight: 500;
+  color: $cursor-text; // 使用变量系统的文字颜色
+  background: rgba($cursor-surface, 0.8); // 使用变量系统的表面色
+  border-bottom: 1px solid $cursor-border; // 使用变量系统的边框色
+}
+
+// 展开/收起按钮样式
+.expand-btn {
+  font-size: 0.8rem;
+  color: $cursor-primary; // 使用变量系统的主要颜色
+  background: rgba($cursor-primary, 0.1); // 使用变量系统的半透明背景
+
+  &:hover {
+    background: rgba($cursor-primary, 0.2);
+    color: $cursor-primary;
+  }
+}
+
+// 添加链接按钮样式
+.add-url-btn {
+  color: $cursor-primary; // 使用变量系统的主要颜色
+  background: rgba($cursor-primary, 0.1); // 使用变量系统的半透明背景
+  border: 1px solid rgba($cursor-primary, 0.3); // 使用变量系统的边框色
+  border-radius: 8px;
+  margin: 8px;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: rgba($cursor-primary, 0.2);
+    border-color: rgba($cursor-primary, 0.5);
+    transform: translateY(-1px);
+  }
+
+  :deep(.q-item__section--avatar) {
+    color: $cursor-primary; // 图标颜色
+  }
+
+  :deep(.q-item__section--main) {
+    color: $cursor-primary; // 文字颜色
+  }
+}
+
+// 链接项样式
+.url-item {
+  padding-left: 40px;
+  color: $cursor-text; // 使用变量系统的文字颜色
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: $hover-bg; // 使用变量系统的悬停背景
+    color: $cursor-primary; // 悬停时使用主要颜色
+    padding-left: 44px; // 悬停时稍微向右移动
+  }
+
+  :deep(.q-item__section--avatar) {
+    color: $cursor-text; // 图标颜色
+
+    .q-icon {
+      color: $cursor-text; // 确保图标颜色一致
+    }
+  }
+
+  :deep(.q-item__section--main) {
+    color: $cursor-text; // 文字颜色
+  }
+}
+
+// 子菜单列表样式
+.submenu-list {
+  padding: 0;
+  background: rgba($cursor-bg, 0.3); // 使用变量系统的半透明背景
+
+  :deep(.q-item) {
+    padding-top: 4px;
+    padding-bottom: 4px;
+    color: $cursor-muted; // 子菜单项使用次要文字颜色
+    font-size: 0.9rem;
+
+    &:hover {
+      color: $cursor-primary; // 悬停时使用主要颜色
+      background: $hover-bg;
+    }
+  }
+}
+
+// 抽屉头部样式
+.drawer-header {
+  background: rgba($cursor-surface, 0.9); // 使用变量系统的表面色
+  border-bottom: 1px solid $cursor-border; // 使用变量系统的边框色
+  padding: 16px;
+  margin-bottom: 8px;
+
+  .q-item-label {
+    color: $cursor-text; // 使用变量系统的文字颜色
+    font-weight: 600;
+  }
+}
+
+// 展开操作区域样式
+.expand-actions {
+  .expand-btn {
+    background: rgba($cursor-primary, 0.1);
+    color: $cursor-primary;
+    border: 1px solid rgba($cursor-primary, 0.3);
+    border-radius: 6px;
+    padding: 4px 12px;
+    font-size: 0.8rem;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background: rgba($cursor-primary, 0.2);
+      border-color: rgba($cursor-primary, 0.5);
+    }
+  }
+}
+
+// 待办事项下拉样式 - 使用颜色变量
 .todo-dropdown {
   .q-btn-dropdown__arrow-container {
-    border-left: 1px solid rgba(76, 175, 80, 0.4);
+    border-left: 1px solid rgba($cursor-success, 0.4); // 使用变量系统的成功色
     margin-left: 4px;
     padding-left: 4px;
   }
 
   &:hover {
     .q-btn-dropdown__arrow-container {
-      border-left-color: rgba(76, 175, 80, 0.7);
+      border-left-color: rgba($cursor-success, 0.7); // 使用变量系统的成功色
     }
   }
 }
 
+// 新建待办输入框样式
 .new-todo-input {
-  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  border-bottom: 1px solid $cursor-border; // 使用变量系统的边框色
 
   :deep(.q-field__control) {
     box-shadow: none;
+    background: rgba($cursor-surface, 0.5); // 使用变量系统的表面色
   }
+
+  :deep(.q-field__native) {
+    color: $cursor-text; // 使用变量系统的文字颜色
+  }
+
+  :deep(.q-field__label) {
+    color: $cursor-muted; // 使用变量系统的次要文字颜色
+  }
+}
+
+// 待办项样式
+:deep(.q-item) {
+  color: $cursor-text; // 使用变量系统的文字颜色
+
+  .q-checkbox {
+    color: $cursor-success; // 使用变量系统的成功色
+  }
+
+  .q-item__label {
+    color: $cursor-text; // 使用变量系统的文字颜色
+  }
+
+  .q-item__label--caption {
+    color: $cursor-muted; // 使用变量系统的次要文字颜色
+  }
+}
+
+// 分割线样式
+:deep(.q-separator) {
+  background: $cursor-border; // 使用变量系统的边框色
+  margin: 8px 0;
 }
 
 // 添加删除线样式，用于已完成待办
 .text-strike {
   text-decoration: line-through;
-  color: #9e9e9e;
+  color: $cursor-muted; // 使用变量系统
 }
 </style>
