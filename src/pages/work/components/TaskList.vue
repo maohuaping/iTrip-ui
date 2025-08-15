@@ -157,6 +157,7 @@
             <!-- 表头 -->
             <div class="data-header">
               <div class="data-cell header-cell">任务信息</div>
+              <div class="data-cell header-cell">需求编号</div>
               <div class="data-cell header-cell">系统分类</div>
               <div class="data-cell header-cell">关联文档</div>
               <div class="data-cell header-cell">操作</div>
@@ -170,9 +171,13 @@
                   <div class="task-title" @click="copyToClipboard(task.requirementName || '')" title="点击复制任务名称">
                     {{ task.requirementName || '未命名任务' }}
                   </div>
-                  <div class="task-id" @click="copyToClipboard(task.requirementId || '')" title="点击复制需求编号">
-                    #{{ task.requirementId || '无编号' }}
-                  </div>
+                </div>
+              </div>
+
+              <!-- 需求编号列 -->
+              <div class="data-cell requirement-id">
+                <div class="requirement-id-content" @click="copyToClipboard(task.requirementId || '')" title="点击复制需求编号">
+                  #{{ task.requirementId || '无编号' }}
                 </div>
               </div>
 
@@ -1232,7 +1237,7 @@ defineOptions({
 
   .data-header {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
     gap: 1px;
     background-color: $cursor-border;
     padding: 12px 16px;
@@ -1243,7 +1248,7 @@ defineOptions({
 
   .data-row {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
     gap: 1px;
     background-color: $cursor-surface;
     padding: 12px 16px;
@@ -1283,6 +1288,17 @@ defineOptions({
       .task-id {
         font-size: 0.85rem;
         color: $cursor-muted;
+        cursor: pointer;
+
+        &:hover {
+          text-decoration: underline;
+        }
+      }
+    }
+
+    &.requirement-id {
+      .requirement-id-content {
+        font-weight: 500;
         cursor: pointer;
 
         &:hover {

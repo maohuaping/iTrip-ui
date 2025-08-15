@@ -176,7 +176,7 @@
     </q-drawer>
 
     <q-page-container>
-      <q-page>
+      <q-page class="work-page">
         <div class="work-page-content q-pa-md">
           <div class="q-mx-auto" style="max-width: 1200px">
             <!-- 任务列表部分 -->
@@ -249,10 +249,10 @@ defineOptions({
 
 // 定义待办事项类型 - 使用正确的接口类型
 interface TodoItem {
-  id?: string // 使用string类型，与TodoVO一致
+  id?: string | undefined // 使用string类型，与TodoVO一致，允许undefined
   text: string
   done: boolean
-  dueTime?: string
+  dueTime?: string | undefined
 }
 
 // 定义URL数据类型 - 使用正确的接口类型
@@ -590,7 +590,7 @@ const updateTodoStatus = async (index: number) => {
     } else {
       // 如果标记为未完成，调用更新API
       const todoEntity = {
-        id: todoItem.id,
+        id: Number(todoItem.id), // 转换为 number 类型
         title: todoItem.text,
         completed: false
       }
@@ -882,7 +882,30 @@ const onTagInputValue = (val: string) => {
 
 .work-page-content {
   background: $cursor-bg; // 使用颜色系统的主背景色
-  // 移除 min-height: 100%，让内容自然扩展
+  // 确保内容可以正常扩展
+  min-height: calc(100vh - 100px); // 减去header高度
+
+  // 添加滚动支持
+  overflow-y: auto;
+
+  // 自定义滚动条样式
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: rgba($cursor-border, 0.1);
+    border-radius: 4px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba($cursor-border, 0.3);
+    border-radius: 4px;
+
+    &:hover {
+      background: rgba($cursor-border, 0.5);
+    }
+  }
 }
 
 .status-info {
@@ -1332,5 +1355,54 @@ section {
 .text-strike {
   text-decoration: line-through;
   color: $cursor-muted; // 使用变量系统
+}
+
+// 修复页面滚动问题
+.work-page {
+  // 确保页面可以滚动
+  min-height: 100vh;
+  overflow-y: auto;
+
+  // 自定义滚动条样式
+  &::-webkit-scrollbar {
+    width: 10px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: rgba($cursor-border, 0.1);
+    border-radius: 5px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba($cursor-border, 0.3);
+    border-radius: 5px;
+
+    &:hover {
+      background: rgba($cursor-border, 0.5);
+    }
+  }
+}
+
+// 确保 q-page-container 可以滚动
+:deep(.q-page-container) {
+  overflow-y: auto;
+  height: calc(100vh - 50px); // 减去header高度
+}
+
+// 确保 q-page 可以正常扩展
+:deep(.q-page) {
+  min-height: 100%;
+  overflow-y: auto;
+}
+
+// 响应式调整 - 在小屏幕上调整滚动区域
+@media (max-width: 768px) {
+  .work-page-content {
+    min-height: calc(100vh - 80px);
+  }
+
+  :deep(.q-page-container) {
+    height: calc(100vh - 80px);
+  }
 }
 </style>
