@@ -1,13 +1,14 @@
-// Quasar SCSS (& Sass) Variables
+// Quasar SCSS (& Sass) 变量
 // --------------------------------------------------
-// To customize the look and feel of this app, you can override
-// the Sass/SCSS variables found in Quasar's source Sass/SCSS files.
-// Check documentation for full list of Quasar variables
-// Your own variables (that are declared here) and Quasar's own
-// ones will be available out of the box in your .vue/.scss/.sass files
-// It's highly recommended to change the default colors
-// to match your app's branding.
-// Tip: Use the "Theme Builder" on Quasar's documentation website.
+// 要自定义此应用的外观和感觉，你可以覆盖
+// 在 Quasar 源 Sass/SCSS 文件中找到的 Sass/SCSS 变量。
+// 查看文档获取 Quasar 变量的完整列表
+// 你自己的变量（在此处声明）和 Quasar 自己的变量
+// 将在你的 .vue/.scss/.sass 文件中立即可用
+// 强烈建议更改默认颜色
+// 以匹配你的应用品牌。
+// 提示：在 Quasar 文档网站上使用"主题构建器"。
+
 // --- 1. 定义我们的 "Cursor 现代蓝绿" 调色板 ---
 $cursor-bg: #1a1c21; // 主背景色 (底版)
 $cursor-surface: #1a1c21; // 卡片/表层颜色 (底版)
