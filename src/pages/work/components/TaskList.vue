@@ -336,15 +336,21 @@ const filterParams = ref({
 const showAdvancedFilter = ref(false)
 const showDatePicker = ref(false)
 
-// 获取呼入任务数据
-const fetchIncomingTasks = async (): Promise<void> => {
+// 统一的搜索函数，通过参数控制搜索类型
+const fetchTasks = async (systemCategory?: 'callin' | 'callout'): Promise<void> => {
   try {
     const params: QueryDevTaskInParam = {
-      systemCategory: 'callin',
       pageParam: {
-        current: incomingPagination.value.current || 1,
-        size: incomingPagination.value.size || 10
+        current: systemCategory === 'callin'
+          ? incomingPagination.value.current || 1
+          : outgoingPagination.value.current || 1,
+        size: 10
       }
+    }
+
+    // 如果指定了系统分类，则添加到参数中
+    if (systemCategory) {
+      params.systemCategory = systemCategory
     }
 
     // 添加过滤条件
@@ -364,18 +370,39 @@ const fetchIncomingTasks = async (): Promise<void> => {
     const response = await devTaskApi.queryDevTask(params)
 
     if (response.data?.isOk && response.data.okData) {
-      incomingTasks.value = response.data.okData.records || []
-      incomingPagination.value = {
+      const records = response.data.okData.records || []
+      const paginationData = {
         current: response.data.okData.current || 1,
         size: response.data.okData.size || 10,
         total: response.data.okData.total || 0,
         pages: response.data.okData.pages || 0
       }
+
+      if (systemCategory === 'callin') {
+        incomingTasks.value = records
+        incomingPagination.value = paginationData
+        // 清空呼出任务数据
+        outgoingTasks.value = []
+        outgoingPagination.value.total = 0
+      } else if (systemCategory === 'callout') {
+        outgoingTasks.value = records
+        outgoingPagination.value = paginationData
+        // 清空呼入任务数据
+        incomingTasks.value = []
+        incomingPagination.value.total = 0
+      } else {
+        // 没有指定系统分类时，默认处理为呼入任务
+        incomingTasks.value = records
+        incomingPagination.value = paginationData
+        // 清空呼出任务数据
+        outgoingTasks.value = []
+        outgoingPagination.value.total = 0
+      }
     }
   } catch (error) {
-    console.error('获取呼入任务列表失败:', error)
+    console.error('获取任务列表失败:', error)
     $q.notify({
-      message: '加载呼入任务列表出错',
+      message: '加载任务列表出错',
       color: 'negative',
       position: 'top',
       timeout: 1500
@@ -383,98 +410,22 @@ const fetchIncomingTasks = async (): Promise<void> => {
   }
 }
 
-// 获取呼出任务数据
-const fetchOutgoingTasks = async (): Promise<void> => {
-  try {
-    const params: QueryDevTaskInParam = {
-      systemCategory: 'callout',
-      pageParam: {
-        current: outgoingPagination.value.current || 1,
-        size: outgoingPagination.value.size || 10
-      }
-    }
-
-    // 添加过滤条件
-    if (filterParams.value.requirementId) {
-      params.requirementId = filterParams.value.requirementId
-    }
-    if (filterParams.value.requirementName) {
-      params.requirementName = filterParams.value.requirementName
-    }
-    if (filterParams.value.relatedRequirementDocs) {
-      params.relatedRequirementDocs = filterParams.value.relatedRequirementDocs
-    }
-    if (filterParams.value.relatedDesignDocs) {
-      params.relatedDesignDocs = filterParams.value.relatedDesignDocs
-    }
-
-    const response = await devTaskApi.queryDevTask(params)
-
-    if (response.data?.isOk && response.data.okData) {
-      outgoingTasks.value = response.data.okData.records || []
-      outgoingPagination.value = {
-        current: response.data.okData.current || 1,
-        size: response.data.okData.size || 10,
-        total: response.data.okData.total || 0,
-        pages: response.data.okData.pages || 0
-      }
-    }
-  } catch (error) {
-    console.error('获取呼出任务列表失败:', error)
-    $q.notify({
-      message: '加载呼出任务列表出错',
-      color: 'negative',
-      position: 'top',
-      timeout: 1500
-    })
-  }
-}
-
-// 统一的分页处理
-const handlePageChange = (page: number) => {
-  // 根据当前页计算应该更新哪个分页
-  const pageSize = 10
-  const incomingPages = Math.ceil((incomingPagination.value.total || 0) / pageSize)
-
-  if (page <= incomingPages) {
-    incomingPagination.value.current = page
-    fetchIncomingTasks()
-  } else {
-    outgoingPagination.value.current = page - incomingPages
-    fetchOutgoingTasks()
-  }
-}
-
-// 搜索处理 - 优化版本，只进行一次搜索
+// 搜索处理 - 使用统一函数
 const handleSearch = () => {
   // 根据系统分类选择，只进行一次搜索
   if (filterParams.value.systemCategory === 'callin') {
-    // 只搜索呼入任务
-    fetchIncomingTasks()
-    // 清空呼出任务数据
-    outgoingTasks.value = []
-    outgoingPagination.value.total = 0
+    fetchTasks('callin')
   } else if (filterParams.value.systemCategory === 'callout') {
-    // 只搜索呼出任务
-    fetchOutgoingTasks()
-    // 清空呼入任务数据
-    incomingTasks.value = []
-    incomingPagination.value.total = 0
+    fetchTasks('callout')
   } else {
     // 没有选择系统分类时，根据其他过滤条件智能判断
     // 如果设置了需求编号、需求名称等具体条件，优先搜索呼入任务
     if (filterParams.value.requirementId || filterParams.value.requirementName ||
       filterParams.value.relatedRequirementDocs || filterParams.value.relatedDesignDocs) {
-      fetchIncomingTasks()
-      // 清空呼出任务数据
-      outgoingTasks.value = []
-      outgoingPagination.value.total = 0
+      fetchTasks('callin')
     } else {
-      // 没有具体过滤条件时，默认搜索呼入任务（通常呼入任务更常见）
-      fetchIncomingTasks()
-      // 清空呼出任务数据
-      outgoingTasks.value = []
-      outgoingPagination.value.total = 0
+      // 没有具体过滤条件时，默认搜索呼入任务
+      fetchTasks('callin')
     }
   }
 }
@@ -496,8 +447,8 @@ const handleReset = () => {
   outgoingPagination.value.current = 1
 
   // 重置后查询所有任务
-  fetchIncomingTasks()
-  fetchOutgoingTasks()
+  fetchTasks('callin')
+  fetchTasks('callout')
 }
 
 // 处理过滤条件变化 - 只重置分页，不自动查询
@@ -509,8 +460,8 @@ const handleFilterChange = () => {
 
 // 在组件挂载时获取数据
 onMounted(() => {
-  fetchIncomingTasks()
-  fetchOutgoingTasks()
+  fetchTasks('callin')
+  fetchTasks('callout')
 })
 
 // 添加 requirementBasePath 常量
@@ -885,8 +836,7 @@ const createTask = async (): Promise<void> => {
       })
 
       // 重新获取任务列表
-      fetchIncomingTasks()
-      fetchOutgoingTasks()
+      fetchTasks(systemCategory)
 
       // 使用重置函数
       resetNewTaskForm()
