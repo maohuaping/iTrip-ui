@@ -112,8 +112,8 @@
         </q-card-section>
       </q-card>
 
-      <!-- 任务统计信息 -->
-      <div class="task-stats q-mb-md">
+      <!-- 任务统计信息 - 移除三个徽章 -->
+      <!-- <div class="task-stats q-mb-md">
         <div class="row q-gutter-md">
           <div class="col-auto">
             <q-chip color="primary" text-color="white" icon="call_received">
@@ -131,7 +131,7 @@
             </q-chip>
           </div>
         </div>
-      </div>
+      </div> -->
 
       <!-- 任务列表 -->
       <div class="task-list">
@@ -445,20 +445,33 @@ const handlePageChange = (page: number) => {
   }
 }
 
-// 处理过滤条件变化
-const handleFilterChange = () => {
-  // 重置分页到第一页
-  incomingPagination.value.current = 1
-  outgoingPagination.value.current = 1
-}
-
-// 搜索处理
+// 搜索处理 - 完全根据过滤条件决定
 const handleSearch = () => {
-  fetchIncomingTasks()
-  fetchOutgoingTasks()
+  // 如果选择了特定的系统分类，只查询对应的任务类型
+  if (filterParams.value.systemCategory) {
+    if (filterParams.value.systemCategory === 'callin') {
+      fetchIncomingTasks()
+      // 清空呼出任务数据，避免显示旧数据
+      outgoingTasks.value = []
+      outgoingPagination.value.total = 0
+    } else if (filterParams.value.systemCategory === 'callout') {
+      fetchOutgoingTasks()
+      // 清空呼入任务数据，避免显示旧数据
+      incomingTasks.value = []
+      incomingPagination.value.total = 0
+    } else {
+      // 其他系统分类，查询所有
+      fetchIncomingTasks()
+      fetchOutgoingTasks()
+    }
+  } else {
+    // 没有选择系统分类，查询所有
+    fetchIncomingTasks()
+    fetchOutgoingTasks()
+  }
 }
 
-// 重置过滤条件
+// 重置过滤条件 - 重置后查询所有任务
 const handleReset = () => {
   filterParams.value = {
     requirementId: '',
@@ -473,8 +486,30 @@ const handleReset = () => {
   // 重置分页
   incomingPagination.value.current = 1
   outgoingPagination.value.current = 1
+
+  // 重置后查询所有任务
   fetchIncomingTasks()
   fetchOutgoingTasks()
+}
+
+// 处理过滤条件变化 - 实时筛选
+const handleFilterChange = () => {
+  // 重置分页到第一页
+  incomingPagination.value.current = 1
+  outgoingPagination.value.current = 1
+
+  // 如果选择了系统分类，立即进行筛选
+  if (filterParams.value.systemCategory) {
+    if (filterParams.value.systemCategory === 'callin') {
+      fetchIncomingTasks()
+      outgoingTasks.value = []
+      outgoingPagination.value.total = 0
+    } else if (filterParams.value.systemCategory === 'callout') {
+      fetchOutgoingTasks()
+      incomingTasks.value = []
+      incomingPagination.value.total = 0
+    }
+  }
 }
 
 // 在组件挂载时获取数据
