@@ -156,7 +156,7 @@
           <div class="data-grid">
             <!-- 表头 -->
             <div class="data-header">
-              <div class="data-cell header-cell">任务信息</div>
+              <div class="data-cell header-cell">需求名称</div>
               <div class="data-cell header-cell">需求编号</div>
               <div class="data-cell header-cell">系统分类</div>
               <div class="data-cell header-cell">关联文档</div>
@@ -165,12 +165,11 @@
 
             <!-- 数据行 -->
             <div v-for="task in allTasks" :key="task.id || `task-${Math.random()}`" class="data-row">
-              <!-- 任务信息列 -->
-              <div class="data-cell task-info">
-                <div class="task-main">
-                  <div class="task-title" @click="copyToClipboard(task.requirementName || '')" title="点击复制任务名称">
-                    {{ task.requirementName || '未命名任务' }}
-                  </div>
+              <!-- 需求名称列 -->
+              <div class="data-cell requirement-name">
+                <div class="requirement-name-content" @click="copyToClipboard(task.requirementName || '')"
+                  title="点击复制需求名称">
+                  {{ task.requirementName || '未命名需求' }}
                 </div>
               </div>
 
@@ -1271,23 +1270,9 @@ defineOptions({
       color: $cursor-text;
     }
 
-    &.task-info {
-      .task-main {
-        flex: 1;
-      }
-
-      .task-title {
+    &.requirement-name {
+      .requirement-name-content {
         font-weight: 500;
-        cursor: pointer;
-
-        &:hover {
-          text-decoration: underline;
-        }
-      }
-
-      .task-id {
-        font-size: 0.85rem;
-        color: $cursor-muted;
         cursor: pointer;
 
         &:hover {
