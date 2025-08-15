@@ -116,51 +116,112 @@
       <!-- 任务列表 -->
       <q-card flat bordered class="filter-card q-mb-lg">
         <q-card-section class="q-pa-md">
-          <!-- 数据区域 -->
-          <div class="row q-col-gutter-md">
-            <div v-for="task in allTasks" :key="task.id || `task-${Math.random()}`" class="col-12">
-              <q-card flat bordered class="task-card">
-                <q-card-section>
-                  <div class="row items-center no-wrap">
-                    <div class="col">
-                      <div class="row items-center q-gutter-x-sm">
-                        <q-avatar size="32px" :color="task.systemCategory === 'callin' ? 'primary' : 'teal'"
-                          text-color="white" icon="assignment" />
-                        <div class="column">
-                          <div class="text-subtitle1 text-weight-medium text-cursor-text ellipsis cursor-pointer"
-                            @click="copyToClipboard(task.requirementName || '')" title="点击复制任务名称">
-                            {{ task.requirementName || '未命名任务' }}
-                          </div>
-                          <div class="text-caption text-grey-7 cursor-pointer"
-                            @click="copyToClipboard(task.requirementId || '')" title="点击复制需求编号">
-                            #{{ task.requirementId || '无编号' }}
-                          </div>
-                          <!-- 系统分类标签 -->
-                          <div class="q-mt-xs">
-                            <q-chip :color="task.systemCategory === 'callin' ? 'primary' : 'teal'" text-color="white"
-                              size="sm" dense>
-                              {{ task.systemCategory === 'callin' ? '呼入任务' : '呼出任务' }}
-                            </q-chip>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div class="row items-center q-gutter-x-sm q-ml-md">
-                      <q-chip v-for="tag in getTaskTags(task)" :key="tag.label + (tag.index || '')" dense size="md"
-                        :icon="tag.icon" :color="tag.color" :text-color="tag.textColor" :label="tag.label"
-                        :clickable="!!tag.clickable" @click="tag.onClick ? tag.onClick() : null" class="task-tag" />
-                    </div>
-                  </div>
+          <!-- 数据统计区域 -->
+          <div class="row q-col-gutter-md q-mb-lg">
+            <div class="col-12 col-sm-6 col-md-3">
+              <q-card flat class="stat-card bg-gradient-primary text-white">
+                <q-card-section class="text-center">
+                  <div class="text-h4 text-weight-bold">{{ allTasks.length }}</div>
+                  <div class="text-subtitle2">总任务数</div>
+                </q-card-section>
+              </q-card>
+            </div>
+            <div class="col-12 col-sm-6 col-md-3">
+              <q-card flat class="stat-card bg-gradient-info text-white">
+                <q-card-section class="text-center">
+                  <div class="text-h4 text-weight-bold">{{ incomingTasks.length }}</div>
+                  <div class="text-subtitle2">呼入任务</div>
+                </q-card-section>
+              </q-card>
+            </div>
+            <div class="col-12 col-sm-6 col-md-3">
+              <q-card flat class="stat-card bg-gradient-accent text-white">
+                <q-card-section class="text-center">
+                  <div class="text-h4 text-weight-bold">{{ outgoingTasks.length }}</div>
+                  <div class="text-subtitle2">呼出任务</div>
+                </q-card-section>
+              </q-card>
+            </div>
+            <div class="col-12 col-sm-6 col-md-3">
+              <q-card flat class="stat-card bg-gradient-warning text-white">
+                <q-card-section class="text-center">
+                  <div class="text-h4 text-weight-bold">{{ getActiveTasksCount }}</div>
+                  <div class="text-subtitle2">进行中</div>
                 </q-card-section>
               </q-card>
             </div>
           </div>
 
+          <!-- 高效数据展示区域 -->
+          <div class="data-grid">
+            <!-- 表头 -->
+            <div class="data-header">
+              <div class="data-cell header-cell">任务信息</div>
+              <div class="data-cell header-cell">系统分类</div>
+              <div class="data-cell header-cell">关联文档</div>
+              <div class="data-cell header-cell">操作</div>
+            </div>
+
+            <!-- 数据行 -->
+            <div v-for="task in allTasks" :key="task.id || `task-${Math.random()}`" class="data-row">
+              <!-- 任务信息列 -->
+              <div class="data-cell task-info">
+                <div class="task-main">
+                  <div class="task-title" @click="copyToClipboard(task.requirementName || '')" title="点击复制任务名称">
+                    {{ task.requirementName || '未命名任务' }}
+                  </div>
+                  <div class="task-id" @click="copyToClipboard(task.requirementId || '')" title="点击复制需求编号">
+                    #{{ task.requirementId || '无编号' }}
+                  </div>
+                </div>
+              </div>
+
+              <!-- 系统分类列 -->
+              <div class="data-cell system-category">
+                <q-chip :color="task.systemCategory === 'callin' ? 'info' : 'accent'" text-color="white" size="sm" dense
+                  class="system-chip">
+                  <q-icon :name="task.systemCategory === 'callin' ? 'call_in' : 'call_out'" class="q-mr-xs" />
+                  {{ task.systemCategory === 'callin' ? '呼入' : '呼出' }}
+                </q-chip>
+              </div>
+
+              <!-- 关联文档列 -->
+              <div class="data-cell documents">
+                <div class="doc-tags">
+                  <q-chip v-if="task.relatedRequirementDocs" dense size="sm" color="info" text-color="white"
+                    icon="description" label="需求文档" clickable
+                    @click="handleRequirementClick(task, task.relatedRequirementDocs)" class="doc-chip" />
+                  <q-chip v-if="task.relatedDesignDocs" dense size="sm" color="accent" text-color="white" icon="article"
+                    label="设计文档" clickable @click="handleRequirementClick(task, task.relatedDesignDocs)"
+                    class="doc-chip" />
+                </div>
+              </div>
+
+              <!-- 操作列 -->
+              <div class="data-cell actions">
+                <div class="action-buttons">
+                  <q-btn flat round dense color="primary" icon="call_split"
+                    @click="handleSystemClick(task.systemCategory || 'other', task.requirementId || '')" title="Git分支"
+                    class="action-btn" />
+                  <q-btn flat round dense color="secondary" icon="more_vert" @click="showTaskMenu(task)" title="更多操作"
+                    class="action-btn" />
+                </div>
+              </div>
+            </div>
+
+            <!-- 空状态 -->
+            <div v-if="allTasks.length === 0" class="empty-state">
+              <q-icon name="task_alt" size="64px" color="grey-5" />
+              <div class="text-h6 text-grey-6 q-mt-md">暂无任务数据</div>
+              <div class="text-body2 text-grey-5">点击"新建任务"开始创建您的第一个任务</div>
+            </div>
+          </div>
+
           <!-- 分页组件 -->
-          <div class="q-mt-lg">
+          <div v-if="allTasks.length > 0" class="q-mt-lg text-center">
             <q-pagination v-model="currentPagination.current" :max="currentPagination.pages || 1" :max-pages="6"
-              boundary-numbers direction-links @update:model-value="handlePageChange" />
+              boundary-numbers direction-links @update:model-value="handlePageChange" color="primary"
+              active-color="accent" />
           </div>
         </q-card-section>
       </q-card>
@@ -576,11 +637,11 @@ const getTaskTags = (task: DevTask): TaskTag[] => {
   return tags;
 }
 
-// 修改handleSystemClick函数，确保类型安全
+// 修复 TypeScript 类型转换语法问题
 const handleSystemClick = (system: string, branch: string): void => {
   if (system === 'other' || !branch) return
 
-  const baseUrls: Partial<Record<SystemType, string>> = {
+  const baseUrls: Partial<Record<string, string>> = {
     callin: 'http://code.devops.piccnet/picc/_source/picc/picc__picc-life-ccin/Flex-Media/-/branches',
     callout: 'http://code.devops.piccnet/picc/_source/picc/picc__picc-life-ccout/Flex-Callout/-/branches'
   }
@@ -882,6 +943,27 @@ const handlePageChange = (page: number): void => {
   }
 }
 
+// 获取活跃任务数量的计算属性
+const getActiveTasksCount = computed(() => {
+  // 由于 DevTask 类型中没有 status 字段，我们暂时返回 0
+  // 或者可以根据其他逻辑来判断活跃状态
+  return 0;
+});
+
+// 添加任务菜单方法
+const showTaskMenu = (task: DevTask) => {
+  $q.bottomSheet({
+    message: `任务: ${task.requirementName || '未命名任务'} (ID: ${task.requirementId || 'N/A'})`,
+    actions: [
+      { label: '查看详情', icon: 'info', handler: () => $q.notify(`查看任务详情: ${task.requirementName}`) },
+      { label: '编辑', icon: 'edit', handler: () => $q.notify(`编辑任务: ${task.requirementName}`) },
+      { label: '删除', icon: 'delete', color: 'negative', handler: () => $q.notify(`删除任务: ${task.requirementName}`) },
+      { label: '取消', icon: 'cancel', color: 'warning', handler: () => $q.notify(`暂停任务: ${task.requirementName}`) },
+      { label: '完成', icon: 'check_circle', color: 'positive', handler: () => $q.notify(`完成任务: ${task.requirementName}`) },
+    ]
+  });
+};
+
 defineOptions({
   name: 'TaskList'
 })
@@ -1127,5 +1209,154 @@ defineOptions({
   .task-card {
     margin-bottom: 16px;
   }
+}
+
+// 新增样式
+.stat-card {
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 25px rgba(0, 0, 0, 0.15);
+  }
+}
+
+.data-grid {
+  border: 1px solid rgba($cursor-border, 0.1);
+  border-radius: 12px;
+  overflow: hidden;
+  background-color: $cursor-surface;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+
+  .data-header {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    gap: 1px;
+    background-color: $cursor-border;
+    padding: 12px 16px;
+    font-weight: bold;
+    color: $cursor-text;
+    font-size: 0.9rem;
+  }
+
+  .data-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    gap: 1px;
+    background-color: $cursor-surface;
+    padding: 12px 16px;
+    align-items: center;
+
+    &:hover {
+      background-color: $hover-bg; // 使用已定义的变量
+    }
+  }
+
+  .data-cell {
+    display: flex;
+    align-items: center;
+    padding: 0 8px;
+    font-size: 0.9rem;
+    color: $cursor-text;
+
+    &.header-cell {
+      font-weight: bold;
+      color: $cursor-text;
+    }
+
+    &.task-info {
+      .task-main {
+        flex: 1;
+      }
+
+      .task-title {
+        font-weight: 500;
+        cursor: pointer;
+
+        &:hover {
+          text-decoration: underline;
+        }
+      }
+
+      .task-id {
+        font-size: 0.85rem;
+        color: $cursor-muted;
+        cursor: pointer;
+
+        &:hover {
+          text-decoration: underline;
+        }
+      }
+    }
+
+    &.system-category {
+      .system-chip {
+        font-weight: 500;
+        cursor: pointer;
+
+        &:hover {
+          opacity: 0.9;
+        }
+      }
+    }
+
+    &.documents {
+      .doc-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .doc-chip {
+        cursor: pointer;
+
+        &:hover {
+          opacity: 0.9;
+        }
+      }
+    }
+
+    &.actions {
+      .action-buttons {
+        display: flex;
+        gap: 8px;
+      }
+
+      .action-btn {
+        &:hover {
+          opacity: 0.9;
+        }
+      }
+    }
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: $cursor-muted;
+
+    .q-icon {
+      margin-bottom: 16px;
+    }
+  }
+}
+
+// 添加渐变背景样式
+.bg-gradient-primary {
+  background: $gradient-primary !important;
+}
+
+.bg-gradient-info {
+  background: linear-gradient(135deg, $cursor-info 0%, lighten($cursor-info, 15%) 100%) !important;
+}
+
+.bg-gradient-accent {
+  background: linear-gradient(135deg, $cursor-accent 0%, lighten($cursor-accent, 15%) 100%) !important;
+}
+
+.bg-gradient-warning {
+  background: linear-gradient(135deg, $cursor-warning 0%, lighten($cursor-warning, 15%) 100%) !important;
 }
 </style>
