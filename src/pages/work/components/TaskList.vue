@@ -19,6 +19,7 @@
             筛选条件
           </div>
 
+          <!-- 常规筛选区域 -->
           <div class="row q-col-gutter-md items-end">
             <!-- 需求编号搜索 -->
             <div class="col-12 col-sm-6 col-md-3">
@@ -112,84 +113,57 @@
         </q-card-section>
       </q-card>
 
-      <!-- 任务统计信息 - 移除三个徽章 -->
-      <!-- <div class="task-stats q-mb-md">
-        <div class="row q-gutter-md">
-          <div class="col-auto">
-            <q-chip color="primary" text-color="white" icon="call_received">
-              呼入任务: {{ incomingPagination.total || 0 }}
-            </q-chip>
-          </div>
-          <div class="col-auto">
-            <q-chip color="teal" text-color="white" icon="call_made">
-              呼出任务: {{ outgoingPagination.total || 0 }}
-            </q-chip>
-          </div>
-          <div class="col-auto">
-            <q-chip color="info" text-color="white" icon="assignment">
-              总计: {{ (incomingPagination.total || 0) + (outgoingPagination.total || 0) }}
-            </q-chip>
-          </div>
-        </div>
-      </div> -->
-
       <!-- 任务列表 -->
-      <div class="task-list">
-        <q-card flat bordered class="task-list-card q-mb-lg">
-          <q-card-section class="q-pa-md">
-            <div class="text-subtitle2 text-weight-medium q-mb-md">
-              <q-icon name="assignment" class="q-mr-sm" />
-              任务列表
-            </div>
-
-            <div class="row q-col-gutter-md">
-              <div v-for="task in allTasks" :key="task.id || `task-${Math.random()}`" class="col-12">
-                <q-card flat bordered class="task-card">
-                  <q-card-section>
-                    <div class="row items-center no-wrap">
-                      <div class="col">
-                        <div class="row items-center q-gutter-x-sm">
-                          <q-avatar size="32px" :color="task.systemCategory === 'callin' ? 'primary' : 'teal'"
-                            text-color="white" icon="assignment" />
-                          <div class="column">
-                            <div class="text-subtitle1 text-weight-medium text-cursor-text ellipsis cursor-pointer"
-                              @click="copyToClipboard(task.requirementName || '')" title="点击复制任务名称">
-                              {{ task.requirementName || '未命名任务' }}
-                            </div>
-                            <div class="text-caption text-grey-7 cursor-pointer"
-                              @click="copyToClipboard(task.requirementId || '')" title="点击复制需求编号">
-                              #{{ task.requirementId || '无编号' }}
-                            </div>
-                            <!-- 系统分类标签 -->
-                            <div class="q-mt-xs">
-                              <q-chip :color="task.systemCategory === 'callin' ? 'primary' : 'teal'" text-color="white"
-                                size="sm" dense>
-                                {{ task.systemCategory === 'callin' ? '呼入任务' : '呼出任务' }}
-                              </q-chip>
-                            </div>
+      <q-card flat bordered class="task-list-card q-mb-lg">
+        <q-card-section class="q-pa-md">
+          <!-- 数据区域 -->
+          <div class="row q-col-gutter-md">
+            <div v-for="task in allTasks" :key="task.id || `task-${Math.random()}`" class="col-12">
+              <q-card flat bordered class="task-card">
+                <q-card-section>
+                  <div class="row items-center no-wrap">
+                    <div class="col">
+                      <div class="row items-center q-gutter-x-sm">
+                        <q-avatar size="32px" :color="task.systemCategory === 'callin' ? 'primary' : 'teal'"
+                          text-color="white" icon="assignment" />
+                        <div class="column">
+                          <div class="text-subtitle1 text-weight-medium text-cursor-text ellipsis cursor-pointer"
+                            @click="copyToClipboard(task.requirementName || '')" title="点击复制任务名称">
+                            {{ task.requirementName || '未命名任务' }}
+                          </div>
+                          <div class="text-caption text-grey-7 cursor-pointer"
+                            @click="copyToClipboard(task.requirementId || '')" title="点击复制需求编号">
+                            #{{ task.requirementId || '无编号' }}
+                          </div>
+                          <!-- 系统分类标签 -->
+                          <div class="q-mt-xs">
+                            <q-chip :color="task.systemCategory === 'callin' ? 'primary' : 'teal'" text-color="white"
+                              size="sm" dense>
+                              {{ task.systemCategory === 'callin' ? '呼入任务' : '呼出任务' }}
+                            </q-chip>
                           </div>
                         </div>
                       </div>
-
-                      <div class="row items-center q-gutter-x-sm q-ml-md">
-                        <q-chip v-for="tag in getTaskTags(task)" :key="tag.label + (tag.index || '')" dense size="md"
-                          :icon="tag.icon" :color="tag.color" :text-color="tag.textColor" :label="tag.label"
-                          :clickable="!!tag.clickable" @click="tag.onClick ? tag.onClick() : null" class="task-tag" />
-                      </div>
                     </div>
-                  </q-card-section>
-                </q-card>
-              </div>
-            </div>
 
-            <!-- 分页组件 -->
-            <div class="q-mt-lg">
-              <q-pagination v-model="currentPagination.current" :max="currentPagination.pages || 1" :max-pages="6"
-                boundary-numbers direction-links @update:model-value="handlePageChange" />
+                    <div class="row items-center q-gutter-x-sm q-ml-md">
+                      <q-chip v-for="tag in getTaskTags(task)" :key="tag.label + (tag.index || '')" dense size="md"
+                        :icon="tag.icon" :color="tag.color" :text-color="tag.textColor" :label="tag.label"
+                        :clickable="!!tag.clickable" @click="tag.onClick ? tag.onClick() : null" class="task-tag" />
+                    </div>
+                  </div>
+                </q-card-section>
+              </q-card>
             </div>
-          </q-card-section>
-        </q-card>
-      </div>
+          </div>
+
+          <!-- 分页组件 -->
+          <div class="q-mt-lg">
+            <q-pagination v-model="currentPagination.current" :max="currentPagination.pages || 1" :max-pages="6"
+              boundary-numbers direction-links @update:model-value="handlePageChange" />
+          </div>
+        </q-card-section>
+      </q-card>
     </div>
   </section>
 
