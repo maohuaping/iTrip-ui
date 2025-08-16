@@ -136,10 +136,10 @@
           </div>
 
           <!-- 使用 q-table 但保持原有样式 -->
-          <q-table :rows="allTasks" :columns="tableColumns" :pagination="tablePagination" :loading="loading"
-            row-key="id" flat bordered class="custom-task-table" @request="onRequest"
-            :rows-per-page-options="[5, 10, 20, 50, 100]" :rows-per-page-label="'每页条数'" :no-data-label="'暂无数据'"
-            :loading-label="'加载中...'">
+          <q-table :rows="allTasks" :columns="tableColumns" :loading="loading" row-key="id" flat bordered
+            class="custom-task-table" v-model:pagination="pagination" :rows-per-page-options="[5, 10, 20, 50, 100]"
+            :rows-per-page-label="'每页条数'" :no-data-label="'暂无数据'" :loading-label="'加载中...'" @request="onRequest"
+            binary-state-sort>
             <!-- 自定义列模板 - 需求名称 -->
             <template v-slot:body-cell-requirementName="props">
               <q-td :props="props" class="requirement-name-cell">
@@ -435,16 +435,13 @@ const outgoingPagination = ref<IPageDevTaskVO>({
   pages: 0
 })
 
-// 当前分页状态（用于显示）
+// 当前分页状态（用于显示）- 修复为只使用 incomingPagination
 const currentPagination = computed(() => {
-  const total = (incomingPagination.value.total || 0) + (outgoingPagination.value.total || 0)
-  const maxPages = Math.max(incomingPagination.value.pages || 0, outgoingPagination.value.pages || 0)
-
   return {
-    current: Math.max(incomingPagination.value.current || 1, outgoingPagination.value.current || 1),
-    size: pageSize.value, // 使用动态分页大小
-    total,
-    pages: maxPages
+    current: incomingPagination.value.current || 1,
+    size: incomingPagination.value.size || pageSize.value,
+    total: incomingPagination.value.total || 0,
+    pages: incomingPagination.value.pages || 0
   }
 })
 
@@ -475,6 +472,15 @@ const pageSizeOptions = [
 // 当前分页大小
 const pageSize = ref(getStoredPageSize())
 
+// 分页配置 - 使用正确的结构
+const pagination = ref({
+  sortBy: '',
+  descending: false,
+  page: 1,
+  rowsPerPage: 5,
+  rowsNumber: 0
+})
+
 // 统一的搜索函数
 const fetchTasks = async (): Promise<void> => {
   try {
@@ -484,8 +490,8 @@ const fetchTasks = async (): Promise<void> => {
     const queryParams: QueryDevTaskInParam = {
       ...filterParams.value,
       pageParam: {
-        current: incomingPagination.value.current,
-        size: pageSize.value
+        current: pagination.value.page,
+        size: pagination.value.rowsPerPage
       }
     }
 
@@ -495,25 +501,25 @@ const fetchTasks = async (): Promise<void> => {
     if (response.data?.isOk && response.data.okData) {
       const pageData = response.data.okData
 
-      // 更新分页信息 - 确保所有字段都正确设置
+      // 更新分页信息
       incomingPagination.value = {
         current: pageData.current || 1,
-        size: pageData.size || pageSize.value,
+        size: pageData.size || pagination.value.rowsPerPage,
         total: pageData.total || 0,
         pages: pageData.pages || 0
       }
 
-      // 同步 outgoingPagination
-      outgoingPagination.value = {
-        current: pageData.current || 1,
-        size: pageData.size || pageSize.value,
-        total: pageData.total || 0,
-        pages: pageData.pages || 0
+      // 更新 q-table 的分页配置
+      pagination.value = {
+        ...pagination.value,
+        page: pageData.current || 1,
+        rowsPerPage: pageData.size || pagination.value.rowsPerPage,
+        rowsNumber: pageData.total || 0
       }
 
       // 更新任务数据
       incomingTasks.value = pageData.records || []
-      outgoingTasks.value = [] // 如果需要的话，这里也可以调用相应的API
+      outgoingTasks.value = []
 
       console.log('分页数据更新:', {
         current: pageData.current,
@@ -522,6 +528,8 @@ const fetchTasks = async (): Promise<void> => {
         pages: pageData.pages,
         recordsCount: pageData.records?.length
       })
+
+      console.log('pagination 值:', pagination.value)
     }
   } catch (error) {
     console.error('获取任务数据失败:', error)
@@ -539,8 +547,8 @@ const handleSearch = () => {
   console.log('开始搜索，当前过滤条件:', filterParams.value)
 
   // 重置分页到第一页
-  incomingPagination.value.current = 1
-  outgoingPagination.value.current = 1
+  pagination.value.page = 1
+  pagination.value.rowsPerPage = pageSize.value
 
   // 执行搜索
   fetchTasks()
@@ -561,8 +569,8 @@ const handleReset = () => {
   }
 
   // 重置分页
-  incomingPagination.value.current = 1
-  outgoingPagination.value.current = 1
+  pagination.value.page = 1
+  pagination.value.rowsPerPage = pageSize.value
 
   // 重置后查询所有任务
   fetchTasks()
@@ -578,8 +586,8 @@ const handleReset = () => {
 // 处理过滤条件变化 - 只重置分页，不自动查询
 const handleFilterChange = () => {
   // 只重置分页到第一页，不自动查询
-  incomingPagination.value.current = 1
-  outgoingPagination.value.current = 1
+  pagination.value.page = 1
+  pagination.value.rowsPerPage = pageSize.value
 }
 
 // 在组件挂载时获取数据
@@ -916,8 +924,8 @@ const statusOptions = [
 // 分页处理方法
 const handlePageChange = async (page: number): Promise<void> => {
   // 更新当前分页
-  incomingPagination.value.current = page
-  outgoingPagination.value.current = page
+  pagination.value.page = page
+  pagination.value.rowsPerPage = pageSize.value
 
   // 重新获取数据
   await fetchTasks()
@@ -936,12 +944,10 @@ const handlePageSizeChange = (newSize: { label: string; value: number } | number
   savePageSize(size)
 
   // 更新分页数据的size
-  incomingPagination.value.size = size
-  outgoingPagination.value.size = size
+  pagination.value.rowsPerPage = size
 
   // 重置到第一页
-  incomingPagination.value.current = 1
-  outgoingPagination.value.current = 1
+  pagination.value.page = 1
 
   // 重新获取数据
   fetchTasks()
@@ -1185,31 +1191,34 @@ const tableColumns = [
   }
 ]
 
-// 表格分页配置 - 修复为服务器端分页
-const tablePagination = computed(() => ({
-  page: currentPagination.value.current,
-  rowsPerPage: pageSize.value,
-  rowsNumber: currentPagination.value.total,
-  pagesNumber: currentPagination.value.pages
-}))
+// 表格分页配置 - 直接使用响应式数据，不使用计算属性
+const tablePagination = ref({
+  page: 1,
+  rowsPerPage: 5,
+  rowsNumber: 0,
+  pagesNumber: 0
+})
 
 // 加载状态
 const loading = ref(false)
 
-// 表格请求处理函数 - 修复为服务器端分页
+// 表格请求处理函数
 const onRequest = async (props: any) => {
-  const { page, rowsPerPage } = props.pagination
+  const { page, rowsPerPage, sortBy, descending } = props.pagination
 
-  // 更新分页大小
-  if (rowsPerPage !== pageSize.value) {
-    pageSize.value = rowsPerPage
-    handlePageSizeChange(rowsPerPage)
+  console.log('onRequest 被调用:', props.pagination)
+
+  // 更新分页配置
+  pagination.value = {
+    sortBy,
+    descending,
+    page,
+    rowsPerPage,
+    rowsNumber: pagination.value.rowsNumber
   }
 
-  // 更新当前页并重新获取数据
-  if (page !== currentPagination.value.current) {
-    await handlePageChange(page)
-  }
+  // 重新获取数据
+  await fetchTasks()
 }
 
 defineOptions({
