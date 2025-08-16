@@ -1326,13 +1326,16 @@ section {
   &::-webkit-scrollbar {
     width: 8px;
   }
+
   &::-webkit-scrollbar-track {
     background: rgba($cursor-border, 0.1);
     border-radius: 4px;
   }
+
   &::-webkit-scrollbar-thumb {
     background: rgba($cursor-border, 0.3);
     border-radius: 4px;
+
     &:hover {
       background: rgba($cursor-border, 0.5);
     }

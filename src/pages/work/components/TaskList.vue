@@ -321,7 +321,7 @@
 import { ref, onMounted, computed, watch } from 'vue'
 import { useQuasar } from 'quasar'
 import { getDevTask } from 'src/api/dev-task/dev-task'
-import type { DevTask, QueryDevTaskInParam, IPageDevTask } from 'src/api/api.schemas'
+import type { DevTask, QueryDevTaskInParam, IPageDevTaskVO } from 'src/api/api.schemas'
 
 // 初始化
 const $q = useQuasar()
@@ -340,14 +340,14 @@ const allTasks = computed(() => {
 })
 
 // 分页数据
-const incomingPagination = ref<IPageDevTask>({
+const incomingPagination = ref<IPageDevTaskVO>({
   current: 1,
   size: 5,
   total: 0,
   pages: 0
 })
 
-const outgoingPagination = ref<IPageDevTask>({
+const outgoingPagination = ref<IPageDevTaskVO>({
   current: 1,
   size: 5,
   total: 0,
@@ -1344,14 +1344,14 @@ defineOptions({
 }
 
 .bg-gradient-info {
-  background: linear-gradient(135deg, $cursor-info 0%, lighten($cursor-info, 15%) 100%) !important;
+  background: linear-gradient(135deg, $cursor-info 0%, mix(white, $cursor-info, 15%) 100%) !important;
 }
 
 .bg-gradient-accent {
-  background: linear-gradient(135deg, $cursor-accent 0%, lighten($cursor-accent, 15%) 100%) !important;
+  background: linear-gradient(135deg, $cursor-accent 0%, mix(white, $cursor-accent, 15%) 100%) !important;
 }
 
 .bg-gradient-warning {
-  background: linear-gradient(135deg, $cursor-warning 0%, lighten($cursor-warning, 15%) 100%) !important;
+  background: linear-gradient(135deg, $cursor-warning 0%, mix(white, $cursor-warning, 15%) 100%) !important;
 }
 </style>
