@@ -301,9 +301,14 @@
 
 
   <!-- 将独立的NewTaskDialog内容直接集成到这里 -->
-  <q-dialog v-model="showNewTaskDialog">
-    <q-card class="new-task-dialog" style="background: white;">
-      <q-card-section class="bg-grey-2 q-pb-sm border-bottom">
+  <q-dialog v-model="showNewTaskDialog" :maximized="$q.screen.lt.md" :full-width="$q.screen.lt.md"
+    :full-height="$q.screen.lt.md">
+    <q-card class="bg-cursor-surface" :style="{
+      width: $q.screen.lt.md ? '100%' : 'min(90vw, 600px)',
+      maxWidth: $q.screen.lt.md ? '100%' : '600px',
+      minWidth: $q.screen.lt.md ? '100%' : '320px'
+    }">
+      <q-card-section class="bg-cursor-bg q-pb-sm border-bottom">
         <div class="text-h6 text-cursor-text">新建任务</div>
         <q-space />
         <q-btn icon="close" flat round dense v-close-popup class="absolute-top-right q-mt-sm q-mr-sm" color="grey-7" />
