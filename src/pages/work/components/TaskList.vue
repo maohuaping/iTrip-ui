@@ -302,7 +302,7 @@
 
   <!-- 将独立的NewTaskDialog内容直接集成到这里 -->
   <q-dialog v-model="showNewTaskDialog">
-    <q-card style="min-width: 500px; background: white;">
+    <q-card class="new-task-dialog" style="background: white;">
       <q-card-section class="bg-grey-2 q-pb-sm border-bottom">
         <div class="text-h6 text-cursor-text">新建任务</div>
         <q-space />
@@ -312,10 +312,10 @@
       <q-card-section class="q-pt-md">
         <!-- 任务类型和编号 -->
         <div class="row q-col-gutter-md q-mb-md">
-          <div class="col-5">
+          <div class="col-12 col-sm-5">
             <q-select v-model="newTask.type" :options="taskTypes" label="任务类型" outlined dense class="light-field" />
           </div>
-          <div class="col-7">
+          <div class="col-12 col-sm-7">
             <q-input v-model="newTask.id" label="任务编号" outlined dense class="light-field" />
           </div>
         </div>
@@ -1838,6 +1838,19 @@ defineOptions({
       color: $cursor-muted;
       font-size: 0.8rem;
     }
+  }
+}
+
+.new-task-dialog {
+  width: 90vw;
+  max-width: 600px;
+  min-width: 320px;
+}
+
+@media (max-width: 599px) {
+  .new-task-dialog {
+    width: 95vw;
+    margin: 0 2.5vw;
   }
 }
 </style>
