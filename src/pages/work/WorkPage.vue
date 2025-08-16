@@ -182,9 +182,6 @@
             <!-- 任务列表部分 -->
             <TaskList />
 
-            <!-- 命名建议部分 -->
-            <NamingSuggestion />
-
             <!-- 工作日志部分 -->
             <WorkLog />
           </div>
@@ -1313,7 +1310,7 @@ section {
   .work-page-content {
     padding: 12px;
   }
-  
+
   .content-wrapper {
     padding-bottom: 40px;
   }

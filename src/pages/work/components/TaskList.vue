@@ -282,29 +282,6 @@
           </div>
         </q-card-section>
       </q-card>
-
-      <!-- 智能检测示例 -->
-      <q-card flat bordered class="filter-card q-mb-lg">
-        <q-card-section class="q-pa-md">
-          <div class="text-subtitle2 text-weight-medium q-mb-md">
-            <q-icon name="lightbulb_outline" class="q-mr-sm" />
-            智能检测示例
-          </div>
-          <div class="examples-grid">
-            <div v-for="(example, index) in examples" :key="index" class="example-card cursor-pointer"
-              @click="tryExample(example.input)">
-              <div class="example-content">
-                <div class="example-type">{{ example.type }}</div>
-                <div class="example-input">{{ example.input }}</div>
-                <div class="example-desc">{{ example.description }}</div>
-              </div>
-              <div class="try-indicator">
-                <q-icon name="play_arrow" size="16px" />
-              </div>
-            </div>
-          </div>
-        </q-card-section>
-      </q-card>
     </div>
   </section>
 
@@ -672,117 +649,6 @@ interface TaskTag {
 type SystemType = 'callin' | 'callout' | 'other'
 
 // 修改getTaskTags函数添加返回类型
-const getTaskTags = (task: DevTask): TaskTag[] => {
-  const tags: TaskTag[] = []
-
-  // Git分支标签 - 添加图标
-  if (task.requirementId) {
-    tags.push({
-      label: 'Git分支',
-      color: 'blue-2',
-      textColor: 'blue-8',
-      icon: 'call_split',
-      clickable: true,
-      onClick: () => handleSystemClick((task.systemCategory as SystemType) || 'other', task.requirementId || '')
-    })
-  }
-
-  // 需求文档处理
-  if (task.relatedRequirementDocs) {
-    let reqDocs: string[] = [];
-    try {
-      // 尝试多种分隔方式，确保能正确分割
-      if (task.relatedRequirementDocs.includes(';')) {
-        reqDocs = task.relatedRequirementDocs.split(';');
-      } else if (task.relatedRequirementDocs.includes(',')) {
-        reqDocs = task.relatedRequirementDocs.split(',');
-      } else {
-        reqDocs = [task.relatedRequirementDocs];
-      }
-
-      // 过滤空值
-      reqDocs = reqDocs.filter(doc => doc && doc.trim() !== '');
-    } catch {
-      reqDocs = [task.relatedRequirementDocs];
-    }
-
-    // 判断文档数量并创建标签
-    if (reqDocs.length === 1) {
-      // 单个文档
-      tags.push({
-        label: '需求文档',
-        color: 'green-2',
-        textColor: 'green-8',
-        icon: 'description',
-        clickable: true,
-        onClick: () => void handleRequirementClick(task, reqDocs[0]?.trim() || '')
-      });
-    } else if (reqDocs.length > 1) {
-      // 多个文档 - 为每个创建标签
-      reqDocs.forEach((doc, index) => {
-        const trimmedDoc = doc.trim();
-        if (trimmedDoc) {
-          tags.push({
-            label: `需求文档v${index + 1}`,
-            color: 'green-2',
-            textColor: 'green-8',
-            icon: 'description',
-            clickable: true,
-            index: index,
-            onClick: () => void handleRequirementClick(task, trimmedDoc)
-          });
-        }
-      });
-    }
-  }
-
-  // 同样处理设计文档
-  if (task.relatedDesignDocs) {
-    let designDocs: string[] = [];
-    try {
-      if (task.relatedDesignDocs.includes(';')) {
-        designDocs = task.relatedDesignDocs.split(';');
-      } else if (task.relatedDesignDocs.includes(',')) {
-        designDocs = task.relatedDesignDocs.split(',');
-      } else {
-        designDocs = [task.relatedDesignDocs];
-      }
-
-      designDocs = designDocs.filter(doc => doc && doc.trim() !== '');
-    } catch {
-      designDocs = [task.relatedDesignDocs];
-    }
-
-    if (designDocs.length === 1) {
-      tags.push({
-        label: '设计文档',
-        color: 'purple-2',
-        textColor: 'purple-8',
-        icon: 'article',
-        clickable: true,
-        onClick: () => void handleRequirementClick(task, designDocs[0]?.trim() || '')
-      });
-    } else if (designDocs.length > 1) {
-      designDocs.forEach((doc, index) => {
-        const trimmedDoc = doc.trim();
-        if (trimmedDoc) {
-          tags.push({
-            label: `设计文档v${index + 1}`,
-            color: 'purple-2',
-            textColor: 'purple-8',
-            icon: 'article',
-            clickable: true,
-            index: index,
-            onClick: () => void handleRequirementClick(task, trimmedDoc)
-          });
-        }
-      });
-    }
-  }
-
-  return tags;
-}
-
 // 修复 TypeScript 类型转换语法问题
 const handleSystemClick = (system: string, branch: string): void => {
   if (system === 'other' || !branch) return
@@ -1114,12 +980,11 @@ const handlePageSizeChange = (newSize: { label: string; value: number } | number
 }
 
 // 获取活跃任务数量的计算属性
-const getActiveTasksCount = computed(() => {
+computed(() => {
   // 由于 DevTask 类型中没有 status 字段，我们暂时返回 0
   // 或者可以根据其他逻辑来判断活跃状态
   return 0;
 });
-
 // 添加任务菜单方法
 const showTaskMenu = (task: DevTask) => {
   $q.bottomSheet({
