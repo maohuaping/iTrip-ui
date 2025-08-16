@@ -191,11 +191,10 @@
               <div class="data-cell documents">
                 <div class="doc-tags">
                   <q-chip v-if="task.relatedRequirementDocs" dense size="sm" color="info" text-color="white"
-                    icon="description" label="需求文档" clickable
-                    @click="handleRequirementClick(task, task.relatedRequirementDocs)" class="doc-chip" />
-                  <q-chip v-if="task.relatedDesignDocs" dense size="sm" color="accent" text-color="white" icon="article"
-                    label="设计文档" clickable @click="handleRequirementClick(task, task.relatedDesignDocs)"
+                    label="需求文档" clickable @click="handleRequirementClick(task, task.relatedRequirementDocs)"
                     class="doc-chip" />
+                  <q-chip v-if="task.relatedDesignDocs" dense size="sm" color="accent" text-color="white" label="设计文档"
+                    clickable @click="handleRequirementClick(task, task.relatedDesignDocs)" class="doc-chip" />
                 </div>
               </div>
 
