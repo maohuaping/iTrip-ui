@@ -127,74 +127,83 @@
         </q-card-section>
       </q-card>
 
-      <!-- 任务列表 -->
-      <q-card flat bordered class="filter-card q-mb-lg">
+      <!-- 任务列表表格 -->
+      <q-card flat bordered class="task-table-card q-mb-lg">
         <q-card-section class="q-pa-md">
-          <!-- 高效数据展示区域 -->
-          <div class="data-grid">
-            <!-- 表头 -->
-            <div class="data-header">
-              <div class="data-cell header-cell">需求名称</div>
-              <div class="data-cell header-cell">需求编号</div>
-              <div class="data-cell header-cell">系统分类</div>
-              <div class="data-cell header-cell">关联文档</div>
-              <div class="data-cell header-cell">操作</div>
-            </div>
+          <div class="text-subtitle2 text-weight-medium q-mb-md">
+            <q-icon name="table_chart" class="q-mr-sm" />
+            任务列表
+          </div>
 
-            <!-- 数据行 -->
-            <div v-for="task in allTasks" :key="task.id || `task-${Math.random()}`" class="data-row">
-              <!-- 需求名称列 -->
-              <div class="data-cell requirement-name">
-                <div class="requirement-name-content" @click="copyToClipboard(task.requirementName || '')"
-                  title="点击复制需求名称">
-                  {{ task.requirementName || '未命名需求' }}
+          <!-- 使用 q-table 但保持原有样式 -->
+          <q-table :rows="allTasks" :columns="tableColumns" :pagination="tablePagination" :loading="loading"
+            row-key="id" flat bordered class="custom-task-table" @request="onRequest" hide-bottom>
+            <!-- 自定义列模板 - 需求名称 -->
+            <template v-slot:body-cell-requirementName="props">
+              <q-td :props="props" class="requirement-name-cell">
+                <div class="requirement-name-content cursor-pointer"
+                  @click="copyToClipboard(props.row.requirementName || '')" title="点击复制需求名称">
+                  {{ props.row.requirementName || '未命名需求' }}
                 </div>
-              </div>
+              </q-td>
+            </template>
 
-              <!-- 需求编号列 -->
-              <div class="data-cell requirement-id">
-                <div class="requirement-id-content" @click="copyToClipboard(task.requirementId || '')" title="点击复制需求编号">
-                  #{{ task.requirementId || '无编号' }}
+            <!-- 自定义列模板 - 需求编号 -->
+            <template v-slot:body-cell-requirementId="props">
+              <q-td :props="props" class="requirement-id-cell">
+                <div class="requirement-id-content cursor-pointer"
+                  @click="copyToClipboard(props.row.requirementId || '')" title="点击复制需求编号">
+                  #{{ props.row.requirementId || '无编号' }}
                 </div>
-              </div>
+              </q-td>
+            </template>
 
-              <!-- 系统分类列 -->
-              <div class="data-cell system-category">
+            <!-- 自定义列模板 - 系统分类 -->
+            <template v-slot:body-cell-systemCategory="props">
+              <q-td :props="props" class="system-category-cell">
                 <div class="system-category-text">
-                  {{ task.systemCategory === 'callin' ? '呼入' : task.systemCategory === 'callout' ? '呼出' : '其他' }}
+                  {{ props.row.systemCategory === 'callin' ? '呼入' : props.row.systemCategory === 'callout' ? '呼出' : '其他'
+                  }}
                 </div>
-              </div>
+              </q-td>
+            </template>
 
-              <!-- 关联文档列 -->
-              <div class="data-cell documents">
+            <!-- 自定义列模板 - 关联文档 -->
+            <template v-slot:body-cell-documents="props">
+              <q-td :props="props" class="documents-cell">
                 <div class="doc-tags">
-                  <q-chip v-if="task.relatedRequirementDocs" dense size="sm" color="info" text-color="white"
-                    label="需求文档" clickable @click="handleRequirementClick(task, task.relatedRequirementDocs)"
+                  <q-chip v-if="props.row.relatedRequirementDocs" dense size="sm" color="info" text-color="white"
+                    label="需求文档" clickable @click="handleRequirementClick(props.row, props.row.relatedRequirementDocs)"
                     class="doc-chip" />
-                  <q-chip v-if="task.relatedDesignDocs" dense size="sm" color="accent" text-color="white" label="设计文档"
-                    clickable @click="handleRequirementClick(task, task.relatedDesignDocs)" class="doc-chip" />
+                  <q-chip v-if="props.row.relatedDesignDocs" dense size="sm" color="accent" text-color="white"
+                    label="设计文档" clickable @click="handleRequirementClick(props.row, props.row.relatedDesignDocs)"
+                    class="doc-chip" />
                 </div>
-              </div>
+              </q-td>
+            </template>
 
-              <!-- 操作列 -->
-              <div class="data-cell actions">
+            <!-- 自定义列模板 - 操作 -->
+            <template v-slot:body-cell-actions="props">
+              <q-td :props="props" class="actions-cell">
                 <div class="action-buttons">
                   <q-btn flat round dense color="primary" icon="call_split"
-                    @click="handleSystemClick(task.systemCategory || 'other', task.requirementId || '')" title="Git分支"
-                    class="action-btn" />
-                  <q-btn flat round dense color="secondary" icon="more_vert" @click="showTaskMenu(task)" title="更多操作"
-                    class="action-btn" />
+                    @click="handleSystemClick(props.row.systemCategory || 'other', props.row.requirementId || '')"
+                    title="Git分支" class="action-btn" />
+                  <q-btn flat round dense color="secondary" icon="more_vert" @click="showTaskMenu(props.row)"
+                    title="更多操作" class="action-btn" />
                 </div>
-              </div>
-            </div>
+              </q-td>
+            </template>
 
             <!-- 空状态 -->
-            <div v-if="allTasks.length === 0" class="empty-state">
-              <q-icon name="task_alt" size="64px" color="grey-5" />
-              <div class="text-h6 text-grey-6 q-mt-md">暂无任务数据</div>
-              <div class="text-body2 text-grey-5">点击"新建任务"开始创建您的第一个任务</div>
-            </div>
-          </div>
+            <template v-slot:no-data>
+              <div class="empty-state text-center q-pa-lg">
+                <q-icon name="task_alt" size="64px" color="grey-5" />
+                <div class="text-h6 text-grey-6 q-mt-md">暂无任务数据</div>
+                <div class="text-body2 text-grey-5">点击"新建任务"开始创建您的第一个任务</div>
+              </div>
+            </template>
+          </q-table>
 
           <!-- 紧凑型分页组件 -->
           <div v-if="allTasks.length > 0" class="q-mt-lg">
@@ -1203,6 +1212,77 @@ const getDetectedTypeLabel = (type: string): string => {
   return labels[type] || type
 }
 
+// 表格列定义
+const tableColumns = [
+  {
+    name: 'requirementName',
+    label: '需求名称',
+    field: 'requirementName',
+    align: 'left',
+    sortable: true,
+    style: 'width: 300px; max-width: 300px; min-width: 300px'
+  },
+  {
+    name: 'requirementId',
+    label: '需求编号',
+    field: 'requirementId',
+    align: 'left',
+    sortable: true,
+    style: 'width: 150px; max-width: 150px; min-width: 150px'
+  },
+  {
+    name: 'systemCategory',
+    label: '系统分类',
+    field: 'systemCategory',
+    align: 'center',
+    sortable: true,
+    style: 'width: 100px; max-width: 100px; min-width: 100px'
+  },
+  {
+    name: 'documents',
+    label: '关联文档',
+    field: 'documents',
+    align: 'center',
+    sortable: false,
+    style: 'width: 120px; max-width: 120px; min-width: 120px'
+  },
+  {
+    name: 'actions',
+    label: '操作',
+    field: 'actions',
+    align: 'center',
+    sortable: false,
+    style: 'width: 100px; max-width: 100px; min-width: 100px'
+  }
+]
+
+// 表格分页配置
+const tablePagination = computed(() => ({
+  page: currentPagination.value.current,
+  rowsPerPage: pageSize.value,
+  rowsNumber: currentPagination.value.total,
+  pagesNumber: currentPagination.value.pages
+}))
+
+// 加载状态
+const loading = ref(false)
+
+// 表格请求处理函数
+const onRequest = async (props: any) => {
+  const { page, rowsPerPage } = props.pagination
+
+  // 更新分页大小
+  if (rowsPerPage !== pageSize.value) {
+    pageSize.value = rowsPerPage
+    handlePageSizeChange(rowsPerPage)
+  }
+
+  // 更新当前页
+  if (page !== currentPagination.value.current) {
+    handlePageChange(page)
+  }
+}
+
 defineOptions({
   name: 'TaskList'
 })
@@ -1857,5 +1937,95 @@ defineOptions({
     width: 95vw;
     margin: 0 2.5vw;
   }
+}
+
+/* 自定义表格样式，保持原有的美观效果 */
+.custom-task-table {
+  /* 继承原有的表格样式 */
+}
+
+.custom-task-table .q-table__top {
+  display: none;
+  /* 隐藏默认的表格顶部 */
+}
+
+.custom-task-table .q-table__bottom {
+  display: none;
+  /* 隐藏默认的表格底部 */
+}
+
+/* 需求名称列固定宽度和省略号 */
+.requirement-name-cell {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--q-border-color);
+  width: 300px;
+  max-width: 300px;
+}
+
+.requirement-name-content {
+  font-size: 14px;
+  line-height: 1.4;
+  cursor: pointer;
+  transition: color 0.2s ease;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 268px;
+  /* 300px - 左右padding */
+}
+
+.requirement-name-content:hover {
+  color: var(--q-primary);
+}
+
+/* 其他列保持原有样式 */
+.requirement-id-cell,
+.system-category-cell,
+.documents-cell,
+.actions-cell {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--q-border-color);
+}
+
+.requirement-id-content,
+.system-category-text {
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.requirement-id-content {
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.requirement-id-content:hover {
+  color: var(--q-primary);
+}
+
+/* 保持原有的文档标签样式 */
+.doc-tags {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.doc-chip {
+  font-size: 12px;
+}
+
+/* 保持原有的操作按钮样式 */
+.action-buttons {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+
+.action-btn {
+  transition: transform 0.2s ease;
+}
+
+.action-btn:hover {
+  transform: scale(1.1);
 }
 </style>
