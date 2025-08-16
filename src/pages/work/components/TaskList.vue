@@ -330,11 +330,11 @@ const currentPagination = computed(() => {
   }
 })
 
-// 过滤参数
+// 过滤参数 - 修复类型问题
 const filterParams = ref({
   requirementId: '',
   requirementName: '',
-  systemCategory: '',
+  systemCategory: null as { label: string; value: string } | string | null, // 支持对象和字符串类型
   relatedRequirementDocs: '',
   relatedDesignDocs: '',
   createdAtRange: '',
@@ -345,38 +345,49 @@ const filterParams = ref({
 const showAdvancedFilter = ref(false)
 const showDatePicker = ref(false)
 
-// 统一的搜索函数，通过参数控制搜索类型
-const fetchTasks = async (systemCategory?: 'callin' | 'callout'): Promise<void> => {
+// 统一的搜索函数
+const fetchTasks = async (): Promise<void> => {
   try {
+    // 严格按照API接口定义构建参数
     const params: QueryDevTaskInParam = {
       pageParam: {
-        current: systemCategory === 'callin'
-          ? incomingPagination.value.current || 1
-          : outgoingPagination.value.current || 1,
-        size: 5
+        current: incomingPagination.value.current || 1,
+        size: 10
       }
     }
 
-    // 如果指定了系统分类，则添加到参数中
-    if (systemCategory) {
-      params.systemCategory = systemCategory
+    // 只有当过滤条件有值时才添加到参数中，避免传递空字符串
+    if (filterParams.value.requirementId && filterParams.value.requirementId.trim()) {
+      params.requirementId = filterParams.value.requirementId.trim()
+    }
+    
+    if (filterParams.value.requirementName && filterParams.value.requirementName.trim()) {
+      params.requirementName = filterParams.value.requirementName.trim()
+    }
+    
+    // 系统分类需要传递实际的值，而不是对象
+    if (filterParams.value.systemCategory) {
+      // 如果systemCategory是对象，取其value值；如果是字符串，直接使用
+      const categoryValue = typeof filterParams.value.systemCategory === 'object' 
+        ? filterParams.value.systemCategory.value 
+        : filterParams.value.systemCategory
+      params.systemCategory = categoryValue
+    }
+    
+    if (filterParams.value.relatedRequirementDocs && filterParams.value.relatedRequirementDocs.trim()) {
+      params.relatedRequirementDocs = filterParams.value.relatedRequirementDocs.trim()
+    }
+    
+    if (filterParams.value.relatedDesignDocs && filterParams.value.relatedDesignDocs.trim()) {
+      params.relatedDesignDocs = filterParams.value.relatedDesignDocs.trim()
     }
 
-    // 添加过滤条件
-    if (filterParams.value.requirementId) {
-      params.requirementId = filterParams.value.requirementId
-    }
-    if (filterParams.value.requirementName) {
-      params.requirementName = filterParams.value.requirementName
-    }
-    if (filterParams.value.relatedRequirementDocs) {
-      params.relatedRequirementDocs = filterParams.value.relatedRequirementDocs
-    }
-    if (filterParams.value.relatedDesignDocs) {
-      params.relatedDesignDocs = filterParams.value.relatedDesignDocs
-    }
-
+    console.log('当前过滤条件:', filterParams.value)
+    console.log('发送搜索请求，参数:', params)
+    console.log('系统分类参数值:', params.systemCategory)
+    
     const response = await devTaskApi.queryDevTask(params)
+    console.log('搜索响应:', response.data)
 
     if (response.data?.isOk && response.data.okData) {
       const records = response.data.okData.records || []
@@ -387,64 +398,74 @@ const fetchTasks = async (systemCategory?: 'callin' | 'callout'): Promise<void> 
         pages: response.data.okData.pages || 0
       }
 
-      if (systemCategory === 'callin') {
-        incomingTasks.value = records
+      // 将DevTaskVO转换为DevTask格式以保持兼容性
+      const convertedRecords = records.map(record => ({
+        id: undefined, // DevTaskVO没有id字段
+        requirementId: record.requirementId,
+        requirementName: record.requirementName,
+        systemCategory: record.systemCategory,
+        relatedRequirementDocs: record.relatedRequirementDocs,
+        relatedDesignDocs: record.relatedDesignDocs,
+        userId: record.userId
+      }))
+
+      // 获取实际的系统分类值
+      const actualSystemCategory = typeof filterParams.value.systemCategory === 'object' 
+        ? filterParams.value.systemCategory?.value 
+        : filterParams.value.systemCategory
+
+      // 根据选择的系统分类来处理数据
+      if (actualSystemCategory === 'callin') {
+        // 只显示呼入任务
+        incomingTasks.value = convertedRecords
         incomingPagination.value = paginationData
-        // 清空呼出任务数据
         outgoingTasks.value = []
-        outgoingPagination.value.total = 0
-      } else if (systemCategory === 'callout') {
-        outgoingTasks.value = records
+        outgoingPagination.value = { current: 1, size: 10, total: 0, pages: 0 }
+      } else if (actualSystemCategory === 'callout') {
+        // 只显示呼出任务
+        outgoingTasks.value = convertedRecords
         outgoingPagination.value = paginationData
-        // 清空呼入任务数据
         incomingTasks.value = []
-        incomingPagination.value.total = 0
+        incomingPagination.value = { current: 1, size: 10, total: 0, pages: 0 }
       } else {
-        // 没有指定系统分类时，默认处理为呼入任务
-        incomingTasks.value = records
+        // 没有选择系统分类，显示所有任务
+        incomingTasks.value = convertedRecords
         incomingPagination.value = paginationData
-        // 清空呼出任务数据
         outgoingTasks.value = []
-        outgoingPagination.value.total = 0
+        outgoingPagination.value = { current: 1, size: 10, total: 0, pages: 0 }
       }
     }
   } catch (error) {
     console.error('获取任务列表失败:', error)
     $q.notify({
-      message: '加载任务列表出错',
+      message: '搜索任务失败，请检查网络连接或稍后重试',
       color: 'negative',
       position: 'top',
-      timeout: 1500
+      timeout: 2000
     })
   }
 }
 
-// 搜索处理 - 使用统一函数
+// 搜索处理 - 统一搜索逻辑
 const handleSearch = () => {
-  // 根据系统分类选择，只进行一次搜索
-  if (filterParams.value.systemCategory === 'callin') {
-    fetchTasks('callin')
-  } else if (filterParams.value.systemCategory === 'callout') {
-    fetchTasks('callout')
-  } else {
-    // 没有选择系统分类时，根据其他过滤条件智能判断
-    // 如果设置了需求编号、需求名称等具体条件，优先搜索呼入任务
-    if (filterParams.value.requirementId || filterParams.value.requirementName ||
-      filterParams.value.relatedRequirementDocs || filterParams.value.relatedDesignDocs) {
-      fetchTasks('callin')
-    } else {
-      // 没有具体过滤条件时，默认搜索呼入任务
-      fetchTasks('callin')
-    }
-  }
+  console.log('开始搜索，当前过滤条件:', filterParams.value)
+  
+  // 重置分页到第一页
+  incomingPagination.value.current = 1
+  outgoingPagination.value.current = 1
+  
+  // 执行搜索
+  fetchTasks()
 }
 
-// 重置过滤条件 - 重置后查询所有任务
+// 重置过滤条件
 const handleReset = () => {
+  console.log('重置搜索条件')
+  
   filterParams.value = {
     requirementId: '',
     requirementName: '',
-    systemCategory: '',
+    systemCategory: null,
     relatedRequirementDocs: '',
     relatedDesignDocs: '',
     createdAtRange: '',
@@ -456,8 +477,14 @@ const handleReset = () => {
   outgoingPagination.value.current = 1
 
   // 重置后查询所有任务
-  fetchTasks('callin')
-  fetchTasks('callout')
+  fetchTasks()
+  
+  $q.notify({
+    message: '搜索条件已重置',
+    color: 'info',
+    position: 'top',
+    timeout: 1000
+  })
 }
 
 // 处理过滤条件变化 - 只重置分页，不自动查询
@@ -469,8 +496,7 @@ const handleFilterChange = () => {
 
 // 在组件挂载时获取数据
 onMounted(() => {
-  fetchTasks('callin')
-  fetchTasks('callout')
+  fetchTasks()
 })
 
 // 添加 requirementBasePath 常量
@@ -845,7 +871,7 @@ const createTask = async (): Promise<void> => {
       })
 
       // 重新获取任务列表
-      fetchTasks(systemCategory)
+      fetchTasks()
 
       // 使用重置函数
       resetNewTaskForm()
@@ -880,8 +906,7 @@ const designFileInput = ref<HTMLInputElement | null>(null)
 // 添加系统分类选项
 const systemCategoryOptions = [
   { label: '呼入系统', value: 'callin' },
-  { label: '呼出系统', value: 'callout' },
-  { label: '其他系统', value: 'other' }
+  { label: '呼出系统', value: 'callout' }
 ]
 
 // 添加状态选项
@@ -892,20 +917,13 @@ const statusOptions = [
   { label: '已取消', value: 'cancelled' }
 ]
 
-// 添加分页处理方法
+// 分页处理方法
 const handlePageChange = (page: number): void => {
-  // 根据当前过滤条件决定更新哪个分页
-  if (filterParams.value.systemCategory === 'callin') {
-    incomingPagination.value.current = page
-    fetchTasks('callin')
-  } else if (filterParams.value.systemCategory === 'callout') {
-    outgoingPagination.value.current = page
-    fetchTasks('callout')
-  } else {
-    // 没有选择系统分类时，默认更新呼入任务分页
-    incomingPagination.value.current = page
-    fetchTasks('callin')
-  }
+  // 更新当前分页
+  incomingPagination.value.current = page
+  
+  // 重新获取数据
+  fetchTasks()
 }
 
 // 获取活跃任务数量的计算属性

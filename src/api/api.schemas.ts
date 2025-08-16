@@ -440,7 +440,7 @@ export interface PageParam {
 export interface QueryDevTaskInParam {
   /** 主键ID */
   id?: string;
-  /** 需求号 */
+  /** 需求编号 */
   requirementId?: string;
   /** 需求名称 */
   requirementName?: string;
