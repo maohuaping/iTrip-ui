@@ -7,8 +7,52 @@
           <q-icon name="task_alt" size="28px" class="q-mr-sm" />
           任务列表
         </h2>
-        <q-btn color="primary" size="md" icon="add" label="新建任务" @click="openNewTaskDialog" class="q-px-md" unelevated
-          rounded />
+        <!-- 新建任务省略号按钮 -->
+        <q-btn round flat icon="more_horiz" color="text" class="new-task-btn" @click="showTaskMenu">
+          <q-menu>
+            <q-list style="min-width: 200px">
+              <q-item clickable v-close-popup @click="openNewTaskDialog('requirement')">
+                <q-item-section avatar>
+                  <q-icon name="description" color="primary" />
+                </q-item-section>
+                <q-item-section>
+                  <q-item-label>需求任务</q-item-label>
+                  <q-item-label caption>创建新的需求开发任务</q-item-label>
+                </q-item-section>
+              </q-item>
+
+              <q-item clickable v-close-popup @click="openNewTaskDialog('design')">
+                <q-item-section avatar>
+                  <q-icon name="design_services" color="secondary" />
+                </q-item-section>
+                <q-item-section>
+                  <q-item-label>设计任务</q-item-label>
+                  <q-item-label caption>创建新的设计任务</q-item-label>
+                </q-item-section>
+              </q-item>
+
+              <q-item clickable v-close-popup @click="openNewTaskDialog('test')">
+                <q-item-section avatar>
+                  <q-icon name="bug_report" color="accent" />
+                </q-item-section>
+                <q-item-section>
+                  <q-item-label>测试任务</q-item-label>
+                  <q-item-label caption>创建新的测试任务</q-item-label>
+                </q-item-section>
+              </q-item>
+
+              <q-item clickable v-close-popup @click="openNewTaskDialog('other')">
+                <q-item-section avatar>
+                  <q-icon name="more_horiz" color="grey" />
+                </q-item-section>
+                <q-item-section>
+                  <q-item-label>其他任务</q-item-label>
+                  <q-item-label caption>创建其他类型的任务</q-item-label>
+                </q-item-section>
+              </q-item>
+            </q-list>
+          </q-menu>
+        </q-btn>
       </div>
 
       <!-- 过滤查询表头 - 使用卡片样式 -->
@@ -916,7 +960,26 @@ const createTask = async (): Promise<void> => {
 }
 
 // 添加打开新建任务对话框方法的返回类型
-const openNewTaskDialog = (): void => {
+const openNewTaskDialog = (taskType: string = 'requirement'): void => {
+  // 根据任务类型设置默认值
+  if (taskType === 'requirement') {
+    newTask.value.type = { label: '需求任务', value: 'requirement' }
+    newTask.value.systemCategory = 'callin' // 默认呼入系统
+    newTask.value.status = 'in_progress' // 默认进行中
+  } else if (taskType === 'design') {
+    newTask.value.type = { label: '设计任务', value: 'design' }
+    newTask.value.systemCategory = 'callout' // 默认呼出系统
+    newTask.value.status = 'in_progress'
+  } else if (taskType === 'test') {
+    newTask.value.type = { label: '测试任务', value: 'test' }
+    newTask.value.systemCategory = 'callin'
+    newTask.value.status = 'in_progress'
+  } else { // 'other'
+    newTask.value.type = { label: '其他任务', value: 'other' }
+    newTask.value.systemCategory = 'other'
+    newTask.value.status = 'in_progress'
+  }
+
   showNewTaskDialog.value = true
 }
 
@@ -1769,6 +1832,42 @@ defineOptions({
 
   .examples-grid {
     grid-template-columns: 1fr;
+  }
+}
+
+// 新建任务省略号按钮样式
+.new-task-btn {
+  background: transparent !important;
+  color: $cursor-text !important;
+
+  &:hover {
+    background: rgba($cursor-text, 0.08) !important;
+  }
+
+  &:active {
+    background: rgba($cursor-text, 0.12) !important;
+  }
+}
+
+// 下拉菜单内容样式
+.q-list {
+  .q-item {
+    border-radius: 8px;
+    margin: 4px 8px;
+
+    &:hover {
+      background: rgba($cursor-primary, 0.08);
+    }
+
+    .q-item__label {
+      color: $cursor-text;
+      font-weight: 500;
+    }
+
+    .q-item__label--caption {
+      color: $cursor-muted;
+      font-size: 0.8rem;
+    }
   }
 }
 </style>
