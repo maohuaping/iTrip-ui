@@ -9,9 +9,9 @@
         </q-btn>
 
         <q-toolbar-title class="row items-center justify-center">
-          <!-- 待办事项按钮 - 改为抽屉形式 -->
+          <!-- 待办事项按钮 - 改为底部动作面板形式 -->
           <q-btn flat color="green-7" no-caps dense class="q-mr-sm" label="待办事项" icon="checklist"
-            @click="toggleTodoDrawer">
+            @click="toggleTodoSheet">
           </q-btn>
 
           <!-- 使用Quasar的split button组件 - 改进版 -->
@@ -139,53 +139,6 @@
       </q-list>
     </q-drawer>
 
-    <!-- 右侧待办事项抽屉 -->
-    <q-drawer v-model="todoDrawerOpen" side="right" overlay bordered :width="320" class="todo-drawer">
-      <q-list class="full-height">
-        <q-item-label header class="text-h6 q-py-md">
-          <q-icon name="checklist" class="q-mr-sm" />
-          今日待办
-        </q-item-label>
-
-        <q-separator />
-
-        <div class="q-pa-md">
-          <q-input v-model="newTodo" dense outlined placeholder="添加新待办..." @keyup.enter="addTodo"
-            class="new-todo-input">
-            <template v-slot:append>
-              <q-btn round dense flat icon="add" color="green-7" @click="addTodo" />
-            </template>
-          </q-input>
-        </div>
-
-        <q-separator />
-
-        <div class="todo-list-container">
-          <template v-if="todoItems.length > 0">
-            <q-item v-for="(item, index) in todoItems" :key="index" tag="label" v-ripple class="todo-item">
-              <q-item-section side>
-                <q-checkbox v-model="item.done" color="green-7" @update:model-value="updateTodoStatus(index)" />
-              </q-item-section>
-              <q-item-section>
-                <q-item-label :class="{ 'text-strike': item.done }">{{ item.text }}</q-item-label>
-                <q-item-label caption v-if="item.dueTime">{{ item.dueTime }}</q-item-label>
-              </q-item-section>
-              <q-item-section side>
-                <q-btn flat round dense icon="delete" color="grey-7" size="sm" @click.stop="removeTodo(index)" />
-              </q-item-section>
-            </q-item>
-          </template>
-
-          <q-item v-else class="no-todos">
-            <q-item-section>
-              <q-item-label class="text-center text-grey-7">暂无待办事项</q-item-label>
-              <q-icon name="task_alt" size="48px" class="text-grey-4 q-mt-md" />
-            </q-item-section>
-          </q-item>
-        </div>
-      </q-list>
-    </q-drawer>
-
     <q-page-container>
       <q-page class="work-page">
         <div class="work-page-content">
@@ -199,6 +152,92 @@
         </div>
       </q-page>
     </q-page-container>
+
+    <!-- 底部待办事项动作面板 -->
+    <q-dialog v-model="todoSheetOpen" position="bottom" class="todo-bottom-sheet">
+      <q-card class="todo-sheet-card">
+        <!-- 拖拽指示器 -->
+        <div class="sheet-handle">
+          <div class="handle-bar"></div>
+        </div>
+
+        <!-- 标题区域 -->
+        <div class="sheet-header">
+          <div class="row items-center justify-between q-px-lg q-py-md">
+            <div class="row items-center">
+              <q-icon name="checklist" size="24px" class="q-mr-sm text-green-7" />
+              <span class="text-h6">今日待办</span>
+            </div>
+            <q-btn flat round dense icon="close" @click="todoSheetOpen = false" />
+          </div>
+        </div>
+
+        <q-separator />
+
+        <!-- 添加待办输入区 -->
+        <div class="q-pa-lg">
+          <q-input v-model="newTodo" outlined placeholder="添加新待办事项..." @keyup.enter="addTodo" class="new-todo-input">
+            <template v-slot:prepend>
+              <q-icon name="add_task" />
+            </template>
+            <template v-slot:append>
+              <q-btn round dense flat icon="add" color="green-7" @click="addTodo" :disable="!newTodo.trim()" />
+            </template>
+          </q-input>
+        </div>
+
+        <q-separator />
+
+        <!-- 待办列表区域 -->
+        <div class="todo-list-area">
+          <q-scroll-area style="height: 400px" class="q-px-lg">
+            <template v-if="todoItems.length > 0">
+              <q-list>
+                <q-item v-for="(item, index) in todoItems" :key="index" class="todo-item q-my-sm">
+                  <q-item-section side>
+                    <q-checkbox v-model="item.done" color="green-7" @update:model-value="updateTodoStatus(index)" />
+                  </q-item-section>
+
+                  <q-item-section>
+                    <q-item-label :class="{ 'text-strike text-grey-6': item.done }" class="todo-text">
+                      {{ item.text }}
+                    </q-item-label>
+                    <q-item-label caption v-if="item.dueTime">
+                      {{ item.dueTime }}
+                    </q-item-label>
+                  </q-item-section>
+
+                  <q-item-section side>
+                    <q-btn flat round dense icon="delete_outline" color="grey-6" size="sm" @click="removeTodo(index)">
+                      <q-tooltip>删除</q-tooltip>
+                    </q-btn>
+                  </q-item-section>
+                </q-item>
+              </q-list>
+            </template>
+
+            <div v-else class="no-todos q-py-xl">
+              <div class="text-center">
+                <q-icon name="task_alt" size="64px" class="text-grey-4" />
+                <div class="text-grey-6 q-mt-md">暂无待办事项</div>
+                <div class="text-grey-5 text-caption q-mt-sm">点击上方输入框添加新的待办事项</div>
+              </div>
+            </div>
+          </q-scroll-area>
+        </div>
+
+        <!-- 底部操作区 -->
+        <div class="sheet-footer q-pa-lg">
+          <div class="row justify-between items-center">
+            <div class="text-caption text-grey-6">
+              共 {{ todoItems.length }} 项，已完成 {{ completedCount }} 项
+            </div>
+            <q-btn v-if="completedTodos.length > 0" flat dense no-caps color="grey-6" label="清除已完成"
+              @click="clearCompleted" />
+          </div>
+        </div>
+      </q-card>
+    </q-dialog>
 
     <!-- 添加URL对话框 -->
     <q-dialog v-model="addUrlDialog" persistent>
@@ -326,8 +365,8 @@ onMounted(() => {
 
 // 侧边栏状态
 const leftDrawerOpen = ref(false)
-// 待办事项抽屉状态
-const todoDrawerOpen = ref(false)
+// 待办事项底部面板状态
+const todoSheetOpen = ref(false)
 
 // 页面标题和状态信息
 const pageTitle = ref('工作台')
@@ -380,9 +419,9 @@ const toggleLeftDrawer = () => {
   leftDrawerOpen.value = !leftDrawerOpen.value
 }
 
-// 切换待办事项抽屉
-const toggleTodoDrawer = () => {
-  todoDrawerOpen.value = !todoDrawerOpen.value
+// 切换待办事项底部面板
+const toggleTodoSheet = () => {
+  todoSheetOpen.value = !todoSheetOpen.value
 }
 
 // 更新展开状态
@@ -781,6 +820,38 @@ const onTagInputValue = (val: string) => {
       color: 'warning',
       message: '标签名称不能超过20个字符',
       icon: 'warning'
+    })
+  }
+}
+
+// 计算属性
+const completedCount = computed(() => todoItems.value.filter(item => item.done).length)
+const completedTodos = computed(() => todoItems.value.filter(item => item.done))
+
+// 清除已完成的待办事项
+const clearCompleted = async () => {
+  const completedItems = todoItems.value.filter(item => item.done)
+
+  try {
+    // 批量删除已完成的待办事项
+    await Promise.all(
+      completedItems.map(item => todoApi.deleteTodo(item.id))
+    )
+
+    // 重新获取待办列表
+    fetchTodos()
+
+    $q.notify({
+      color: 'positive',
+      message: `已清除 ${completedItems.length} 项已完成的待办事项`,
+      icon: 'check_circle'
+    })
+  } catch (error) {
+    console.error('清除已完成待办失败:', error)
+    $q.notify({
+      color: 'negative',
+      message: '清除失败，请重试',
+      icon: 'error'
     })
   }
 }
@@ -1395,34 +1466,90 @@ section {
   }
 }
 
-// 待办事项抽屉样式
-.todo-drawer {
-  .todo-list-container {
-    flex: 1;
-    overflow-y: auto;
-    padding: 0 8px;
+// 底部动作面板样式
+.todo-bottom-sheet {
+  .q-dialog__inner {
+    padding: 0;
+  }
+}
+
+.todo-sheet-card {
+  width: 100%;
+  max-height: 70vh;
+  border-radius: 16px 16px 0 0;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
+
+  // 拖拽指示器
+  .sheet-handle {
+    display: flex;
+    justify-content: center;
+    padding: 8px;
+    cursor: pointer;
+
+    .handle-bar {
+      width: 40px;
+      height: 4px;
+      background-color: #e0e0e0;
+      border-radius: 2px;
+      transition: background-color 0.2s;
+
+      &:hover {
+        background-color: #bdbdbd;
+      }
+    }
   }
 
+  // 标题区域
+  .sheet-header {
+    background-color: var(--q-primary-tint);
+  }
+
+  // 输入框样式
+  .new-todo-input {
+    .q-field__control {
+      border-radius: 12px;
+    }
+  }
+
+  // 待办项样式
   .todo-item {
     border-radius: 8px;
     margin: 4px 0;
-    transition: background-color 0.2s;
+    padding: 8px 12px;
+    background-color: var(--q-grey-1);
+    transition: all 0.2s;
 
     &:hover {
-      background-color: var(--q-primary-tint);
+      background-color: var(--q-grey-2);
+      transform: translateX(4px);
+    }
+
+    .todo-text {
+      font-size: 14px;
+      line-height: 1.4;
     }
   }
 
-  .new-todo-input {
-    .q-field__control {
-      border-radius: 8px;
-    }
-  }
-
+  // 空状态样式
   .no-todos {
-    flex-direction: column;
-    text-align: center;
-    padding: 40px 20px;
+    min-height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  // 底部操作区
+  .sheet-footer {
+    background-color: var(--q-grey-1);
+    border-top: 1px solid var(--q-separator-color);
+  }
+}
+
+// 响应式设计
+@media (max-width: 600px) {
+  .todo-sheet-card {
+    max-height: 80vh;
+    border-radius: 12px 12px 0 0;
   }
 }
 </style>
