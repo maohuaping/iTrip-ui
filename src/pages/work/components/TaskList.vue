@@ -130,11 +130,6 @@
       <!-- 任务列表表格 -->
       <q-card flat bordered class="task-table-card q-mb-lg">
         <q-card-section class="q-pa-sm">
-          <!-- <div class="text-subtitle2 text-weight-medium q-mb-md">
-            <q-icon name="table_chart" class="q-mr-sm" />
-            任务列表
-          </div> -->
-
           <!-- 使用 q-table 但保持原有样式 -->
           <q-table :rows="allTasks" :columns="tableColumns" :loading="loading" row-key="id" flat bordered
             class="custom-task-table" v-model:pagination="pagination" :rows-per-page-options="[5, 10, 20, 50, 100]"
@@ -170,16 +165,67 @@
               </q-td>
             </template>
 
-            <!-- 自定义列模板 - 关联文档 -->
+            <!-- 自定义列模板 - 关联文档（方案二：图标+弹出卡片） -->
             <template v-slot:body-cell-documents="props">
               <q-td :props="props" class="documents-cell">
-                <div class="doc-tags">
-                  <q-chip v-if="props.row.relatedRequirementDocs" dense size="sm" color="info" text-color="white"
-                    label="需求文档" clickable @click="handleRequirementClick(props.row, props.row.relatedRequirementDocs)"
-                    class="doc-chip" />
-                  <q-chip v-if="props.row.relatedDesignDocs" dense size="sm" color="accent" text-color="white"
-                    label="设计文档" clickable @click="handleRequirementClick(props.row, props.row.relatedDesignDocs)"
-                    class="doc-chip" />
+                <div class="documents-wrapper">
+                  <!-- 当有关联文件时显示图标和数量 -->
+                  <div v-if="getDocumentCount(props.row) > 0" class="documents-indicator">
+                    <q-btn flat round dense color="primary" :icon="'attach_file'" size="sm" class="documents-btn">
+                      <!-- 文档数量徽章 -->
+                      <q-badge floating color="red" :label="getDocumentCount(props.row)" class="documents-badge" />
+
+                      <!-- 弹出卡片 -->
+                      <q-popup-proxy transition-show="scale" transition-hide="scale" class="documents-popup">
+                        <q-card class="documents-card" style="min-width: 300px; max-width: 400px;">
+                          <q-card-section class="q-pb-none">
+                            <div class="text-h6 text-weight-medium">
+                              <q-icon name="folder_open" class="q-mr-sm" />
+                              关联文档
+                            </div>
+                          </q-card-section>
+
+                          <q-card-section class="q-pt-sm">
+                            <!-- 文档列表 -->
+                            <div v-if="props.row.relatedFileList && props.row.relatedFileList.length > 0"
+                              class="documents-list">
+                              <div v-for="(file, index) in props.row.relatedFileList" :key="index" class="document-item"
+                                @click="handleDocumentClick(file)">
+                                <q-icon :name="getFileIcon(file.fileType || '')"
+                                  :color="getFileIconColor(file.fileType || '')" size="20px" class="q-mr-sm" />
+                                <div class="document-info">
+                                  <div class="document-name">{{ file.fileName || '未命名文件' }}</div>
+                                  <div class="document-meta">
+                                    <span class="document-type">{{ getFileTypeLabel(file.fileType || '') }}</span>
+                                    <span v-if="file.createdAt" class="document-date">{{ formatDate(file.createdAt)
+                                      }}</span>
+                                  </div>
+                                </div>
+                                <q-icon name="open_in_new" size="16px" color="grey-6" />
+                              </div>
+                            </div>
+
+                            <!-- 空状态 -->
+                            <div v-else class="text-center text-grey-6 q-py-md">
+                              <q-icon name="folder_open" size="32px" class="q-mb-sm" />
+                              <div>暂无关联文档</div>
+                            </div>
+                          </q-card-section>
+
+                          <!-- 操作按钮 -->
+                          <q-card-actions align="right" class="q-pt-none">
+                            <q-btn flat dense color="primary" icon="add" label="添加关联" size="sm"
+                              @click="handleAddDocument(props.row)" />
+                          </q-card-actions>
+                        </q-card>
+                      </q-popup-proxy>
+                    </q-btn>
+                  </div>
+
+                  <!-- 无文档时显示占位符 -->
+                  <div v-else class="no-documents">
+                    <span class="text-grey-5">无</span>
+                  </div>
                 </div>
               </q-td>
             </template>
@@ -278,7 +324,6 @@
     </div>
   </section>
 
-
   <!-- 将独立的NewTaskDialog内容直接集成到这里 -->
   <q-dialog v-model="showNewTaskDialog" :maximized="$q.screen.lt.md" :full-width="$q.screen.lt.md"
     :full-height="$q.screen.lt.md">
@@ -375,7 +420,7 @@
 import { ref, onMounted, computed, watch } from 'vue'
 import { useQuasar } from 'quasar'
 import { getDevTask } from 'src/api/dev-task/dev-task'
-import type { DevTask, QueryDevTaskInParam, IPageDevTaskVO } from 'src/api/api.schemas'
+import type { DevTask, DevTaskVO, QueryDevTaskInParam, IPageDevTaskVO, RelatedFile } from 'src/api/api.schemas'
 
 // 导入AI API
 import { getAi } from 'src/api/ai/ai'
@@ -411,9 +456,9 @@ const savePageSize = (size: number): void => {
   }
 }
 
-// 任务数据
-const incomingTasks = ref<DevTask[]>([])
-const outgoingTasks = ref<DevTask[]>([])
+// 任务数据 - 修复类型为 DevTaskVO
+const incomingTasks = ref<DevTaskVO[]>([])
+const outgoingTasks = ref<DevTaskVO[]>([])
 
 // 合并所有任务的计算属性
 const allTasks = computed(() => {
@@ -486,7 +531,7 @@ const fetchTasks = async (): Promise<void> => {
   try {
     loading.value = true
 
-    // 处理 systemCategory 的类型转换
+    // 处理 systemCategory 的类型转换 - 修复类型问题
     let systemCategory: string | undefined = undefined
     if (filterParams.value.systemCategory) {
       if (typeof filterParams.value.systemCategory === 'string') {
@@ -496,13 +541,13 @@ const fetchTasks = async (): Promise<void> => {
       }
     }
 
-    // 构建查询参数
+    // 构建查询参数 - 修复类型问题
     const queryParams: QueryDevTaskInParam = {
-      requirementId: filterParams.value.requirementId,
-      requirementName: filterParams.value.requirementName,
-      systemCategory: systemCategory,
-      relatedRequirementDocs: filterParams.value.relatedRequirementDocs,
-      relatedDesignDocs: filterParams.value.relatedDesignDocs,
+      requirementId: filterParams.value.requirementId || undefined,
+      requirementName: filterParams.value.requirementName || undefined,
+      systemCategory: systemCategory || undefined,
+      relatedRequirementDocs: filterParams.value.relatedRequirementDocs || undefined,
+      relatedDesignDocs: filterParams.value.relatedDesignDocs || undefined,
       pageParam: {
         current: pagination.value.page,
         size: pagination.value.rowsPerPage
@@ -531,7 +576,7 @@ const fetchTasks = async (): Promise<void> => {
         rowsNumber: pageData.total || 0
       }
 
-      // 更新任务数据
+      // 更新任务数据 - 修复类型问题
       incomingTasks.value = pageData.records || []
       outgoingTasks.value = []
 
@@ -643,7 +688,7 @@ const handleSystemClick = (system: string, branch: string): void => {
 }
 
 // 修改handleRequirementClick函数，明确设置参数类型
-const handleRequirementClick = async (item: DevTask, fileName: string): Promise<void> => {
+const handleRequirementClick = async (item: DevTaskVO, fileName: string): Promise<void> => {
   if (!fileName) {
     return;
   }
@@ -893,25 +938,17 @@ const createTask = async (): Promise<void> => {
   }
 }
 
-// 添加打开新建任务对话框方法的返回类型
+// 添加打开新建任务对话框方法的返回类型 - 移除错误的属性访问
 const openNewTaskDialog = (taskType: string = 'requirement'): void => {
   // 根据任务类型设置默认值
   if (taskType === 'requirement') {
     newTask.value.type = { label: '需求任务', value: 'requirement' }
-    newTask.value.systemCategory = 'callin' // 默认呼入系统
-    newTask.value.status = 'in_progress' // 默认进行中
   } else if (taskType === 'design') {
     newTask.value.type = { label: '设计任务', value: 'design' }
-    newTask.value.systemCategory = 'callout' // 默认呼出系统
-    newTask.value.status = 'in_progress'
   } else if (taskType === 'test') {
     newTask.value.type = { label: '测试任务', value: 'test' }
-    newTask.value.systemCategory = 'callin'
-    newTask.value.status = 'in_progress'
   } else { // 'other'
     newTask.value.type = { label: '其他任务', value: 'other' }
-    newTask.value.systemCategory = 'other'
-    newTask.value.status = 'in_progress'
   }
 
   showNewTaskDialog.value = true
@@ -981,8 +1018,9 @@ computed(() => {
   // 或者可以根据其他逻辑来判断活跃状态
   return 0;
 });
-// 添加任务菜单方法
-const showTaskMenu = (task: DevTask) => {
+
+// 添加任务菜单方法 - 修复类型
+const showTaskMenu = (task: DevTaskVO) => {
   $q.bottomSheet({
     message: `任务: ${task.requirementName || '未命名任务'} (ID: ${task.requirementId || 'N/A'})`,
     actions: [
@@ -1253,6 +1291,165 @@ const onRequest = async (props: any) => {
 
   // 重新获取数据
   await fetchTasks()
+}
+
+// 新增方法：获取文档数量
+const getDocumentCount = (task: DevTaskVO): number => {
+  if (!task.relatedFileList || !Array.isArray(task.relatedFileList)) {
+    return 0
+  }
+  return task.relatedFileList.length
+}
+
+// 新增方法：获取文件图标
+const getFileIcon = (fileType: string): string => {
+  const iconMap: Record<string, string> = {
+    'requirement': 'description',
+    'design': 'design_services',
+    'doc': 'description',
+    'docx': 'description',
+    'pdf': 'picture_as_pdf',
+    'xls': 'table_chart',
+    'xlsx': 'table_chart',
+    'ppt': 'slideshow',
+    'pptx': 'slideshow',
+    'txt': 'text_snippet',
+    'md': 'text_snippet',
+    'jpg': 'image',
+    'jpeg': 'image',
+    'png': 'image',
+    'gif': 'image',
+    'svg': 'image',
+    'zip': 'archive',
+    'rar': 'archive',
+    'default': 'insert_drive_file'
+  }
+
+  return iconMap[fileType.toLowerCase()] || iconMap.default
+}
+
+// 新增方法：获取文件图标颜色
+const getFileIconColor = (fileType: string): string => {
+  const colorMap: Record<string, string> = {
+    'requirement': 'blue',
+    'design': 'purple',
+    'doc': 'blue',
+    'docx': 'blue',
+    'pdf': 'red',
+    'xls': 'green',
+    'xlsx': 'green',
+    'ppt': 'orange',
+    'pptx': 'orange',
+    'txt': 'grey',
+    'md': 'grey',
+    'jpg': 'pink',
+    'jpeg': 'pink',
+    'png': 'pink',
+    'gif': 'pink',
+    'svg': 'pink',
+    'zip': 'brown',
+    'rar': 'brown',
+    'default': 'grey-6'
+  }
+
+  return colorMap[fileType.toLowerCase()] || colorMap.default
+}
+
+// 新增方法：获取文件类型标签
+const getFileTypeLabel = (fileType: string): string => {
+  const labelMap: Record<string, string> = {
+    'requirement': '需求文档',
+    'design': '设计文档',
+    'doc': 'Word文档',
+    'docx': 'Word文档',
+    'pdf': 'PDF文档',
+    'xls': 'Excel表格',
+    'xlsx': 'Excel表格',
+    'ppt': 'PPT演示',
+    'pptx': 'PPT演示',
+    'txt': '文本文件',
+    'md': 'Markdown',
+    'jpg': 'JPEG图片',
+    'jpeg': 'JPEG图片',
+    'png': 'PNG图片',
+    'gif': 'GIF图片',
+    'svg': 'SVG图片',
+    'zip': 'ZIP压缩包',
+    'rar': 'RAR压缩包',
+    'default': '未知文件'
+  }
+
+  return labelMap[fileType.toLowerCase()] || labelMap.default
+}
+
+// 新增方法：格式化日期
+const formatDate = (dateString: string): string => {
+  try {
+    const date = new Date(dateString)
+    return date.toLocaleDateString('zh-CN', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    })
+  } catch (error) {
+    return '未知日期'
+  }
+}
+
+// 新增方法：处理文档点击
+const handleDocumentClick = async (file: RelatedFile): Promise<void> => {
+  if (!file.fileName) {
+    $q.notify({
+      message: '文件名为空，无法打开',
+      type: 'warning'
+    })
+    return
+  }
+
+  // 如果有文件URL，直接打开
+  if (file.fileUrl) {
+    window.open(file.fileUrl, '_blank')
+    return
+  }
+
+  // 否则使用本地路径打开
+  const fullPath = `${requirementBasePath}${file.fileName}`
+
+  try {
+    const response = await fetch(`http://localhost:8090/open?path=${encodeURIComponent(fullPath)}`)
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
+    }
+
+    const result = await response.json()
+
+    if (result.success) {
+      $q.notify({
+        message: `文件 "${file.fileName}" 已打开`,
+        type: 'positive'
+      })
+    } else {
+      $q.notify({
+        message: result.message || '打开文件失败',
+        type: 'negative'
+      })
+    }
+  } catch (error) {
+    console.error('无法打开文件:', error)
+    $q.notify({
+      message: '无法打开文件，请确保本地服务已启动',
+      type: 'negative'
+    })
+  }
+}
+
+// 新增方法：处理添加文档
+const handleAddDocument = (task: DevTaskVO): void => {
+  $q.notify({
+    message: `为任务 "${task.requirementName}" 添加关联文档功能待实现`,
+    type: 'info'
+  })
+  // TODO: 实现添加文档功能
 }
 
 defineOptions({
@@ -1994,12 +2191,120 @@ defineOptions({
   text-align: center;
 }
 
-/* 关联文档列优化 */
+/* 关联文档列优化 - 方案二样式 */
 .documents-cell {
   padding: 12px 16px;
   border-bottom: 1px solid var(--q-border-color);
   width: 15% !important;
   min-width: 120px !important;
+}
+
+.documents-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.documents-indicator {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.documents-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background-color: rgba($cursor-primary, 0.1);
+    transform: scale(1.1);
+  }
+}
+
+.documents-badge {
+  font-size: 10px;
+  min-width: 16px;
+  height: 16px;
+  line-height: 16px;
+  border-radius: 8px;
+}
+
+.no-documents {
+  color: $cursor-muted;
+  font-size: 14px;
+  text-align: center;
+}
+
+/* 文档弹出卡片样式 */
+.documents-popup {
+  .documents-card {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    border-radius: 12px;
+    border: 1px solid rgba($cursor-border, 0.2);
+  }
+}
+
+.documents-list {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.document-item {
+  display: flex;
+  align-items: center;
+  padding: 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+  margin-bottom: 8px;
+
+  &:hover {
+    background-color: rgba($cursor-primary, 0.05);
+    border-color: rgba($cursor-primary, 0.2);
+    transform: translateX(2px);
+  }
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.document-info {
+  flex: 1;
+  margin-left: 8px;
+  margin-right: 8px;
+}
+
+.document-name {
+  font-weight: 500;
+  color: $cursor-text;
+  font-size: 14px;
+  line-height: 1.4;
+  word-break: break-all;
+}
+
+.document-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+  font-size: 12px;
+  color: $cursor-muted;
+}
+
+.document-type {
+  background-color: rgba($cursor-primary, 0.1);
+  color: $cursor-primary;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+.document-date {
+  color: $cursor-muted;
 }
 
 /* 操作列优化 */
@@ -2008,18 +2313,6 @@ defineOptions({
   border-bottom: 1px solid var(--q-border-color);
   width: 10% !important;
   min-width: 100px !important;
-}
-
-/* 保持原有的文档标签样式 */
-.doc-tags {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  justify-content: center;
-}
-
-.doc-chip {
-  font-size: 12px;
 }
 
 /* 保持原有的操作按钮样式 */
@@ -2081,6 +2374,30 @@ defineOptions({
 
   .requirement-id-cell {
     min-width: 150px !important;
+  }
+
+  .documents-card {
+    max-width: 90vw !important;
+    margin: 0 auto;
+  }
+}
+
+/* 滚动条样式优化 */
+.documents-list::-webkit-scrollbar {
+  width: 4px;
+}
+
+.documents-list::-webkit-scrollbar-track {
+  background: rgba($cursor-border, 0.1);
+  border-radius: 2px;
+}
+
+.documents-list::-webkit-scrollbar-thumb {
+  background: rgba($cursor-primary, 0.3);
+  border-radius: 2px;
+
+  &:hover {
+    background: rgba($cursor-primary, 0.5);
   }
 }
 </style>
