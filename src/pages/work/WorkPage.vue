@@ -187,26 +187,12 @@
 
         <!-- 添加待办输入区 -->
         <div class="q-pa-lg" v-show="activeFilter !== 'completed'">
-          <q-input 
-            v-model="newTodo" 
-            outlined 
-            placeholder="添加新待办事项..." 
-            @keyup.enter="addTodo"
-            class="new-todo-input"
-          >
+          <q-input v-model="newTodo" outlined placeholder="添加新待办事项..." @keyup.enter="addTodo" class="new-todo-input">
             <template v-slot:prepend>
               <q-icon name="add_task" />
             </template>
             <template v-slot:append>
-              <q-btn 
-                round 
-                dense 
-                flat 
-                icon="add" 
-                color="green-7" 
-                @click="addTodo"
-                :disable="!newTodo.trim()"
-              />
+              <q-btn round dense flat icon="add" color="green-7" @click="addTodo" :disable="!newTodo.trim()" />
             </template>
           </q-input>
         </div>
@@ -218,67 +204,44 @@
           <q-scroll-area style="height: 400px" class="q-px-lg">
             <template v-if="filteredTodos.length > 0">
               <q-list>
-                <q-item 
-                  v-for="(item, index) in filteredTodos" 
-                  :key="item.id || index" 
-                  class="todo-item q-my-sm"
-                  :class="{ 'completed-item': item.done }"
-                >
-                  <!-- 拖拽句柄 -->
-                  <q-item-section side v-if="activeFilter !== 'completed'">
+                <q-item v-for="(item, index) in filteredTodos" :key="item.id || index" class="todo-item q-my-sm" :class="{
+                  'completed-item': item.done,
+                  'dragging': isDragging && draggedItem?.id === item.id,
+                  'all-view-completed': activeFilter === 'all' && item.done
+                }" @touchstart="handleTouchStart($event, item, index)" @touchmove="handleTouchMove"
+                  @touchend="handleTouchEnd" @mousedown="handleMouseDown($event, item, index)"
+                  @mousemove="handleMouseMove" @mouseup="handleMouseEnd" :style="getItemTransform(item)">
+                  <!-- 拖拽句柄 - 只在非已完成筛选时显示 -->
+                  <q-item-section side v-if="activeFilter !== 'completed'" class="drag-handle-section">
                     <q-icon name="drag_indicator" class="drag-handle" />
                   </q-item-section>
-                  
-                  <q-item-section side>
-                    <q-checkbox 
-                      v-model="item.done" 
-                      color="green-7" 
-                      @update:model-value="updateTodoStatus(todoItems.indexOf(item))" 
-                    />
+
+                  <q-item-section side class="checkbox-section">
+                    <q-checkbox v-model="item.done" color="green-7"
+                      @update:model-value="updateTodoStatus(todoItems.indexOf(item))" />
                   </q-item-section>
-                  
-                  <q-item-section @click="startEdit(item)">
+
+                  <q-item-section @click="startEdit(item)" class="content-section">
                     <!-- 编辑模式 -->
-                    <q-input
-                      v-if="editingItem?.id === item.id"
-                      v-model="editText"
-                      dense
-                      autofocus
-                      @blur="saveEdit"
-                      @keyup.enter="saveEdit"
-                      @keyup.esc="cancelEdit"
-                      class="edit-input"
-                    />
+                    <q-input v-if="editingItem?.id === item.id" v-model="editText" dense autofocus @blur="saveEdit"
+                      @keyup.enter="saveEdit" @keyup.esc="cancelEdit" class="edit-input" />
                     <!-- 显示模式 -->
-                    <q-item-label 
-                      v-else
-                      :class="{ 
-                        'text-strike text-grey-6 completed-text': item.done,
-                        'clickable-text': !item.done
-                      }"
-                      class="todo-text"
-                    >
+                    <q-item-label v-else :class="{
+                      'text-strike text-grey-6 completed-text': item.done,
+                      'clickable-text': !item.done
+                    }" class="todo-text">
                       {{ item.text }}
                     </q-item-label>
                     <q-item-label caption v-if="item.dueTime">
                       {{ item.dueTime }}
                     </q-item-label>
                   </q-item-section>
-                  
-                  <q-item-section side>
-                    <q-btn 
-                      flat 
-                      round 
-                      dense 
-                      icon="delete_outline" 
-                      color="grey-6" 
-                      size="sm" 
-                      @click="confirmDelete(todoItems.indexOf(item))"
-                      class="delete-btn"
-                    >
-                      <q-tooltip>删除</q-tooltip>
-                    </q-btn>
-                  </q-item-section>
+
+                  <!-- 滑动删除按钮 - 默认隐藏 -->
+                  <div v-show="swipeDeleteVisible[item.id] || false" class="swipe-delete-btn"
+                    @click="confirmDelete(todoItems.indexOf(item))">
+                    <q-icon name="delete" color="white" size="20px" />
+                  </div>
                 </q-item>
               </q-list>
             </template>
@@ -286,11 +249,7 @@
             <!-- 空状态设计 -->
             <div v-else class="empty-state q-py-xl">
               <div class="text-center">
-                <q-icon 
-                  :name="getEmptyStateIcon()" 
-                  size="64px" 
-                  :class="getEmptyStateIconClass()" 
-                />
+                <q-icon :name="getEmptyStateIcon()" size="64px" :class="getEmptyStateIconClass()" />
                 <div class="text-h6 q-mt-md" :class="getEmptyStateTextClass()">
                   {{ getEmptyStateTitle() }}
                 </div>
@@ -302,21 +261,15 @@
           </q-scroll-area>
         </div>
 
-        <!-- 底部操作区 -->
-        <div class="sheet-footer q-pa-lg">
+        <!-- 底部操作区 - 优化间距和条件显示 -->
+        <div class="sheet-footer q-pa-lg q-pt-xl">
           <div class="row justify-between items-center">
             <div class="text-caption text-grey-6">
               共 {{ todoItems.length }} 项，已完成 {{ completedCount }} 项
             </div>
-            <q-btn 
-              v-if="completedTodos.length > 0"
-              flat 
-              dense 
-              no-caps 
-              color="grey-6" 
-              label="清除已完成"
-              @click="confirmClearCompleted"
-            />
+            <!-- 只在已完成标签页显示清除按钮 -->
+            <q-btn v-if="activeFilter === 'completed' && completedTodos.length > 0" flat dense no-caps color="grey-6"
+              label="清除已完成" @click="confirmClearCompleted" />
           </div>
         </div>
       </q-card>
@@ -654,6 +607,17 @@ const activeFilter = ref<'all' | 'pending' | 'completed'>('all')
 const editingItem = ref<TodoItem | null>(null)
 const editText = ref('')
 
+// 新增：拖拽相关状态
+const isDragging = ref(false)
+const draggedItem = ref<TodoItem | null>(null)
+const dragStartPos = ref({ x: 0, y: 0 })
+const currentPos = ref({ x: 0, y: 0 })
+
+// 新增：滑动删除相关状态
+const swipeDeleteVisible = ref<Record<string, boolean>>({})
+const swipeStartPos = ref({ x: 0, y: 0 })
+const swipeCurrentItem = ref<TodoItem | null>(null)
+
 // 计算属性
 const completedCount = computed(() => todoItems.value.filter(item => item.done).length)
 const completedTodos = computed(() => todoItems.value.filter(item => item.done))
@@ -739,12 +703,12 @@ const saveEdit = async () => {
       title: editText.value.trim(),
       completed: editingItem.value.done
     }
-    
+
     await todoApi.updateTodo(todoEntity)
-    
+
     // 更新本地数据
     editingItem.value.text = editText.value.trim()
-    
+
     $q.notify({
       color: 'positive',
       message: '待办事项更新成功',
@@ -758,7 +722,7 @@ const saveEdit = async () => {
       icon: 'error'
     })
   }
-  
+
   cancelEdit()
 }
 
@@ -792,6 +756,106 @@ const confirmClearCompleted = () => {
   }).onOk(() => {
     clearCompleted()
   })
+}
+
+// 新增：拖拽相关方法
+const handleTouchStart = (event: TouchEvent, item: TodoItem, index: number) => {
+  if (activeFilter.value === 'completed') return
+
+  const touch = event.touches[0]
+  dragStartPos.value = { x: touch.clientX, y: touch.clientY }
+  swipeStartPos.value = { x: touch.clientX, y: touch.clientY }
+  swipeCurrentItem.value = item
+}
+
+const handleTouchMove = (event: TouchEvent) => {
+  if (!swipeCurrentItem.value) return
+
+  const touch = event.touches[0]
+  const deltaX = touch.clientX - swipeStartPos.value.x
+  const deltaY = Math.abs(touch.clientY - swipeStartPos.value.y)
+
+  // 如果水平滑动距离大于垂直滑动距离，则认为是滑动删除手势
+  if (Math.abs(deltaX) > deltaY && Math.abs(deltaX) > 30) {
+    event.preventDefault()
+
+    // 左滑显示删除按钮
+    if (deltaX < -50 && swipeCurrentItem.value.id) {
+      swipeDeleteVisible.value[swipeCurrentItem.value.id] = true
+    } else if (deltaX > 50 && swipeCurrentItem.value.id) {
+      swipeDeleteVisible.value[swipeCurrentItem.value.id] = false
+    }
+  }
+
+  // 拖拽检测
+  const dragDelta = Math.sqrt(
+    Math.pow(touch.clientX - dragStartPos.value.x, 2) +
+    Math.pow(touch.clientY - dragStartPos.value.y, 2)
+  )
+
+  if (dragDelta > 10 && !isDragging.value) {
+    isDragging.value = true
+    draggedItem.value = swipeCurrentItem.value
+  }
+
+  if (isDragging.value) {
+    currentPos.value = { x: touch.clientX, y: touch.clientY }
+  }
+}
+
+const handleTouchEnd = () => {
+  isDragging.value = false
+  draggedItem.value = null
+  swipeCurrentItem.value = null
+}
+
+const handleMouseDown = (event: MouseEvent, item: TodoItem, index: number) => {
+  if (activeFilter.value === 'completed') return
+
+  dragStartPos.value = { x: event.clientX, y: event.clientY }
+  swipeStartPos.value = { x: event.clientX, y: event.clientY }
+  swipeCurrentItem.value = item
+}
+
+const handleMouseMove = (event: MouseEvent) => {
+  if (!swipeCurrentItem.value) return
+
+  const deltaX = event.clientX - swipeStartPos.value.x
+  const deltaY = Math.abs(event.clientY - swipeStartPos.value.y)
+
+  // 拖拽检测
+  const dragDelta = Math.sqrt(
+    Math.pow(event.clientX - dragStartPos.value.x, 2) +
+    Math.pow(event.clientY - dragStartPos.value.y, 2)
+  )
+
+  if (dragDelta > 10 && !isDragging.value) {
+    isDragging.value = true
+    draggedItem.value = swipeCurrentItem.value
+  }
+
+  if (isDragging.value) {
+    currentPos.value = { x: event.clientX, y: event.clientY }
+  }
+}
+
+const handleMouseEnd = () => {
+  isDragging.value = false
+  draggedItem.value = null
+  swipeCurrentItem.value = null
+}
+
+// 新增：获取拖拽时的变换样式
+const getItemTransform = (item: TodoItem) => {
+  if (isDragging.value && draggedItem.value?.id === item.id) {
+    return {
+      transform: 'scale(1.02) translateY(-2px)',
+      zIndex: 1000,
+      boxShadow: '0 8px 25px rgba(0,0,0,0.15)',
+      background: 'rgba(var(--q-primary-rgb), 0.05)'
+    }
+  }
+  return {}
 }
 
 // 获取待办事项列表
@@ -914,6 +978,11 @@ const removeTodo = async (index: number) => {
     // 从列表中移除
     todoItems.value.splice(index, 1)
 
+    // 隐藏滑动删除按钮
+    if (todoItem.id) {
+      swipeDeleteVisible.value[todoItem.id] = false
+    }
+
     $q.notify({
       color: 'positive',
       message: '已删除待办事项',
@@ -934,16 +1003,16 @@ const removeTodo = async (index: number) => {
 // 清除已完成的待办事项
 const clearCompleted = async () => {
   const completedItems = todoItems.value.filter(item => item.done)
-  
+
   try {
     // 批量删除已完成的待办事项
     await Promise.all(
       completedItems.map(item => item.id ? todoApi.deleteTodo(item.id) : Promise.resolve())
     )
-    
+
     // 重新获取待办列表
     fetchTodos()
-    
+
     $q.notify({
       color: 'positive',
       message: `已清除 ${completedItems.length} 项已完成的待办事项`,
@@ -1080,6 +1149,11 @@ const onTagInputValue = (val: string) => {
 onMounted(() => {
   fetchUrlList()
   fetchTodos() // 从API获取待办事项
+})
+
+// 清理事件监听器
+onUnmounted(() => {
+  // 清理可能存在的全局事件监听器
 })
 </script>
 
@@ -1769,7 +1843,7 @@ section {
     max-height: 85vh;
     border-radius: 12px 12px 0 0;
   }
-  
+
   .filter-tabs .q-tabs .q-tab {
     font-size: 12px;
     min-height: 32px;
@@ -1798,10 +1872,15 @@ section {
 // 已完成项目样式优化
 .completed-item {
   opacity: 0.6;
-  
+
   .todo-text.completed-text {
     text-decoration: line-through;
     color: var(--q-grey-6) !important;
+  }
+
+  // 在已完成筛选页面中恢复正常透明度
+  .filter-tabs .q-tab[aria-selected="true"][name="completed"]~* & {
+    opacity: 1;
   }
 }
 
@@ -1809,7 +1888,7 @@ section {
 .clickable-text {
   cursor: pointer;
   transition: color 0.2s;
-  
+
   &:hover {
     color: var(--q-primary);
   }
@@ -1827,11 +1906,12 @@ section {
 .drag-handle {
   cursor: grab;
   color: var(--q-grey-5);
-  
+  font-size: 18px;
+
   &:hover {
     color: var(--q-grey-7);
   }
-  
+
   &:active {
     cursor: grabbing;
   }
@@ -1841,7 +1921,7 @@ section {
 .delete-btn {
   opacity: 0.7;
   transition: opacity 0.2s;
-  
+
   &:hover {
     opacity: 1;
   }
@@ -1853,7 +1933,7 @@ section {
   display: flex;
   align-items: center;
   justify-content: center;
-  
+
   .text-center {
     max-width: 300px;
   }
@@ -1930,7 +2010,7 @@ section {
     max-height: 85vh;
     border-radius: 12px 12px 0 0;
   }
-  
+
   .filter-tabs .q-tabs .q-tab {
     font-size: 12px;
     min-height: 32px;
@@ -1943,6 +2023,141 @@ section {
 
   &:hover {
     background-color: rgba(76, 175, 80, 0.1);
+  }
+}
+
+// 新增：拖拽相关样式
+.todo-item {
+  position: relative;
+  padding: 16px;
+  border-radius: 8px;
+  border-left: 4px solid transparent;
+  background: rgba($cursor-surface, 0.9);
+  margin-bottom: 12px;
+  transition: all 0.3s ease;
+  box-shadow: $elevation-1;
+  cursor: pointer;
+  overflow: hidden;
+
+  &:hover {
+    box-shadow: $elevation-2;
+    transform: translateY(-2px);
+    background: $cursor-surface;
+  }
+
+  // 拖拽状态样式
+  &.dragging {
+    transform: scale(1.02) translateY(-2px) !important;
+    z-index: 1000;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15) !important;
+    background: rgba(var(--q-primary-rgb), 0.05) !important;
+  }
+
+  // 全部视图中已完成项的样式
+  &.all-view-completed {
+    .todo-text {
+      text-decoration: line-through;
+      color: var(--q-grey-6) !important;
+      opacity: 0.7;
+    }
+  }
+}
+
+// 优化拖拽句柄和复选框对齐
+.drag-handle-section {
+  min-width: 24px;
+  padding-right: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.checkbox-section {
+  min-width: 32px;
+  padding-right: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.content-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+// 拖拽句柄样式优化
+.drag-handle {
+  cursor: grab;
+  color: var(--q-grey-5);
+  font-size: 18px;
+
+  &:hover {
+    color: var(--q-grey-7);
+  }
+
+  &:active {
+    cursor: grabbing;
+  }
+}
+
+// 滑动删除按钮样式
+.swipe-delete-btn {
+  position: absolute;
+  right: -60px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 60px;
+  height: 100%;
+  background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border-radius: 0 8px 8px 0;
+
+  &:hover {
+    background: linear-gradient(135deg, #ff5252, #d32f2f);
+  }
+
+  &:active {
+    transform: translateY(-50%) scale(0.95);
+  }
+}
+
+// 当滑动删除按钮显示时，调整todo-item的样式
+.todo-item:has(.swipe-delete-btn:not([style*="display: none"])) {
+  transform: translateX(-60px);
+
+  .swipe-delete-btn {
+    right: -60px;
+    animation: slideInDelete 0.3s ease-out;
+  }
+}
+
+@keyframes slideInDelete {
+  from {
+    right: -120px;
+    opacity: 0;
+  }
+
+  to {
+    right: -60px;
+    opacity: 1;
+  }
+}
+
+// 底部操作区优化间距
+.sheet-footer {
+  padding-top: 24px !important; // 增加顶部间距，让布局更从容
+  border-top: 1px solid var(--q-separator-color);
+  background-color: var(--q-grey-1);
+
+  .text-caption {
+    font-size: 12px;
+    line-height: 1.4;
   }
 }
 </style>
