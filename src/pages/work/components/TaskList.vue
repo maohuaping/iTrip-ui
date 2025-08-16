@@ -116,42 +116,6 @@
       <!-- 任务列表 -->
       <q-card flat bordered class="filter-card q-mb-lg">
         <q-card-section class="q-pa-md">
-          <!-- 移除数据统计区域 -->
-          <!-- <div class="row q-col-gutter-md q-mb-lg">
-            <div class="col-12 col-sm-6 col-md-3">
-              <q-card flat class="stat-card bg-gradient-primary text-white">
-                <q-card-section class="text-center">
-                  <div class="text-h4 text-weight-bold">{{ allTasks.length }}</div>
-                  <div class="text-subtitle2">总任务数</div>
-                </q-card-section>
-              </q-card>
-            </div>
-            <div class="col-12 col-sm-6 col-md-3">
-              <q-card flat class="stat-card bg-gradient-info text-white">
-                <q-card-section class="text-center">
-                  <div class="text-h4 text-weight-bold">{{ incomingTasks.length }}</div>
-                  <div class="text-subtitle2">呼入任务</div>
-                </q-card-section>
-              </q-card>
-            </div>
-            <div class="col-12 col-sm-6 col-md-3">
-              <q-card flat class="stat-card bg-gradient-accent text-white">
-                <q-card-section class="text-center">
-                  <div class="text-h4 text-weight-bold">{{ outgoingTasks.length }}</div>
-                  <div class="text-subtitle2">呼出任务</div>
-                </q-card-section>
-              </q-card>
-            </div>
-            <div class="col-12 col-sm-6 col-md-3">
-              <q-card flat class="stat-card bg-gradient-warning text-white">
-                <q-card-section class="text-center">
-                  <div class="text-h4 text-weight-bold">{{ getActiveTasksCount }}</div>
-                  <div class="text-subtitle2">进行中</div>
-                </q-card-section>
-              </q-card>
-            </div>
-          </div> -->
-
           <!-- 高效数据展示区域 -->
           <div class="data-grid">
             <!-- 表头 -->
