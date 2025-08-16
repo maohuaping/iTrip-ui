@@ -1442,42 +1442,95 @@ defineOptions({
   background: linear-gradient(135deg, $cursor-warning 0%, mix(white, $cursor-warning, 15%) 100%) !important;
 }
 
-// 分页区域样式
-.pagination-info {
+// 紧凑型分页样式
+.compact-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   padding: 12px 16px;
-  background-color: rgba($cursor-surface, 0.5);
+  background-color: rgba($cursor-surface, 0.8);
   border-radius: 8px;
-  margin-bottom: 16px;
+  border: 1px solid rgba($cursor-border, 0.1);
+  min-height: 48px;
 
-  .page-size-select {
-    :deep(.q-field__control) {
-      min-height: 32px;
-      padding: 0 8px;
-      background-color: white;
-      border: 1px solid rgba($cursor-border, 0.3);
+  .pagination-summary {
+    flex: 0 0 auto;
+    font-size: 0.875rem;
+  }
+
+  .pagination-controls {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    
+    :deep(.q-pagination) {
+      .q-btn {
+        min-width: 32px;
+        height: 32px;
+        margin: 0 1px;
+        border-radius: 4px;
+        font-size: 0.875rem;
+        
+        &.q-btn--active {
+          font-weight: 600;
+        }
+      }
     }
+  }
 
-    :deep(.q-field__native) {
-      padding: 4px 0;
-      font-size: 0.875rem;
-    }
+  .page-size-control {
+    flex: 0 0 auto;
+    
+    .compact-page-size-select {
+      min-width: 100px;
+      
+      :deep(.q-field__control) {
+        min-height: 32px;
+        background-color: rgba(white, 0.8);
+        border-radius: 16px;
+        padding: 0 12px;
+      }
 
-    :deep(.q-field__append) {
-      padding-left: 4px;
+      :deep(.q-field__native) {
+        padding: 4px 0;
+        font-size: 0.875rem;
+        text-align: center;
+        font-weight: 500;
+      }
+
+      :deep(.q-field__prepend) {
+        padding-right: 6px;
+      }
+
+      :deep(.q-field__append) {
+        padding-left: 6px;
+      }
+
+      :deep(.q-field__dropdown-icon) {
+        font-size: 16px;
+        color: $cursor-muted;
+      }
     }
   }
 }
 
-// 分页控件样式优化
-:deep(.q-pagination) {
-  .q-btn {
-    min-width: 36px;
-    height: 36px;
-    margin: 0 2px;
-    border-radius: 6px;
-    
-    &.q-btn--active {
-      font-weight: 600;
+// 响应式调整
+@media (max-width: 768px) {
+  .compact-pagination {
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px;
+
+    .pagination-summary {
+      order: 1;
+    }
+
+    .pagination-controls {
+      order: 2;
+    }
+
+    .page-size-control {
+      order: 3;
     }
   }
 }
