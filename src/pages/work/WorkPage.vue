@@ -773,12 +773,6 @@ const onTagInputValue = (val: string) => {
 </script>
 
 <style lang="scss" scoped>
-.work-page-container {
-  display: flex;
-  background: white;
-  min-height: 100vh;
-}
-
 .side-menu-container {
   width: 260px;
   transition: width 0.3s ease;
@@ -836,13 +830,6 @@ const onTagInputValue = (val: string) => {
   }
 }
 
-.work-page-main {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  transition: margin-left 0.3s ease;
-}
-
 .work-page-header {
   display: flex;
   justify-content: space-between;
@@ -878,31 +865,6 @@ const onTagInputValue = (val: string) => {
   font-size: 1.2rem;
   font-weight: 500;
   color: $cursor-text; // 使用变量系统
-}
-
-.work-page-content {
-  background: $cursor-bg; // 使用颜色系统的主背景色
-  // 添加滚动支持
-  overflow-y: auto;
-
-  // 自定义滚动条样式
-  &::-webkit-scrollbar {
-    width: 8px;
-  }
-
-  &::-webkit-scrollbar-track {
-    background: rgba($cursor-border, 0.1);
-    border-radius: 4px;
-  }
-
-  &::-webkit-scrollbar-thumb {
-    background: rgba($cursor-border, 0.3);
-    border-radius: 4px;
-
-    &:hover {
-      background: rgba($cursor-border, 0.5);
-    }
-  }
 }
 
 .status-info {
@@ -1354,14 +1316,26 @@ section {
   color: $cursor-muted; // 使用变量系统
 }
 
-// 响应式调整 - 在小屏幕上调整滚动区域
-@media (max-width: 768px) {
-  .work-page-content {
-    min-height: calc(100vh - 80px);
-  }
+// 将 .work-page-content 的样式应用到 .work-page 上
+.work-page {
+  background: $cursor-bg; // 使用颜色系统的主背景色
+  // 添加 overflow-y: auto; 让 q-page 自身可以滚动
+  overflow-y: auto;
 
-  :deep(.q-page-container) {
-    height: calc(100vh - 80px);
+  // 自定义滚动条样式 (可选)
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+  &::-webkit-scrollbar-track {
+    background: rgba($cursor-border, 0.1);
+    border-radius: 4px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: rgba($cursor-border, 0.3);
+    border-radius: 4px;
+    &:hover {
+      background: rgba($cursor-border, 0.5);
+    }
   }
 }
 </style>
