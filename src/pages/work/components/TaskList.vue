@@ -191,32 +191,18 @@
                   共 <span class="text-weight-medium text-primary">{{ currentPagination.total }}</span> 条
                 </span>
               </div>
-              
+
               <!-- 中间：分页控件 -->
               <div class="pagination-controls">
-                <q-pagination 
-                  v-model="currentPagination.current" 
-                  :max="currentPagination.pages || 1" 
-                  :max-pages="5"
-                  boundary-numbers 
-                  direction-links 
-                  @update:model-value="handlePageChange" 
-                  color="primary"
-                  active-color="accent"
-                  size="sm"
-                />
+                <q-pagination v-model="currentPagination.current" :max="currentPagination.pages || 1" :max-pages="5"
+                  boundary-numbers direction-links @update:model-value="handlePageChange" color="primary"
+                  active-color="accent" size="sm" />
               </div>
-              
+
               <!-- 右侧：每页条数选择 -->
               <div class="page-size-control">
-                <q-select
-                  v-model="pageSize"
-                  :options="pageSizeOptions"
-                  dense
-                  borderless
-                  @update:model-value="handlePageSizeChange"
-                  class="compact-page-size-select"
-                >
+                <q-select v-model="pageSize" :options="pageSizeOptions" dense borderless
+                  @update:model-value="handlePageSizeChange" class="compact-page-size-select">
                   <template v-slot:prepend>
                     <span class="text-body2 text-grey-7">每页</span>
                   </template>
@@ -231,6 +217,22 @@
       </q-card>
     </div>
   </section>
+
+  <section id="nameByAI" class="q-mb-xl glass rounded-borders-xl">
+    <div class="q-pa-lg">
+      <div class="row justify-between items-center q-mb-lg">
+        <h2 class="text-h5 text-weight-bold q-my-none">
+          <q-icon name="auto_awesome" size="28px" class="q-mr-sm" />
+          AI变量命名
+        </h2>
+      </div>
+
+      <q-card flat bordered class="filter-card q-mb-lg">
+
+      </q-card>
+    </div>
+  </section>
+
 
   <!-- 将独立的NewTaskDialog内容直接集成到这里 -->
   <q-dialog v-model="showNewTaskDialog">
@@ -434,24 +436,24 @@ const fetchTasks = async (): Promise<void> => {
     if (filterParams.value.requirementId && filterParams.value.requirementId.trim()) {
       params.requirementId = filterParams.value.requirementId.trim()
     }
-    
+
     if (filterParams.value.requirementName && filterParams.value.requirementName.trim()) {
       params.requirementName = filterParams.value.requirementName.trim()
     }
-    
+
     // 系统分类需要传递实际的值，而不是对象
     if (filterParams.value.systemCategory) {
       // 如果systemCategory是对象，取其value值；如果是字符串，直接使用
-      const categoryValue = typeof filterParams.value.systemCategory === 'object' 
-        ? filterParams.value.systemCategory.value 
+      const categoryValue = typeof filterParams.value.systemCategory === 'object'
+        ? filterParams.value.systemCategory.value
         : filterParams.value.systemCategory
       params.systemCategory = categoryValue
     }
-    
+
     if (filterParams.value.relatedRequirementDocs && filterParams.value.relatedRequirementDocs.trim()) {
       params.relatedRequirementDocs = filterParams.value.relatedRequirementDocs.trim()
     }
-    
+
     if (filterParams.value.relatedDesignDocs && filterParams.value.relatedDesignDocs.trim()) {
       params.relatedDesignDocs = filterParams.value.relatedDesignDocs.trim()
     }
@@ -459,7 +461,7 @@ const fetchTasks = async (): Promise<void> => {
     console.log('当前过滤条件:', filterParams.value)
     console.log('发送搜索请求，参数:', params)
     console.log('系统分类参数值:', params.systemCategory)
-    
+
     const response = await devTaskApi.queryDevTask(params)
     console.log('搜索响应:', response.data)
 
@@ -484,8 +486,8 @@ const fetchTasks = async (): Promise<void> => {
       }))
 
       // 获取实际的系统分类值
-      const actualSystemCategory = typeof filterParams.value.systemCategory === 'object' 
-        ? filterParams.value.systemCategory?.value 
+      const actualSystemCategory = typeof filterParams.value.systemCategory === 'object'
+        ? filterParams.value.systemCategory?.value
         : filterParams.value.systemCategory
 
       // 根据选择的系统分类来处理数据
@@ -523,11 +525,11 @@ const fetchTasks = async (): Promise<void> => {
 // 搜索处理 - 统一搜索逻辑
 const handleSearch = () => {
   console.log('开始搜索，当前过滤条件:', filterParams.value)
-  
+
   // 重置分页到第一页
   incomingPagination.value.current = 1
   outgoingPagination.value.current = 1
-  
+
   // 执行搜索
   fetchTasks()
 }
@@ -535,7 +537,7 @@ const handleSearch = () => {
 // 重置过滤条件
 const handleReset = () => {
   console.log('重置搜索条件')
-  
+
   filterParams.value = {
     requirementId: '',
     requirementName: '',
@@ -552,7 +554,7 @@ const handleReset = () => {
 
   // 重置后查询所有任务
   fetchTasks()
-  
+
   $q.notify({
     message: '搜索条件已重置',
     color: 'info',
@@ -995,7 +997,7 @@ const statusOptions = [
 const handlePageChange = (page: number): void => {
   // 更新当前分页
   incomingPagination.value.current = page
-  
+
   // 重新获取数据
   fetchTasks()
 }
@@ -1003,26 +1005,26 @@ const handlePageChange = (page: number): void => {
 // 处理分页大小变化
 const handlePageSizeChange = (newSize: { label: string; value: number } | number): void => {
   const size = typeof newSize === 'object' ? newSize.value : newSize
-  
+
   console.log('分页大小变化:', size)
-  
+
   // 更新分页大小
   pageSize.value = size
-  
+
   // 保存到本地存储
   savePageSize(size)
-  
+
   // 更新分页数据的size
   incomingPagination.value.size = size
   outgoingPagination.value.size = size
-  
+
   // 重置到第一页
   incomingPagination.value.current = 1
   outgoingPagination.value.current = 1
-  
+
   // 重新获取数据
   fetchTasks()
-  
+
   // 提示用户
   $q.notify({
     message: `每页显示条数已设置为 ${size} 条`,
@@ -1462,7 +1464,7 @@ defineOptions({
     flex: 1;
     display: flex;
     justify-content: center;
-    
+
     :deep(.q-pagination) {
       .q-btn {
         min-width: 32px;
@@ -1470,7 +1472,7 @@ defineOptions({
         margin: 0 1px;
         border-radius: 4px;
         font-size: 0.875rem;
-        
+
         &.q-btn--active {
           font-weight: 600;
         }
@@ -1480,10 +1482,10 @@ defineOptions({
 
   .page-size-control {
     flex: 0 0 auto;
-    
+
     .compact-page-size-select {
       min-width: 100px;
-      
+
       :deep(.q-field__control) {
         min-height: 32px;
         background-color: rgba(white, 0.8);

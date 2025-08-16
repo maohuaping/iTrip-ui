@@ -1,32 +1,39 @@
 <template>
-  <section id="naming-suggestion" class="q-mb-xl glass rounded-xl shadow-2xl">
+  <section id="naming-suggestion" class="q-mb-xl glass rounded-borders-xl">
     <div class="q-pa-lg">
-      <!-- 标题栏 -->
+      <!-- 标题栏优化 -->
       <div class="row justify-between items-center q-mb-lg">
         <h2 class="text-h5 text-weight-bold q-my-none">
-          <q-icon name="auto_awesome" size="28px" class="q-mr-sm" color="primary" />
+          <q-icon name="auto_awesome" size="28px" class="q-mr-sm" />
           智能命名建议
-          <div class="text-caption text-grey-7 q-mt-xs">
-            自动检测命名类型 • AI智能生成 • 一键复制
-          </div>
         </h2>
         <q-btn color="primary" size="md" icon="psychology" label="智能生成" @click="getNamingSuggestions"
           :loading="isLoading" :disable="!chineseInput.trim()" class="q-px-md" unelevated rounded />
       </div>
 
-      <!-- 输入区域 -->
-      <div class="q-mb-lg">
-        <q-input v-model="chineseInput" label="输入中文描述" placeholder="请输入需要命名的中文描述，例如：用户登录、数据查询、下载文件等" outlined
-          type="textarea" rows="2" class="naming-input" clearable @keyup.ctrl.enter="getNamingSuggestions">
-          <template v-slot:hint>
-            <div class="text-caption">
-              <q-icon name="auto_awesome" size="14px" class="q-mr-xs" />
-              智能检测命名类型：系统会自动判断应该生成什么类型的命名（方法、变量、常量等）
-              <span class="text-primary q-ml-sm">Ctrl+Enter 快速获取</span>
-            </div>
-          </template>
-        </q-input>
-      </div>
+      <!-- 输入区域 - 使用卡片样式 -->
+      <q-card flat bordered class="filter-card q-mb-lg">
+        <q-card-section class="q-pa-md">
+          <div class="text-subtitle2 text-weight-medium q-mb-md">
+            <q-icon name="edit" class="q-mr-sm" />
+            输入描述
+          </div>
+
+          <q-input v-model="chineseInput" label="中文描述" placeholder="请输入需要命名的中文描述，例如：用户登录、数据查询、下载文件等" outlined dense
+            type="textarea" rows="2" class="light-field" clearable @keyup.ctrl.enter="getNamingSuggestions">
+            <template v-slot:prepend>
+              <q-icon name="description" size="16px" />
+            </template>
+            <template v-slot:hint>
+              <div class="text-caption">
+                <q-icon name="auto_awesome" size="14px" class="q-mr-xs" />
+                智能检测命名类型：系统会自动判断应该生成什么类型的命名（方法、变量、常量等）
+                <span class="text-primary q-ml-sm">Ctrl+Enter 快速获取</span>
+              </div>
+            </template>
+          </q-input>
+        </q-card-section>
+      </q-card>
 
       <!-- 检测类型显示 -->
       <div v-if="detectedType" class="q-mb-md">
@@ -37,28 +44,51 @@
         </div>
       </div>
 
-      <!-- 建议结果区域 - 紧凑布局 -->
-      <div v-if="suggestions.length > 0" class="suggestions-container">
-        <div class="text-subtitle2 text-weight-medium q-mb-md">
-          <q-icon name="lightbulb" class="q-mr-xs" />
-          命名建议
-          <q-badge color="positive" :label="suggestions.length" class="q-ml-sm" />
-        </div>
+      <!-- 建议结果区域 -->
+      <q-card v-if="suggestions.length > 0" flat bordered class="filter-card q-mb-lg">
+        <q-card-section class="q-pa-md">
+          <div class="text-subtitle2 text-weight-medium q-mb-md">
+            <q-icon name="lightbulb" class="q-mr-sm" />
+            命名建议
+            <q-badge color="positive" :label="suggestions.length" class="q-ml-sm" />
+          </div>
 
-        <!-- 紧凑的卡片布局 -->
-        <div class="suggestions-grid">
-          <div v-for="(suggestion, index) in suggestions" :key="index" class="suggestion-item"
-            @click="copySuggestion(suggestion.name)">
-            <div class="suggestion-content">
-              <div class="suggestion-name">{{ suggestion.name }}</div>
-              <div class="suggestion-desc">{{ suggestion.description }}</div>
+          <!-- 高效数据展示区域 -->
+          <div class="data-grid">
+            <!-- 表头 -->
+            <div class="data-header">
+              <div class="data-cell header-cell">命名建议</div>
+              <div class="data-cell header-cell">说明描述</div>
+              <div class="data-cell header-cell">操作</div>
             </div>
-            <div class="copy-indicator">
-              <q-icon name="content_copy" size="16px" />
+
+            <!-- 数据行 -->
+            <div v-for="(suggestion, index) in suggestions" :key="index" class="data-row">
+              <!-- 命名建议列 -->
+              <div class="data-cell suggestion-name">
+                <div class="suggestion-name-content" @click="copySuggestion(suggestion.name)" title="点击复制命名">
+                  {{ suggestion.name }}
+                </div>
+              </div>
+
+              <!-- 说明描述列 -->
+              <div class="data-cell suggestion-desc">
+                <div class="suggestion-desc-content">
+                  {{ suggestion.description }}
+                </div>
+              </div>
+
+              <!-- 操作列 -->
+              <div class="data-cell actions">
+                <div class="action-buttons">
+                  <q-btn flat round dense color="primary" icon="content_copy" @click="copySuggestion(suggestion.name)"
+                    title="复制命名" class="action-btn" />
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-      </div>
+        </q-card-section>
+      </q-card>
 
       <!-- 空状态 -->
       <div v-else-if="!isLoading && hasSearched" class="q-pa-lg flex flex-center column">
@@ -74,39 +104,48 @@
       </div>
 
       <!-- 历史记录 -->
-      <div v-if="searchHistory.length > 0" class="q-mt-xl">
-        <div class="text-subtitle2 text-weight-medium q-mb-md">
-          <q-icon name="history" class="q-mr-xs" />
-          搜索历史
-          <q-btn flat dense size="sm" color="grey-7" label="清空" @click="clearHistory" class="q-ml-sm" />
-        </div>
+      <q-card v-if="searchHistory.length > 0" flat bordered class="filter-card q-mb-lg">
+        <q-card-section class="q-pa-md">
+          <div class="row justify-between items-center q-mb-md">
+            <div class="text-subtitle2 text-weight-medium">
+              <q-icon name="history" class="q-mr-sm" />
+              搜索历史
+            </div>
+            <q-btn flat dense size="sm" color="grey-7" label="清空" @click="clearHistory" />
+          </div>
 
-        <div class="history-chips">
-          <q-chip v-for="(item, index) in searchHistory.slice(0, 10)" :key="index" clickable color="grey-3"
-            text-color="grey-8" @click="loadFromHistory(item)" class="q-ma-xs" size="sm">
-            {{ item }}
-          </q-chip>
-        </div>
-      </div>
+          <div class="history-chips">
+            <q-chip v-for="(item, index) in searchHistory.slice(0, 10)" :key="index" clickable color="grey-3"
+              text-color="grey-8" @click="loadFromHistory(item)" class="q-ma-xs" size="sm">
+              {{ item }}
+            </q-chip>
+          </div>
+        </q-card-section>
+      </q-card>
 
       <!-- 智能检测示例 -->
-      <div v-if="!hasSearched && searchHistory.length === 0" class="q-mt-xl">
-        <div class="text-subtitle2 text-weight-medium q-mb-md">
-          <q-icon name="lightbulb" class="q-mr-xs" color="amber" />
-          智能检测示例
-        </div>
+      <q-card v-if="!hasSearched && searchHistory.length === 0" flat bordered class="filter-card">
+        <q-card-section class="q-pa-md">
+          <div class="text-subtitle2 text-weight-medium q-mb-md">
+            <q-icon name="lightbulb" class="q-mr-sm" />
+            智能检测示例
+          </div>
 
-        <div class="example-grid">
-          <q-card v-for="example in examples" :key="example.input" flat bordered class="example-card cursor-pointer"
-            @click="tryExample(example.input)">
-            <q-card-section class="q-pa-sm">
-              <div class="text-caption text-primary q-mb-xs">{{ example.type }}</div>
-              <div class="text-body2 text-weight-medium">{{ example.input }}</div>
-              <div class="text-caption text-grey-6 q-mt-xs">{{ example.description }}</div>
-            </q-card-section>
-          </q-card>
-        </div>
-      </div>
+          <div class="example-grid">
+            <div v-for="example in examples" :key="example.input" class="example-item cursor-pointer"
+              @click="tryExample(example.input)">
+              <div class="example-content">
+                <div class="example-type">{{ example.type }}</div>
+                <div class="example-input">{{ example.input }}</div>
+                <div class="example-desc">{{ example.description }}</div>
+              </div>
+              <div class="try-indicator">
+                <q-icon name="play_arrow" size="16px" />
+              </div>
+            </div>
+          </div>
+        </q-card-section>
+      </q-card>
     </div>
   </section>
 </template>
@@ -354,114 +393,141 @@ defineOptions({
 </script>
 
 <style lang="scss" scoped>
-.naming-input {
-  :deep(.q-field__native) {
-    font-size: 1rem;
-  }
+// 使用系统颜色变量，参考TaskList样式
 
-  :deep(.q-field__control) {
-    min-height: 60px;
-  }
+// 玻璃效果 - 与TaskList保持一致
+.glass {
+  background: rgba($cursor-surface, 0.8);
+  backdrop-filter: blur(8px);
+  border: 1px solid $cursor-border;
 }
 
-.suggestions-container {
-  animation: fadeInUp 0.3s ease-out;
-}
-
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-// 紧凑的网格布局
-.suggestions-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 12px;
-
-  @media (min-width: 1200px) {
-    grid-template-columns: repeat(4, 1fr);
-  }
-
-  @media (min-width: 768px) and (max-width: 1199px) {
-    grid-template-columns: repeat(3, 1fr);
-  }
-
-  @media (max-width: 767px) {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 8px;
-  }
-}
-
-.suggestion-item {
-  background: rgba(255, 255, 255, 0.9);
-  border: 1px solid rgba(0, 0, 0, 0.08);
+// 过滤卡片样式
+.filter-card {
+  background: white;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
   border-radius: 8px;
-  padding: 12px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  min-height: 60px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  margin-bottom: 16px;
 
   &:hover {
     transform: translateY(-2px);
-    box-shadow: $elevation-2;
-    border-color: rgba($cursor-primary, 0.3);
-    background: $cursor-surface;
+    box-shadow: 0 4px 25px rgba(0, 0, 0, 0.07);
+    border-color: rgba(0, 0, 0, 0.12);
+  }
+}
 
-    .suggestion-name {
-      color: $cursor-primary;
+// 轻量输入框样式
+.light-field {
+
+  .q-field__native,
+  .q-field__prefix,
+  .q-field__suffix,
+  .q-field__input {
+    color: $cursor-text !important;
+  }
+
+  .q-field__label {
+    color: $cursor-muted !important;
+  }
+
+  &.q-field--outlined .q-field__control {
+    background-color: $cursor-surface !important;
+    border-color: $cursor-border !important;
+  }
+}
+
+// 数据网格样式
+.data-grid {
+  border: 1px solid rgba($cursor-border, 0.1);
+  border-radius: 12px;
+  overflow: hidden;
+  background-color: $cursor-surface;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+
+  .data-header {
+    display: grid;
+    grid-template-columns: 2fr 3fr 1fr;
+    gap: 1px;
+    background-color: $cursor-border;
+    padding: 12px 16px;
+    font-weight: bold;
+    color: $cursor-text;
+    font-size: 0.9rem;
+  }
+
+  .data-row {
+    display: grid;
+    grid-template-columns: 2fr 3fr 1fr;
+    gap: 1px;
+    background-color: $cursor-surface;
+    padding: 12px 16px;
+    align-items: center;
+
+    &:hover {
+      background-color: $hover-bg;
+    }
+  }
+
+  .data-cell {
+    display: flex;
+    align-items: center;
+    padding: 0 8px;
+    font-size: 0.9rem;
+    color: $cursor-text;
+
+    &.header-cell {
+      font-weight: bold;
+      color: $cursor-text;
     }
 
-    .copy-indicator {
-      opacity: 1;
-      transform: scale(1.1);
+    &.suggestion-name {
+      .suggestion-name-content {
+        font-weight: 600;
+        cursor: pointer;
+        color: $cursor-primary;
+        font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+
+        &:hover {
+          text-decoration: underline;
+        }
+      }
+    }
+
+    &.suggestion-desc {
+      .suggestion-desc-content {
+        font-size: 0.85rem;
+        color: $cursor-muted;
+        line-height: 1.4;
+      }
+    }
+
+    &.actions {
+      .action-buttons {
+        display: flex;
+        gap: 8px;
+      }
+
+      .action-btn {
+        &:hover {
+          opacity: 0.9;
+        }
+      }
+    }
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: $cursor-muted;
+
+    .q-icon {
+      margin-bottom: 16px;
     }
   }
 }
 
-.suggestion-content {
-  flex: 1;
-  min-width: 0; // 防止内容溢出
-}
-
-.suggestion-name {
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: $cursor-text;
-  margin-bottom: 4px;
-  transition: color 0.2s ease;
-  word-break: break-word;
-}
-
-.suggestion-desc {
-  font-size: 0.8rem;
-  color: $cursor-muted;
-  line-height: 1.3;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden; // 这里保留，因为是文本省略号
-}
-
-.copy-indicator {
-  opacity: 0.4;
-  color: $cursor-primary;
-  transition: all 0.2s ease;
-  flex-shrink: 0;
-  margin-left: 8px;
-}
-
+// 历史记录芯片样式
 .history-chips {
   max-height: 120px;
   overflow-y: auto;
@@ -476,23 +542,128 @@ defineOptions({
   }
 }
 
+// 示例网格样式
 .example-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 12px;
+
+  @media (min-width: 1200px) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  @media (min-width: 768px) and (max-width: 1199px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media (max-width: 767px) {
+    grid-template-columns: 1fr;
+  }
 }
 
-.example-card {
-  transition: all 0.3s ease;
-  border: 1px solid rgba(0, 0, 0, 0.08);
+.example-item {
+  background: rgba($cursor-surface, 0.9);
+  border: 1px solid rgba($cursor-border, 0.3);
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.9);
+  padding: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 60px;
 
   &:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 25px rgba(0, 0, 0, 0.1);
-    border-color: rgba(25, 118, 210, 0.3);
-    background: rgba(255, 255, 255, 1);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    border-color: rgba($cursor-primary, 0.3);
+    background: $cursor-surface;
+
+    .example-input {
+      color: $cursor-primary;
+    }
+
+    .try-indicator {
+      opacity: 1;
+      transform: scale(1.1);
+    }
+  }
+}
+
+.example-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.example-type {
+  font-size: 0.75rem;
+  color: $cursor-primary;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.example-input {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: $cursor-text;
+  margin-bottom: 4px;
+  transition: color 0.2s ease;
+}
+
+.example-desc {
+  font-size: 0.8rem;
+  color: $cursor-muted;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.try-indicator {
+  opacity: 0.4;
+  color: $cursor-primary;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  margin-left: 8px;
+}
+
+// 动画效果
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.data-grid {
+  animation: fadeInUp 0.3s ease-out;
+}
+
+// 响应式调整
+@media (max-width: 768px) {
+  .data-grid {
+
+    .data-header,
+    .data-row {
+      grid-template-columns: 1fr;
+      gap: 8px;
+    }
+
+    .data-cell {
+      padding: 8px;
+      border-bottom: 1px solid rgba($cursor-border, 0.1);
+
+      &:last-child {
+        border-bottom: none;
+      }
+    }
   }
 }
 </style>
