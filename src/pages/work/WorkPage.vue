@@ -9,46 +9,10 @@
         </q-btn>
 
         <q-toolbar-title class="row items-center justify-center">
-          <!-- 添加待办列表下拉按钮 -->
-          <q-btn-dropdown flat color="green-7" no-caps dense class="q-mr-sm todo-dropdown" label="待办事项"
-            icon="checklist">
-            <q-list style="min-width: 250px">
-              <q-item-label header>今日待办</q-item-label>
-
-              <template v-if="todoItems.length > 0">
-                <q-item v-for="(item, index) in todoItems" :key="index" tag="label" v-ripple>
-                  <q-item-section side>
-                    <q-checkbox v-model="item.done" color="green-7" @update:model-value="updateTodoStatus(index)" />
-                  </q-item-section>
-                  <q-item-section>
-                    <q-item-label :class="{ 'text-strike': item.done }">{{ item.text }}</q-item-label>
-                    <q-item-label caption v-if="item.dueTime">{{ item.dueTime }}</q-item-label>
-                  </q-item-section>
-                  <q-item-section side>
-                    <q-btn flat round dense icon="delete" color="grey-7" size="sm" @click.stop="removeTodo(index)" />
-                  </q-item-section>
-                </q-item>
-              </template>
-
-              <q-item v-else>
-                <q-item-section>
-                  <q-item-label class="text-center text-grey-7">暂无待办事项</q-item-label>
-                </q-item-section>
-              </q-item>
-
-              <q-separator />
-
-              <q-item>
-                <q-item-section>
-                  <q-input v-model="newTodo" dense placeholder="添加新待办..." @keyup.enter="addTodo" class="new-todo-input">
-                    <template v-slot:append>
-                      <q-btn round dense flat icon="add" color="green-7" @click="addTodo" />
-                    </template>
-                  </q-input>
-                </q-item-section>
-              </q-item>
-            </q-list>
-          </q-btn-dropdown>
+          <!-- 待办事项按钮 - 改为抽屉形式 -->
+          <q-btn flat color="green-7" no-caps dense class="q-mr-sm" label="待办事项" icon="checklist"
+            @click="toggleTodoDrawer">
+          </q-btn>
 
           <!-- 使用Quasar的split button组件 - 改进版 -->
           <q-btn-dropdown flat color="primary" no-caps dense class="q-mr-sm copy-btn-dropdown"
@@ -175,6 +139,53 @@
       </q-list>
     </q-drawer>
 
+    <!-- 右侧待办事项抽屉 -->
+    <q-drawer v-model="todoDrawerOpen" side="right" overlay bordered :width="320" class="todo-drawer">
+      <q-list class="full-height">
+        <q-item-label header class="text-h6 q-py-md">
+          <q-icon name="checklist" class="q-mr-sm" />
+          今日待办
+        </q-item-label>
+
+        <q-separator />
+
+        <div class="q-pa-md">
+          <q-input v-model="newTodo" dense outlined placeholder="添加新待办..." @keyup.enter="addTodo"
+            class="new-todo-input">
+            <template v-slot:append>
+              <q-btn round dense flat icon="add" color="green-7" @click="addTodo" />
+            </template>
+          </q-input>
+        </div>
+
+        <q-separator />
+
+        <div class="todo-list-container">
+          <template v-if="todoItems.length > 0">
+            <q-item v-for="(item, index) in todoItems" :key="index" tag="label" v-ripple class="todo-item">
+              <q-item-section side>
+                <q-checkbox v-model="item.done" color="green-7" @update:model-value="updateTodoStatus(index)" />
+              </q-item-section>
+              <q-item-section>
+                <q-item-label :class="{ 'text-strike': item.done }">{{ item.text }}</q-item-label>
+                <q-item-label caption v-if="item.dueTime">{{ item.dueTime }}</q-item-label>
+              </q-item-section>
+              <q-item-section side>
+                <q-btn flat round dense icon="delete" color="grey-7" size="sm" @click.stop="removeTodo(index)" />
+              </q-item-section>
+            </q-item>
+          </template>
+
+          <q-item v-else class="no-todos">
+            <q-item-section>
+              <q-item-label class="text-center text-grey-7">暂无待办事项</q-item-label>
+              <q-icon name="task_alt" size="48px" class="text-grey-4 q-mt-md" />
+            </q-item-section>
+          </q-item>
+        </div>
+      </q-list>
+    </q-drawer>
+
     <q-page-container>
       <q-page class="work-page">
         <div class="work-page-content">
@@ -234,7 +245,6 @@ import { ref, onMounted, onUnmounted, computed, reactive, watch } from 'vue'
 import { useQuasar } from 'quasar'
 import TaskList from './components/TaskList.vue'
 import WorkLog from './components/WorkLog.vue'
-import NamingSuggestion from './components/NamingSuggestion.vue'
 import { getUrl } from 'src/api/url/url'
 import { getTodo } from 'src/api/todo/todo'
 import type { SysUrl, TodoVO } from 'src/api/api.schemas'
@@ -316,6 +326,8 @@ onMounted(() => {
 
 // 侧边栏状态
 const leftDrawerOpen = ref(false)
+// 待办事项抽屉状态
+const todoDrawerOpen = ref(false)
 
 // 页面标题和状态信息
 const pageTitle = ref('工作台')
@@ -363,9 +375,14 @@ const newUrl = ref<Partial<UrlItem>>({
   tag: ''
 })
 
-// 切换侧边栏
+// 切换左侧抽屉
 const toggleLeftDrawer = () => {
   leftDrawerOpen.value = !leftDrawerOpen.value
+}
+
+// 切换待办事项抽屉
+const toggleTodoDrawer = () => {
+  todoDrawerOpen.value = !todoDrawerOpen.value
 }
 
 // 更新展开状态
@@ -1375,6 +1392,37 @@ section {
     &:hover {
       background: rgba($cursor-border, 0.5);
     }
+  }
+}
+
+// 待办事项抽屉样式
+.todo-drawer {
+  .todo-list-container {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0 8px;
+  }
+
+  .todo-item {
+    border-radius: 8px;
+    margin: 4px 0;
+    transition: background-color 0.2s;
+
+    &:hover {
+      background-color: var(--q-primary-tint);
+    }
+  }
+
+  .new-todo-input {
+    .q-field__control {
+      border-radius: 8px;
+    }
+  }
+
+  .no-todos {
+    flex-direction: column;
+    text-align: center;
+    padding: 40px 20px;
   }
 }
 </style>
