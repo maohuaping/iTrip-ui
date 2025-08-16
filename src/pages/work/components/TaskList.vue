@@ -1,6 +1,6 @@
 <template>
   <section id="tasks" class="q-mb-xl glass rounded-borders-xl">
-    <div class="q-pa-md">
+    <div class="q-pa-sm">
       <!-- 标题栏优化 -->
       <div class="row justify-between items-center q-mb-lg">
         <h2 class="text-h5 text-weight-bold q-my-none">
@@ -27,7 +27,7 @@
 
       <!-- 过滤查询表头 - 使用卡片样式 -->
       <q-card flat bordered class="filter-card q-mb-lg">
-        <q-card-section class="q-pa-md">
+        <q-card-section class="q-pa-sm">
           <div class="text-subtitle2 text-weight-medium q-mb-md">
             <q-icon name="filter_list" class="q-mr-sm" />
             筛选条件
@@ -129,7 +129,7 @@
 
       <!-- 任务列表表格 -->
       <q-card flat bordered class="task-table-card q-mb-lg">
-        <q-card-section class="q-pa-md">
+        <q-card-section class="q-pa-sm">
           <!-- <div class="text-subtitle2 text-weight-medium q-mb-md">
             <q-icon name="table_chart" class="q-mr-sm" />
             任务列表
@@ -199,7 +199,7 @@
 
             <!-- 空状态 -->
             <template v-slot:no-data>
-              <div class="empty-state text-center q-pa-md">
+              <div class="empty-state text-center q-pa-sm">
                 <q-icon name="task_alt" size="64px" color="grey-5" />
                 <div class="text-h6 text-grey-6 q-mt-md">暂无任务数据</div>
                 <div class="text-body2 text-grey-5">点击"新建任务"开始创建您的第一个任务</div>
@@ -212,7 +212,7 @@
   </section>
 
   <section id="nameByAI" class="q-mb-xl glass rounded-borders-xl">
-    <div class="q-pa-md">
+    <div class="q-pa-sm">
       <div class="row justify-between items-center q-mb-lg">
         <h2 class="text-h5 text-weight-bold q-my-none">
           <q-icon name="auto_awesome" size="28px" class="q-mr-sm" />
@@ -223,7 +223,7 @@
       </div>
 
       <q-card flat bordered class="filter-card q-mb-lg">
-        <q-card-section class="q-pa-md">
+        <q-card-section class="q-pa-sm">
           <div class="text-subtitle2 text-weight-medium q-mb-md">
             <q-icon name="edit" class="q-mr-sm" />
             输入描述
@@ -256,7 +256,7 @@
 
       <!-- 建议结果区域 -->
       <q-card v-if="suggestions.length > 0" flat bordered class="filter-card q-mb-lg">
-        <q-card-section class="q-pa-md">
+        <q-card-section class="q-pa-sm">
           <div class="text-subtitle2 text-weight-medium q-mb-md">
             <q-icon name="lightbulb" class="q-mr-sm" />
             命名建议
