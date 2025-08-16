@@ -155,11 +155,11 @@
       </q-page>
     </q-page-container>
 
-    <!-- 底部待办事项动作面板 -->
+    <!-- 优化后的底部待办事项动作面板 -->
     <q-dialog v-model="todoSheetOpen" position="bottom" class="todo-bottom-sheet">
       <q-card class="todo-sheet-card">
         <!-- 拖拽指示器 -->
-        <div class="sheet-handle">
+        <div class="sheet-handle" @click="todoSheetOpen = false">
           <div class="handle-bar"></div>
         </div>
 
@@ -174,43 +174,108 @@
           </div>
         </div>
 
-        <q-separator />
-
-        <!-- 添加待办输入区 -->
-        <div class="q-pa-lg">
-          <q-input v-model="newTodo" outlined placeholder="添加新待办事项..." @keyup.enter="addTodo" class="new-todo-input">
-            <template v-slot:prepend>
-              <q-icon name="add_task" />
-            </template>
-            <template v-slot:append>
-              <q-btn round dense flat icon="add" color="green-7" @click="addTodo" :disable="!newTodo.trim()" />
-            </template>
-          </q-input>
+        <!-- 筛选标签页 -->
+        <div class="filter-tabs q-px-lg">
+          <q-tabs v-model="activeFilter" dense class="text-grey-6" active-color="green-7" indicator-color="green-7">
+            <q-tab name="all" :label="`全部 (${todoItems.length})`" />
+            <q-tab name="pending" :label="`待办 (${pendingTodosCount})`" />
+            <q-tab name="completed" :label="`已完成 (${completedCount})`" />
+          </q-tabs>
         </div>
 
         <q-separator />
 
+        <!-- 添加待办输入区 -->
+        <div class="q-pa-lg" v-show="activeFilter !== 'completed'">
+          <q-input 
+            v-model="newTodo" 
+            outlined 
+            placeholder="添加新待办事项..." 
+            @keyup.enter="addTodo"
+            class="new-todo-input"
+          >
+            <template v-slot:prepend>
+              <q-icon name="add_task" />
+            </template>
+            <template v-slot:append>
+              <q-btn 
+                round 
+                dense 
+                flat 
+                icon="add" 
+                color="green-7" 
+                @click="addTodo"
+                :disable="!newTodo.trim()"
+              />
+            </template>
+          </q-input>
+        </div>
+
+        <q-separator v-show="activeFilter !== 'completed'" />
+
         <!-- 待办列表区域 -->
         <div class="todo-list-area">
           <q-scroll-area style="height: 400px" class="q-px-lg">
-            <template v-if="todoItems.length > 0">
+            <template v-if="filteredTodos.length > 0">
               <q-list>
-                <q-item v-for="(item, index) in todoItems" :key="index" class="todo-item q-my-sm">
-                  <q-item-section side>
-                    <q-checkbox v-model="item.done" color="green-7" @update:model-value="updateTodoStatus(index)" />
+                <q-item 
+                  v-for="(item, index) in filteredTodos" 
+                  :key="item.id || index" 
+                  class="todo-item q-my-sm"
+                  :class="{ 'completed-item': item.done }"
+                >
+                  <!-- 拖拽句柄 -->
+                  <q-item-section side v-if="activeFilter !== 'completed'">
+                    <q-icon name="drag_indicator" class="drag-handle" />
                   </q-item-section>
-
-                  <q-item-section>
-                    <q-item-label :class="{ 'text-strike text-grey-6': item.done }" class="todo-text">
+                  
+                  <q-item-section side>
+                    <q-checkbox 
+                      v-model="item.done" 
+                      color="green-7" 
+                      @update:model-value="updateTodoStatus(todoItems.indexOf(item))" 
+                    />
+                  </q-item-section>
+                  
+                  <q-item-section @click="startEdit(item)">
+                    <!-- 编辑模式 -->
+                    <q-input
+                      v-if="editingItem?.id === item.id"
+                      v-model="editText"
+                      dense
+                      autofocus
+                      @blur="saveEdit"
+                      @keyup.enter="saveEdit"
+                      @keyup.esc="cancelEdit"
+                      class="edit-input"
+                    />
+                    <!-- 显示模式 -->
+                    <q-item-label 
+                      v-else
+                      :class="{ 
+                        'text-strike text-grey-6 completed-text': item.done,
+                        'clickable-text': !item.done
+                      }"
+                      class="todo-text"
+                    >
                       {{ item.text }}
                     </q-item-label>
                     <q-item-label caption v-if="item.dueTime">
                       {{ item.dueTime }}
                     </q-item-label>
                   </q-item-section>
-
+                  
                   <q-item-section side>
-                    <q-btn flat round dense icon="delete_outline" color="grey-6" size="sm" @click="removeTodo(index)">
+                    <q-btn 
+                      flat 
+                      round 
+                      dense 
+                      icon="delete_outline" 
+                      color="grey-6" 
+                      size="sm" 
+                      @click="confirmDelete(todoItems.indexOf(item))"
+                      class="delete-btn"
+                    >
                       <q-tooltip>删除</q-tooltip>
                     </q-btn>
                   </q-item-section>
@@ -218,11 +283,20 @@
               </q-list>
             </template>
 
-            <div v-else class="no-todos q-py-xl">
+            <!-- 空状态设计 -->
+            <div v-else class="empty-state q-py-xl">
               <div class="text-center">
-                <q-icon name="task_alt" size="64px" class="text-grey-4" />
-                <div class="text-grey-6 q-mt-md">暂无待办事项</div>
-                <div class="text-grey-5 text-caption q-mt-sm">点击上方输入框添加新的待办事项</div>
+                <q-icon 
+                  :name="getEmptyStateIcon()" 
+                  size="64px" 
+                  :class="getEmptyStateIconClass()" 
+                />
+                <div class="text-h6 q-mt-md" :class="getEmptyStateTextClass()">
+                  {{ getEmptyStateTitle() }}
+                </div>
+                <div class="text-grey-5 text-body2 q-mt-sm">
+                  {{ getEmptyStateSubtitle() }}
+                </div>
               </div>
             </div>
           </q-scroll-area>
@@ -234,8 +308,15 @@
             <div class="text-caption text-grey-6">
               共 {{ todoItems.length }} 项，已完成 {{ completedCount }} 项
             </div>
-            <q-btn v-if="completedTodos.length > 0" flat dense no-caps color="grey-6" label="清除已完成"
-              @click="clearCompleted" />
+            <q-btn 
+              v-if="completedTodos.length > 0"
+              flat 
+              dense 
+              no-caps 
+              color="grey-6" 
+              label="清除已完成"
+              @click="confirmClearCompleted"
+            />
           </div>
         </div>
       </q-card>
@@ -566,6 +647,153 @@ const mockData = {
 const todoItems = ref<TodoItem[]>([])
 const newTodo = ref('')
 
+// 筛选状态
+const activeFilter = ref<'all' | 'pending' | 'completed'>('all')
+
+// 编辑状态
+const editingItem = ref<TodoItem | null>(null)
+const editText = ref('')
+
+// 计算属性
+const completedCount = computed(() => todoItems.value.filter(item => item.done).length)
+const completedTodos = computed(() => todoItems.value.filter(item => item.done))
+const pendingTodosCount = computed(() => todoItems.value.filter(item => !item.done).length)
+
+// 筛选后的待办列表
+const filteredTodos = computed(() => {
+  switch (activeFilter.value) {
+    case 'pending':
+      return todoItems.value.filter(item => !item.done)
+    case 'completed':
+      return todoItems.value.filter(item => item.done)
+    default:
+      return todoItems.value
+  }
+})
+
+// 空状态相关方法
+const getEmptyStateIcon = () => {
+  switch (activeFilter.value) {
+    case 'pending':
+      return 'celebration'
+    case 'completed':
+      return 'inbox'
+    default:
+      return 'task_alt'
+  }
+}
+
+const getEmptyStateIconClass = () => {
+  switch (activeFilter.value) {
+    case 'pending':
+      return 'text-green-4'
+    case 'completed':
+      return 'text-grey-4'
+    default:
+      return 'text-grey-4'
+  }
+}
+
+const getEmptyStateTitle = () => {
+  switch (activeFilter.value) {
+    case 'pending':
+      return '今日事今日毕，为你点赞！'
+    case 'completed':
+      return '暂无已完成的事项'
+    default:
+      return '暂无待办事项'
+  }
+}
+
+const getEmptyStateSubtitle = () => {
+  switch (activeFilter.value) {
+    case 'pending':
+      return '所有任务都已完成，享受这份成就感吧！'
+    case 'completed':
+      return '完成的任务会在这里显示'
+    default:
+      return '点击上方输入框添加你的第一个待办事项'
+  }
+}
+
+const getEmptyStateTextClass = () => {
+  return activeFilter.value === 'pending' ? 'text-green-6' : 'text-grey-6'
+}
+
+// 编辑相关方法
+const startEdit = (item: TodoItem) => {
+  if (item.done) return // 已完成的不允许编辑
+  editingItem.value = item
+  editText.value = item.text
+}
+
+const saveEdit = async () => {
+  if (!editingItem.value || !editText.value.trim()) {
+    cancelEdit()
+    return
+  }
+
+  try {
+    const todoEntity = {
+      id: Number(editingItem.value.id),
+      title: editText.value.trim(),
+      completed: editingItem.value.done
+    }
+    
+    await todoApi.updateTodo(todoEntity)
+    
+    // 更新本地数据
+    editingItem.value.text = editText.value.trim()
+    
+    $q.notify({
+      color: 'positive',
+      message: '待办事项更新成功',
+      icon: 'check_circle'
+    })
+  } catch (error) {
+    console.error('更新待办事项失败:', error)
+    $q.notify({
+      color: 'negative',
+      message: '更新失败，请重试',
+      icon: 'error'
+    })
+  }
+  
+  cancelEdit()
+}
+
+const cancelEdit = () => {
+  editingItem.value = null
+  editText.value = ''
+}
+
+// 确认删除
+const confirmDelete = (index: number) => {
+  $q.dialog({
+    title: '确认删除',
+    message: '确定要删除这个待办事项吗？',
+    cancel: true,
+    persistent: true,
+    color: 'negative'
+  }).onOk(() => {
+    removeTodo(index)
+  })
+}
+
+// 确认清除已完成
+const confirmClearCompleted = () => {
+  const count = completedTodos.value.length
+  $q.dialog({
+    title: '确认清除',
+    message: `确定要永久删除这 ${count} 个已完成事项吗？`,
+    cancel: true,
+    persistent: true,
+    color: 'negative'
+  }).onOk(() => {
+    clearCompleted()
+  })
+}
+
 // 获取待办事项列表
 const fetchTodos = async () => {
   try {
@@ -703,11 +931,33 @@ const removeTodo = async (index: number) => {
   }
 }
 
-// 在组件挂载时加载待办事项
-onMounted(() => {
-  fetchUrlList()
-  fetchTodos() // 从API获取待办事项
-})
+// 清除已完成的待办事项
+const clearCompleted = async () => {
+  const completedItems = todoItems.value.filter(item => item.done)
+  
+  try {
+    // 批量删除已完成的待办事项
+    await Promise.all(
+      completedItems.map(item => item.id ? todoApi.deleteTodo(item.id) : Promise.resolve())
+    )
+    
+    // 重新获取待办列表
+    fetchTodos()
+    
+    $q.notify({
+      color: 'positive',
+      message: `已清除 ${completedItems.length} 项已完成的待办事项`,
+      icon: 'check_circle'
+    })
+  } catch (error) {
+    console.error('清除已完成待办失败:', error)
+    $q.notify({
+      color: 'negative',
+      message: '清除失败，请重试',
+      icon: 'error'
+    })
+  }
+}
 
 // 当前选中的文本
 const selectedText = ref('Flex20190429')
@@ -826,40 +1076,11 @@ const onTagInputValue = (val: string) => {
   }
 }
 
-// 计算属性
-const completedCount = computed(() => todoItems.value.filter(item => item.done).length)
-const completedTodos = computed(() => todoItems.value.filter(item => item.done))
-
-// 计算未完成的待办数量
-const pendingTodosCount = computed(() => todoItems.value.filter(item => !item.done).length)
-
-// 清除已完成的待办事项
-const clearCompleted = async () => {
-  const completedItems = todoItems.value.filter(item => item.done)
-
-  try {
-    // 批量删除已完成的待办事项
-    await Promise.all(
-      completedItems.map(item => todoApi.deleteTodo(item.id))
-    )
-
-    // 重新获取待办列表
-    fetchTodos()
-
-    $q.notify({
-      color: 'positive',
-      message: `已清除 ${completedItems.length} 项已完成的待办事项`,
-      icon: 'check_circle'
-    })
-  } catch (error) {
-    console.error('清除已完成待办失败:', error)
-    $q.notify({
-      color: 'negative',
-      message: '清除失败，请重试',
-      icon: 'error'
-    })
-  }
-}
+// 在组件挂载时加载待办事项
+onMounted(() => {
+  fetchUrlList()
+  fetchTodos() // 从API获取待办事项
+})
 </script>
 
 <style lang="scss" scoped>
@@ -1480,7 +1701,7 @@ section {
 
 .todo-sheet-card {
   width: 100%;
-  max-height: 70vh;
+  max-height: 75vh;
   border-radius: 16px 16px 0 0;
   box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
 
@@ -1488,7 +1709,7 @@ section {
   .sheet-handle {
     display: flex;
     justify-content: center;
-    padding: 8px;
+    padding: 12px;
     cursor: pointer;
 
     .handle-bar {
@@ -1526,21 +1747,13 @@ section {
 
     &:hover {
       background-color: var(--q-grey-2);
-      transform: translateX(4px);
+      transform: translateX(2px);
     }
 
     .todo-text {
       font-size: 14px;
       line-height: 1.4;
     }
-  }
-
-  // 空状态样式
-  .no-todos {
-    min-height: 200px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
   }
 
   // 底部操作区
@@ -1553,8 +1766,174 @@ section {
 // 响应式设计
 @media (max-width: 600px) {
   .todo-sheet-card {
-    max-height: 80vh;
+    max-height: 85vh;
     border-radius: 12px 12px 0 0;
+  }
+  
+  .filter-tabs .q-tabs .q-tab {
+    font-size: 12px;
+    min-height: 32px;
+  }
+}
+
+// 待办按钮样式
+.todo-btn {
+  position: relative;
+
+  &:hover {
+    background-color: rgba(76, 175, 80, 0.1);
+  }
+}
+
+// 筛选标签页样式
+.filter-tabs {
+  .q-tabs {
+    .q-tab {
+      font-size: 13px;
+      min-height: 36px;
+    }
+  }
+}
+
+// 已完成项目样式优化
+.completed-item {
+  opacity: 0.6;
+  
+  .todo-text.completed-text {
+    text-decoration: line-through;
+    color: var(--q-grey-6) !important;
+  }
+}
+
+// 可点击文本样式
+.clickable-text {
+  cursor: pointer;
+  transition: color 0.2s;
+  
+  &:hover {
+    color: var(--q-primary);
+  }
+}
+
+// 编辑输入框样式
+.edit-input {
+  .q-field__control {
+    background: var(--q-grey-1);
+    border-radius: 4px;
+  }
+}
+
+// 拖拽句柄样式
+.drag-handle {
+  cursor: grab;
+  color: var(--q-grey-5);
+  
+  &:hover {
+    color: var(--q-grey-7);
+  }
+  
+  &:active {
+    cursor: grabbing;
+  }
+}
+
+// 删除按钮优化
+.delete-btn {
+  opacity: 0.7;
+  transition: opacity 0.2s;
+  
+  &:hover {
+    opacity: 1;
+  }
+}
+
+// 空状态样式优化
+.empty-state {
+  min-height: 250px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  .text-center {
+    max-width: 300px;
+  }
+}
+
+// 底部动作面板样式优化
+.todo-sheet-card {
+  width: 100%;
+  max-height: 75vh;
+  border-radius: 16px 16px 0 0;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
+
+  // 拖拽指示器
+  .sheet-handle {
+    display: flex;
+    justify-content: center;
+    padding: 12px;
+    cursor: pointer;
+
+    .handle-bar {
+      width: 40px;
+      height: 4px;
+      background-color: #e0e0e0;
+      border-radius: 2px;
+      transition: background-color 0.2s;
+
+      &:hover {
+        background-color: #bdbdbd;
+      }
+    }
+  }
+
+  // 标题区域
+  .sheet-header {
+    background-color: var(--q-primary-tint);
+  }
+
+  // 输入框样式
+  .new-todo-input {
+    .q-field__control {
+      border-radius: 12px;
+    }
+  }
+
+  // 待办项样式
+  .todo-item {
+    border-radius: 8px;
+    margin: 4px 0;
+    padding: 8px 12px;
+    background-color: var(--q-grey-1);
+    transition: all 0.2s;
+
+    &:hover {
+      background-color: var(--q-grey-2);
+      transform: translateX(2px);
+    }
+
+    .todo-text {
+      font-size: 14px;
+      line-height: 1.4;
+    }
+  }
+
+  // 底部操作区
+  .sheet-footer {
+    background-color: var(--q-grey-1);
+    border-top: 1px solid var(--q-separator-color);
+  }
+}
+
+// 响应式设计
+@media (max-width: 600px) {
+  .todo-sheet-card {
+    max-height: 85vh;
+    border-radius: 12px 12px 0 0;
+  }
+  
+  .filter-tabs .q-tabs .q-tab {
+    font-size: 12px;
+    min-height: 32px;
   }
 }
 
