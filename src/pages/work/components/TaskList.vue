@@ -1,6 +1,6 @@
 <template>
   <section id="tasks" class="q-mb-xl glass rounded-borders-xl">
-    <div class="q-pa-lg">
+    <div class="q-pa-md">
       <!-- 标题栏优化 -->
       <div class="row justify-between items-center q-mb-lg">
         <h2 class="text-h5 text-weight-bold q-my-none">
@@ -199,7 +199,7 @@
 
             <!-- 空状态 -->
             <template v-slot:no-data>
-              <div class="empty-state text-center q-pa-lg">
+              <div class="empty-state text-center q-pa-md">
                 <q-icon name="task_alt" size="64px" color="grey-5" />
                 <div class="text-h6 text-grey-6 q-mt-md">暂无任务数据</div>
                 <div class="text-body2 text-grey-5">点击"新建任务"开始创建您的第一个任务</div>
@@ -212,7 +212,7 @@
   </section>
 
   <section id="nameByAI" class="q-mb-xl glass rounded-borders-xl">
-    <div class="q-pa-lg">
+    <div class="q-pa-md">
       <div class="row justify-between items-center q-mb-lg">
         <h2 class="text-h5 text-weight-bold q-my-none">
           <q-icon name="auto_awesome" size="28px" class="q-mr-sm" />
