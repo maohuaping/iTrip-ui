@@ -225,10 +225,85 @@
           <q-icon name="auto_awesome" size="28px" class="q-mr-sm" />
           AI变量命名
         </h2>
+        <q-btn color="primary" size="md" icon="psychology" label="智能生成" @click="getNamingSuggestions"
+          :loading="isLoading" :disable="!chineseInput.trim()" class="q-px-md" unelevated rounded />
       </div>
 
       <q-card flat bordered class="filter-card q-mb-lg">
+        <q-card-section class="q-pa-md">
+          <div class="text-subtitle2 text-weight-medium q-mb-md">
+            <q-icon name="edit" class="q-mr-sm" />
+            输入描述
+          </div>
 
+          <q-input v-model="chineseInput" label="中文描述" placeholder="请输入需要命名的中文描述，例如：用户登录、数据查询、下载文件等" outlined dense
+            type="textarea" rows="2" class="light-field" clearable @keyup.ctrl.enter="getNamingSuggestions">
+            <template v-slot:prepend>
+              <q-icon name="description" size="16px" />
+            </template>
+            <template v-slot:hint>
+              <div class="text-caption">
+                <q-icon name="auto_awesome" size="14px" class="q-mr-xs" />
+                智能检测命名类型：系统会自动判断应该生成什么类型的命名（方法、变量、常量等）
+                <span class="text-primary q-ml-sm">Ctrl+Enter 快速获取</span>
+              </div>
+            </template>
+          </q-input>
+        </q-card-section>
+      </q-card>
+
+      <!-- 检测类型显示 -->
+      <div v-if="detectedType" class="q-mb-md">
+        <q-chip color="primary" text-color="white" icon="auto_awesome" size="sm"
+          :label="`检测类型：${getDetectedTypeLabel(detectedType)}`" />
+        <div v-if="detectionReason" class="text-caption text-grey-6 q-mt-xs q-ml-sm">
+          {{ detectionReason }}
+        </div>
+      </div>
+
+      <!-- 建议结果区域 -->
+      <q-card v-if="suggestions.length > 0" flat bordered class="filter-card q-mb-lg">
+        <q-card-section class="q-pa-md">
+          <div class="text-subtitle2 text-weight-medium q-mb-md">
+            <q-icon name="lightbulb" class="q-mr-sm" />
+            命名建议
+          </div>
+
+          <div class="suggestions-grid">
+            <div v-for="(suggestion, index) in suggestions" :key="index" class="suggestion-card"
+              @click="copySuggestion(suggestion.name)">
+              <div class="suggestion-header">
+                <q-icon name="code" size="20px" color="primary" class="q-mr-sm" />
+                <span class="suggestion-name">{{ suggestion.name }}</span>
+                <q-icon name="content_copy" size="16px" color="grey-6" class="copy-icon" />
+              </div>
+              <div class="suggestion-description">{{ suggestion.description }}</div>
+            </div>
+          </div>
+        </q-card-section>
+      </q-card>
+
+      <!-- 智能检测示例 -->
+      <q-card flat bordered class="filter-card q-mb-lg">
+        <q-card-section class="q-pa-md">
+          <div class="text-subtitle2 text-weight-medium q-mb-md">
+            <q-icon name="lightbulb_outline" class="q-mr-sm" />
+            智能检测示例
+          </div>
+          <div class="examples-grid">
+            <div v-for="(example, index) in examples" :key="index" class="example-card cursor-pointer"
+              @click="tryExample(example.input)">
+              <div class="example-content">
+                <div class="example-type">{{ example.type }}</div>
+                <div class="example-input">{{ example.input }}</div>
+                <div class="example-desc">{{ example.description }}</div>
+              </div>
+              <div class="try-indicator">
+                <q-icon name="play_arrow" size="16px" />
+              </div>
+            </div>
+          </div>
+        </q-card-section>
       </q-card>
     </div>
   </section>
@@ -326,6 +401,10 @@ import { ref, onMounted, computed, watch } from 'vue'
 import { useQuasar } from 'quasar'
 import { getDevTask } from 'src/api/dev-task/dev-task'
 import type { DevTask, QueryDevTaskInParam, IPageDevTaskVO } from 'src/api/api.schemas'
+
+// 导入AI API
+import { getAi } from 'src/api/ai/ai'
+import type { NamingSuggestion, VariableNamingResponseVO } from 'src/api/api.schemas'
 
 // 初始化
 const $q = useQuasar()
@@ -1055,6 +1134,172 @@ const showTaskMenu = (task: DevTask) => {
   });
 };
 
+// AI命名建议相关数据
+const aiApi = getAi()
+const chineseInput = ref('')
+const suggestions = ref<NamingSuggestion[]>([])
+const isLoading = ref(false)
+const detectedType = ref('')
+const detectionReason = ref('')
+
+// 智能检测示例
+const examples = ref([
+  {
+    input: '用户登录',
+    type: '方法命名',
+    description: '描述中包含"登录"，且是用户操作，通常是方法'
+  },
+  {
+    input: '用户数据',
+    type: '变量命名',
+    description: '描述中包含"数据"，且是用户相关的数据，通常是变量'
+  },
+  {
+    input: '下载文件',
+    type: '方法命名',
+    description: '描述中包含"下载"，且是文件操作，通常是方法'
+  },
+  {
+    input: '用户列表',
+    type: '变量命名',
+    description: '描述中包含"列表"，且是用户相关的数据，通常是变量'
+  },
+  {
+    input: '上传图片',
+    type: '方法命名',
+    description: '描述中包含"上传"，且是图片操作，通常是方法'
+  },
+  {
+    input: '配置信息',
+    type: '变量命名',
+    description: '描述中包含"信息"，且是配置相关的数据，通常是变量'
+  }
+])
+
+// 获取命名建议
+const getNamingSuggestions = async () => {
+  if (!chineseInput.value.trim()) {
+    $q.notify({
+      color: 'warning',
+      message: '请输入中文描述',
+      icon: 'warning'
+    })
+    return
+  }
+
+  isLoading.value = true
+
+  // 清空之前的结果
+  suggestions.value = []
+  detectedType.value = ''
+  detectionReason.value = ''
+
+  // 显示调用中的提示
+  $q.notify({
+    color: 'info',
+    message: '正在调用AI接口生成命名建议...',
+    icon: 'cloud_sync',
+    timeout: 2000
+  })
+
+  try {
+    // 使用AI命名建议接口
+    const response = await aiApi.getNameSuggestion({
+      description: chineseInput.value.trim()
+    })
+
+    if (response.data?.isOk && response.data.okData) {
+      const aiResponse: VariableNamingResponseVO = response.data.okData
+
+      // 设置检测类型和原因
+      if (aiResponse.detectedType) {
+        detectedType.value = aiResponse.detectedType
+      }
+      if (aiResponse.detectionReason) {
+        detectionReason.value = aiResponse.detectionReason
+      }
+
+      // 直接使用API返回的建议
+      if (aiResponse.suggestions && Array.isArray(aiResponse.suggestions)) {
+        suggestions.value = aiResponse.suggestions.map((suggestion: NamingSuggestion) => ({
+          name: suggestion.name || '',
+          description: suggestion.description || ''
+        }))
+
+        $q.notify({
+          color: 'positive',
+          message: `✨ 成功生成 ${suggestions.value.length} 个命名建议！点击即可复制`,
+          icon: 'check_circle',
+          timeout: 2500
+        })
+      } else {
+        $q.notify({
+          color: 'warning',
+          message: '未能从返回结果中提取到命名建议',
+          icon: 'warning'
+        })
+      }
+    } else {
+      $q.notify({
+        color: 'negative',
+        message: '获取命名建议失败',
+        icon: 'error'
+      })
+    }
+  } catch (error) {
+    console.error('获取命名建议出错:', error)
+    $q.notify({
+      color: 'negative',
+      message: 'AI接口调用失败，请检查网络连接',
+      icon: 'error'
+    })
+  } finally {
+    isLoading.value = false
+  }
+}
+
+// 复制建议
+const copySuggestion = (text: string) => {
+  void navigator.clipboard.writeText(text)
+    .then(() => {
+      $q.notify({
+        color: 'positive',
+        message: `📋 已复制: ${text}`,
+        icon: 'content_copy',
+        position: 'top',
+        timeout: 1500
+      })
+    })
+    .catch((error) => {
+      console.error('复制失败:', error)
+      $q.notify({
+        color: 'negative',
+        message: '复制失败，请重试',
+        icon: 'error'
+      })
+    })
+}
+
+// 尝试智能检测示例
+const tryExample = (input: string) => {
+  chineseInput.value = input
+  void getNamingSuggestions()
+}
+
+// 获取检测类型标签
+const getDetectedTypeLabel = (type: string): string => {
+  const labels: Record<string, string> = {
+    method: '方法',
+    variable: '变量',
+    class: '类',
+    function: '函数',
+    constant: '常量',
+    field: '字段',
+    parameter: '参数'
+  }
+  return labels[type] || type
+}
+
 defineOptions({
   name: 'TaskList'
 })
@@ -1534,6 +1779,131 @@ defineOptions({
     .page-size-control {
       order: 3;
     }
+  }
+}
+
+// AI命名建议样式
+.suggestions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.suggestion-card {
+  background: rgba($cursor-surface, 0.8);
+  border: 1px solid rgba($cursor-border, 0.2);
+  border-radius: 12px;
+  padding: 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    border-color: rgba($cursor-primary, 0.3);
+    background: rgba($cursor-surface, 0.9);
+  }
+
+  .suggestion-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+
+    .suggestion-name {
+      font-weight: 600;
+      font-size: 1rem;
+      color: $cursor-text;
+      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+      flex: 1;
+    }
+
+    .copy-icon {
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+  }
+
+  &:hover .copy-icon {
+    opacity: 1;
+  }
+
+  .suggestion-description {
+    color: $cursor-muted;
+    font-size: 0.875rem;
+    line-height: 1.4;
+  }
+}
+
+.examples-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.example-card {
+  background: rgba($cursor-surface, 0.6);
+  border: 1px solid rgba($cursor-border, 0.15);
+  border-radius: 10px;
+  padding: 12px;
+  transition: all 0.3s ease;
+  position: relative;
+
+  &:hover {
+    background: rgba($cursor-surface, 0.8);
+    border-color: rgba($cursor-primary, 0.3);
+    transform: translateY(-1px);
+  }
+
+  .example-content {
+    .example-type {
+      font-size: 0.75rem;
+      color: $cursor-primary;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+    }
+
+    .example-input {
+      font-weight: 500;
+      color: $cursor-text;
+      margin-bottom: 4px;
+      font-size: 0.9rem;
+    }
+
+    .example-desc {
+      font-size: 0.75rem;
+      color: $cursor-muted;
+      line-height: 1.3;
+    }
+  }
+
+  .try-indicator {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    color: $cursor-muted;
+    opacity: 0.6;
+    transition: opacity 0.2s ease;
+  }
+
+  &:hover .try-indicator {
+    opacity: 1;
+    color: $cursor-primary;
+  }
+}
+
+// 响应式调整
+@media (max-width: 768px) {
+  .suggestions-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .examples-grid {
+    grid-template-columns: 1fr;
   }
 }
 </style>
