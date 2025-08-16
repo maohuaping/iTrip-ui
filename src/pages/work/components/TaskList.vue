@@ -8,7 +8,7 @@
           任务列表
         </h2>
         <!-- 省略号按钮 -->
-        <q-btn round flat icon="more_horiz" color="text" class="new-task-btn" @click="showTaskMenu">
+        <q-btn round flat icon="more_horiz" color="text" class="new-task-btn" @click="showTaskMenuButton">
           <q-menu>
             <q-list style="min-width: 200px">
               <q-item clickable v-close-popup @click="openNewTaskDialog()">
@@ -138,8 +138,8 @@
           <!-- 使用 q-table 但保持原有样式 -->
           <q-table :rows="allTasks" :columns="tableColumns" :loading="loading" row-key="id" flat bordered
             class="custom-task-table" v-model:pagination="pagination" :rows-per-page-options="[5, 10, 20, 50, 100]"
-            :rows-per-page-label="'每页条数'" :no-data-label="'暂无数据'" :loading-label="'加载中...'" @request="onRequest"
-            binary-state-sort>
+            :rows-per-page-label="'每页条数'" :no-data-label="'暂无数据'" :loading-label="'加载中...'"
+            :pagination-label="getPaginationLabel" @request="onRequest" binary-state-sort>
             <!-- 自定义列模板 - 需求名称 -->
             <template v-slot:body-cell-requirementName="props">
               <q-td :props="props" class="requirement-name-cell">
@@ -264,7 +264,7 @@
 
           <div class="suggestions-grid">
             <div v-for="(suggestion, index) in suggestions" :key="index" class="suggestion-card"
-              @click="copySuggestion(suggestion.name)">
+              @click="copySuggestion(suggestion.name || '')">
               <div class="suggestion-header">
                 <q-icon name="code" size="20px" color="primary" class="q-mr-sm" />
                 <span class="suggestion-name">{{ suggestion.name }}</span>
@@ -486,9 +486,23 @@ const fetchTasks = async (): Promise<void> => {
   try {
     loading.value = true
 
+    // 处理 systemCategory 的类型转换
+    let systemCategory: string | undefined = undefined
+    if (filterParams.value.systemCategory) {
+      if (typeof filterParams.value.systemCategory === 'string') {
+        systemCategory = filterParams.value.systemCategory
+      } else if (typeof filterParams.value.systemCategory === 'object' && filterParams.value.systemCategory.value) {
+        systemCategory = filterParams.value.systemCategory.value
+      }
+    }
+
     // 构建查询参数
     const queryParams: QueryDevTaskInParam = {
-      ...filterParams.value,
+      requirementId: filterParams.value.requirementId,
+      requirementName: filterParams.value.requirementName,
+      systemCategory: systemCategory,
+      relatedRequirementDocs: filterParams.value.relatedRequirementDocs,
+      relatedDesignDocs: filterParams.value.relatedDesignDocs,
       pageParam: {
         current: pagination.value.page,
         size: pagination.value.rowsPerPage
@@ -1105,8 +1119,10 @@ const getNamingSuggestions = async () => {
   }
 }
 
-// 复制建议
-const copySuggestion = (text: string) => {
+// 复制建议 - 修复参数类型
+const copySuggestion = (text: string | undefined) => {
+  if (!text) return
+
   void navigator.clipboard.writeText(text)
     .then(() => {
       $q.notify({
@@ -1147,13 +1163,13 @@ const getDetectedTypeLabel = (type: string): string => {
   return labels[type] || type
 }
 
-// 表格列定义
+// 表格列定义 - 修复类型错误
 const tableColumns = [
   {
     name: 'requirementName',
     label: '需求名称',
     field: 'requirementName',
-    align: 'left',
+    align: 'left' as const,
     sortable: true,
     style: 'width: 300px; max-width: 300px; min-width: 300px'
   },
@@ -1161,7 +1177,7 @@ const tableColumns = [
     name: 'requirementId',
     label: '需求编号',
     field: 'requirementId',
-    align: 'left',
+    align: 'left' as const,
     sortable: true,
     style: 'width: 150px; max-width: 150px; min-width: 150px'
   },
@@ -1169,7 +1185,7 @@ const tableColumns = [
     name: 'systemCategory',
     label: '系统分类',
     field: 'systemCategory',
-    align: 'center',
+    align: 'center' as const,
     sortable: true,
     style: 'width: 100px; max-width: 100px; min-width: 100px'
   },
@@ -1177,7 +1193,7 @@ const tableColumns = [
     name: 'documents',
     label: '关联文档',
     field: 'documents',
-    align: 'center',
+    align: 'center' as const,
     sortable: false,
     style: 'width: 120px; max-width: 120px; min-width: 120px'
   },
@@ -1185,11 +1201,29 @@ const tableColumns = [
     name: 'actions',
     label: '操作',
     field: 'actions',
-    align: 'center',
+    align: 'center' as const,
     sortable: false,
     style: 'width: 100px; max-width: 100px; min-width: 100px'
   }
 ]
+
+// 自定义分页标签函数
+const getPaginationLabel = (firstRowIndex: number, endRowIndex: number, totalRowsNumber: number) => {
+  if (totalRowsNumber === 0) {
+    return '暂无数据'
+  }
+
+  const currentPage = Math.ceil(firstRowIndex / pagination.value.rowsPerPage)
+  const totalPages = Math.ceil(totalRowsNumber / pagination.value.rowsPerPage)
+
+  return `第 ${currentPage} 页，共 ${totalPages} 页 (显示第 ${firstRowIndex}-${endRowIndex} 条，总计 ${totalRowsNumber} 条)`
+}
+
+// 添加缺失的按钮点击处理函数
+const showTaskMenuButton = () => {
+  // 这里可以添加按钮菜单的逻辑，或者直接调用现有的菜单
+  console.log('显示任务菜单按钮')
+}
 
 // 表格分页配置 - 直接使用响应式数据，不使用计算属性
 const tablePagination = ref({
