@@ -130,10 +130,10 @@
       <!-- 任务列表表格 -->
       <q-card flat bordered class="task-table-card q-mb-lg">
         <q-card-section class="q-pa-md">
-          <div class="text-subtitle2 text-weight-medium q-mb-md">
+          <!-- <div class="text-subtitle2 text-weight-medium q-mb-md">
             <q-icon name="table_chart" class="q-mr-sm" />
             任务列表
-          </div>
+          </div> -->
 
           <!-- 使用 q-table 但保持原有样式 -->
           <q-table :rows="allTasks" :columns="tableColumns" :loading="loading" row-key="id" flat bordered
