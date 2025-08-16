@@ -1163,7 +1163,7 @@ const getDetectedTypeLabel = (type: string): string => {
   return labels[type] || type
 }
 
-// 表格列定义 - 修复类型错误
+// 表格列定义 - 优化列宽分配
 const tableColumns = [
   {
     name: 'requirementName',
@@ -1171,7 +1171,7 @@ const tableColumns = [
     field: 'requirementName',
     align: 'left' as const,
     sortable: true,
-    style: 'width: 300px; max-width: 300px; min-width: 300px'
+    style: 'width: 35%; min-width: 250px' // 使用百分比 + 最小宽度
   },
   {
     name: 'requirementId',
@@ -1179,7 +1179,7 @@ const tableColumns = [
     field: 'requirementId',
     align: 'left' as const,
     sortable: true,
-    style: 'width: 150px; max-width: 150px; min-width: 150px'
+    style: 'width: 25%; min-width: 180px' // 增加需求编号列宽
   },
   {
     name: 'systemCategory',
@@ -1187,7 +1187,7 @@ const tableColumns = [
     field: 'systemCategory',
     align: 'center' as const,
     sortable: true,
-    style: 'width: 100px; max-width: 100px; min-width: 100px'
+    style: 'width: 15%; min-width: 100px' // 使用百分比
   },
   {
     name: 'documents',
@@ -1195,7 +1195,7 @@ const tableColumns = [
     field: 'documents',
     align: 'center' as const,
     sortable: false,
-    style: 'width: 120px; max-width: 120px; min-width: 120px'
+    style: 'width: 15%; min-width: 120px' // 使用百分比
   },
   {
     name: 'actions',
@@ -1203,7 +1203,7 @@ const tableColumns = [
     field: 'actions',
     align: 'center' as const,
     sortable: false,
-    style: 'width: 100px; max-width: 100px; min-width: 100px'
+    style: 'width: 10%; min-width: 100px' // 使用百分比
   }
 ]
 
@@ -1926,12 +1926,19 @@ defineOptions({
   /* 隐藏默认的表格底部 */
 }
 
-/* 需求名称列固定宽度和省略号 */
+/* 优化表格列宽样式 */
+.custom-task-table {
+  width: 100%;
+  table-layout: fixed;
+  /* 固定表格布局以确保列宽按比例分配 */
+}
+
+/* 需求名称列优化 */
 .requirement-name-cell {
   padding: 12px 16px;
   border-bottom: 1px solid var(--q-border-color);
-  width: 300px;
-  max-width: 300px;
+  width: 35% !important;
+  min-width: 250px !important;
 }
 
 .requirement-name-content {
@@ -1942,36 +1949,65 @@ defineOptions({
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 268px;
-  /* 300px - 左右padding */
+  width: 100%;
+  /* 使用100%宽度而不是固定像素 */
 }
 
 .requirement-name-content:hover {
   color: var(--q-primary);
 }
 
-/* 其他列保持原有样式 */
-.requirement-id-cell,
-.system-category-cell,
-.documents-cell,
-.actions-cell {
+/* 需求编号列优化 */
+.requirement-id-cell {
   padding: 12px 16px;
   border-bottom: 1px solid var(--q-border-color);
-}
-
-.requirement-id-content,
-.system-category-text {
-  font-size: 14px;
-  line-height: 1.4;
+  width: 25% !important;
+  min-width: 180px !important;
 }
 
 .requirement-id-content {
+  font-size: 14px;
+  line-height: 1.4;
   cursor: pointer;
   transition: color 0.2s ease;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
 }
 
 .requirement-id-content:hover {
   color: var(--q-primary);
+}
+
+/* 系统分类列优化 */
+.system-category-cell {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--q-border-color);
+  width: 15% !important;
+  min-width: 100px !important;
+}
+
+.system-category-text {
+  font-size: 14px;
+  line-height: 1.4;
+  text-align: center;
+}
+
+/* 关联文档列优化 */
+.documents-cell {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--q-border-color);
+  width: 15% !important;
+  min-width: 120px !important;
+}
+
+/* 操作列优化 */
+.actions-cell {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--q-border-color);
+  width: 10% !important;
+  min-width: 100px !important;
 }
 
 /* 保持原有的文档标签样式 */
@@ -1999,5 +2035,52 @@ defineOptions({
 
 .action-btn:hover {
   transform: scale(1.1);
+}
+
+/* 响应式设计优化 */
+@media (max-width: 1200px) {
+  .requirement-name-cell {
+    width: 30% !important;
+  }
+
+  .requirement-id-cell {
+    width: 30% !important;
+  }
+
+  .system-category-cell {
+    width: 15% !important;
+  }
+
+  .documents-cell {
+    width: 15% !important;
+  }
+
+  .actions-cell {
+    width: 10% !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .custom-task-table {
+    table-layout: auto;
+    /* 在小屏幕上使用自动布局 */
+  }
+
+  .requirement-name-cell,
+  .requirement-id-cell,
+  .system-category-cell,
+  .documents-cell,
+  .actions-cell {
+    width: auto !important;
+    min-width: unset !important;
+  }
+
+  .requirement-name-cell {
+    min-width: 200px !important;
+  }
+
+  .requirement-id-cell {
+    min-width: 150px !important;
+  }
 }
 </style>
