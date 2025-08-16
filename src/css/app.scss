@@ -1,8 +1,10 @@
 // app global css in SCSS form
 
 /* 强制隐藏 html 和 body 的垂直滚动条 */
-html, body {
-  overflow-y: hidden !important;
+
+html,
+body {
+    overflow-y: hidden !important;
 }
 
 
@@ -10,45 +12,42 @@ html, body {
  * 这个规则会影响应用中所有使用了 QLayout 的页面
  * 它会隐藏页面容器的滚动条
  */
-.q-page-container {
-  overflow: hidden !important;
-}
 
+.q-page-container {
+    overflow: hidden !important;
+}
 
 @import 'quasar.variables';
 
 /* * Quasar 在启用暗黑模式时，会给 body 标签添加一个 body--dark 的 class
  * 我们就针对这个 class 来设置全局的深色背景和文字颜色
  */
+
 body.body--dark {
-  background: $cursor-bg;
-  color: $cursor-text;
+    background: $cursor-bg;
+    color: $cursor-text;
 }
+
 
 /*
  * 为了让风格更统一，我们还可以覆盖一些常用组件的默认背景和边框
  * 尤其是在深色模式下
  */
+
 .body--dark {
-  // 卡片、工具栏、抽屉等使用表层颜色
-  .q-card,
-  .q-toolbar,
-  .q-drawer {
-    background: $cursor-surface !important;
-    color: $cursor-text;
-  }
-
-  // 分割线使用我们定义的边框色
-  .q-separator {
-    background: $cursor-border !important;
-  }
-
-  // 输入框等组件的边框
-  .q-field--outlined .q-field__control:before {
-    border-color: $cursor-border !important;
-  }
-
+    // 卡片、工具栏、抽屉等使用表层颜色
+    .q-card,
+    .q-toolbar,
+    .q-drawer {
+        background: $cursor-surface !important;
+        color: $cursor-text;
+    }
+    // 分割线使用我们定义的边框色
+    .q-separator {
+        background: $cursor-border !important;
+    }
+    // 输入框等组件的边框
+    .q-field--outlined .q-field__control:before {
+        border-color: $cursor-border !important;
+    }
 }
-
-
-

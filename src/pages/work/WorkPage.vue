@@ -147,7 +147,8 @@
           <div class="content-wrapper">
             <!-- 任务列表部分 -->
             <TaskList />
-
+            <!-- AI变量命名部分 -->
+            <AiNaming />
             <!-- 工作日志部分 -->
             <WorkLog />
           </div>
@@ -320,6 +321,7 @@ import { ref, onMounted, onUnmounted, computed, reactive, watch } from 'vue'
 import { useQuasar } from 'quasar'
 import TaskList from './components/TaskList.vue'
 import WorkLog from './components/WorkLog.vue'
+import AiNaming from './components/AiNaming.vue'
 import { getUrl } from 'src/api/url/url'
 import { getTodo } from 'src/api/todo/todo'
 import type { SysUrl, TodoVO } from 'src/api/api.schemas'
@@ -1346,11 +1348,11 @@ onUnmounted(() => {
 }
 
 // 添加部分样式
-section {
-  border-radius: 12px;
-  padding: 24px;
-  margin-bottom: 24px;
-}
+// section {
+//   border-radius: 12px;
+//   padding: 24px;
+//   margin-bottom: 24px;
+// }
 
 // 标签链接样式
 .badge-link {

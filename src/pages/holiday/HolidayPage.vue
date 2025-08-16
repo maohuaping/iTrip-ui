@@ -83,7 +83,7 @@
       <section class="holidays-list-section glass rounded-xl overflow-hidden shadow-2xl q-mb-xl">
         <div class="q-pa-md">
           <h2 class="text-h5 text-weight-bold q-mb-md">{{ currentYear }}年法定节假日</h2>
-          
+
           <q-table
             :rows="holidays"
             :columns="columns"
@@ -213,9 +213,9 @@ const ticketCountdown = ref({
 const fetchHolidays = () => {
   // 这里通常会从API获取数据，但为了演示，我们使用硬编码的数据
   // 实际应用中应该从后端API获取最新的节假日安排
-  
+
   const thisYear = currentYear;
-  
+
   const holidayData: Holiday[] = [
     {
       name: '元旦',
@@ -260,7 +260,7 @@ const fetchHolidays = () => {
       days: 8
     }
   ];
-  
+
   holidays.value = holidayData;
 };
 
@@ -268,11 +268,11 @@ const fetchHolidays = () => {
 const formatDateRange = (startDate: Date, endDate: Date) => {
   const start = formatDate(startDate);
   const end = formatDate(endDate);
-  
+
   if (start === end) {
     return start;
   }
-  
+
   return `${start} 至 ${end}`;
 };
 
@@ -281,7 +281,7 @@ const formatDate = (date: Date) => {
   const year = date.getFullYear();
   const month = date.getMonth() + 1;
   const day = date.getDate();
-  
+
   return `${year}年${month}月${day}日`;
 };
 
@@ -303,10 +303,10 @@ const isHolidayCurrent = (holiday: Holiday) => {
 const nextHoliday = computed(() => {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  
+
   const upcomingHolidays = holidays.value.filter(holiday => holiday.startDate > today);
   if (upcomingHolidays.length === 0) return null;
-  
+
   return upcomingHolidays.sort((a, b) => a.startDate.getTime() - b.startDate.getTime())[0];
 });
 
@@ -337,10 +337,10 @@ const getDaysUntilTicketSale = (holiday: Holiday) => {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const saleDate = getTicketSaleDate(holiday);
-  
+
   const diffTime = saleDate.getTime() - today.getTime();
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-  
+
   return diffDays > 0 ? diffDays : 0;
 };
 
@@ -348,14 +348,14 @@ const getDaysUntilTicketSale = (holiday: Holiday) => {
 const ticketSaleDate = computed(() => {
   if (!nextHoliday.value) return null;
   if (!isTicketSaleDate(nextHoliday.value)) return null;
-  
+
   return getTicketSaleDate(nextHoliday.value);
 });
 
 // 判断火车票是否已开售
 const isTicketSaleOpen = computed(() => {
   if (!ticketSaleDate.value) return false;
-  
+
   const today = new Date();
   return ticketSaleDate.value <= today;
 });
@@ -363,51 +363,51 @@ const isTicketSaleOpen = computed(() => {
 // 倒计时计算
 const updateCountdown = () => {
   if (!nextHoliday.value) return;
-  
+
   const now = new Date();
   const targetDate = nextHoliday.value.startDate;
-  
+
   // 计算距离下一个节假日的时间
   let diff = targetDate.getTime() - now.getTime();
-  
+
   if (diff <= 0) {
     countdown.value = { days: 0, hours: 0, minutes: 0, seconds: 0 };
     return;
   }
-  
+
   const days = Math.floor(diff / (1000 * 60 * 60 * 24));
   diff -= days * (1000 * 60 * 60 * 24);
-  
+
   const hours = Math.floor(diff / (1000 * 60 * 60));
   diff -= hours * (1000 * 60 * 60);
-  
+
   const minutes = Math.floor(diff / (1000 * 60));
   diff -= minutes * (1000 * 60);
-  
+
   const seconds = Math.floor(diff / 1000);
-  
+
   countdown.value = { days, hours, minutes, seconds };
-  
+
   // 计算距离火车票开售的时间
   if (ticketSaleDate.value && !isTicketSaleOpen.value) {
     diff = ticketSaleDate.value.getTime() - now.getTime();
-    
+
     if (diff <= 0) {
       ticketCountdown.value = { days: 0, hours: 0, minutes: 0, seconds: 0 };
       return;
     }
-    
+
     const ticketDays = Math.floor(diff / (1000 * 60 * 60 * 24));
     diff -= ticketDays * (1000 * 60 * 60 * 24);
-    
+
     const ticketHours = Math.floor(diff / (1000 * 60 * 60));
     diff -= ticketHours * (1000 * 60 * 60);
-    
+
     const ticketMinutes = Math.floor(diff / (1000 * 60));
     diff -= ticketMinutes * (1000 * 60);
-    
+
     const ticketSeconds = Math.floor(diff / 1000);
-    
+
     ticketCountdown.value = { days: ticketDays, hours: ticketHours, minutes: ticketMinutes, seconds: ticketSeconds };
   }
 };
@@ -444,11 +444,11 @@ onBeforeUnmount(() => {
 }
 
 // 玻璃效果
-.glass {
-  background: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(8px);
-  border: 1px solid rgba(0, 0, 0, 0.1);
-}
+//.glass {
+//  background: rgba(255, 255, 255, 0.8);
+//  backdrop-filter: blur(8px);
+//  border: 1px solid rgba(0, 0, 0, 0.1);
+//}
 
 // 倒计时样式
 .countdown-timer {
@@ -461,7 +461,7 @@ onBeforeUnmount(() => {
     font-weight: bold;
     margin-bottom: 5px;
   }
-  
+
   .timer-label {
     font-size: 0.9rem;
     color: #666;
@@ -473,12 +473,12 @@ onBeforeUnmount(() => {
   :deep(.q-table__card) {
     background: transparent;
   }
-  
+
   :deep(th) {
     font-weight: bold;
     background-color: rgba(25, 118, 210, 0.1);
   }
-  
+
   :deep(tr:hover) {
     background-color: rgba(25, 118, 210, 0.05);
   }
@@ -488,22 +488,22 @@ onBeforeUnmount(() => {
 .ticket-info-card {
   height: 100%;
   transition: all 0.3s ease;
-  
+
   &:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   }
-  
+
   ul {
     padding-left: 20px;
-    
+
     li {
       margin-bottom: 8px;
-      
+
       &:last-child {
         margin-bottom: 0;
       }
     }
   }
 }
-</style> 
+</style>
