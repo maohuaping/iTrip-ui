@@ -7,47 +7,17 @@
           <q-icon name="task_alt" size="28px" class="q-mr-sm" />
           任务列表
         </h2>
-        <!-- 新建任务省略号按钮 -->
+        <!-- 省略号按钮 -->
         <q-btn round flat icon="more_horiz" color="text" class="new-task-btn" @click="showTaskMenu">
           <q-menu>
             <q-list style="min-width: 200px">
-              <q-item clickable v-close-popup @click="openNewTaskDialog('requirement')">
+              <q-item clickable v-close-popup @click="openNewTaskDialog()">
                 <q-item-section avatar>
-                  <q-icon name="description" color="primary" />
+                  <q-icon name="add_task" color="primary" />
                 </q-item-section>
                 <q-item-section>
-                  <q-item-label>需求任务</q-item-label>
-                  <q-item-label caption>创建新的需求开发任务</q-item-label>
-                </q-item-section>
-              </q-item>
-
-              <q-item clickable v-close-popup @click="openNewTaskDialog('design')">
-                <q-item-section avatar>
-                  <q-icon name="design_services" color="secondary" />
-                </q-item-section>
-                <q-item-section>
-                  <q-item-label>设计任务</q-item-label>
-                  <q-item-label caption>创建新的设计任务</q-item-label>
-                </q-item-section>
-              </q-item>
-
-              <q-item clickable v-close-popup @click="openNewTaskDialog('test')">
-                <q-item-section avatar>
-                  <q-icon name="bug_report" color="accent" />
-                </q-item-section>
-                <q-item-section>
-                  <q-item-label>测试任务</q-item-label>
-                  <q-item-label caption>创建新的测试任务</q-item-label>
-                </q-item-section>
-              </q-item>
-
-              <q-item clickable v-close-popup @click="openNewTaskDialog('other')">
-                <q-item-section avatar>
-                  <q-icon name="more_horiz" color="grey" />
-                </q-item-section>
-                <q-item-section>
-                  <q-item-label>其他任务</q-item-label>
-                  <q-item-label caption>创建其他类型的任务</q-item-label>
+                  <q-item-label>新建任务</q-item-label>
+                  <q-item-label caption>创建新的任务</q-item-label>
                 </q-item-section>
               </q-item>
             </q-list>
