@@ -137,7 +137,9 @@
 
           <!-- 使用 q-table 但保持原有样式 -->
           <q-table :rows="allTasks" :columns="tableColumns" :pagination="tablePagination" :loading="loading"
-            row-key="id" flat bordered class="custom-task-table" @request="onRequest" hide-bottom>
+            row-key="id" flat bordered class="custom-task-table" @request="onRequest"
+            :rows-per-page-options="[5, 10, 20, 50, 100]" :rows-per-page-label="'每页条数'" :no-data-label="'暂无数据'"
+            :loading-label="'加载中...'">
             <!-- 自定义列模板 - 需求名称 -->
             <template v-slot:body-cell-requirementName="props">
               <q-td :props="props" class="requirement-name-cell">
@@ -204,38 +206,6 @@
               </div>
             </template>
           </q-table>
-
-          <!-- 紧凑型分页组件 -->
-          <div v-if="allTasks.length > 0" class="q-mt-lg">
-            <div class="compact-pagination">
-              <!-- 左侧：分页信息 -->
-              <div class="pagination-summary">
-                <span class="text-body2 text-grey-7">
-                  共 <span class="text-weight-medium text-primary">{{ currentPagination.total }}</span> 条
-                </span>
-              </div>
-
-              <!-- 中间：分页控件 -->
-              <div class="pagination-controls">
-                <q-pagination v-model="currentPagination.current" :max="currentPagination.pages || 1" :max-pages="5"
-                  boundary-numbers direction-links @update:model-value="handlePageChange" color="primary"
-                  active-color="accent" size="sm" />
-              </div>
-
-              <!-- 右侧：每页条数选择 -->
-              <div class="page-size-control">
-                <q-select v-model="pageSize" :options="pageSizeOptions" dense borderless
-                  @update:model-value="handlePageSizeChange" class="compact-page-size-select">
-                  <template v-slot:prepend>
-                    <span class="text-body2 text-grey-7">每页</span>
-                  </template>
-                  <template v-slot:append>
-                    <span class="text-body2 text-grey-7">条</span>
-                  </template>
-                </q-select>
-              </div>
-            </div>
-          </div>
         </q-card-section>
       </q-card>
     </div>
@@ -508,101 +478,59 @@ const pageSize = ref(getStoredPageSize())
 // 统一的搜索函数
 const fetchTasks = async (): Promise<void> => {
   try {
-    // 严格按照API接口定义构建参数
-    const params: QueryDevTaskInParam = {
+    loading.value = true
+
+    // 构建查询参数
+    const queryParams: QueryDevTaskInParam = {
+      ...filterParams.value,
       pageParam: {
-        current: incomingPagination.value.current || 1,
+        current: incomingPagination.value.current,
         size: pageSize.value
       }
     }
 
-    // 只有当过滤条件有值时才添加到参数中，避免传递空字符串
-    if (filterParams.value.requirementId && filterParams.value.requirementId.trim()) {
-      params.requirementId = filterParams.value.requirementId.trim()
-    }
-
-    if (filterParams.value.requirementName && filterParams.value.requirementName.trim()) {
-      params.requirementName = filterParams.value.requirementName.trim()
-    }
-
-    // 系统分类需要传递实际的值，而不是对象
-    if (filterParams.value.systemCategory) {
-      // 如果systemCategory是对象，取其value值；如果是字符串，直接使用
-      const categoryValue = typeof filterParams.value.systemCategory === 'object'
-        ? filterParams.value.systemCategory.value
-        : filterParams.value.systemCategory
-      params.systemCategory = categoryValue
-    }
-
-    if (filterParams.value.relatedRequirementDocs && filterParams.value.relatedRequirementDocs.trim()) {
-      params.relatedRequirementDocs = filterParams.value.relatedRequirementDocs.trim()
-    }
-
-    if (filterParams.value.relatedDesignDocs && filterParams.value.relatedDesignDocs.trim()) {
-      params.relatedDesignDocs = filterParams.value.relatedDesignDocs.trim()
-    }
-
-    console.log('当前过滤条件:', filterParams.value)
-    console.log('发送搜索请求，参数:', params)
-    console.log('系统分类参数值:', params.systemCategory)
-
-    const response = await devTaskApi.queryDevTask(params)
-    console.log('搜索响应:', response.data)
+    // 调用API获取数据
+    const response = await devTaskApi.queryDevTask(queryParams)
 
     if (response.data?.isOk && response.data.okData) {
-      const records = response.data.okData.records || []
-      const paginationData = {
-        current: response.data.okData.current || 1,
-        size: response.data.okData.size || 10,
-        total: response.data.okData.total || 0,
-        pages: response.data.okData.pages || 0
+      const pageData = response.data.okData
+
+      // 更新分页信息 - 确保所有字段都正确设置
+      incomingPagination.value = {
+        current: pageData.current || 1,
+        size: pageData.size || pageSize.value,
+        total: pageData.total || 0,
+        pages: pageData.pages || 0
       }
 
-      // 将DevTaskVO转换为DevTask格式以保持兼容性
-      const convertedRecords = records.map(record => ({
-        id: undefined, // DevTaskVO没有id字段
-        requirementId: record.requirementId,
-        requirementName: record.requirementName,
-        systemCategory: record.systemCategory,
-        relatedRequirementDocs: record.relatedRequirementDocs,
-        relatedDesignDocs: record.relatedDesignDocs,
-        userId: record.userId
-      }))
-
-      // 获取实际的系统分类值
-      const actualSystemCategory = typeof filterParams.value.systemCategory === 'object'
-        ? filterParams.value.systemCategory?.value
-        : filterParams.value.systemCategory
-
-      // 根据选择的系统分类来处理数据
-      if (actualSystemCategory === 'callin') {
-        // 只显示呼入任务
-        incomingTasks.value = convertedRecords
-        incomingPagination.value = paginationData
-        outgoingTasks.value = []
-        outgoingPagination.value = { current: 1, size: pageSize.value, total: 0, pages: 0 }
-      } else if (actualSystemCategory === 'callout') {
-        // 只显示呼出任务
-        outgoingTasks.value = convertedRecords
-        outgoingPagination.value = paginationData
-        incomingTasks.value = []
-        incomingPagination.value = { current: 1, size: pageSize.value, total: 0, pages: 0 }
-      } else {
-        // 没有选择系统分类，显示所有任务
-        incomingTasks.value = convertedRecords
-        incomingPagination.value = paginationData
-        outgoingTasks.value = []
-        outgoingPagination.value = { current: 1, size: pageSize.value, total: 0, pages: 0 }
+      // 同步 outgoingPagination
+      outgoingPagination.value = {
+        current: pageData.current || 1,
+        size: pageData.size || pageSize.value,
+        total: pageData.total || 0,
+        pages: pageData.pages || 0
       }
+
+      // 更新任务数据
+      incomingTasks.value = pageData.records || []
+      outgoingTasks.value = [] // 如果需要的话，这里也可以调用相应的API
+
+      console.log('分页数据更新:', {
+        current: pageData.current,
+        size: pageData.size,
+        total: pageData.total,
+        pages: pageData.pages,
+        recordsCount: pageData.records?.length
+      })
     }
   } catch (error) {
-    console.error('获取任务列表失败:', error)
+    console.error('获取任务数据失败:', error)
     $q.notify({
-      message: '搜索任务失败，请检查网络连接或稍后重试',
-      color: 'negative',
-      position: 'top',
-      timeout: 2000
+      type: 'negative',
+      message: '获取任务数据失败'
     })
+  } finally {
+    loading.value = false
   }
 }
 
@@ -986,12 +914,13 @@ const statusOptions = [
 ]
 
 // 分页处理方法
-const handlePageChange = (page: number): void => {
+const handlePageChange = async (page: number): Promise<void> => {
   // 更新当前分页
   incomingPagination.value.current = page
+  outgoingPagination.value.current = page
 
   // 重新获取数据
-  fetchTasks()
+  await fetchTasks()
 }
 
 // 处理分页大小变化
@@ -1256,7 +1185,7 @@ const tableColumns = [
   }
 ]
 
-// 表格分页配置
+// 表格分页配置 - 修复为服务器端分页
 const tablePagination = computed(() => ({
   page: currentPagination.value.current,
   rowsPerPage: pageSize.value,
@@ -1267,7 +1196,7 @@ const tablePagination = computed(() => ({
 // 加载状态
 const loading = ref(false)
 
-// 表格请求处理函数
+// 表格请求处理函数 - 修复为服务器端分页
 const onRequest = async (props: any) => {
   const { page, rowsPerPage } = props.pagination
 
@@ -1277,9 +1206,9 @@ const onRequest = async (props: any) => {
     handlePageSizeChange(rowsPerPage)
   }
 
-  // 更新当前页
+  // 更新当前页并重新获取数据
   if (page !== currentPagination.value.current) {
-    handlePageChange(page)
+    await handlePageChange(page)
   }
 }
 
