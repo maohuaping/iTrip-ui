@@ -882,9 +882,6 @@ const onTagInputValue = (val: string) => {
 
 .work-page-content {
   background: $cursor-bg; // 使用颜色系统的主背景色
-  // 确保内容可以正常扩展
-  min-height: calc(100vh - 100px); // 减去header高度
-
   // 添加滚动支持
   overflow-y: auto;
 
@@ -1355,44 +1352,6 @@ section {
 .text-strike {
   text-decoration: line-through;
   color: $cursor-muted; // 使用变量系统
-}
-
-// 修复页面滚动问题
-.work-page {
-  // 确保页面可以滚动
-  min-height: 100vh;
-  overflow-y: auto;
-
-  // 自定义滚动条样式
-  &::-webkit-scrollbar {
-    width: 10px;
-  }
-
-  &::-webkit-scrollbar-track {
-    background: rgba($cursor-border, 0.1);
-    border-radius: 5px;
-  }
-
-  &::-webkit-scrollbar-thumb {
-    background: rgba($cursor-border, 0.3);
-    border-radius: 5px;
-
-    &:hover {
-      background: rgba($cursor-border, 0.5);
-    }
-  }
-}
-
-// 确保 q-page-container 可以滚动
-:deep(.q-page-container) {
-  overflow-y: auto;
-  height: calc(100vh - 50px); // 减去header高度
-}
-
-// 确保 q-page 可以正常扩展
-:deep(.q-page) {
-  min-height: 100%;
-  overflow-y: auto;
 }
 
 // 响应式调整 - 在小屏幕上调整滚动区域
