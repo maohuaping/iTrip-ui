@@ -1,6 +1,6 @@
 <template>
   <q-layout view="lHh Lpr lFf">
-    <q-header elevated class="bg-white text-cursor-text">
+    <q-header elevated class="bg-white text-dark">
       <q-toolbar>
         <q-btn flat dense round icon="menu" aria-label="Menu" @click="toggleLeftDrawer" />
 
@@ -177,8 +177,8 @@
 
     <q-page-container>
       <q-page class="work-page">
-        <div class="work-page-content q-pa-md">
-          <div class="q-mx-auto" style="max-width: 1200px">
+        <div class="work-page-content">
+          <div class="content-wrapper">
             <!-- 任务列表部分 -->
             <TaskList />
 
@@ -1281,7 +1281,46 @@ section {
   :deep(.q-field__native) {
     color: $cursor-text; // 使用变量系统的文字颜色
   }
+}
 
+// 修复滚动问题的样式
+.work-page {
+  height: 100vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.work-page-content {
+  min-height: 100%;
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+.content-wrapper {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding-bottom: 60px; // 底部留出空间避免内容被遮挡
+}
+
+// 确保页面容器正确设置
+:deep(.q-page-container) {
+  height: calc(100vh - 50px); // 减去header高度
+  overflow: hidden;
+}
+
+// 响应式调整
+@media (max-width: 768px) {
+  .work-page-content {
+    padding: 12px;
+  }
+  
+  .content-wrapper {
+    padding-bottom: 40px;
+  }
+}
+
+// 新建待办输入框标签样式
+.new-todo-input {
   :deep(.q-field__label) {
     color: $cursor-muted; // 使用变量系统的次要文字颜色
   }

@@ -54,6 +54,13 @@ const routes: RouteRecordRaw[] = [
       { path: '', component: () => import('pages/ai/AiPage.vue') }
     ]
   },
+  {
+    path: '/tasks',
+    component: () => import('layouts/CleanLayout.vue'),
+    children: [
+      { path: '', component: () => import('pages/tasks/TaskManagement.vue') }
+    ]
+  },
 
   // Always leave this as last one,
   // but you can also remove it
