@@ -327,6 +327,38 @@ export interface ResultTodo {
 }
 
 /**
+ * 系统文件信息
+ */
+export interface SysFile {
+  /** 主键ID */
+  id?: number;
+  /** 创建人 */
+  createdBy?: number;
+  /** 创建时间 */
+  createdAt?: string;
+  /** 更新人 */
+  updatedBy?: number;
+  /** 更新时间 */
+  updatedAt?: string;
+  /** 文件类型 */
+  fileType?: string;
+  /** 文件名称 */
+  fileName?: string;
+  /** 文件地址 */
+  fileUrl?: string;
+  /** 需求ID */
+  requirementId?: number;
+}
+
+export interface ResultSysFile {
+  /** 是否成功 */
+  isOk?: boolean;
+  okData?: SysFile;
+  /** 失败消息 */
+  failMsg?: string;
+}
+
+/**
  * 扫码识别请求
  */
 export interface ScanIdentifyRequestDTO {
@@ -456,14 +488,14 @@ export interface QueryDevTaskInParam {
 }
 
 export interface DevTaskVO {
+  /** 主键ID */
+  id?: string;
   /** 需求编号 */
   requirementId?: string;
   /** 需求名称 */
   requirementName?: string;
-  /** 需求关联的需求文档名称。如果关联多个需求文档，会以;进行分隔 */
-  relatedRequirementDocs?: string;
-  /** 需求关联的设计文档名称。如果关联多个设计文档，会以;进行分隔 */
-  relatedDesignDocs?: string;
+  /** 需求关联的文件 */
+  relatedFileList?: RelatedFile[];
   /** 系统分类 */
   systemCategory?: string;
   systemCategoryDesc?: string;
@@ -480,6 +512,22 @@ export interface IPageDevTaskVO {
   current?: number;
   total?: number;
   pages?: number;
+}
+
+/**
+ * 需求关联的文件
+ */
+export interface RelatedFile {
+  /** 文件类型 */
+  fileType?: string;
+  /** 文件名称 */
+  fileName?: string;
+  /** 文件地址 */
+  fileUrl?: string;
+  /** 文件数量 */
+  fileCount?: number;
+  /** 创建时间 */
+  createdAt?: string;
 }
 
 export interface ResultIPageDevTaskVO {
