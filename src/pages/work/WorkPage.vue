@@ -4,18 +4,13 @@
       <q-toolbar>
         <q-btn flat dense round icon="menu" aria-label="Menu" @click="toggleLeftDrawer" />
 
-        <q-btn flat dense icon="link" color="primary" class="q-ml-sm" @click="handleTodoLink">
+        <!-- <q-btn flat dense icon="link" color="primary" class="q-ml-sm" @click="handleTodoLink">
           <q-tooltip>虚拟机</q-tooltip>
-        </q-btn>
+        </q-btn> -->
 
         <q-toolbar-title class="row items-center justify-center">
-          <!-- 待办事项按钮 - 改为底部动作面板形式 -->
-          <q-btn flat color="green-7" no-caps dense class="q-mr-sm" label="待办事项" icon="checklist"
-            @click="toggleTodoSheet">
-          </q-btn>
-
           <!-- 使用Quasar的split button组件 - 改进版 -->
-          <q-btn-dropdown flat color="primary" no-caps dense class="q-mr-sm copy-btn-dropdown"
+          <!-- <q-btn-dropdown flat color="primary" no-caps dense class="q-mr-sm copy-btn-dropdown"
             :label="selectedText || 'Flex20190429'" icon="content_copy" dropdown-icon="arrow_drop_down" split
             @click="handleTextSelection(selectedText || 'Flex20190429')">
             <q-list>
@@ -57,9 +52,9 @@
                 </q-item-section>
               </q-item>
             </q-list>
-          </q-btn-dropdown>
+          </q-btn-dropdown> -->
 
-          <!-- 主页按钮移到最右侧 -->
+          <!-- 主页按钮 -->
           <q-btn flat dense icon="home" no-caps :label="$q.screen.gt.xs ? '主页' : ''" class="q-ml-sm" aria-label="回到主页"
             to="/trip" color="primary">
             <q-tooltip>回到主页</q-tooltip>
@@ -70,8 +65,15 @@
             @click="toggleDarkMode">
             <q-tooltip>{{ isDark ? '切换到亮色模式' : '切换到暗色模式' }}</q-tooltip>
           </q-btn>
-
         </q-toolbar-title>
+
+        <!-- 简洁的待办按钮 - 放在最右侧 -->
+        <q-btn flat dense round icon="checklist" color="green-7" @click="toggleTodoSheet" class="todo-btn">
+          <q-tooltip>待办事项</q-tooltip>
+          <!-- 待办数量徽章 -->
+          <q-badge v-if="pendingTodosCount > 0" color="red" floating rounded
+            :label="pendingTodosCount > 99 ? '99+' : pendingTodosCount" />
+        </q-btn>
       </q-toolbar>
     </q-header>
 
@@ -828,6 +830,9 @@ const onTagInputValue = (val: string) => {
 const completedCount = computed(() => todoItems.value.filter(item => item.done).length)
 const completedTodos = computed(() => todoItems.value.filter(item => item.done))
 
+// 计算未完成的待办数量
+const pendingTodosCount = computed(() => todoItems.value.filter(item => !item.done).length)
+
 // 清除已完成的待办事项
 const clearCompleted = async () => {
   const completedItems = todoItems.value.filter(item => item.done)
@@ -1550,6 +1555,15 @@ section {
   .todo-sheet-card {
     max-height: 80vh;
     border-radius: 12px 12px 0 0;
+  }
+}
+
+// 待办按钮样式
+.todo-btn {
+  position: relative;
+
+  &:hover {
+    background-color: rgba(76, 175, 80, 0.1);
   }
 }
 </style>
