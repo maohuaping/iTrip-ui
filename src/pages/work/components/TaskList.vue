@@ -182,11 +182,50 @@
             </div>
           </div>
 
-          <!-- 分页组件 -->
-          <div v-if="allTasks.length > 0" class="q-mt-lg text-center">
-            <q-pagination v-model="currentPagination.current" :max="currentPagination.pages || 1" :max-pages="6"
-              boundary-numbers direction-links @update:model-value="handlePageChange" color="primary"
-              active-color="accent" />
+          <!-- 紧凑型分页组件 -->
+          <div v-if="allTasks.length > 0" class="q-mt-lg">
+            <div class="compact-pagination">
+              <!-- 左侧：分页信息 -->
+              <div class="pagination-summary">
+                <span class="text-body2 text-grey-7">
+                  共 <span class="text-weight-medium text-primary">{{ currentPagination.total }}</span> 条
+                </span>
+              </div>
+              
+              <!-- 中间：分页控件 -->
+              <div class="pagination-controls">
+                <q-pagination 
+                  v-model="currentPagination.current" 
+                  :max="currentPagination.pages || 1" 
+                  :max-pages="5"
+                  boundary-numbers 
+                  direction-links 
+                  @update:model-value="handlePageChange" 
+                  color="primary"
+                  active-color="accent"
+                  size="sm"
+                />
+              </div>
+              
+              <!-- 右侧：每页条数选择 -->
+              <div class="page-size-control">
+                <q-select
+                  v-model="pageSize"
+                  :options="pageSizeOptions"
+                  dense
+                  borderless
+                  @update:model-value="handlePageSizeChange"
+                  class="compact-page-size-select"
+                >
+                  <template v-slot:prepend>
+                    <span class="text-body2 text-grey-7">每页</span>
+                  </template>
+                  <template v-slot:append>
+                    <span class="text-body2 text-grey-7">条</span>
+                  </template>
+                </q-select>
+              </div>
+            </div>
           </div>
         </q-card-section>
       </q-card>
@@ -293,6 +332,29 @@ const devTaskApi = getDevTask()
 // 控制新建任务对话框的显示
 const showNewTaskDialog = ref(false)
 
+// 分页大小相关常量和函数
+const PAGE_SIZE_CACHE_KEY = 'task-list-page-size'
+const DEFAULT_PAGE_SIZE = 10
+
+// 从本地存储获取分页大小，如果没有则使用默认值
+const getStoredPageSize = (): number => {
+  try {
+    const stored = localStorage.getItem(PAGE_SIZE_CACHE_KEY)
+    return stored ? parseInt(stored, 10) : DEFAULT_PAGE_SIZE
+  } catch {
+    return DEFAULT_PAGE_SIZE
+  }
+}
+
+// 保存分页大小到本地存储
+const savePageSize = (size: number): void => {
+  try {
+    localStorage.setItem(PAGE_SIZE_CACHE_KEY, size.toString())
+  } catch (error) {
+    console.warn('无法保存分页大小到本地存储:', error)
+  }
+}
+
 // 任务数据
 const incomingTasks = ref<DevTask[]>([])
 const outgoingTasks = ref<DevTask[]>([])
@@ -305,14 +367,14 @@ const allTasks = computed(() => {
 // 分页数据
 const incomingPagination = ref<IPageDevTaskVO>({
   current: 1,
-  size: 5,
+  size: getStoredPageSize(),
   total: 0,
   pages: 0
 })
 
 const outgoingPagination = ref<IPageDevTaskVO>({
   current: 1,
-  size: 5,
+  size: getStoredPageSize(),
   total: 0,
   pages: 0
 })
@@ -324,7 +386,7 @@ const currentPagination = computed(() => {
 
   return {
     current: Math.max(incomingPagination.value.current || 1, outgoingPagination.value.current || 1),
-    size: 10, // 合并后的每页大小
+    size: pageSize.value, // 使用动态分页大小
     total,
     pages: maxPages
   }
@@ -345,6 +407,18 @@ const filterParams = ref({
 const showAdvancedFilter = ref(false)
 const showDatePicker = ref(false)
 
+// 分页大小选项
+const pageSizeOptions = [
+  { label: '5', value: 5 },
+  { label: '10', value: 10 },
+  { label: '20', value: 20 },
+  { label: '50', value: 50 },
+  { label: '100', value: 100 }
+]
+
+// 当前分页大小
+const pageSize = ref(getStoredPageSize())
+
 // 统一的搜索函数
 const fetchTasks = async (): Promise<void> => {
   try {
@@ -352,7 +426,7 @@ const fetchTasks = async (): Promise<void> => {
     const params: QueryDevTaskInParam = {
       pageParam: {
         current: incomingPagination.value.current || 1,
-        size: 10
+        size: pageSize.value
       }
     }
 
@@ -420,19 +494,19 @@ const fetchTasks = async (): Promise<void> => {
         incomingTasks.value = convertedRecords
         incomingPagination.value = paginationData
         outgoingTasks.value = []
-        outgoingPagination.value = { current: 1, size: 10, total: 0, pages: 0 }
+        outgoingPagination.value = { current: 1, size: pageSize.value, total: 0, pages: 0 }
       } else if (actualSystemCategory === 'callout') {
         // 只显示呼出任务
         outgoingTasks.value = convertedRecords
         outgoingPagination.value = paginationData
         incomingTasks.value = []
-        incomingPagination.value = { current: 1, size: 10, total: 0, pages: 0 }
+        incomingPagination.value = { current: 1, size: pageSize.value, total: 0, pages: 0 }
       } else {
         // 没有选择系统分类，显示所有任务
         incomingTasks.value = convertedRecords
         incomingPagination.value = paginationData
         outgoingTasks.value = []
-        outgoingPagination.value = { current: 1, size: 10, total: 0, pages: 0 }
+        outgoingPagination.value = { current: 1, size: pageSize.value, total: 0, pages: 0 }
       }
     }
   } catch (error) {
@@ -926,6 +1000,38 @@ const handlePageChange = (page: number): void => {
   fetchTasks()
 }
 
+// 处理分页大小变化
+const handlePageSizeChange = (newSize: { label: string; value: number } | number): void => {
+  const size = typeof newSize === 'object' ? newSize.value : newSize
+  
+  console.log('分页大小变化:', size)
+  
+  // 更新分页大小
+  pageSize.value = size
+  
+  // 保存到本地存储
+  savePageSize(size)
+  
+  // 更新分页数据的size
+  incomingPagination.value.size = size
+  outgoingPagination.value.size = size
+  
+  // 重置到第一页
+  incomingPagination.value.current = 1
+  outgoingPagination.value.current = 1
+  
+  // 重新获取数据
+  fetchTasks()
+  
+  // 提示用户
+  $q.notify({
+    message: `每页显示条数已设置为 ${size} 条`,
+    color: 'positive',
+    position: 'top',
+    timeout: 1500
+  })
+}
+
 // 获取活跃任务数量的计算属性
 const getActiveTasksCount = computed(() => {
   // 由于 DevTask 类型中没有 status 字段，我们暂时返回 0
@@ -1334,5 +1440,45 @@ defineOptions({
 
 .bg-gradient-warning {
   background: linear-gradient(135deg, $cursor-warning 0%, mix(white, $cursor-warning, 15%) 100%) !important;
+}
+
+// 分页区域样式
+.pagination-info {
+  padding: 12px 16px;
+  background-color: rgba($cursor-surface, 0.5);
+  border-radius: 8px;
+  margin-bottom: 16px;
+
+  .page-size-select {
+    :deep(.q-field__control) {
+      min-height: 32px;
+      padding: 0 8px;
+      background-color: white;
+      border: 1px solid rgba($cursor-border, 0.3);
+    }
+
+    :deep(.q-field__native) {
+      padding: 4px 0;
+      font-size: 0.875rem;
+    }
+
+    :deep(.q-field__append) {
+      padding-left: 4px;
+    }
+  }
+}
+
+// 分页控件样式优化
+:deep(.q-pagination) {
+  .q-btn {
+    min-width: 36px;
+    height: 36px;
+    margin: 0 2px;
+    border-radius: 6px;
+    
+    &.q-btn--active {
+      font-weight: 600;
+    }
+  }
 }
 </style>
