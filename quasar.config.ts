@@ -12,7 +12,8 @@ export default defineConfig((/* ctx */) => {
     // --> 启动文件是 "main.js" 的一部分
     // https://v2.quasar.dev/quasar-cli-vite/boot-files
     boot: [
-      'axios'
+      'axios',
+      'orval-client'
     ],
 
     // https://v2.quasar.dev/quasar-cli-vite/quasar-config-file#css
@@ -114,7 +115,8 @@ export default defineConfig((/* ctx */) => {
       // Quasar 插件
       plugins: [
         'Notify',  // 添加 Notify 插件
-        'Dialog'   // 添加 Dialog 插件
+        'Dialog',  // 添加 Dialog 插件
+        'Loading'  // 添加 Loading 插件
       ],
 
       // --- 在这里手动添加 sassVariables 配置 ---

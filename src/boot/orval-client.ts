@@ -1,4 +1,4 @@
-import { boot } from 'quasar/wrappers';
+import { defineBoot } from '#q-app/wrappers';
 import type { AxiosRequestConfig, AxiosResponse } from 'axios';
 import { Notify, Loading } from 'quasar';
 import { api } from './axios'; // 导入现有的 api 实例
@@ -83,6 +83,6 @@ export const customInstance = <T>(config: AxiosRequestConfig): Promise<AxiosResp
     });
 };
 
-export default boot(() => {
+export default defineBoot(() => {
   // 这个 boot 文件不需要做任何事情，因为我们只是导出 customInstance
 });
