@@ -43,50 +43,7 @@
 
 
 
-      <!-- 交互式字段编辑区域 -->
-      <q-card v-if="editableFields.length > 0" flat bordered class="interactive-editor q-mb-lg">
-        <q-card-section class="q-pa-sm">
-          <div class="row justify-between items-center q-mb-md">
-            <div class="text-subtitle2 text-weight-medium">
-              <q-icon name="edit_note" class="q-mr-sm" />
-              交互式表设计编辑
-            </div>
-            <div class="row q-gutter-xs">
-              <q-chip size="sm" color="info" text-color="white" icon="info">
-                表名: {{ editableTableName }}
-              </q-chip>
-              <q-chip size="sm" color="positive" text-color="white" icon="table_rows">
-                {{ editableFields.length }} 个字段
-              </q-chip>
-            </div>
-          </div>
 
-          <!-- 表名编辑 -->
-          <div class="row q-mb-md">
-            <div class="col-12">
-              <q-input v-model="editableTableName" label="表名" outlined dense class="light-field">
-                <template v-slot:prepend>
-                  <q-icon name="table_chart" size="16px" />
-                </template>
-              </q-input>
-            </div>
-          </div>
-
-          <!-- 表描述编辑 -->
-          <div class="row q-mb-lg">
-            <div class="col-12">
-              <q-input v-model="editableTableDescription" label="表描述" outlined dense type="textarea" rows="2"
-                class="light-field">
-                <template v-slot:prepend>
-                  <q-icon name="description" size="16px" />
-                </template>
-              </q-input>
-            </div>
-          </div>
-
-
-        </q-card-section>
-      </q-card>
 
       <!-- 结果展示区域 -->
       <q-card v-if="tableDesignResult" flat bordered class="result-card">
@@ -121,10 +78,15 @@
             <!-- 表结构详情页签 -->
             <q-tab-panel name="structure" class="q-pa-md">
               <div class="table-info q-mb-md">
-                <h6 class="q-my-sm">
-                  <q-icon name="table_chart" class="q-mr-sm" />
-                  {{ tableDesignResult.tableName }}
-                </h6>
+                <div class="row items-center justify-between q-mb-sm">
+                  <h6 class="q-my-none">
+                    <q-icon name="table_chart" class="q-mr-sm" />
+                    {{ tableDesignResult.tableName }}
+                  </h6>
+                  <q-chip icon="table_rows" color="positive" text-color="white" size="sm">
+                    {{ (tableDesignResult.fields || []).length }} 个字段
+                  </q-chip>
+                </div>
                 <p class="text-body2 text-grey-7 q-mb-md">
                   {{ tableDesignResult.tableDescription }}
                 </p>
@@ -350,6 +312,8 @@ const fieldTypeOptions = dataTypes.map(dt => dt.type)
 // 表格内联编辑数据
 const editingRows = ref<Set<string>>(new Set())
 const editingRowData = ref<Record<string, EditableField>>({})
+
+
 
 // 表格列定义
 const fieldColumns = [
@@ -606,6 +570,8 @@ const cancelAllEditing = () => {
     position: 'top'
   })
 }
+
+
 
 const deleteTableRow = (fieldName: string) => {
   $q.dialog({
@@ -917,17 +883,7 @@ const copyJSON = async () => {
   }
 }
 
-.interactive-editor {
-  background: var(--q-card-bg, $card-bg);
-  border: 1px solid var(--q-border-color, $border-color);
-  border-radius: 8px;
 
-  .light-field {
-    :deep(.q-field__control) {
-      background: rgba(255, 255, 255, 0.02);
-    }
-  }
-}
 
 
 
@@ -1032,6 +988,8 @@ const copyJSON = async () => {
     min-height: 32px;
   }
 }
+
+
 
 .table-info {
   h6 {
