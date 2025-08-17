@@ -480,7 +480,7 @@ const originalSqlCopied = ref(false)
 const originalDdlSql = ref('')
 
 // 数据库类型选择
-const databaseType = ref('mysql') // 默认为 MySQL
+const databaseType = ref('postgresql') // 默认为 PostgreSQL
 
 // 表设计结果 - 使用API定义的类型
 const tableDesignResult = ref<TableDesignResponseVO | null>(null)
