@@ -156,23 +156,25 @@
                   </q-td>
                 </template>
                 <template v-slot:body-cell-actions="props">
-                  <q-td :props="props">
-                    <div class="row q-gutter-xs justify-center">
+                  <q-td :props="props" class="actions-cell">
+                    <div class="row no-wrap items-center justify-center action-buttons">
                       <template v-if="editingRows.has(props.row.fieldName)">
-                        <q-btn size="sm" flat round icon="check" color="positive"
-                          @click="saveTableRowEdit(props.row.fieldName)">
+                        <q-btn :size="isMobile ? 'xs' : 'sm'" flat round icon="check" color="positive"
+                          @click="saveTableRowEdit(props.row.fieldName)" class="action-btn">
                           <q-tooltip>保存</q-tooltip>
                         </q-btn>
-                        <q-btn size="sm" flat round icon="close" color="negative"
-                          @click="cancelTableRowEdit(props.row.fieldName)">
+                        <q-btn :size="isMobile ? 'xs' : 'sm'" flat round icon="close" color="negative"
+                          @click="cancelTableRowEdit(props.row.fieldName)" class="action-btn">
                           <q-tooltip>取消</q-tooltip>
                         </q-btn>
                       </template>
                       <template v-else>
-                        <q-btn size="sm" flat round icon="edit" color="primary" @click="startTableRowEdit(props.row)">
+                        <q-btn :size="isMobile ? 'xs' : 'sm'" flat round icon="edit" color="primary"
+                          @click="startTableRowEdit(props.row)" class="action-btn">
                           <q-tooltip>编辑</q-tooltip>
                         </q-btn>
-                        <q-btn size="sm" flat round icon="more_vert" color="grey-7">
+                        <q-btn :size="isMobile ? 'xs' : 'sm'" flat round icon="more_vert" color="grey-7"
+                          class="action-btn">
                           <q-tooltip>更多操作</q-tooltip>
                           <q-menu>
                             <q-list style="min-width: 140px">
@@ -240,13 +242,27 @@
                   </template>
 
                   <template v-slot:body-cell-actions="props">
-                    <q-td :props="props">
-                      <div class="row q-gutter-xs justify-center">
-                        <q-btn size="sm" flat round icon="edit" color="primary" @click="openIndexDialog(props.row)">
+                    <q-td :props="props" class="actions-cell">
+                      <div class="row no-wrap items-center justify-center action-buttons">
+                        <q-btn :size="isMobile ? 'xs' : 'sm'" flat round icon="edit" color="primary"
+                          @click="openIndexDialog(props.row)" class="action-btn">
                           <q-tooltip>编辑索引</q-tooltip>
                         </q-btn>
-                        <q-btn size="sm" flat round icon="delete" color="negative" @click="deleteIndex(props.row.id)">
-                          <q-tooltip>删除索引</q-tooltip>
+                        <q-btn :size="isMobile ? 'xs' : 'sm'" flat round icon="more_vert" color="grey-7"
+                          class="action-btn">
+                          <q-tooltip>更多操作</q-tooltip>
+                          <q-menu>
+                            <q-list style="min-width: 120px">
+                              <q-item clickable v-close-popup @click="deleteIndex(props.row.id)">
+                                <q-item-section avatar>
+                                  <q-icon name="delete" color="negative" />
+                                </q-item-section>
+                                <q-item-section>
+                                  <q-item-label class="text-negative">删除索引</q-item-label>
+                                </q-item-section>
+                              </q-item>
+                            </q-list>
+                          </q-menu>
                         </q-btn>
                       </div>
                     </q-td>
@@ -1518,6 +1534,39 @@ const copyJSON = async () => {
       color: var(--q-text-color, $text-color) !important;
       border-bottom: 1px solid var(--q-border-color, $border-color);
     }
+
+    // 移动端操作按钮样式优化
+    :deep(.q-table tbody td) {
+      padding: 6px 8px;
+    }
+
+    // 操作列特殊处理
+    .actions-cell {
+      width: 80px !important;
+      min-width: 80px !important;
+      padding: 4px !important;
+
+      .action-buttons {
+        gap: 2px !important;
+
+        .action-btn {
+          min-width: 24px !important;
+          min-height: 24px !important;
+          width: 24px !important;
+          height: 24px !important;
+          padding: 0 !important;
+          margin: 0 1px !important;
+
+          :deep(.q-btn__content) {
+            font-size: 12px !important;
+          }
+
+          :deep(.q-icon) {
+            font-size: 14px !important;
+          }
+        }
+      }
+    }
   }
 
   // 索引表格样式
@@ -1527,7 +1576,7 @@ const copyJSON = async () => {
     }
 
     :deep(.q-table tbody td) {
-      padding: 8px 12px;
+      padding: 6px 8px;
     }
 
     :deep(.q-table thead th) {
@@ -1536,6 +1585,34 @@ const copyJSON = async () => {
       background: rgba(var(--q-primary-rgb, 148, 190, 206), 0.1) !important;
       color: var(--q-text-color, $text-color) !important;
       border-bottom: 1px solid var(--q-border-color, $border-color);
+    }
+
+    // 索引表格操作列样式
+    .actions-cell {
+      width: 80px !important;
+      min-width: 80px !important;
+      padding: 4px !important;
+
+      .action-buttons {
+        gap: 2px !important;
+
+        .action-btn {
+          min-width: 24px !important;
+          min-height: 24px !important;
+          width: 24px !important;
+          height: 24px !important;
+          padding: 0 !important;
+          margin: 0 1px !important;
+
+          :deep(.q-btn__content) {
+            font-size: 12px !important;
+          }
+
+          :deep(.q-icon) {
+            font-size: 14px !important;
+          }
+        }
+      }
     }
 
     .q-chip {
