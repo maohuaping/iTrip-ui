@@ -110,7 +110,7 @@
                               <q-chip v-if="field.isPrimaryKey" size="xs" color="warning" text-color="white" icon="key">
                                 主键
                               </q-chip>
-                              <q-chip v-if="field.isNotNull && !field.isPrimaryKey" size="xs" color="negative"
+                              <q-chip v-if="field.isNotNull && !field.isPrimaryKey" size="xs" color="blue-grey"
                                 text-color="white" icon="not_interested">
                                 非空
                               </q-chip>
@@ -282,17 +282,80 @@
                 </template>
               </q-input>
 
-              <q-select v-model="editingField.fieldType" :options="fieldTypeOptions" label="数据类型" outlined dense
-                class="q-mb-md light-field" use-input @filter="filterFieldTypes">
-                <template v-slot:prepend>
-                  <q-icon name="data_object" size="16px" />
-                </template>
-              </q-select>
+              <!-- 数据类型选择 -->
+              <div class="datatype-section q-mb-md">
+                <q-select v-model="editingField.baseType" :options="fieldTypeOptions" label="数据类型" outlined dense
+                  class="light-field" use-input @filter="filterFieldTypes" @update:model-value="onDataTypeChange">
+                  <template v-slot:prepend>
+                    <q-icon name="data_object" size="16px" />
+                  </template>
+                  <template v-slot:option="scope">
+                    <q-item v-bind="scope.itemProps">
+                      <q-item-section>
+                        <q-item-label>{{ scope.opt }}</q-item-label>
+                        <q-item-label caption>
+                          {{ getDataTypeCategory(scope.opt) }}
+                        </q-item-label>
+                      </q-item-section>
+                      <q-item-section side>
+                        <q-icon :name="getDataTypeIcon(scope.opt)" :color="getDataTypeCategoryColor(scope.opt)"
+                          size="16px" />
+                      </q-item-section>
+                    </q-item>
+                  </template>
+                </q-select>
+
+                <!-- 动态参数输入 -->
+                <div v-if="currentDataType" class="type-params q-mt-sm">
+                  <div class="row q-gutter-sm">
+                    <!-- 长度参数 -->
+                    <div v-if="currentDataType.hasLength" class="col">
+                      <q-input v-model="editingField.typeLength" :label="currentDataType.hasScale ? '精度' : '长度'"
+                        outlined dense class="light-field" type="number" min="1"
+                        :placeholder="currentDataType.defaultLength">
+                        <template v-slot:prepend>
+                          <q-icon name="straighten" size="14px" />
+                        </template>
+                      </q-input>
+                    </div>
+
+                    <!-- 标度参数 -->
+                    <div v-if="currentDataType.hasScale" class="col">
+                      <q-input v-model="editingField.typeScale" label="标度" outlined dense class="light-field"
+                        type="number" min="0" :placeholder="currentDataType.defaultScale">
+                        <template v-slot:prepend>
+                          <q-icon name="decimal_increase" size="14px" />
+                        </template>
+                      </q-input>
+                    </div>
+                  </div>
+
+                  <!-- 类型预览 -->
+                  <div class="type-preview q-mt-xs">
+                    <q-chip size="sm" color="info" text-color="white" icon="preview">
+                      {{ formatFieldType(editingField) }}
+                    </q-chip>
+                  </div>
+                </div>
+              </div>
 
               <q-input v-model="editingField.description" label="字段描述" outlined dense type="textarea" rows="3"
                 class="light-field" placeholder="请输入字段的详细描述...">
                 <template v-slot:prepend>
                   <q-icon name="description" size="16px" />
+                </template>
+              </q-input>
+
+              <!-- 默认值设置 -->
+              <q-input v-model="editingField.defaultValue" label="默认值" outlined dense class="q-mt-md light-field"
+                placeholder="留空表示无默认值">
+                <template v-slot:prepend>
+                  <q-icon name="settings" size="16px" />
+                </template>
+                <template v-slot:hint>
+                  <div class="text-caption">
+                    可使用如 CURRENT_TIMESTAMP、NULL 等特殊值
+                  </div>
                 </template>
               </q-input>
             </div>
@@ -319,10 +382,12 @@
                   </q-tooltip>
                 </q-checkbox>
 
-                <q-checkbox v-model="editingField.isAuditField" label="审计字段" class="q-mb-sm">
+                <q-checkbox v-model="editingField.isAuditField" label="审计字段" class="q-mb-sm"
+                  @update:model-value="onAuditFieldChange">
                   <q-icon name="help_outline" class="q-ml-xs text-grey-6 cursor-pointer" size="16px">
                     <q-tooltip class="bg-dark">
                       审计字段通常指 created_at、updated_at、created_by、updated_by 等用于记录数据变更历史的字段
+                      <br />勾选后将自动配置常用的审计字段设置
                     </q-tooltip>
                   </q-icon>
                 </q-checkbox>
@@ -351,9 +416,13 @@ import type { TableDesignResponseVO, TableField } from 'src/api/api.schemas'
 
 const $q = useQuasar()
 
-// 扩展的字段接口，添加唯一ID
+// 扩展的字段接口，添加唯一ID和类型参数
 interface EditableField extends TableField {
   id: string
+  baseType?: string // 基础类型，如 VARCHAR, DECIMAL
+  typeLength?: string // 类型长度，如 VARCHAR(50) 中的 50
+  typeScale?: string // 类型精度，如 DECIMAL(10,2) 中的 2
+  defaultValue?: string // 默认值
 }
 
 // 响应式数据
@@ -372,15 +441,31 @@ const editableFields = ref<EditableField[]>([])
 const editableTableName = ref('')
 const editableTableDescription = ref('')
 
-// 字段类型选项
-const fieldTypeOptions = [
-  'BIGINT', 'INT', 'SMALLINT', 'TINYINT',
-  'VARCHAR(50)', 'VARCHAR(100)', 'VARCHAR(255)', 'TEXT', 'LONGTEXT',
-  'DECIMAL(10,2)', 'FLOAT', 'DOUBLE',
-  'DATE', 'DATETIME', 'TIMESTAMP', 'TIME',
-  'BOOLEAN', 'TINYINT(1)',
-  'JSON', 'BLOB', 'LONGBLOB'
+// 数据类型定义
+const dataTypes = [
+  { type: 'BIGINT', hasLength: false, hasScale: false, category: 'integer' },
+  { type: 'INT', hasLength: false, hasScale: false, category: 'integer' },
+  { type: 'SMALLINT', hasLength: false, hasScale: false, category: 'integer' },
+  { type: 'TINYINT', hasLength: true, hasScale: false, category: 'integer', defaultLength: '1' },
+  { type: 'VARCHAR', hasLength: true, hasScale: false, category: 'string', defaultLength: '50' },
+  { type: 'CHAR', hasLength: true, hasScale: false, category: 'string', defaultLength: '10' },
+  { type: 'TEXT', hasLength: false, hasScale: false, category: 'string' },
+  { type: 'LONGTEXT', hasLength: false, hasScale: false, category: 'string' },
+  { type: 'DECIMAL', hasLength: true, hasScale: true, category: 'decimal', defaultLength: '10', defaultScale: '2' },
+  { type: 'FLOAT', hasLength: false, hasScale: false, category: 'decimal' },
+  { type: 'DOUBLE', hasLength: false, hasScale: false, category: 'decimal' },
+  { type: 'DATE', hasLength: false, hasScale: false, category: 'datetime' },
+  { type: 'DATETIME', hasLength: false, hasScale: false, category: 'datetime' },
+  { type: 'TIMESTAMP', hasLength: false, hasScale: false, category: 'datetime' },
+  { type: 'TIME', hasLength: false, hasScale: false, category: 'datetime' },
+  { type: 'BOOLEAN', hasLength: false, hasScale: false, category: 'boolean' },
+  { type: 'JSON', hasLength: false, hasScale: false, category: 'json' },
+  { type: 'BLOB', hasLength: false, hasScale: false, category: 'binary' },
+  { type: 'LONGBLOB', hasLength: false, hasScale: false, category: 'binary' }
 ]
+
+// 字段类型选项（用于显示）
+const fieldTypeOptions = dataTypes.map(dt => dt.type)
 
 // 侧边栏编辑器数据
 const fieldEditorOpen = ref(false)
@@ -443,9 +528,82 @@ const hasPrimaryKey = computed(() => {
   )
 })
 
+// 当前选择的数据类型信息
+const currentDataType = computed(() => {
+  if (!editingField.value?.baseType) return null
+  return dataTypes.find(dt => dt.type === editingField.value?.baseType)
+})
+
+// 格式化字段类型显示
+const formatFieldType = (field: EditableField) => {
+  if (!field.baseType) return 'VARCHAR(50)'
+
+  const dataType = dataTypes.find(dt => dt.type === field.baseType)
+  if (!dataType) return field.baseType
+
+  if (dataType.hasLength && dataType.hasScale) {
+    // DECIMAL类型
+    const length = field.typeLength || dataType.defaultLength || '10'
+    const scale = field.typeScale || dataType.defaultScale || '2'
+    return `${field.baseType}(${length},${scale})`
+  } else if (dataType.hasLength) {
+    // VARCHAR, CHAR等类型
+    const length = field.typeLength || dataType.defaultLength || '50'
+    return `${field.baseType}(${length})`
+  } else {
+    // 不需要参数的类型
+    return field.baseType
+  }
+}
+
 // 工具方法
 const generateUniqueId = () => {
   return Date.now().toString(36) + Math.random().toString(36).substr(2, 9)
+}
+
+// 获取数据类型分类描述
+const getDataTypeCategory = (type: string) => {
+  const dataType = dataTypes.find(dt => dt.type === type)
+  const categoryMap = {
+    'integer': '整数类型',
+    'string': '字符类型',
+    'decimal': '小数类型',
+    'datetime': '日期时间',
+    'boolean': '布尔类型',
+    'json': 'JSON类型',
+    'binary': '二进制类型'
+  }
+  return categoryMap[dataType?.category as keyof typeof categoryMap] || '其他类型'
+}
+
+// 获取数据类型图标
+const getDataTypeIcon = (type: string) => {
+  const dataType = dataTypes.find(dt => dt.type === type)
+  const iconMap = {
+    'integer': 'looks_one',
+    'string': 'text_fields',
+    'decimal': 'functions',
+    'datetime': 'schedule',
+    'boolean': 'toggle_on',
+    'json': 'data_object',
+    'binary': 'storage'
+  }
+  return iconMap[dataType?.category as keyof typeof iconMap] || 'help'
+}
+
+// 获取数据类型分类颜色
+const getDataTypeCategoryColor = (type: string) => {
+  const dataType = dataTypes.find(dt => dt.type === type)
+  const colorMap = {
+    'integer': 'blue',
+    'string': 'green',
+    'decimal': 'purple',
+    'datetime': 'orange',
+    'boolean': 'pink',
+    'json': 'cyan',
+    'binary': 'grey'
+  }
+  return colorMap[dataType?.category as keyof typeof colorMap] || 'grey'
 }
 
 // 交互式编辑方法
@@ -454,10 +612,14 @@ const addNewField = () => {
     id: generateUniqueId(),
     fieldName: '',
     fieldType: 'VARCHAR(50)',
+    baseType: 'VARCHAR',
+    typeLength: '50',
+    typeScale: '',
     isPrimaryKey: false,
     isNotNull: false,
     description: '',
-    isAuditField: false
+    isAuditField: false,
+    defaultValue: ''
   }
   editableFields.value.push(newField)
 
@@ -498,6 +660,11 @@ const saveFieldChanges = () => {
     return
   }
 
+  // 更新字段类型显示
+  if (editingField.value) {
+    editingField.value.fieldType = formatFieldType(editingField.value)
+  }
+
   $q.notify({
     type: 'positive',
     message: '字段保存成功',
@@ -527,6 +694,88 @@ const onPrimaryKeyChange = (isPrimary: boolean) => {
       }
     })
   }
+}
+
+// 数据类型变化处理
+const onDataTypeChange = (newType: string) => {
+  if (!editingField.value) return
+
+  const dataType = dataTypes.find(dt => dt.type === newType)
+  if (!dataType) return
+
+  // 重置类型参数
+  editingField.value.typeLength = dataType.defaultLength || ''
+  editingField.value.typeScale = dataType.defaultScale || ''
+
+  // 更新完整的字段类型
+  editingField.value.fieldType = formatFieldType(editingField.value)
+}
+
+// 审计字段变化处理
+const onAuditFieldChange = (isAudit: boolean) => {
+  if (!isAudit || !editingField.value) return
+
+  $q.dialog({
+    title: '审计字段智能配置',
+    message: '检测到您勾选了审计字段，是否要自动配置常用的审计字段设置？',
+    options: {
+      type: 'radio',
+      model: 'created_at',
+      items: [
+        { label: 'created_at (创建时间)', value: 'created_at' },
+        { label: 'updated_at (更新时间)', value: 'updated_at' },
+        { label: 'created_by (创建人)', value: 'created_by' },
+        { label: 'updated_by (更新人)', value: 'updated_by' }
+      ]
+    },
+    cancel: true,
+    persistent: true
+  }).onOk(data => {
+    if (!editingField.value) return
+
+    // 根据选择自动配置字段
+    switch (data) {
+      case 'created_at':
+        editingField.value.fieldName = 'created_at'
+        editingField.value.baseType = 'DATETIME'
+        editingField.value.isNotNull = true
+        editingField.value.defaultValue = 'CURRENT_TIMESTAMP'
+        editingField.value.description = '创建时间'
+        break
+      case 'updated_at':
+        editingField.value.fieldName = 'updated_at'
+        editingField.value.baseType = 'DATETIME'
+        editingField.value.isNotNull = true
+        editingField.value.defaultValue = 'CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'
+        editingField.value.description = '更新时间'
+        break
+      case 'created_by':
+        editingField.value.fieldName = 'created_by'
+        editingField.value.baseType = 'BIGINT'
+        editingField.value.isNotNull = false
+        editingField.value.defaultValue = ''
+        editingField.value.description = '创建人ID'
+        break
+      case 'updated_by':
+        editingField.value.fieldName = 'updated_by'
+        editingField.value.baseType = 'BIGINT'
+        editingField.value.isNotNull = false
+        editingField.value.defaultValue = ''
+        editingField.value.description = '更新人ID'
+        break
+    }
+
+    // 更新字段类型显示
+    editingField.value.fieldType = formatFieldType(editingField.value)
+
+    $q.notify({
+      type: 'positive',
+      message: '审计字段配置成功！',
+      position: 'top'
+    })
+  }).onCancel(() => {
+    // 如果取消，保持审计字段勾选状态
+  })
 }
 
 const filterFieldTypes = (val: string, update: (fn: () => void) => void) => {
@@ -562,10 +811,34 @@ const deleteField = (index: number) => {
 }
 
 const convertToEditableFields = (fields: TableField[] = []) => {
-  return fields.map((field) => ({
-    ...field,
-    id: generateUniqueId()
-  } as EditableField))
+  return fields.map((field) => {
+    const editableField: EditableField = {
+      ...field,
+      id: generateUniqueId(),
+      defaultValue: ''
+    }
+
+    // 解析字段类型，分离基础类型和参数
+    if (field.fieldType) {
+      const typeMatch = field.fieldType.match(/^(\w+)(?:\((\d+)(?:,(\d+))?\))?/)
+      if (typeMatch) {
+        editableField.baseType = typeMatch[1] || 'VARCHAR'
+        editableField.typeLength = typeMatch[2] || ''
+        editableField.typeScale = typeMatch[3] || ''
+      } else {
+        editableField.baseType = field.fieldType
+        editableField.typeLength = ''
+        editableField.typeScale = ''
+      }
+    } else {
+      editableField.baseType = 'VARCHAR'
+      editableField.typeLength = '50'
+      editableField.typeScale = ''
+      editableField.fieldType = 'VARCHAR(50)'
+    }
+
+    return editableField
+  })
 }
 
 const generateFinalSQL = async () => {
@@ -967,6 +1240,26 @@ const copyJSON = async () => {
         .q-checkbox {
           :deep(.q-checkbox__label) {
             font-size: 14px;
+          }
+        }
+      }
+
+      .datatype-section {
+        .type-params {
+          .light-field {
+            :deep(.q-field__control) {
+              background: rgba(255, 255, 255, 0.02);
+            }
+          }
+        }
+
+        .type-preview {
+          text-align: center;
+
+          .q-chip {
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 12px;
+            letter-spacing: 0.5px;
           }
         }
       }
