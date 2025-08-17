@@ -149,6 +149,7 @@
             <TaskList />
             <!-- AI变量命名部分 -->
             <AiNaming />
+            <AiTableDesign />
             <!-- 工作日志部分 -->
             <WorkLog />
           </div>
@@ -325,6 +326,7 @@ import AiNaming from './components/AiNaming.vue'
 import { getUrl } from 'src/api/url/url'
 import { getTodo } from 'src/api/todo/todo'
 import type { SysUrl, TodoVO } from 'src/api/api.schemas'
+import AiTableDesign from 'pages/work/components/AiTableDesign.vue';
 
 // 添加组件名称以解决ESLint警告
 defineOptions({
