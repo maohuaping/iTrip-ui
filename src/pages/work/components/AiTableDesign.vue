@@ -203,7 +203,7 @@
 
                           <q-menu>
                             <q-list style="min-width: 140px">
-                              <q-item clickable v-close-popup @click="duplicateTableRow(props.row)">
+                              <q-item clickable @click="handleDuplicateField(props.row)">
                                 <q-item-section avatar>
                                   <q-icon name="content_copy" color="primary" />
                                 </q-item-section>
@@ -212,7 +212,7 @@
                                 </q-item-section>
                               </q-item>
                               <q-separator />
-                              <q-item clickable v-close-popup @click="deleteTableRow(props.row.fieldName)">
+                              <q-item clickable @click="handleDeleteField(props.row.fieldName)">
                                 <q-item-section avatar>
                                   <q-icon name="delete" color="negative" />
                                 </q-item-section>
@@ -278,7 +278,7 @@
 
                           <q-menu>
                             <q-list style="min-width: 120px">
-                              <q-item clickable v-close-popup @click="deleteIndex(props.row.id)">
+                              <q-item clickable @click="handleDeleteIndex(props.row.id)">
                                 <q-item-section avatar>
                                   <q-icon name="delete" color="negative" />
                                 </q-item-section>
@@ -893,13 +893,27 @@ const cancelAllEditing = () => {
 
 
 
+// 处理复制字段
+const handleDuplicateField = (row: TableField) => {
+  console.log('handleDuplicateField called with row:', row)
+  duplicateTableRow(row)
+}
+
+// 处理删除字段
+const handleDeleteField = (fieldName: string) => {
+  console.log('handleDeleteField called with fieldName:', fieldName)
+  deleteTableRow(fieldName)
+}
+
 const deleteTableRow = (fieldName: string) => {
+  console.log('deleteTableRow called with fieldName:', fieldName)
   $q.dialog({
     title: '确认删除',
     message: `确定要删除字段 "${fieldName}" 吗？`,
     cancel: true,
     persistent: true
   }).onOk(() => {
+    console.log('Delete confirmed for field:', fieldName)
     // 从表格数据中删除
     if (tableDesignResult.value?.fields) {
       const index = tableDesignResult.value.fields.findIndex(f => f.fieldName === fieldName)
@@ -999,13 +1013,21 @@ const saveIndex = () => {
   indexDrawerOpen.value = false
 }
 
+// 处理删除索引
+const handleDeleteIndex = (indexId: string) => {
+  console.log('handleDeleteIndex called with indexId:', indexId)
+  deleteIndex(indexId)
+}
+
 const deleteIndex = (indexId: string) => {
+  console.log('deleteIndex called with indexId:', indexId)
   $q.dialog({
     title: '确认删除',
     message: '确定要删除这个索引吗？',
     cancel: true,
     persistent: true
   }).onOk(() => {
+    console.log('Delete confirmed for index:', indexId)
     const index = editableIndexes.value.findIndex(idx => idx.id === indexId)
     if (index !== -1) {
       editableIndexes.value.splice(index, 1)
