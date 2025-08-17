@@ -1256,8 +1256,6 @@ const generateTableDesign = async () => {
 
     // 修复API响应结构问题
     if (response.data?.isOk && response.data?.okData) {
-      tableDesignResult.value = response.data.okData
-
       // 转换为可编辑字段并填充编辑器
       editableFields.value = convertToEditableFields(response.data.okData.fields)
       editableTableName.value = response.data.okData.tableName || 'new_table'
@@ -1281,6 +1279,30 @@ const generateTableDesign = async () => {
             comment: idx.comment
           })
         })
+      }
+
+      // 根据表结构动态生成DDL，而不是使用API返回的DDL
+      const tableStructure = {
+        tableName: editableTableName.value,
+        tableDescription: editableTableDescription.value,
+        fields: response.data.okData.fields || [],
+        indexes: editableIndexes.value || []
+      }
+
+      const generatedDDL = generateDDLFromFields(tableStructure)
+
+      // 构建完整的表设计结果对象
+      tableDesignResult.value = {
+        inputPrompt: requirementDescription.value,
+        tableName: editableTableName.value,
+        tableDescription: editableTableDescription.value,
+        ddlSql: generatedDDL, // 使用动态生成的DDL
+        fields: response.data.okData.fields || [],
+        indexes: editableIndexes.value || [],
+        rawResponse: JSON.stringify(response.data.okData),
+        durationMs: response.data.okData.durationMs || 0,
+        durationSeconds: response.data.okData.durationSeconds || 0,
+        model: response.data.okData.model || 'deepseek'
       }
 
       activeTab.value = 'structure' // 默认显示表结构详情页签
