@@ -358,7 +358,8 @@ interface TableIndex {
   indexName: string
   indexType: 'PRIMARY' | 'UNIQUE' | 'NORMAL' | 'FULLTEXT'
   fields: string[] // 索引包含的字段名数组
-  comment?: string // 索引注释
+  comment?: string // 索引注释（用于前端展示和编辑）
+  description?: string // API返回的原始描述字段
 }
 
 interface EditableIndex extends TableIndex {
@@ -943,13 +944,14 @@ const duplicateTableRow = (row: TableField) => {
 
 // 转换API返回的索引数据为前端期望的格式
 const convertToEditableIndexes = (indexes: any[] = []) => {
-  return indexes.map((index) => {
+  return indexes.map((index, idx) => {
     const editableIndex: EditableIndex = {
-      id: Date.now().toString() + '_' + Math.random().toString(36).substr(2, 9),
+      id: `index_${Date.now()}_${idx}_${Math.random().toString(36).substr(2, 9)}`,
       indexName: index.indexName || '',
       indexType: convertIndexType(index.indexType || 'BTREE'),
       fields: index.fieldName ? [index.fieldName] : [],
-      comment: index.comment || ''
+      comment: index.comment || index.description || '', // 同时支持comment和description字段
+      description: index.description || '' // 保留原始描述字段
     }
     return editableIndex
   })
@@ -1181,6 +1183,21 @@ const generateTableDesign = async () => {
       console.log('原始索引数据:', response.data.okData.indexes)
       editableIndexes.value = convertToEditableIndexes(response.data.okData.indexes || [])
       console.log('转换后的索引数据:', editableIndexes.value)
+      console.log('索引数量:', editableIndexes.value.length)
+
+      // 详细转换验证
+      if (editableIndexes.value.length > 0) {
+        console.log('索引转换验证:')
+        editableIndexes.value.forEach((idx, i) => {
+          console.log(`索引 ${i + 1}:`, {
+            id: idx.id,
+            name: idx.indexName,
+            type: idx.indexType,
+            fields: idx.fields,
+            comment: idx.comment
+          })
+        })
+      }
 
       activeTab.value = 'structure' // 默认显示表结构详情页签
 
