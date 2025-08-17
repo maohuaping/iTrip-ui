@@ -93,8 +93,8 @@
         <q-card-section class="q-pa-none">
           <q-tabs v-model="activeTab" dense class="text-grey" active-color="primary" indicator-color="primary"
             align="justify" narrow-indicator>
-            <q-tab name="sql" icon="code" label="SQL DDL" />
             <q-tab name="structure" icon="table_view" label="表结构详情" />
+            <q-tab name="sql" icon="code" label="SQL DDL" />
             <q-tab name="raw" icon="data_object" label="原始数据" />
           </q-tabs>
 
@@ -272,7 +272,7 @@ interface EditableField extends TableField {
 const requirementDescription = ref('')
 const isLoading = ref(false)
 const isGeneratingSQL = ref(false)
-const activeTab = ref('sql')
+const activeTab = ref('structure')
 const sqlCopied = ref(false)
 const jsonCopied = ref(false)
 
@@ -606,7 +606,7 @@ const generateFinalSQL = async () => {
       model: 'user-edited'
     }
 
-    activeTab.value = 'sql'
+    activeTab.value = 'structure'
 
     $q.notify({
       type: 'positive',
@@ -684,7 +684,7 @@ const generateTableDesign = async () => {
       editableTableName.value = response.data.okData.tableName || 'new_table'
       editableTableDescription.value = response.data.okData.tableDescription || ''
 
-      activeTab.value = 'sql' // 默认显示SQL页签
+      activeTab.value = 'structure' // 默认显示表结构详情页签
 
       $q.notify({
         type: 'positive',
