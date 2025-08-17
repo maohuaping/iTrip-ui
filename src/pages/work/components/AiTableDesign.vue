@@ -130,6 +130,21 @@
                 </p>
               </div>
 
+              <!-- 批量操作区域 -->
+              <div v-if="editingRows.size > 0" class="batch-operations q-mb-md">
+                <div class="row justify-end q-gutter-sm">
+                  <q-chip icon="edit" color="info" text-color="white" size="sm">
+                    正在编辑 {{ editingRows.size }} 个字段
+                  </q-chip>
+                  <q-btn size="sm" color="positive" icon="check_circle" label="确定所有" @click="saveAllEditing" unelevated>
+                    <q-tooltip>保存所有正在编辑的字段</q-tooltip>
+                  </q-btn>
+                  <q-btn size="sm" color="grey-6" icon="cancel" label="取消所有" @click="cancelAllEditing" unelevated>
+                    <q-tooltip>取消所有正在编辑的字段</q-tooltip>
+                  </q-btn>
+                </div>
+              </div>
+
               <q-table :rows="tableDesignResult.fields || []" :columns="fieldColumns" row-key="fieldName" flat bordered
                 class="field-table" :pagination="{ rowsPerPage: 0 }" hide-pagination>
                 <template v-slot:body-cell-fieldName="props">
@@ -515,6 +530,81 @@ const saveTableRowEdit = (fieldName: string) => {
 const cancelTableRowEdit = (fieldName: string) => {
   editingRows.value.delete(fieldName)
   delete editingRowData.value[fieldName]
+}
+
+// 批量操作方法
+const saveAllEditing = () => {
+  const editingFieldNames = Array.from(editingRows.value)
+  let successCount = 0
+  let failCount = 0
+
+  editingFieldNames.forEach(fieldName => {
+    const editData = editingRowData.value[fieldName]
+    if (!editData || !editData.fieldName?.trim()) {
+      failCount++
+      return
+    }
+
+    // 更新原始数据
+    if (tableDesignResult.value?.fields) {
+      const index = tableDesignResult.value.fields.findIndex(f => f.fieldName === fieldName)
+      if (index !== -1) {
+        tableDesignResult.value.fields[index] = {
+          fieldName: editData.fieldName,
+          fieldType: editData.fieldType || 'VARCHAR(50)',
+          isPrimaryKey: editData.isPrimaryKey || false,
+          isNotNull: editData.isNotNull || false,
+          description: editData.description || '',
+          isAuditField: editData.isAuditField || false
+        }
+      }
+    }
+
+    // 同步更新可编辑字段数据
+    const editableIndex = editableFields.value.findIndex(f => f.fieldName === fieldName)
+    if (editableIndex !== -1) {
+      editableFields.value[editableIndex] = editData
+    }
+
+    successCount++
+  })
+
+  // 清理所有编辑状态
+  editingRows.value.clear()
+  Object.keys(editingRowData.value).forEach(key => {
+    delete editingRowData.value[key]
+  })
+
+  // 显示结果通知
+  if (failCount > 0) {
+    $q.notify({
+      type: 'warning',
+      message: `保存完成：${successCount} 个成功，${failCount} 个失败（字段名不能为空）`,
+      position: 'top'
+    })
+  } else {
+    $q.notify({
+      type: 'positive',
+      message: `批量保存成功：已保存 ${successCount} 个字段`,
+      position: 'top'
+    })
+  }
+}
+
+const cancelAllEditing = () => {
+  const editingCount = editingRows.value.size
+
+  // 清理所有编辑状态
+  editingRows.value.clear()
+  Object.keys(editingRowData.value).forEach(key => {
+    delete editingRowData.value[key]
+  })
+
+  $q.notify({
+    type: 'info',
+    message: `已取消 ${editingCount} 个字段的编辑`,
+    position: 'top'
+  })
 }
 
 const deleteTableRow = (fieldName: string) => {
@@ -947,6 +1037,23 @@ const copyJSON = async () => {
   h6 {
     color: var(--q-primary);
     margin-bottom: 8px;
+  }
+}
+
+// 批量操作样式
+.batch-operations {
+  background: rgba(var(--q-primary-rgb), 0.05);
+  border: 1px solid rgba(var(--q-primary-rgb), 0.2);
+  border-radius: 8px;
+  padding: 12px 16px;
+
+  .q-chip {
+    font-weight: 500;
+  }
+
+  .q-btn {
+    font-weight: 500;
+    min-width: 80px;
   }
 }
 
