@@ -96,12 +96,12 @@
             <div class="fields-list">
               <div class="dragArea">
                 <div v-for="(field, index) in editableFields" :key="field.id">
-                  <q-card flat bordered class="field-item q-mb-sm" :class="{ 'field-editing': field.isEditing }">
+                  <q-card flat bordered class="field-item q-mb-sm">
                     <q-card-section class="q-pa-md">
                       <div class="row items-center q-gutter-md">
                         <!-- 字段信息 -->
                         <div class="col">
-                          <div v-if="!field.isEditing" class="field-display">
+                          <div class="field-display">
                             <div class="row items-center q-gutter-sm q-mb-xs">
                               <span class="text-weight-medium text-body1">{{ field.fieldName }}</span>
                               <q-chip size="xs" :color="field.isPrimaryKey ? 'warning' : 'grey-6'" text-color="white">
@@ -110,39 +110,17 @@
                               <q-chip v-if="field.isPrimaryKey" size="xs" color="warning" text-color="white" icon="key">
                                 主键
                               </q-chip>
-                              <q-chip v-if="field.isNotNull" size="xs" color="negative" text-color="white"
-                                icon="not_interested">
+                              <q-chip v-if="field.isNotNull && !field.isPrimaryKey" size="xs" color="negative"
+                                text-color="white" icon="not_interested">
                                 非空
+                              </q-chip>
+                              <q-chip v-if="field.isAuditField" size="xs" color="info" text-color="white"
+                                icon="schedule">
+                                审计
                               </q-chip>
                             </div>
                             <div class="text-caption text-grey-7">
                               {{ field.description || '暂无描述' }}
-                            </div>
-                          </div>
-
-                          <div v-else class="field-edit-form">
-                            <div class="row q-gutter-sm q-mb-sm">
-                              <div class="col-md-3 col-6">
-                                <q-input v-model="field.fieldName" label="字段名" outlined dense class="light-field" />
-                              </div>
-                              <div class="col-md-3 col-6">
-                                <q-select v-model="field.fieldType" :options="fieldTypeOptions" label="数据类型" outlined
-                                  dense class="light-field" />
-                              </div>
-                              <div class="col-md-2 col-4">
-                                <q-checkbox v-model="field.isPrimaryKey" label="主键" />
-                              </div>
-                              <div class="col-md-2 col-4">
-                                <q-checkbox v-model="field.isNotNull" label="非空" />
-                              </div>
-                              <div class="col-md-2 col-4">
-                                <q-checkbox v-model="field.isAuditField" label="审计字段" />
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-12">
-                                <q-input v-model="field.description" label="字段描述" outlined dense class="light-field" />
-                              </div>
                             </div>
                           </div>
                         </div>
@@ -150,20 +128,10 @@
                         <!-- 操作按钮 -->
                         <div class="field-actions">
                           <div class="row q-gutter-xs">
-                            <q-btn v-if="!field.isEditing" size="sm" flat round icon="edit" color="primary"
-                              @click="startEditField(field)">
+                            <q-btn size="sm" flat round icon="edit" color="primary" @click="openFieldEditor(field)">
                               <q-tooltip>编辑字段</q-tooltip>
                             </q-btn>
-                            <template v-else>
-                              <q-btn size="sm" flat round icon="check" color="positive" @click="saveFieldEdit(field)">
-                                <q-tooltip>保存</q-tooltip>
-                              </q-btn>
-                              <q-btn size="sm" flat round icon="close" color="negative" @click="cancelFieldEdit(field)">
-                                <q-tooltip>取消</q-tooltip>
-                              </q-btn>
-                            </template>
-                            <q-btn size="sm" flat round icon="delete" color="negative" @click="deleteField(index)"
-                              :disable="field.isEditing">
+                            <q-btn size="sm" flat round icon="delete" color="negative" @click="deleteField(index)">
                               <q-tooltip>删除字段</q-tooltip>
                             </q-btn>
                           </div>
@@ -283,6 +251,94 @@
         </q-card-section>
       </q-card>
     </div>
+
+    <!-- 侧边栏字段编辑器 -->
+    <q-drawer v-model="fieldEditorOpen" side="right" overlay behavior="mobile" :width="400" :breakpoint="700"
+      class="field-editor-drawer">
+      <q-card flat class="full-height">
+        <q-card-section class="q-pa-md">
+          <div class="row items-center justify-between q-mb-md">
+            <div class="text-h6 text-weight-medium">
+              <q-icon name="edit" class="q-mr-sm" />
+              编辑字段
+            </div>
+            <q-btn flat round dense icon="close" @click="closeFieldEditor" class="text-grey-6" />
+          </div>
+
+          <q-separator class="q-mb-lg" />
+
+          <div v-if="editingField" class="field-editor-form">
+            <!-- 字段基本信息 -->
+            <div class="form-section q-mb-lg">
+              <div class="section-title q-mb-md">
+                <q-icon name="info" class="q-mr-xs" />
+                基本信息
+              </div>
+
+              <q-input v-model="editingField.fieldName" label="字段名称" outlined dense class="q-mb-md light-field"
+                :rules="[val => !!val?.trim() || '字段名不能为空']">
+                <template v-slot:prepend>
+                  <q-icon name="label" size="16px" />
+                </template>
+              </q-input>
+
+              <q-select v-model="editingField.fieldType" :options="fieldTypeOptions" label="数据类型" outlined dense
+                class="q-mb-md light-field" use-input @filter="filterFieldTypes">
+                <template v-slot:prepend>
+                  <q-icon name="data_object" size="16px" />
+                </template>
+              </q-select>
+
+              <q-input v-model="editingField.description" label="字段描述" outlined dense type="textarea" rows="3"
+                class="light-field" placeholder="请输入字段的详细描述...">
+                <template v-slot:prepend>
+                  <q-icon name="description" size="16px" />
+                </template>
+              </q-input>
+            </div>
+
+            <!-- 字段约束 -->
+            <div class="form-section q-mb-lg">
+              <div class="section-title q-mb-md">
+                <q-icon name="security" class="q-mr-xs" />
+                字段约束
+              </div>
+
+              <div class="constraint-options">
+                <q-checkbox v-model="editingField.isPrimaryKey" label="主键 (Primary Key)" class="q-mb-sm"
+                  :disable="hasPrimaryKey && !editingField.isPrimaryKey" @update:model-value="onPrimaryKeyChange">
+                  <q-tooltip v-if="hasPrimaryKey && !editingField.isPrimaryKey">
+                    表中已存在主键字段
+                  </q-tooltip>
+                </q-checkbox>
+
+                <q-checkbox v-model="editingField.isNotNull" label="非空 (NOT NULL)" class="q-mb-sm"
+                  :disable="editingField.isPrimaryKey">
+                  <q-tooltip v-if="editingField.isPrimaryKey">
+                    主键字段自动为非空
+                  </q-tooltip>
+                </q-checkbox>
+
+                <q-checkbox v-model="editingField.isAuditField" label="审计字段" class="q-mb-sm">
+                  <q-icon name="help_outline" class="q-ml-xs text-grey-6 cursor-pointer" size="16px">
+                    <q-tooltip class="bg-dark">
+                      审计字段通常指 created_at、updated_at、created_by、updated_by 等用于记录数据变更历史的字段
+                    </q-tooltip>
+                  </q-icon>
+                </q-checkbox>
+              </div>
+            </div>
+
+            <!-- 操作按钮 -->
+            <div class="form-actions">
+              <q-btn color="primary" label="保存更改" icon="save" class="full-width q-mb-sm" @click="saveFieldChanges"
+                :disable="!editingField.fieldName?.trim()" unelevated />
+              <q-btn color="grey-6" label="取消编辑" icon="cancel" class="full-width" @click="cancelFieldChanges" flat />
+            </div>
+          </div>
+        </q-card-section>
+      </q-card>
+    </q-drawer>
   </section>
 </template>
 
@@ -295,11 +351,9 @@ import type { TableDesignResponseVO, TableField } from 'src/api/api.schemas'
 
 const $q = useQuasar()
 
-// 扩展的字段接口，添加编辑状态和唯一ID
+// 扩展的字段接口，添加唯一ID
 interface EditableField extends TableField {
   id: string
-  isEditing: boolean
-  originalData?: TableField // 保存编辑前的原始数据
 }
 
 // 响应式数据
@@ -327,6 +381,12 @@ const fieldTypeOptions = [
   'BOOLEAN', 'TINYINT(1)',
   'JSON', 'BLOB', 'LONGBLOB'
 ]
+
+// 侧边栏编辑器数据
+const fieldEditorOpen = ref(false)
+const editingField = ref<EditableField | null>(null)
+const originalFieldData = ref<EditableField | null>(null)
+const filteredFieldTypes = ref(fieldTypeOptions)
 
 // 表格列定义
 const fieldColumns = [
@@ -376,6 +436,13 @@ const formattedJSON = computed(() => {
   }
 })
 
+// 检查是否已有主键
+const hasPrimaryKey = computed(() => {
+  return editableFields.value.some(field =>
+    field.isPrimaryKey && field.id !== editingField.value?.id
+  )
+})
+
 // 工具方法
 const generateUniqueId = () => {
   return Date.now().toString(36) + Math.random().toString(36).substr(2, 9)
@@ -390,10 +457,12 @@ const addNewField = () => {
     isPrimaryKey: false,
     isNotNull: false,
     description: '',
-    isAuditField: false,
-    isEditing: true
+    isAuditField: false
   }
   editableFields.value.push(newField)
+
+  // 直接打开编辑器编辑新字段
+  openFieldEditor(newField)
 
   // 滚动到新添加的字段
   nextTick(() => {
@@ -405,14 +474,22 @@ const addNewField = () => {
   })
 }
 
-const startEditField = (field: EditableField) => {
+// 侧边栏编辑器方法
+const openFieldEditor = (field: EditableField) => {
   // 保存原始数据以便取消时恢复
-  field.originalData = { ...field }
-  field.isEditing = true
+  originalFieldData.value = { ...field }
+  editingField.value = field
+  fieldEditorOpen.value = true
 }
 
-const saveFieldEdit = (field: EditableField) => {
-  if (!field.fieldName?.trim()) {
+const closeFieldEditor = () => {
+  fieldEditorOpen.value = false
+  editingField.value = null
+  originalFieldData.value = null
+}
+
+const saveFieldChanges = () => {
+  if (!editingField.value?.fieldName?.trim()) {
     $q.notify({
       type: 'warning',
       message: '字段名不能为空',
@@ -421,23 +498,48 @@ const saveFieldEdit = (field: EditableField) => {
     return
   }
 
-  field.isEditing = false
-  delete field.originalData
-
   $q.notify({
     type: 'positive',
     message: '字段保存成功',
     position: 'top'
   })
+
+  closeFieldEditor()
 }
 
-const cancelFieldEdit = (field: EditableField) => {
-  if (field.originalData) {
+const cancelFieldChanges = () => {
+  if (originalFieldData.value && editingField.value) {
     // 恢复原始数据
-    Object.assign(field, field.originalData)
-    delete field.originalData
+    Object.assign(editingField.value, originalFieldData.value)
   }
-  field.isEditing = false
+  closeFieldEditor()
+}
+
+const onPrimaryKeyChange = (isPrimary: boolean) => {
+  if (isPrimary && editingField.value) {
+    // 如果设置为主键，自动设置为非空
+    editingField.value.isNotNull = true
+
+    // 移除其他字段的主键设置
+    editableFields.value.forEach(field => {
+      if (field.id !== editingField.value?.id) {
+        field.isPrimaryKey = false
+      }
+    })
+  }
+}
+
+const filterFieldTypes = (val: string, update: (fn: () => void) => void) => {
+  update(() => {
+    if (val === '') {
+      filteredFieldTypes.value = fieldTypeOptions
+    } else {
+      const needle = val.toLowerCase()
+      filteredFieldTypes.value = fieldTypeOptions.filter(
+        type => type.toLowerCase().includes(needle)
+      )
+    }
+  })
 }
 
 const deleteField = (index: number) => {
@@ -462,8 +564,7 @@ const deleteField = (index: number) => {
 const convertToEditableFields = (fields: TableField[] = []) => {
   return fields.map((field) => ({
     ...field,
-    id: generateUniqueId(),
-    isEditing: false
+    id: generateUniqueId()
   } as EditableField))
 }
 
@@ -477,9 +578,8 @@ const generateFinalSQL = async () => {
     return
   }
 
-  // 检查是否有正在编辑的字段
-  const editingField = editableFields.value.find(f => f.isEditing)
-  if (editingField) {
+  // 检查是否有字段正在侧边栏编辑
+  if (fieldEditorOpen.value) {
     $q.notify({
       type: 'warning',
       message: '请先保存正在编辑的字段',
@@ -841,6 +941,48 @@ const copyJSON = async () => {
   }
 }
 
+// 侧边栏编辑器样式
+.field-editor-drawer {
+  :deep(.q-drawer__content) {
+    background: var(--q-card-bg, $card-bg);
+  }
+
+  .field-editor-form {
+    .form-section {
+      .section-title {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--q-primary);
+        display: flex;
+        align-items: center;
+      }
+
+      .light-field {
+        :deep(.q-field__control) {
+          background: rgba(255, 255, 255, 0.02);
+        }
+      }
+
+      .constraint-options {
+        .q-checkbox {
+          :deep(.q-checkbox__label) {
+            font-size: 14px;
+          }
+        }
+      }
+    }
+
+    .form-actions {
+      position: sticky;
+      bottom: 0;
+      background: var(--q-card-bg, $card-bg);
+      padding-top: 16px;
+      border-top: 1px solid var(--q-border-color, $border-color);
+      margin-top: 16px;
+    }
+  }
+}
+
 // 响应式设计
 @media (max-width: 768px) {
   .code-block-container {
@@ -855,6 +997,12 @@ const copyJSON = async () => {
     pre {
       padding: 12px;
       font-size: 12px;
+    }
+  }
+
+  .field-editor-drawer {
+    :deep(.q-drawer) {
+      width: 100% !important;
     }
   }
 }
