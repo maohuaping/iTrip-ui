@@ -197,16 +197,75 @@
 
               <q-table :rows="tableDesignResult.fields || []" :columns="fieldColumns" row-key="fieldName" flat bordered
                 class="field-table" :pagination="{ rowsPerPage: 0 }" hide-pagination>
+                <template v-slot:body-cell-fieldName="props">
+                  <q-td :props="props">
+                    <q-input v-if="editingRows.has(props.row.fieldName)"
+                      :model-value="editingRowData[props.row.fieldName]?.fieldName || props.value"
+                      @update:model-value="(val) => updateEditingField(props.row.fieldName, 'fieldName', val)" dense
+                      outlined class="table-edit-input" />
+                    <span v-else>{{ props.value }}</span>
+                  </q-td>
+                </template>
+                <template v-slot:body-cell-fieldType="props">
+                  <q-td :props="props">
+                    <q-select v-if="editingRows.has(props.row.fieldName)"
+                      :model-value="editingRowData[props.row.fieldName]?.fieldType || props.value"
+                      @update:model-value="(val) => updateEditingField(props.row.fieldName, 'fieldType', val)"
+                      :options="fieldTypeOptions" dense outlined class="table-edit-input" />
+                    <span v-else>{{ props.value }}</span>
+                  </q-td>
+                </template>
                 <template v-slot:body-cell-isPrimaryKey="props">
                   <q-td :props="props">
-                    <q-icon :name="props.value ? 'check_circle' : 'cancel'"
+                    <q-checkbox v-if="editingRows.has(props.row.fieldName)"
+                      :model-value="editingRowData[props.row.fieldName]?.isPrimaryKey || props.value"
+                      @update:model-value="(val) => updateEditingField(props.row.fieldName, 'isPrimaryKey', val)"
+                      dense />
+                    <q-icon v-else :name="props.value ? 'check_circle' : 'cancel'"
                       :color="props.value ? 'positive' : 'negative'" size="sm" />
                   </q-td>
                 </template>
                 <template v-slot:body-cell-isNotNull="props">
                   <q-td :props="props">
-                    <q-icon :name="props.value ? 'check_circle' : 'cancel'"
+                    <q-checkbox v-if="editingRows.has(props.row.fieldName)"
+                      :model-value="editingRowData[props.row.fieldName]?.isNotNull || props.value"
+                      @update:model-value="(val) => updateEditingField(props.row.fieldName, 'isNotNull', val)" dense />
+                    <q-icon v-else :name="props.value ? 'check_circle' : 'cancel'"
                       :color="props.value ? 'positive' : 'negative'" size="sm" />
+                  </q-td>
+                </template>
+                <template v-slot:body-cell-description="props">
+                  <q-td :props="props">
+                    <q-input v-if="editingRows.has(props.row.fieldName)"
+                      :model-value="editingRowData[props.row.fieldName]?.description || props.value || ''"
+                      @update:model-value="(val) => updateEditingField(props.row.fieldName, 'description', val)" dense
+                      outlined class="table-edit-input" />
+                    <span v-else>{{ props.value || '暂无描述' }}</span>
+                  </q-td>
+                </template>
+                <template v-slot:body-cell-actions="props">
+                  <q-td :props="props">
+                    <div class="row q-gutter-xs justify-center">
+                      <template v-if="editingRows.has(props.row.fieldName)">
+                        <q-btn size="sm" flat round icon="check" color="positive"
+                          @click="saveTableRowEdit(props.row.fieldName)">
+                          <q-tooltip>保存</q-tooltip>
+                        </q-btn>
+                        <q-btn size="sm" flat round icon="close" color="negative"
+                          @click="cancelTableRowEdit(props.row.fieldName)">
+                          <q-tooltip>取消</q-tooltip>
+                        </q-btn>
+                      </template>
+                      <template v-else>
+                        <q-btn size="sm" flat round icon="edit" color="primary" @click="startTableRowEdit(props.row)">
+                          <q-tooltip>编辑</q-tooltip>
+                        </q-btn>
+                        <q-btn size="sm" flat round icon="delete" color="negative"
+                          @click="deleteTableRow(props.row.fieldName)">
+                          <q-tooltip>删除</q-tooltip>
+                        </q-btn>
+                      </template>
+                    </div>
                   </q-td>
                 </template>
               </q-table>
@@ -473,6 +532,10 @@ const editingField = ref<EditableField | null>(null)
 const originalFieldData = ref<EditableField | null>(null)
 const filteredFieldTypes = ref(fieldTypeOptions)
 
+// 表格内联编辑数据
+const editingRows = ref<Set<string>>(new Set())
+const editingRowData = ref<Record<string, EditableField>>({})
+
 // 表格列定义
 const fieldColumns = [
   {
@@ -507,6 +570,12 @@ const fieldColumns = [
     label: '描述',
     align: 'left' as const,
     field: 'description'
+  },
+  {
+    name: 'actions',
+    label: '操作',
+    align: 'center' as const,
+    field: 'actions'
   }
 ]
 
@@ -532,6 +601,23 @@ const hasPrimaryKey = computed(() => {
 const currentDataType = computed(() => {
   if (!editingField.value?.baseType) return null
   return dataTypes.find(dt => dt.type === editingField.value?.baseType)
+})
+
+// 获取编辑行数据的安全方法
+const getEditingRowData = (fieldName: string) => {
+  return editingRowData.value[fieldName] || null
+}
+
+// 安全的编辑数据计算属性
+const safeEditingData = computed(() => {
+  const result: Record<string, EditableField> = {}
+  Object.keys(editingRowData.value).forEach(key => {
+    const data = editingRowData.value[key]
+    if (data) {
+      result[key] = data
+    }
+  })
+  return result
 })
 
 // 格式化字段类型显示
@@ -802,6 +888,112 @@ const deleteField = (index: number) => {
     persistent: true
   }).onOk(() => {
     editableFields.value.splice(index, 1)
+    $q.notify({
+      type: 'positive',
+      message: '字段删除成功',
+      position: 'top'
+    })
+  })
+}
+
+// 更新编辑字段的方法
+const updateEditingField = (fieldName: string, property: keyof EditableField, value: any) => {
+  if (editingRowData.value[fieldName]) {
+    ; (editingRowData.value[fieldName] as any)[property] = value
+  }
+}
+
+// 表格内联编辑方法
+const startTableRowEdit = (row: TableField) => {
+  // 创建编辑数据的副本
+  const editData: EditableField = {
+    ...row,
+    id: generateUniqueId(),
+    baseType: row.fieldType?.split('(')[0] || 'VARCHAR',
+    typeLength: '',
+    typeScale: '',
+    defaultValue: ''
+  }
+
+  if (row.fieldName) {
+    editingRowData.value[row.fieldName] = editData
+    editingRows.value.add(row.fieldName)
+  }
+}
+
+const saveTableRowEdit = (fieldName: string) => {
+  const editData = editingRowData.value[fieldName]
+  if (!editData || !editData.fieldName?.trim()) {
+    $q.notify({
+      type: 'warning',
+      message: '字段名不能为空',
+      position: 'top'
+    })
+    return
+  }
+
+  // 更新原始数据
+  if (tableDesignResult.value?.fields) {
+    const index = tableDesignResult.value.fields.findIndex(f => f.fieldName === fieldName)
+    if (index !== -1) {
+      tableDesignResult.value.fields[index] = {
+        fieldName: editData.fieldName,
+        fieldType: editData.fieldType || 'VARCHAR(50)',
+        isPrimaryKey: editData.isPrimaryKey || false,
+        isNotNull: editData.isNotNull || false,
+        description: editData.description || '',
+        isAuditField: editData.isAuditField || false
+      }
+    }
+  }
+
+  // 同步更新可编辑字段数据
+  const editableIndex = editableFields.value.findIndex(f => f.fieldName === fieldName)
+  if (editableIndex !== -1) {
+    editableFields.value[editableIndex] = editData
+  }
+
+  // 清理编辑状态
+  editingRows.value.delete(fieldName)
+  delete editingRowData.value[fieldName]
+
+  $q.notify({
+    type: 'positive',
+    message: '字段更新成功',
+    position: 'top'
+  })
+}
+
+const cancelTableRowEdit = (fieldName: string) => {
+  editingRows.value.delete(fieldName)
+  delete editingRowData.value[fieldName]
+}
+
+const deleteTableRow = (fieldName: string) => {
+  $q.dialog({
+    title: '确认删除',
+    message: `确定要删除字段 "${fieldName}" 吗？`,
+    cancel: true,
+    persistent: true
+  }).onOk(() => {
+    // 从表格数据中删除
+    if (tableDesignResult.value?.fields) {
+      const index = tableDesignResult.value.fields.findIndex(f => f.fieldName === fieldName)
+      if (index !== -1) {
+        tableDesignResult.value.fields.splice(index, 1)
+      }
+    }
+
+    // 从可编辑字段中删除
+    const editableIndex = editableFields.value.findIndex(f => f.fieldName === fieldName)
+    if (editableIndex !== -1) {
+      editableFields.value.splice(editableIndex, 1)
+    }
+
+    // 清理编辑状态
+    editingRows.value.delete(fieldName)
+    delete editingRowData.value[fieldName]
+
     $q.notify({
       type: 'positive',
       message: '字段删除成功',
@@ -1204,6 +1396,32 @@ const copyJSON = async () => {
 
   :deep(.q-table tbody td) {
     padding: 8px 16px;
+  }
+
+  // 表格内联编辑样式
+  .table-edit-input {
+    :deep(.q-field__control) {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 4px;
+      min-height: 32px;
+    }
+
+    :deep(.q-field__native) {
+      padding: 4px 8px;
+      font-size: 13px;
+    }
+  }
+
+  // 编辑行高亮
+  :deep(.q-table tbody tr.editing-row) {
+    background: rgba(var(--q-primary-rgb), 0.05);
+    border-left: 3px solid var(--q-primary);
+  }
+
+  // 操作按钮样式
+  .q-btn {
+    min-width: 32px;
+    min-height: 32px;
   }
 }
 
