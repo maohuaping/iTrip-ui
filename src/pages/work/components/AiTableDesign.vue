@@ -67,10 +67,17 @@
                     <q-icon name="code" class="q-mr-xs" />
                     SQL DDL 语句
                   </span>
-                  <q-btn flat round dense :icon="sqlCopied ? 'check' : 'content_copy'"
-                    :color="sqlCopied ? 'positive' : 'grey-7'" @click="copySQL" class="copy-btn">
-                    <q-tooltip>{{ sqlCopied ? '已复制!' : '复制SQL' }}</q-tooltip>
-                  </q-btn>
+                  <div class="row items-center q-gutter-sm">
+                    <q-select v-model="databaseType" :options="[
+                      { label: 'MySQL', value: 'mysql' },
+                      { label: 'PostgreSQL', value: 'postgresql' }
+                    ]" emit-value map-options dense outlined style="min-width: 120px"
+                      @update:model-value="onDatabaseTypeChange" class="database-type-select" />
+                    <q-btn flat round dense :icon="sqlCopied ? 'check' : 'content_copy'"
+                      :color="sqlCopied ? 'positive' : 'grey-7'" @click="copySQL" class="copy-btn">
+                      <q-tooltip>{{ sqlCopied ? '已复制!' : '复制SQL' }}</q-tooltip>
+                    </q-btn>
+                  </div>
                 </div>
                 <pre class="sql-code"><code>{{ tableDesignResult.ddlSql }}</code></pre>
               </div>
@@ -472,6 +479,9 @@ const originalSqlCopied = ref(false)
 // 接口返回的原始DDL
 const originalDdlSql = ref('')
 
+// 数据库类型选择
+const databaseType = ref('mysql') // 默认为 MySQL
+
 // 表设计结果 - 使用API定义的类型
 const tableDesignResult = ref<TableDesignResponseVO | null>(null)
 
@@ -778,7 +788,7 @@ const updateSqlDdl = () => {
     }
 
     // 生成新的SQL DDL
-    const newDdlSql = generateDDLFromFields(tableStructure)
+    const newDdlSql = generateDDLFromFields(tableStructure, databaseType.value)
 
     // 更新表设计结果中的SQL
     tableDesignResult.value.ddlSql = newDdlSql
@@ -1142,7 +1152,7 @@ const generateFinalSQL = async () => {
     }
 
     // 生成SQL DDL
-    const ddlSql = generateDDLFromFields(tableStructure)
+    const ddlSql = generateDDLFromFields(tableStructure, databaseType.value)
 
     // 更新结果数据
     tableDesignResult.value = {
@@ -1177,7 +1187,17 @@ const generateFinalSQL = async () => {
   }
 }
 
-const generateDDLFromFields = (tableStructure: any) => {
+const generateDDLFromFields = (tableStructure: any, dbType: string = 'mysql') => {
+  const { tableName, tableDescription, fields, indexes = [] } = tableStructure
+
+  if (dbType === 'postgresql') {
+    return generatePostgreSQLDDL(tableStructure)
+  } else {
+    return generateMySQLDDL(tableStructure)
+  }
+}
+
+const generateMySQLDDL = (tableStructure: any) => {
   const { tableName, tableDescription, fields, indexes = [] } = tableStructure
 
   // 表注释
@@ -1256,6 +1276,90 @@ const generateDDLFromFields = (tableStructure: any) => {
   return ddl
 }
 
+const generatePostgreSQLDDL = (tableStructure: any) => {
+  const { tableName, tableDescription, fields, indexes = [] } = tableStructure
+
+  // 1. 创建表结构
+  let ddl = `-- 1. 创建表结构\n`
+  ddl += `CREATE TABLE ${tableName} (\n`
+
+  const fieldLines = fields.map((field: any) => {
+    let line = `    ${field.fieldName} ${field.fieldType}`
+
+    if (field.isPrimaryKey) {
+      line += ' PRIMARY KEY'
+    }
+
+    if (field.isNotNull && !field.isPrimaryKey) {
+      line += ' NOT NULL'
+    }
+
+    return line
+  })
+
+  ddl += fieldLines.join(',\n')
+  ddl += `\n);\n\n`
+
+  // 2. 添加表和字段注释
+  ddl += `-- 2. 添加表和字段注释\n`
+  ddl += `COMMENT ON TABLE ${tableName} IS '${tableDescription || tableName + '表'}';\n`
+
+  const commentStatements = fields
+    .filter((field: any) => field.description && field.description.trim())
+    .map((field: any) => {
+      return `COMMENT ON COLUMN ${tableName}.${field.fieldName} IS '${field.description}';`
+    })
+
+  if (commentStatements.length > 0) {
+    ddl += commentStatements.join('\n')
+    ddl += '\n\n'
+  }
+
+  // 3. 创建索引
+  const indexStatements = indexes
+    .filter((index: any) => index.indexName && index.fields && index.fields.length > 0)
+    .map((index: any) => {
+      const fields = index.fields.join(', ')
+      let indexSql = ''
+
+      switch (index.indexType) {
+        case 'PRIMARY':
+          // 主键索引在表定义中已经处理，这里跳过
+          return null
+        case 'UNIQUE':
+          indexSql = `CREATE UNIQUE INDEX ${index.indexName} ON ${tableName}(${fields});`
+          break
+        case 'NORMAL':
+        default:
+          indexSql = `CREATE INDEX ${index.indexName} ON ${tableName}(${fields});`
+          break
+      }
+
+      return indexSql
+    })
+    .filter(Boolean) // 过滤掉null值
+
+  if (indexStatements.length > 0) {
+    ddl += `-- 3. 创建索引\n`
+    ddl += indexStatements.join('\n')
+    ddl += '\n\n'
+  }
+
+  // 4. 添加索引注释
+  const indexCommentStatements = indexes
+    .filter((index: any) => index.indexName && index.fields && index.fields.length > 0 && index.comment && index.comment.trim())
+    .map((index: any) => {
+      return `COMMENT ON INDEX ${index.indexName} IS '${index.comment}';`
+    })
+
+  if (indexCommentStatements.length > 0) {
+    ddl += `-- 4. 添加索引注释\n`
+    ddl += indexCommentStatements.join('\n')
+  }
+
+  return ddl
+}
+
 // 方法
 
 const generateTableDesign = async () => {
@@ -1314,7 +1418,7 @@ const generateTableDesign = async () => {
         indexes: editableIndexes.value || []
       }
 
-      const generatedDDL = generateDDLFromFields(tableStructure)
+      const generatedDDL = generateDDLFromFields(tableStructure, databaseType.value)
 
       // 构建完整的表设计结果对象
       tableDesignResult.value = {
@@ -1427,6 +1531,17 @@ const copyJSON = async () => {
   }
 }
 
+// 数据库类型变化处理
+const onDatabaseTypeChange = () => {
+  // 重新生成DDL
+  updateSqlDdl()
+  $q.notify({
+    type: 'info',
+    message: `已切换到 ${databaseType.value === 'mysql' ? 'MySQL' : 'PostgreSQL'} 语法`,
+    position: 'top'
+  })
+}
+
 
 </script>
 
@@ -1478,6 +1593,23 @@ const copyJSON = async () => {
 
       &:hover {
         opacity: 1;
+      }
+    }
+
+    .database-type-select {
+      :deep(.q-field__control) {
+        background: rgba(255, 255, 255, 0.1);
+        border-color: rgba(255, 255, 255, 0.3);
+        border-radius: 4px;
+      }
+
+      :deep(.q-field__native) {
+        color: #cccccc;
+        font-size: 12px;
+      }
+
+      :deep(.q-icon) {
+        color: #cccccc;
       }
     }
   }
