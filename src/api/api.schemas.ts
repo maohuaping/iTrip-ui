@@ -508,10 +508,10 @@ export interface DevTaskVO {
  */
 export interface IPageDevTaskVO {
   size?: number;
-  records?: DevTaskVO[];
-  current?: number;
-  total?: number;
   pages?: number;
+  total?: number;
+  current?: number;
+  records?: DevTaskVO[];
 }
 
 /**
@@ -585,10 +585,10 @@ export interface DevLogVO {
  */
 export interface IPageDevLogVO {
   size?: number;
-  records?: DevLogVO[];
-  current?: number;
-  total?: number;
   pages?: number;
+  total?: number;
+  current?: number;
+  records?: DevLogVO[];
 }
 
 export interface ResultIPageDevLogVO {
@@ -901,6 +901,73 @@ export interface TokenUsage {
   totalTokens?: number;
 }
 
+export interface ResultTableDesignResponseVO {
+  /** 是否成功 */
+  isOk?: boolean;
+  okData?: TableDesignResponseVO;
+  /** 失败消息 */
+  failMsg?: string;
+}
+
+/**
+ * 表设计DDL响应
+ */
+export interface TableDesignResponseVO {
+  /** 输入的需求描述 */
+  inputPrompt?: string;
+  /** 生成的DDL语句 */
+  ddlSql?: string;
+  /** 表名称 */
+  tableName?: string;
+  /** 表描述 */
+  tableDescription?: string;
+  /** 字段信息列表 */
+  fields?: TableField[];
+  /** 索引信息列表 */
+  indexes?: TableIndex[];
+  /** 外键约束列表 */
+  foreignKeys?: string[];
+  /** 原始AI响应内容 */
+  rawResponse?: string;
+  /** 生成耗时（毫秒） */
+  durationMs?: number;
+  /** 生成耗时（秒） */
+  durationSeconds?: number;
+  /** 使用的AI模型 */
+  model?: string;
+  apiResponse?: DeepSeekApiResponse;
+}
+
+/**
+ * 表字段信息
+ */
+export interface TableField {
+  /** 字段名称 */
+  fieldName?: string;
+  /** 字段类型 */
+  fieldType?: string;
+  /** 是否为主键 */
+  isPrimaryKey?: boolean;
+  /** 是否非空 */
+  isNotNull?: boolean;
+  /** 字段描述 */
+  description?: string;
+  /** 是否为审计字段 */
+  isAuditField?: boolean;
+}
+
+/**
+ * 表索引信息
+ */
+export interface TableIndex {
+  /** 索引名称 */
+  indexName?: string;
+  /** 索引字段 */
+  fieldName?: string;
+  /** 索引类型 */
+  indexType?: string;
+}
+
 /**
  * 代码示例
  */
@@ -1068,6 +1135,11 @@ export type GetPublicUrlParams = {
 export type OptimizePromptParams = {
   rawPrompt: string;
   optimizationGoal?: string;
+  model?: string;
+};
+
+export type GetTableDesignParams = {
+  prompt: string;
   model?: string;
 };
 

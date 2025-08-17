@@ -10,11 +10,13 @@ import type {
   GetJavaBestPracticesParams,
   GetNameSuggestionParams,
   GetRawResponseParams,
+  GetTableDesignParams,
   OptimizePromptParams,
   ResultJSONObject,
   ResultJavaBestPracticeResponseVO,
   ResultNamingTypeSuggestion,
   ResultPromptOptimizationResponseVO,
+  ResultTableDesignResponseVO,
   ResultVariableNamingResponseVO,
 } from '../api.schemas';
 
@@ -33,6 +35,16 @@ export const getAi = () => {
   const optimizePrompt = (params: OptimizePromptParams) => {
     return customInstance<ResultPromptOptimizationResponseVO>({
       url: `/api/ai/optimizePrompt`,
+      method: 'GET',
+      params,
+    });
+  };
+  /**
+   * @summary 获取表设计
+   */
+  const getTableDesign = (params: GetTableDesignParams) => {
+    return customInstance<ResultTableDesignResponseVO>({
+      url: `/api/ai/getTableDesign`,
       method: 'GET',
       params,
     });
@@ -80,6 +92,7 @@ export const getAi = () => {
   return {
     queryBalance,
     optimizePrompt,
+    getTableDesign,
     getRawResponse,
     getJavaBestPractices,
     getNameSuggestion,
@@ -91,6 +104,9 @@ export type QueryBalanceResult = NonNullable<
 >;
 export type OptimizePromptResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getAi>['optimizePrompt']>>
+>;
+export type GetTableDesignResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getAi>['getTableDesign']>>
 >;
 export type GetRawResponseResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getAi>['getRawResponse']>>
