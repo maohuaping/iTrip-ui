@@ -202,23 +202,56 @@
                 </template>
               </q-table>
 
-              <!-- 索引信息 -->
-              <div v-if="tableDesignResult.indexes && tableDesignResult.indexes.length > 0" class="q-mt-lg">
-                <h6 class="q-my-sm">
-                  <q-icon name="speed" class="q-mr-sm" />
-                  索引建议
-                </h6>
-                <q-list bordered separator class="rounded-borders">
-                  <q-item v-for="(index, idx) in tableDesignResult.indexes" :key="index.indexName || `index-${idx}`">
-                    <q-item-section avatar>
-                      <q-icon name="speed" color="primary" />
-                    </q-item-section>
-                    <q-item-section>
-                      <q-item-label>{{ index.indexName }}</q-item-label>
-                      <q-item-label caption>{{ index.indexType }} - {{ index.fieldName }}</q-item-label>
-                    </q-item-section>
-                  </q-item>
-                </q-list>
+              <!-- 索引管理区域 -->
+              <div class="q-mt-lg">
+                <div class="row items-center justify-between q-mb-md">
+                  <h6 class="q-my-none">
+                    <q-icon name="speed" class="q-mr-sm" />
+                    索引信息
+                  </h6>
+                  <q-btn size="sm" color="primary" icon="add" label="新建索引" @click="openIndexDialog()" unelevated />
+                </div>
+
+                <q-table :rows="editableIndexes" :columns="indexColumns" row-key="id" flat bordered
+                  class="index-table q-mt-sm" :pagination="{ rowsPerPage: 10 }" no-data-label="暂无索引">
+                  <template v-slot:body-cell-indexName="props">
+                    <q-td :props="props">
+                      <span class="text-weight-medium">{{ props.value }}</span>
+                    </q-td>
+                  </template>
+
+                  <template v-slot:body-cell-indexType="props">
+                    <q-td :props="props">
+                      <q-chip :color="getIndexTypeColor(props.value)" text-color="white" size="sm">
+                        {{ getIndexTypeLabel(props.value) }}
+                      </q-chip>
+                    </q-td>
+                  </template>
+
+                  <template v-slot:body-cell-fields="props">
+                    <q-td :props="props">
+                      <div class="row q-gutter-xs">
+                        <q-chip v-for="field in props.value" :key="field" size="sm" color="grey-3" text-color="grey-8"
+                          icon="table_rows">
+                          {{ field }}
+                        </q-chip>
+                      </div>
+                    </q-td>
+                  </template>
+
+                  <template v-slot:body-cell-actions="props">
+                    <q-td :props="props">
+                      <div class="row q-gutter-xs justify-center">
+                        <q-btn size="sm" flat round icon="edit" color="primary" @click="openIndexDialog(props.row)">
+                          <q-tooltip>编辑索引</q-tooltip>
+                        </q-btn>
+                        <q-btn size="sm" flat round icon="delete" color="negative" @click="deleteIndex(props.row.id)">
+                          <q-tooltip>删除索引</q-tooltip>
+                        </q-btn>
+                      </div>
+                    </q-td>
+                  </template>
+                </q-table>
               </div>
             </q-tab-panel>
 
@@ -245,6 +278,60 @@
 
 
   </section>
+
+  <!-- 索引编辑对话框 -->
+  <q-dialog v-model="indexDialogOpen" persistent>
+    <q-card style="min-width: 500px">
+      <q-card-section class="row items-center q-pb-none">
+        <div class="text-h6">{{ isNewIndex ? '新建索引' : '编辑索引' }}</div>
+        <q-space />
+        <q-btn icon="close" flat round dense v-close-popup />
+      </q-card-section>
+
+      <q-card-section>
+        <div class="column q-gutter-md">
+          <!-- 索引名称 -->
+          <q-input v-if="editingIndex" v-model="editingIndex.indexName" label="索引名称" outlined dense
+            :rules="[val => !!val || '索引名称不能为空']">
+            <template v-slot:prepend>
+              <q-icon name="speed" />
+            </template>
+          </q-input>
+
+          <!-- 索引类型 -->
+          <q-select v-if="editingIndex" v-model="editingIndex.indexType" :options="indexTypeOptions" label="索引类型"
+            outlined dense emit-value map-options>
+            <template v-slot:prepend>
+              <q-icon name="category" />
+            </template>
+          </q-select>
+
+          <!-- 索引字段 -->
+          <q-select v-if="editingIndex" v-model="editingIndex.fields" :options="availableFieldOptions" label="索引字段"
+            outlined dense multiple use-chips emit-value map-options
+            :rules="[val => val && val.length > 0 || '至少选择一个字段']">
+            <template v-slot:prepend>
+              <q-icon name="table_rows" />
+            </template>
+          </q-select>
+
+          <!-- 索引注释 -->
+          <q-input v-if="editingIndex" v-model="editingIndex.comment" label="索引注释（可选）" outlined dense type="textarea"
+            rows="2">
+            <template v-slot:prepend>
+              <q-icon name="comment" />
+            </template>
+          </q-input>
+        </div>
+      </q-card-section>
+
+      <q-card-actions align="right">
+        <q-btn flat label="取消" v-close-popup />
+        <q-btn color="primary" label="保存" @click="saveIndex"
+          :disable="!editingIndex?.indexName || !editingIndex?.fields?.length" />
+      </q-card-actions>
+    </q-card>
+  </q-dialog>
 </template>
 
 <script setup lang="ts">
@@ -263,6 +350,19 @@ interface EditableField extends TableField {
   typeLength?: string // 类型长度，如 VARCHAR(50) 中的 50
   typeScale?: string // 类型精度，如 DECIMAL(10,2) 中的 2
   defaultValue?: string // 默认值
+}
+
+// 索引相关接口
+interface TableIndex {
+  id: string
+  indexName: string
+  indexType: 'PRIMARY' | 'UNIQUE' | 'NORMAL' | 'FULLTEXT'
+  fields: string[] // 索引包含的字段名数组
+  comment?: string // 索引注释
+}
+
+interface EditableIndex extends TableIndex {
+  isEditing?: boolean
 }
 
 // 响应式数据
@@ -307,13 +407,62 @@ const dataTypes = [
 // 字段类型选项（用于显示）
 const fieldTypeOptions = dataTypes.map(dt => dt.type)
 
+// 索引类型选项
+const indexTypeOptions = [
+  { label: '主键索引', value: 'PRIMARY' },
+  { label: '唯一索引', value: 'UNIQUE' },
+  { label: '普通索引', value: 'NORMAL' },
+  { label: '全文索引', value: 'FULLTEXT' }
+]
+
 
 
 // 表格内联编辑数据
 const editingRows = ref<Set<string>>(new Set())
 const editingRowData = ref<Record<string, EditableField>>({})
 
+// 索引相关数据
+const editableIndexes = ref<EditableIndex[]>([])
+const indexDialogOpen = ref(false)
+const editingIndex = ref<EditableIndex | null>(null)
+const isNewIndex = ref(false)
 
+
+
+// 索引表格列定义
+const indexColumns = [
+  {
+    name: 'indexName',
+    label: '索引名称',
+    align: 'left' as const,
+    field: 'indexName',
+    sortable: true
+  },
+  {
+    name: 'indexType',
+    label: '索引类型',
+    align: 'center' as const,
+    field: 'indexType'
+  },
+  {
+    name: 'fields',
+    label: '索引字段',
+    align: 'left' as const,
+    field: 'fields'
+  },
+  {
+    name: 'comment',
+    label: '注释',
+    align: 'left' as const,
+    field: 'comment'
+  },
+  {
+    name: 'actions',
+    label: '操作',
+    align: 'center' as const,
+    field: 'actions'
+  }
+]
 
 // 表格列定义
 const fieldColumns = [
@@ -367,6 +516,15 @@ const formattedJSON = computed(() => {
   } catch {
     return tableDesignResult.value.rawResponse
   }
+})
+
+// 可用字段选项（用于索引字段选择）
+const availableFieldOptions = computed(() => {
+  if (!tableDesignResult.value?.fields) return []
+  return tableDesignResult.value.fields.map(field => ({
+    label: `${field.fieldName} (${field.fieldType})`,
+    value: field.fieldName
+  }))
 })
 
 
@@ -484,6 +642,9 @@ const saveTableRowEdit = (fieldName: string) => {
   editingRows.value.delete(fieldName)
   delete editingRowData.value[fieldName]
 
+  // 重新生成SQL DDL
+  updateSqlDdl()
+
   $q.notify({
     type: 'positive',
     message: '字段更新成功',
@@ -494,6 +655,44 @@ const saveTableRowEdit = (fieldName: string) => {
 const cancelTableRowEdit = (fieldName: string) => {
   editingRows.value.delete(fieldName)
   delete editingRowData.value[fieldName]
+}
+
+// 更新SQL DDL的方法
+const updateSqlDdl = () => {
+  if (!tableDesignResult.value) return
+
+  try {
+    // 构建表结构数据
+    const tableStructure = {
+      tableName: editableTableName.value || tableDesignResult.value.tableName,
+      tableDescription: editableTableDescription.value || tableDesignResult.value.tableDescription,
+      fields: tableDesignResult.value.fields?.map(field => ({
+        fieldName: field.fieldName || '',
+        fieldType: field.fieldType || 'VARCHAR(50)',
+        isPrimaryKey: field.isPrimaryKey || false,
+        isNotNull: field.isNotNull || false,
+        description: field.description || '',
+        isAuditField: field.isAuditField || false
+      })) || [],
+      indexes: editableIndexes.value || []
+    }
+
+    // 生成新的SQL DDL
+    const newDdlSql = generateDDLFromFields(tableStructure)
+
+    // 更新表设计结果中的SQL
+    tableDesignResult.value.ddlSql = newDdlSql
+    if (tableStructure.tableName) {
+      tableDesignResult.value.tableName = tableStructure.tableName
+    }
+    if (tableStructure.tableDescription) {
+      tableDesignResult.value.tableDescription = tableStructure.tableDescription
+    }
+
+    console.log('SQL DDL已更新')
+  } catch (error) {
+    console.error('更新SQL DDL失败:', error)
+  }
 }
 
 // 批量操作方法
@@ -538,6 +737,11 @@ const saveAllEditing = () => {
   Object.keys(editingRowData.value).forEach(key => {
     delete editingRowData.value[key]
   })
+
+  // 重新生成SQL DDL
+  if (successCount > 0) {
+    updateSqlDdl()
+  }
 
   // 显示结果通知
   if (failCount > 0) {
@@ -598,12 +802,106 @@ const deleteTableRow = (fieldName: string) => {
     editingRows.value.delete(fieldName)
     delete editingRowData.value[fieldName]
 
+    // 重新生成SQL DDL
+    updateSqlDdl()
+
     $q.notify({
       type: 'positive',
       message: '字段删除成功',
       position: 'top'
     })
   })
+}
+
+// 索引管理方法
+const openIndexDialog = (index?: EditableIndex) => {
+  if (index) {
+    // 编辑现有索引
+    isNewIndex.value = false
+    editingIndex.value = { ...index }
+  } else {
+    // 新建索引
+    isNewIndex.value = true
+    editingIndex.value = {
+      id: Date.now().toString(),
+      indexName: '',
+      indexType: 'NORMAL',
+      fields: [],
+      comment: ''
+    }
+  }
+  indexDialogOpen.value = true
+}
+
+const saveIndex = () => {
+  if (!editingIndex.value?.indexName || !editingIndex.value?.fields?.length) {
+    $q.notify({
+      type: 'warning',
+      message: '请填写索引名称和字段',
+      position: 'top'
+    })
+    return
+  }
+
+  if (isNewIndex.value) {
+    // 新建索引
+    editableIndexes.value.push({ ...editingIndex.value })
+    $q.notify({
+      type: 'positive',
+      message: '索引创建成功',
+      position: 'top'
+    })
+  } else {
+    // 编辑索引
+    const index = editableIndexes.value.findIndex(idx => idx.id === editingIndex.value?.id)
+    if (index !== -1) {
+      editableIndexes.value[index] = { ...editingIndex.value }
+      $q.notify({
+        type: 'positive',
+        message: '索引更新成功',
+        position: 'top'
+      })
+    }
+  }
+
+  // 重新生成SQL
+  updateSqlDdl()
+  indexDialogOpen.value = false
+}
+
+const deleteIndex = (indexId: string) => {
+  $q.dialog({
+    title: '确认删除',
+    message: '确定要删除这个索引吗？',
+    cancel: true,
+    persistent: true
+  }).onOk(() => {
+    const index = editableIndexes.value.findIndex(idx => idx.id === indexId)
+    if (index !== -1) {
+      editableIndexes.value.splice(index, 1)
+      updateSqlDdl()
+      $q.notify({
+        type: 'positive',
+        message: '索引删除成功',
+        position: 'top'
+      })
+    }
+  })
+}
+
+const getIndexTypeColor = (type: string) => {
+  switch (type) {
+    case 'PRIMARY': return 'red'
+    case 'UNIQUE': return 'orange'
+    case 'NORMAL': return 'blue'
+    case 'FULLTEXT': return 'green'
+    default: return 'grey'
+  }
+}
+
+const getIndexTypeLabel = (type: string) => {
+  const option = indexTypeOptions.find(opt => opt.value === type)
+  return option?.label || type
 }
 
 const duplicateTableRow = (row: TableField) => {
@@ -632,6 +930,9 @@ const duplicateTableRow = (row: TableField) => {
     defaultValue: ''
   }
   editableFields.value.push(editableField)
+
+  // 重新生成SQL DDL
+  updateSqlDdl()
 
   $q.notify({
     type: 'positive',
@@ -736,9 +1037,12 @@ const generateFinalSQL = async () => {
 }
 
 const generateDDLFromFields = (tableStructure: any) => {
-  const { tableName, tableDescription, fields } = tableStructure
+  const { tableName, tableDescription, fields, indexes = [] } = tableStructure
 
+  // 表注释
   let ddl = `-- ${tableDescription || tableName + '表'}\n`
+
+  // 表定义
   ddl += `CREATE TABLE ${tableName} (\n`
 
   const fieldLines = fields.map((field: any) => {
@@ -752,15 +1056,61 @@ const generateDDLFromFields = (tableStructure: any) => {
       line += ' NOT NULL'
     }
 
-    if (field.description) {
-      line += ` COMMENT '${field.description}'`
-    }
-
     return line
   })
 
   ddl += fieldLines.join(',\n')
-  ddl += `\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='${tableDescription || tableName + '表'}';`
+  ddl += `\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='${tableDescription || tableName + '表'}';\n\n`
+
+  // 字段注释（分离的ALTER语句）
+  const commentStatements = fields
+    .filter((field: any) => field.description && field.description.trim())
+    .map((field: any) => {
+      return `ALTER TABLE ${tableName} MODIFY COLUMN ${field.fieldName} ${field.fieldType}${field.isPrimaryKey ? ' PRIMARY KEY' : ''}${field.isNotNull && !field.isPrimaryKey ? ' NOT NULL' : ''} COMMENT '${field.description}';`
+    })
+
+  if (commentStatements.length > 0) {
+    ddl += '-- 字段注释\n'
+    ddl += commentStatements.join('\n')
+    ddl += '\n\n'
+  }
+
+  // 索引SQL（分离的CREATE INDEX语句）
+  const indexStatements = indexes
+    .filter((index: any) => index.indexName && index.fields && index.fields.length > 0)
+    .map((index: any) => {
+      const fields = index.fields.join(', ')
+      let indexSql = ''
+
+      switch (index.indexType) {
+        case 'PRIMARY':
+          // 主键索引在表定义中已经处理，这里跳过
+          return null
+        case 'UNIQUE':
+          indexSql = `CREATE UNIQUE INDEX ${index.indexName} ON ${tableName} (${fields});`
+          break
+        case 'FULLTEXT':
+          indexSql = `CREATE FULLTEXT INDEX ${index.indexName} ON ${tableName} (${fields});`
+          break
+        case 'NORMAL':
+        default:
+          indexSql = `CREATE INDEX ${index.indexName} ON ${tableName} (${fields});`
+          break
+      }
+
+      // 添加索引注释
+      if (index.comment && index.comment.trim()) {
+        indexSql += ` -- ${index.comment}`
+      }
+
+      return indexSql
+    })
+    .filter(Boolean) // 过滤掉null值
+
+  if (indexStatements.length > 0) {
+    ddl += '-- 索引\n'
+    ddl += indexStatements.join('\n')
+  }
 
   return ddl
 }
@@ -1038,6 +1388,25 @@ const copyJSON = async () => {
     }
   }
 
+  // 索引表格样式
+  .index-table {
+    :deep(.q-table__top) {
+      padding: 0;
+    }
 
+    :deep(.q-table tbody td) {
+      padding: 8px 12px;
+    }
+
+    :deep(.q-table thead th) {
+      padding: 12px 12px;
+      font-weight: 600;
+      background-color: #f8f9fa;
+    }
+
+    .q-chip {
+      margin: 2px;
+    }
+  }
 }
 </style>
