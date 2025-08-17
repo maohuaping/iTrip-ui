@@ -32,7 +32,7 @@ export default defineConfig((/* ctx */) => {
       // 'roboto-font-latin-ext', // 这个或者 'roboto-font'，永远不要同时使用！
       'material-icons', // 可选的，你不必绑定它
 
-      'roboto-font', // 可选的，你不必绑定它
+      // 'roboto-font', // 注释掉，使用系统字体替代
     ],
 
     // 完整选项列表: https://v2.quasar.dev/quasar-cli-vite/quasar-config-file#build
