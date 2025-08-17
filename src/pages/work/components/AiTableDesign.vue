@@ -175,7 +175,7 @@
                         </q-btn>
                         <q-btn :size="isMobile ? 'xs' : 'sm'" flat round icon="more_vert" color="grey-7"
                           class="action-btn">
-                          <q-tooltip>更多操作</q-tooltip>
+
                           <q-menu>
                             <q-list style="min-width: 140px">
                               <q-item clickable v-close-popup @click="duplicateTableRow(props.row)">
@@ -250,7 +250,7 @@
                         </q-btn>
                         <q-btn :size="isMobile ? 'xs' : 'sm'" flat round icon="more_vert" color="grey-7"
                           class="action-btn">
-                          <q-tooltip>更多操作</q-tooltip>
+
                           <q-menu>
                             <q-list style="min-width: 120px">
                               <q-item clickable v-close-popup @click="deleteIndex(props.row.id)">
