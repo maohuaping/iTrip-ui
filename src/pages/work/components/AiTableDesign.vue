@@ -6,8 +6,12 @@
           <q-icon name="auto_awesome" size="28px" class="q-mr-sm" />
           AI表设计
         </h2>
-        <q-btn color="primary" size="md" icon="table_chart" label="生成表设计" @click="generateTableDesign"
-          :loading="isLoading" :disable="!requirementDescription.trim()" class="q-px-md" unelevated rounded />
+        <div class="row q-gutter-sm">
+          <q-btn color="primary" size="md" icon="auto_awesome" label="生成表设计草稿" @click="generateTableDesign"
+            :loading="isLoading" :disable="!requirementDescription.trim()" class="q-px-md" unelevated rounded />
+          <q-btn v-if="editableFields.length > 0" color="secondary" size="md" icon="code" label="生成最终SQL"
+            @click="generateFinalSQL" :loading="isGeneratingSQL" class="q-px-md" unelevated rounded />
+        </div>
       </div>
 
       <!-- 输入区域 -->
@@ -18,16 +22,19 @@
             需求描述
           </div>
 
-          <q-input v-model="requirementDescription" label="需求描述" placeholder="请输入需求描述，AI将根据描述生成对应的表设计..." outlined dense
-            type="textarea" rows="3" class="light-field" clearable @keyup.ctrl.enter="generateTableDesign">
+          <q-input v-model="requirementDescription" label="表设计需求"
+            placeholder="请详细描述您的表设计需求，例如：&#10;'用户表，需要用户名、手机号、邮箱、密码字段，其中手机号和邮箱不能重复，还需要创建时间和更新时间'" outlined dense
+            type="textarea" rows="4" class="light-field" clearable @keyup.ctrl.enter="generateTableDesign">
             <template v-slot:prepend>
               <q-icon name="description" size="16px" />
             </template>
             <template v-slot:hint>
               <div class="text-caption">
-                <q-icon name="auto_awesome" size="14px" class="q-mr-xs" />
-                AI将生成包含DDL语句、字段详情和索引建议的完整表设计
-                <span class="text-primary q-ml-sm">Ctrl+Enter 快速生成</span>
+                <q-icon name="lightbulb" size="14px" class="q-mr-xs" />
+                <strong>提示：</strong>描述得越具体，AI生成的结果越准确。可以包含字段名称、数据类型、约束条件等
+                <br />
+                <span class="text-primary">Ctrl+Enter 快速生成</span> |
+                <span class="text-info">生成后可进行交互式编辑</span>
               </div>
             </template>
           </q-input>
@@ -35,6 +42,148 @@
       </q-card>
 
 
+
+      <!-- 交互式字段编辑区域 -->
+      <q-card v-if="editableFields.length > 0" flat bordered class="interactive-editor q-mb-lg">
+        <q-card-section class="q-pa-sm">
+          <div class="row justify-between items-center q-mb-md">
+            <div class="text-subtitle2 text-weight-medium">
+              <q-icon name="edit_note" class="q-mr-sm" />
+              交互式表设计编辑
+            </div>
+            <div class="row q-gutter-xs">
+              <q-chip size="sm" color="info" text-color="white" icon="info">
+                表名: {{ editableTableName }}
+              </q-chip>
+              <q-chip size="sm" color="positive" text-color="white" icon="table_rows">
+                {{ editableFields.length }} 个字段
+              </q-chip>
+            </div>
+          </div>
+
+          <!-- 表名编辑 -->
+          <div class="row q-mb-md">
+            <div class="col-12">
+              <q-input v-model="editableTableName" label="表名" outlined dense class="light-field">
+                <template v-slot:prepend>
+                  <q-icon name="table_chart" size="16px" />
+                </template>
+              </q-input>
+            </div>
+          </div>
+
+          <!-- 表描述编辑 -->
+          <div class="row q-mb-lg">
+            <div class="col-12">
+              <q-input v-model="editableTableDescription" label="表描述" outlined dense type="textarea" rows="2"
+                class="light-field">
+                <template v-slot:prepend>
+                  <q-icon name="description" size="16px" />
+                </template>
+              </q-input>
+            </div>
+          </div>
+
+          <!-- 字段列表编辑 -->
+          <div class="fields-editor">
+            <div class="fields-header q-mb-sm">
+              <div class="row items-center justify-between">
+                <span class="text-subtitle2 text-weight-medium">字段设计</span>
+                <q-btn size="sm" color="primary" icon="add" label="添加字段" @click="addNewField" unelevated rounded />
+              </div>
+            </div>
+
+            <div class="fields-list">
+              <div class="dragArea">
+                <div v-for="(field, index) in editableFields" :key="field.id">
+                  <q-card flat bordered class="field-item q-mb-sm" :class="{ 'field-editing': field.isEditing }">
+                    <q-card-section class="q-pa-md">
+                      <div class="row items-center q-gutter-md">
+                        <!-- 字段信息 -->
+                        <div class="col">
+                          <div v-if="!field.isEditing" class="field-display">
+                            <div class="row items-center q-gutter-sm q-mb-xs">
+                              <span class="text-weight-medium text-body1">{{ field.fieldName }}</span>
+                              <q-chip size="xs" :color="field.isPrimaryKey ? 'warning' : 'grey-6'" text-color="white">
+                                {{ field.fieldType }}
+                              </q-chip>
+                              <q-chip v-if="field.isPrimaryKey" size="xs" color="warning" text-color="white" icon="key">
+                                主键
+                              </q-chip>
+                              <q-chip v-if="field.isNotNull" size="xs" color="negative" text-color="white"
+                                icon="not_interested">
+                                非空
+                              </q-chip>
+                            </div>
+                            <div class="text-caption text-grey-7">
+                              {{ field.description || '暂无描述' }}
+                            </div>
+                          </div>
+
+                          <div v-else class="field-edit-form">
+                            <div class="row q-gutter-sm q-mb-sm">
+                              <div class="col-md-3 col-6">
+                                <q-input v-model="field.fieldName" label="字段名" outlined dense class="light-field" />
+                              </div>
+                              <div class="col-md-3 col-6">
+                                <q-select v-model="field.fieldType" :options="fieldTypeOptions" label="数据类型" outlined
+                                  dense class="light-field" />
+                              </div>
+                              <div class="col-md-2 col-4">
+                                <q-checkbox v-model="field.isPrimaryKey" label="主键" />
+                              </div>
+                              <div class="col-md-2 col-4">
+                                <q-checkbox v-model="field.isNotNull" label="非空" />
+                              </div>
+                              <div class="col-md-2 col-4">
+                                <q-checkbox v-model="field.isAuditField" label="审计字段" />
+                              </div>
+                            </div>
+                            <div class="row">
+                              <div class="col-12">
+                                <q-input v-model="field.description" label="字段描述" outlined dense class="light-field" />
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <!-- 操作按钮 -->
+                        <div class="field-actions">
+                          <div class="row q-gutter-xs">
+                            <q-btn v-if="!field.isEditing" size="sm" flat round icon="edit" color="primary"
+                              @click="startEditField(field)">
+                              <q-tooltip>编辑字段</q-tooltip>
+                            </q-btn>
+                            <template v-else>
+                              <q-btn size="sm" flat round icon="check" color="positive" @click="saveFieldEdit(field)">
+                                <q-tooltip>保存</q-tooltip>
+                              </q-btn>
+                              <q-btn size="sm" flat round icon="close" color="negative" @click="cancelFieldEdit(field)">
+                                <q-tooltip>取消</q-tooltip>
+                              </q-btn>
+                            </template>
+                            <q-btn size="sm" flat round icon="delete" color="negative" @click="deleteField(index)"
+                              :disable="field.isEditing">
+                              <q-tooltip>删除字段</q-tooltip>
+                            </q-btn>
+                          </div>
+                        </div>
+                      </div>
+                    </q-card-section>
+                  </q-card>
+                </div>
+              </div>
+
+              <!-- 空状态 -->
+              <div v-if="editableFields.length === 0" class="empty-state text-center q-pa-lg">
+                <q-icon name="table_chart" size="48px" class="text-grey-5 q-mb-md" />
+                <div class="text-body1 text-grey-7 q-mb-sm">暂无字段</div>
+                <div class="text-caption text-grey-6">点击上方"添加字段"按钮开始设计表结构</div>
+              </div>
+            </div>
+          </div>
+        </q-card-section>
+      </q-card>
 
       <!-- 结果展示区域 -->
       <q-card v-if="tableDesignResult" flat bordered class="result-card">
@@ -138,22 +287,46 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, nextTick } from 'vue'
 import { useQuasar } from 'quasar'
 import { getAi } from 'src/api/ai/ai'
-import type { TableDesignResponseVO } from 'src/api/api.schemas'
+import type { TableDesignResponseVO, TableField } from 'src/api/api.schemas'
+// import draggable from 'vuedraggable' // 暂时注释，需要安装包
 
 const $q = useQuasar()
+
+// 扩展的字段接口，添加编辑状态和唯一ID
+interface EditableField extends TableField {
+  id: string
+  isEditing: boolean
+  originalData?: TableField // 保存编辑前的原始数据
+}
 
 // 响应式数据
 const requirementDescription = ref('')
 const isLoading = ref(false)
+const isGeneratingSQL = ref(false)
 const activeTab = ref('sql')
 const sqlCopied = ref(false)
 const jsonCopied = ref(false)
 
 // 表设计结果 - 使用API定义的类型
 const tableDesignResult = ref<TableDesignResponseVO | null>(null)
+
+// 交互式编辑数据
+const editableFields = ref<EditableField[]>([])
+const editableTableName = ref('')
+const editableTableDescription = ref('')
+
+// 字段类型选项
+const fieldTypeOptions = [
+  'BIGINT', 'INT', 'SMALLINT', 'TINYINT',
+  'VARCHAR(50)', 'VARCHAR(100)', 'VARCHAR(255)', 'TEXT', 'LONGTEXT',
+  'DECIMAL(10,2)', 'FLOAT', 'DOUBLE',
+  'DATE', 'DATETIME', 'TIMESTAMP', 'TIME',
+  'BOOLEAN', 'TINYINT(1)',
+  'JSON', 'BLOB', 'LONGBLOB'
+]
 
 // 表格列定义
 const fieldColumns = [
@@ -203,6 +376,200 @@ const formattedJSON = computed(() => {
   }
 })
 
+// 工具方法
+const generateUniqueId = () => {
+  return Date.now().toString(36) + Math.random().toString(36).substr(2, 9)
+}
+
+// 交互式编辑方法
+const addNewField = () => {
+  const newField: EditableField = {
+    id: generateUniqueId(),
+    fieldName: '',
+    fieldType: 'VARCHAR(50)',
+    isPrimaryKey: false,
+    isNotNull: false,
+    description: '',
+    isAuditField: false,
+    isEditing: true
+  }
+  editableFields.value.push(newField)
+
+  // 滚动到新添加的字段
+  nextTick(() => {
+    const fieldItems = document.querySelectorAll('.field-item')
+    const lastField = fieldItems[fieldItems.length - 1]
+    if (lastField) {
+      lastField.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    }
+  })
+}
+
+const startEditField = (field: EditableField) => {
+  // 保存原始数据以便取消时恢复
+  field.originalData = { ...field }
+  field.isEditing = true
+}
+
+const saveFieldEdit = (field: EditableField) => {
+  if (!field.fieldName?.trim()) {
+    $q.notify({
+      type: 'warning',
+      message: '字段名不能为空',
+      position: 'top'
+    })
+    return
+  }
+
+  field.isEditing = false
+  delete field.originalData
+
+  $q.notify({
+    type: 'positive',
+    message: '字段保存成功',
+    position: 'top'
+  })
+}
+
+const cancelFieldEdit = (field: EditableField) => {
+  if (field.originalData) {
+    // 恢复原始数据
+    Object.assign(field, field.originalData)
+    delete field.originalData
+  }
+  field.isEditing = false
+}
+
+const deleteField = (index: number) => {
+  const field = editableFields.value[index]
+  if (!field) return
+
+  $q.dialog({
+    title: '确认删除',
+    message: `确定要删除字段 "${field.fieldName || '未命名字段'}" 吗？`,
+    cancel: true,
+    persistent: true
+  }).onOk(() => {
+    editableFields.value.splice(index, 1)
+    $q.notify({
+      type: 'positive',
+      message: '字段删除成功',
+      position: 'top'
+    })
+  })
+}
+
+const convertToEditableFields = (fields: TableField[] = []) => {
+  return fields.map((field) => ({
+    ...field,
+    id: generateUniqueId(),
+    isEditing: false
+  } as EditableField))
+}
+
+const generateFinalSQL = async () => {
+  if (editableFields.value.length === 0) {
+    $q.notify({
+      type: 'warning',
+      message: '请先添加字段',
+      position: 'top'
+    })
+    return
+  }
+
+  // 检查是否有正在编辑的字段
+  const editingField = editableFields.value.find(f => f.isEditing)
+  if (editingField) {
+    $q.notify({
+      type: 'warning',
+      message: '请先保存正在编辑的字段',
+      position: 'top'
+    })
+    return
+  }
+
+  isGeneratingSQL.value = true
+  try {
+    // 构建表结构数据
+    const tableStructure = {
+      tableName: editableTableName.value,
+      tableDescription: editableTableDescription.value,
+      fields: editableFields.value.map(field => ({
+        fieldName: field.fieldName || '',
+        fieldType: field.fieldType || 'VARCHAR(50)',
+        isPrimaryKey: field.isPrimaryKey || false,
+        isNotNull: field.isNotNull || false,
+        description: field.description || '',
+        isAuditField: field.isAuditField || false
+      }))
+    }
+
+    // 生成SQL DDL
+    const ddlSql = generateDDLFromFields(tableStructure)
+
+    // 更新结果数据
+    tableDesignResult.value = {
+      inputPrompt: requirementDescription.value,
+      tableName: editableTableName.value,
+      tableDescription: editableTableDescription.value,
+      ddlSql: ddlSql,
+      fields: tableStructure.fields,
+      indexes: [], // 可以后续扩展索引功能
+      rawResponse: JSON.stringify(tableStructure),
+      durationMs: 0,
+      durationSeconds: 0,
+      model: 'user-edited'
+    }
+
+    activeTab.value = 'sql'
+
+    $q.notify({
+      type: 'positive',
+      message: '最终SQL生成成功！',
+      position: 'top'
+    })
+  } catch (error) {
+    console.error('生成最终SQL失败:', error)
+    $q.notify({
+      type: 'negative',
+      message: '生成最终SQL失败',
+      position: 'top'
+    })
+  } finally {
+    isGeneratingSQL.value = false
+  }
+}
+
+const generateDDLFromFields = (tableStructure: any) => {
+  const { tableName, tableDescription, fields } = tableStructure
+
+  let ddl = `-- ${tableDescription || tableName + '表'}\n`
+  ddl += `CREATE TABLE ${tableName} (\n`
+
+  const fieldLines = fields.map((field: any) => {
+    let line = `    ${field.fieldName} ${field.fieldType}`
+
+    if (field.isPrimaryKey) {
+      line += ' PRIMARY KEY'
+    }
+
+    if (field.isNotNull && !field.isPrimaryKey) {
+      line += ' NOT NULL'
+    }
+
+    if (field.description) {
+      line += ` COMMENT '${field.description}'`
+    }
+
+    return line
+  })
+
+  ddl += fieldLines.join(',\n')
+  ddl += `\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='${tableDescription || tableName + '表'}';`
+
+  return ddl
+}
+
 // 方法
 
 const generateTableDesign = async () => {
@@ -226,11 +593,17 @@ const generateTableDesign = async () => {
     // 修复API响应结构问题
     if (response.data?.isOk && response.data?.okData) {
       tableDesignResult.value = response.data.okData
+
+      // 转换为可编辑字段并填充编辑器
+      editableFields.value = convertToEditableFields(response.data.okData.fields)
+      editableTableName.value = response.data.okData.tableName || 'new_table'
+      editableTableDescription.value = response.data.okData.tableDescription || ''
+
       activeTab.value = 'sql' // 默认显示SQL页签
 
       $q.notify({
         type: 'positive',
-        message: 'AI表设计生成成功！',
+        message: 'AI表设计草稿生成成功！您可以在上方进行交互式编辑',
         position: 'top'
       })
     } else {
@@ -313,6 +686,76 @@ const copyJSON = async () => {
       background: rgba(255, 255, 255, 0.02);
     }
   }
+}
+
+.interactive-editor {
+  background: var(--q-card-bg, $card-bg);
+  border: 1px solid var(--q-border-color, $border-color);
+  border-radius: 8px;
+
+  .light-field {
+    :deep(.q-field__control) {
+      background: rgba(255, 255, 255, 0.02);
+    }
+  }
+}
+
+.fields-editor {
+  .field-item {
+    transition: all 0.3s ease;
+    border: 1px solid var(--q-border-color, $border-color);
+
+    &:hover {
+      border-color: var(--q-primary);
+      box-shadow: 0 2px 8px rgba(var(--q-primary-rgb), 0.1);
+    }
+
+    &.field-editing {
+      border-color: var(--q-primary);
+      background: rgba(var(--q-primary-rgb), 0.05);
+    }
+
+    .drag-handle {
+      cursor: move;
+
+      &:hover {
+        .q-icon {
+          color: var(--q-primary) !important;
+        }
+      }
+    }
+
+    .field-display {
+      .q-chip {
+        font-size: 11px;
+      }
+    }
+
+    .field-edit-form {
+      .light-field {
+        :deep(.q-field__control) {
+          background: rgba(255, 255, 255, 0.02);
+        }
+      }
+    }
+  }
+
+  .empty-state {
+    border: 2px dashed var(--q-border-color, $border-color);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.01);
+  }
+}
+
+// 拖拽样式
+.dragArea {
+  min-height: 50px;
+}
+
+.ghost {
+  opacity: 0.5;
+  background: rgba(var(--q-primary-rgb), 0.1);
+  border: 2px dashed var(--q-primary);
 }
 
 .result-card {
