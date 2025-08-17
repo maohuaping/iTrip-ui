@@ -78,9 +78,9 @@
             <!-- 表结构详情页签 -->
             <q-tab-panel name="structure" class="q-pa-md">
               <div class="table-info q-mb-md">
-                <div class="row items-center justify-between q-mb-sm">
-                  <h6 class="q-my-none">
-                    <q-icon name="table_chart" class="q-mr-sm" />
+                <div class="row items-center q-mb-sm">
+                  <q-icon name="table_chart" size="24px" class="q-mr-sm" />
+                  <h6 class="q-my-none q-mr-md">
                     {{ tableDesignResult.tableName }}
                   </h6>
                   <q-chip icon="table_rows" color="positive" text-color="white" size="sm">
@@ -995,6 +995,10 @@ const copyJSON = async () => {
   h6 {
     color: var(--q-primary);
     margin-bottom: 8px;
+  }
+
+  .q-icon {
+    color: var(--q-primary);
   }
 }
 
