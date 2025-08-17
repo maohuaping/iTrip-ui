@@ -785,6 +785,25 @@ export interface ResultListSysConfig {
   failMsg?: string;
 }
 
+/**
+ * 枚举选项
+ */
+export interface EnumVO {
+  /** 枚举值/编码 */
+  code?: string;
+  /** 枚举描述/显示名称 */
+  desc?: string;
+}
+
+export interface ResultListEnumVO {
+  /** 是否成功 */
+  isOk?: boolean;
+  /** 成功数据 */
+  okData?: EnumVO[];
+  /** 失败消息 */
+  failMsg?: string;
+}
+
 export interface ResultDevTask {
   /** 是否成功 */
   isOk?: boolean;
@@ -1124,6 +1143,10 @@ export type GetTravelGuideParams = {
    * 目的地名称
    */
   destination?: string;
+};
+
+export type GenerateInsertScriptParams = {
+  tableName: string;
 };
 
 export type GetSignedUrlParams = {
