@@ -195,9 +195,29 @@
                         <q-btn size="sm" flat round icon="edit" color="primary" @click="startTableRowEdit(props.row)">
                           <q-tooltip>编辑</q-tooltip>
                         </q-btn>
-                        <q-btn size="sm" flat round icon="delete" color="negative"
-                          @click="deleteTableRow(props.row.fieldName)">
-                          <q-tooltip>删除</q-tooltip>
+                        <q-btn size="sm" flat round icon="more_vert" color="grey-7">
+                          <q-tooltip>更多操作</q-tooltip>
+                          <q-menu>
+                            <q-list style="min-width: 120px">
+                              <q-item clickable v-close-popup @click="duplicateTableRow(props.row)">
+                                <q-item-section avatar>
+                                  <q-icon name="content_copy" color="primary" />
+                                </q-item-section>
+                                <q-item-section>
+                                  <q-item-label>复制字段</q-item-label>
+                                </q-item-section>
+                              </q-item>
+                              <q-separator />
+                              <q-item clickable v-close-popup @click="deleteTableRow(props.row.fieldName)">
+                                <q-item-section avatar>
+                                  <q-icon name="delete" color="negative" />
+                                </q-item-section>
+                                <q-item-section>
+                                  <q-item-label class="text-negative">删除字段</q-item-label>
+                                </q-item-section>
+                              </q-item>
+                            </q-list>
+                          </q-menu>
                         </q-btn>
                       </template>
                     </div>
@@ -527,6 +547,40 @@ const deleteTableRow = (fieldName: string) => {
       message: '字段删除成功',
       position: 'top'
     })
+  })
+}
+
+const duplicateTableRow = (row: TableField) => {
+  // 创建字段副本
+  const duplicatedField: TableField = {
+    fieldName: `${row.fieldName}_copy`,
+    fieldType: row.fieldType || 'VARCHAR(50)',
+    isPrimaryKey: false, // 复制的字段不能是主键
+    isNotNull: row.isNotNull || false,
+    description: `${row.description || ''} (副本)`,
+    isAuditField: row.isAuditField || false
+  }
+
+  // 添加到表格数据
+  if (tableDesignResult.value?.fields) {
+    tableDesignResult.value.fields.push(duplicatedField)
+  }
+
+  // 添加到可编辑字段
+  const editableField: EditableField = {
+    ...duplicatedField,
+    id: generateUniqueId(),
+    baseType: duplicatedField.fieldType?.split('(')[0] || 'VARCHAR',
+    typeLength: '',
+    typeScale: '',
+    defaultValue: ''
+  }
+  editableFields.value.push(editableField)
+
+  $q.notify({
+    type: 'positive',
+    message: '字段复制成功',
+    position: 'top'
   })
 }
 
