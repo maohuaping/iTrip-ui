@@ -84,72 +84,7 @@
             </div>
           </div>
 
-          <!-- 字段列表编辑 -->
-          <div class="fields-editor">
-            <div class="fields-header q-mb-sm">
-              <div class="row items-center justify-between">
-                <span class="text-subtitle2 text-weight-medium">字段设计</span>
-                <q-btn size="sm" color="primary" icon="add" label="添加字段" @click="addNewField" unelevated rounded />
-              </div>
-            </div>
 
-            <div class="fields-list">
-              <div class="dragArea">
-                <div v-for="(field, index) in editableFields" :key="field.id">
-                  <q-card flat bordered class="field-item q-mb-sm">
-                    <q-card-section class="q-pa-md">
-                      <div class="row items-center q-gutter-md">
-                        <!-- 字段信息 -->
-                        <div class="col">
-                          <div class="field-display">
-                            <div class="row items-center q-gutter-sm q-mb-xs">
-                              <span class="text-weight-medium text-body1">{{ field.fieldName }}</span>
-                              <q-chip size="xs" :color="field.isPrimaryKey ? 'warning' : 'grey-6'" text-color="white">
-                                {{ field.fieldType }}
-                              </q-chip>
-                              <q-chip v-if="field.isPrimaryKey" size="xs" color="warning" text-color="white" icon="key">
-                                主键
-                              </q-chip>
-                              <q-chip v-if="field.isNotNull && !field.isPrimaryKey" size="xs" color="blue-grey"
-                                text-color="white" icon="not_interested">
-                                非空
-                              </q-chip>
-                              <q-chip v-if="field.isAuditField" size="xs" color="info" text-color="white"
-                                icon="schedule">
-                                审计
-                              </q-chip>
-                            </div>
-                            <div class="text-caption text-grey-7">
-                              {{ field.description || '暂无描述' }}
-                            </div>
-                          </div>
-                        </div>
-
-                        <!-- 操作按钮 -->
-                        <div class="field-actions">
-                          <div class="row q-gutter-xs">
-                            <q-btn size="sm" flat round icon="edit" color="primary" @click="openFieldEditor(field)">
-                              <q-tooltip>编辑字段</q-tooltip>
-                            </q-btn>
-                            <q-btn size="sm" flat round icon="delete" color="negative" @click="deleteField(index)">
-                              <q-tooltip>删除字段</q-tooltip>
-                            </q-btn>
-                          </div>
-                        </div>
-                      </div>
-                    </q-card-section>
-                  </q-card>
-                </div>
-              </div>
-
-              <!-- 空状态 -->
-              <div v-if="editableFields.length === 0" class="empty-state text-center q-pa-lg">
-                <q-icon name="table_chart" size="48px" class="text-grey-5 q-mb-md" />
-                <div class="text-body1 text-grey-7 q-mb-sm">暂无字段</div>
-                <div class="text-caption text-grey-6">点击上方"添加字段"按钮开始设计表结构</div>
-              </div>
-            </div>
-          </div>
         </q-card-section>
       </q-card>
 
@@ -311,163 +246,12 @@
       </q-card>
     </div>
 
-    <!-- 侧边栏字段编辑器 -->
-    <q-drawer v-model="fieldEditorOpen" side="right" overlay behavior="mobile" :width="400" :breakpoint="700"
-      class="field-editor-drawer">
-      <q-card flat class="full-height">
-        <q-card-section class="q-pa-md">
-          <div class="row items-center justify-between q-mb-md">
-            <div class="text-h6 text-weight-medium">
-              <q-icon name="edit" class="q-mr-sm" />
-              编辑字段
-            </div>
-            <q-btn flat round dense icon="close" @click="closeFieldEditor" class="text-grey-6" />
-          </div>
 
-          <q-separator class="q-mb-lg" />
-
-          <div v-if="editingField" class="field-editor-form">
-            <!-- 字段基本信息 -->
-            <div class="form-section q-mb-lg">
-              <div class="section-title q-mb-md">
-                <q-icon name="info" class="q-mr-xs" />
-                基本信息
-              </div>
-
-              <q-input v-model="editingField.fieldName" label="字段名称" outlined dense class="q-mb-md light-field"
-                :rules="[val => !!val?.trim() || '字段名不能为空']">
-                <template v-slot:prepend>
-                  <q-icon name="label" size="16px" />
-                </template>
-              </q-input>
-
-              <!-- 数据类型选择 -->
-              <div class="datatype-section q-mb-md">
-                <q-select v-model="editingField.baseType" :options="fieldTypeOptions" label="数据类型" outlined dense
-                  class="light-field" use-input @filter="filterFieldTypes" @update:model-value="onDataTypeChange">
-                  <template v-slot:prepend>
-                    <q-icon name="data_object" size="16px" />
-                  </template>
-                  <template v-slot:option="scope">
-                    <q-item v-bind="scope.itemProps">
-                      <q-item-section>
-                        <q-item-label>{{ scope.opt }}</q-item-label>
-                        <q-item-label caption>
-                          {{ getDataTypeCategory(scope.opt) }}
-                        </q-item-label>
-                      </q-item-section>
-                      <q-item-section side>
-                        <q-icon :name="getDataTypeIcon(scope.opt)" :color="getDataTypeCategoryColor(scope.opt)"
-                          size="16px" />
-                      </q-item-section>
-                    </q-item>
-                  </template>
-                </q-select>
-
-                <!-- 动态参数输入 -->
-                <div v-if="currentDataType" class="type-params q-mt-sm">
-                  <div class="row q-gutter-sm">
-                    <!-- 长度参数 -->
-                    <div v-if="currentDataType.hasLength" class="col">
-                      <q-input v-model="editingField.typeLength" :label="currentDataType.hasScale ? '精度' : '长度'"
-                        outlined dense class="light-field" type="number" min="1"
-                        :placeholder="currentDataType.defaultLength">
-                        <template v-slot:prepend>
-                          <q-icon name="straighten" size="14px" />
-                        </template>
-                      </q-input>
-                    </div>
-
-                    <!-- 标度参数 -->
-                    <div v-if="currentDataType.hasScale" class="col">
-                      <q-input v-model="editingField.typeScale" label="标度" outlined dense class="light-field"
-                        type="number" min="0" :placeholder="currentDataType.defaultScale">
-                        <template v-slot:prepend>
-                          <q-icon name="decimal_increase" size="14px" />
-                        </template>
-                      </q-input>
-                    </div>
-                  </div>
-
-                  <!-- 类型预览 -->
-                  <div class="type-preview q-mt-xs">
-                    <q-chip size="sm" color="info" text-color="white" icon="preview">
-                      {{ formatFieldType(editingField) }}
-                    </q-chip>
-                  </div>
-                </div>
-              </div>
-
-              <q-input v-model="editingField.description" label="字段描述" outlined dense type="textarea" rows="3"
-                class="light-field" placeholder="请输入字段的详细描述...">
-                <template v-slot:prepend>
-                  <q-icon name="description" size="16px" />
-                </template>
-              </q-input>
-
-              <!-- 默认值设置 -->
-              <q-input v-model="editingField.defaultValue" label="默认值" outlined dense class="q-mt-md light-field"
-                placeholder="留空表示无默认值">
-                <template v-slot:prepend>
-                  <q-icon name="settings" size="16px" />
-                </template>
-                <template v-slot:hint>
-                  <div class="text-caption">
-                    可使用如 CURRENT_TIMESTAMP、NULL 等特殊值
-                  </div>
-                </template>
-              </q-input>
-            </div>
-
-            <!-- 字段约束 -->
-            <div class="form-section q-mb-lg">
-              <div class="section-title q-mb-md">
-                <q-icon name="security" class="q-mr-xs" />
-                字段约束
-              </div>
-
-              <div class="constraint-options">
-                <q-checkbox v-model="editingField.isPrimaryKey" label="主键 (Primary Key)" class="q-mb-sm"
-                  :disable="hasPrimaryKey && !editingField.isPrimaryKey" @update:model-value="onPrimaryKeyChange">
-                  <q-tooltip v-if="hasPrimaryKey && !editingField.isPrimaryKey">
-                    表中已存在主键字段
-                  </q-tooltip>
-                </q-checkbox>
-
-                <q-checkbox v-model="editingField.isNotNull" label="非空 (NOT NULL)" class="q-mb-sm"
-                  :disable="editingField.isPrimaryKey">
-                  <q-tooltip v-if="editingField.isPrimaryKey">
-                    主键字段自动为非空
-                  </q-tooltip>
-                </q-checkbox>
-
-                <q-checkbox v-model="editingField.isAuditField" label="审计字段" class="q-mb-sm"
-                  @update:model-value="onAuditFieldChange">
-                  <q-icon name="help_outline" class="q-ml-xs text-grey-6 cursor-pointer" size="16px">
-                    <q-tooltip class="bg-dark">
-                      审计字段通常指 created_at、updated_at、created_by、updated_by 等用于记录数据变更历史的字段
-                      <br />勾选后将自动配置常用的审计字段设置
-                    </q-tooltip>
-                  </q-icon>
-                </q-checkbox>
-              </div>
-            </div>
-
-            <!-- 操作按钮 -->
-            <div class="form-actions">
-              <q-btn color="primary" label="保存更改" icon="save" class="full-width q-mb-sm" @click="saveFieldChanges"
-                :disable="!editingField.fieldName?.trim()" unelevated />
-              <q-btn color="grey-6" label="取消编辑" icon="cancel" class="full-width" @click="cancelFieldChanges" flat />
-            </div>
-          </div>
-        </q-card-section>
-      </q-card>
-    </q-drawer>
   </section>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, nextTick } from 'vue'
+import { ref, computed } from 'vue'
 import { useQuasar } from 'quasar'
 import { getAi } from 'src/api/ai/ai'
 import type { TableDesignResponseVO, TableField } from 'src/api/api.schemas'
@@ -526,11 +310,7 @@ const dataTypes = [
 // 字段类型选项（用于显示）
 const fieldTypeOptions = dataTypes.map(dt => dt.type)
 
-// 侧边栏编辑器数据
-const fieldEditorOpen = ref(false)
-const editingField = ref<EditableField | null>(null)
-const originalFieldData = ref<EditableField | null>(null)
-const filteredFieldTypes = ref(fieldTypeOptions)
+
 
 // 表格内联编辑数据
 const editingRows = ref<Set<string>>(new Set())
@@ -590,18 +370,7 @@ const formattedJSON = computed(() => {
   }
 })
 
-// 检查是否已有主键
-const hasPrimaryKey = computed(() => {
-  return editableFields.value.some(field =>
-    field.isPrimaryKey && field.id !== editingField.value?.id
-  )
-})
 
-// 当前选择的数据类型信息
-const currentDataType = computed(() => {
-  if (!editingField.value?.baseType) return null
-  return dataTypes.find(dt => dt.type === editingField.value?.baseType)
-})
 
 // 获取编辑行数据的安全方法
 const getEditingRowData = (fieldName: string) => {
@@ -647,254 +416,13 @@ const generateUniqueId = () => {
   return Date.now().toString(36) + Math.random().toString(36).substr(2, 9)
 }
 
-// 获取数据类型分类描述
-const getDataTypeCategory = (type: string) => {
-  const dataType = dataTypes.find(dt => dt.type === type)
-  const categoryMap = {
-    'integer': '整数类型',
-    'string': '字符类型',
-    'decimal': '小数类型',
-    'datetime': '日期时间',
-    'boolean': '布尔类型',
-    'json': 'JSON类型',
-    'binary': '二进制类型'
-  }
-  return categoryMap[dataType?.category as keyof typeof categoryMap] || '其他类型'
-}
 
-// 获取数据类型图标
-const getDataTypeIcon = (type: string) => {
-  const dataType = dataTypes.find(dt => dt.type === type)
-  const iconMap = {
-    'integer': 'looks_one',
-    'string': 'text_fields',
-    'decimal': 'functions',
-    'datetime': 'schedule',
-    'boolean': 'toggle_on',
-    'json': 'data_object',
-    'binary': 'storage'
-  }
-  return iconMap[dataType?.category as keyof typeof iconMap] || 'help'
-}
 
-// 获取数据类型分类颜色
-const getDataTypeCategoryColor = (type: string) => {
-  const dataType = dataTypes.find(dt => dt.type === type)
-  const colorMap = {
-    'integer': 'blue',
-    'string': 'green',
-    'decimal': 'purple',
-    'datetime': 'orange',
-    'boolean': 'pink',
-    'json': 'cyan',
-    'binary': 'grey'
-  }
-  return colorMap[dataType?.category as keyof typeof colorMap] || 'grey'
-}
 
-// 交互式编辑方法
-const addNewField = () => {
-  const newField: EditableField = {
-    id: generateUniqueId(),
-    fieldName: '',
-    fieldType: 'VARCHAR(50)',
-    baseType: 'VARCHAR',
-    typeLength: '50',
-    typeScale: '',
-    isPrimaryKey: false,
-    isNotNull: false,
-    description: '',
-    isAuditField: false,
-    defaultValue: ''
-  }
-  editableFields.value.push(newField)
 
-  // 直接打开编辑器编辑新字段
-  openFieldEditor(newField)
 
-  // 滚动到新添加的字段
-  nextTick(() => {
-    const fieldItems = document.querySelectorAll('.field-item')
-    const lastField = fieldItems[fieldItems.length - 1]
-    if (lastField) {
-      lastField.scrollIntoView({ behavior: 'smooth', block: 'center' })
-    }
-  })
-}
 
-// 侧边栏编辑器方法
-const openFieldEditor = (field: EditableField) => {
-  // 保存原始数据以便取消时恢复
-  originalFieldData.value = { ...field }
-  editingField.value = field
-  fieldEditorOpen.value = true
-}
 
-const closeFieldEditor = () => {
-  fieldEditorOpen.value = false
-  editingField.value = null
-  originalFieldData.value = null
-}
-
-const saveFieldChanges = () => {
-  if (!editingField.value?.fieldName?.trim()) {
-    $q.notify({
-      type: 'warning',
-      message: '字段名不能为空',
-      position: 'top'
-    })
-    return
-  }
-
-  // 更新字段类型显示
-  if (editingField.value) {
-    editingField.value.fieldType = formatFieldType(editingField.value)
-  }
-
-  $q.notify({
-    type: 'positive',
-    message: '字段保存成功',
-    position: 'top'
-  })
-
-  closeFieldEditor()
-}
-
-const cancelFieldChanges = () => {
-  if (originalFieldData.value && editingField.value) {
-    // 恢复原始数据
-    Object.assign(editingField.value, originalFieldData.value)
-  }
-  closeFieldEditor()
-}
-
-const onPrimaryKeyChange = (isPrimary: boolean) => {
-  if (isPrimary && editingField.value) {
-    // 如果设置为主键，自动设置为非空
-    editingField.value.isNotNull = true
-
-    // 移除其他字段的主键设置
-    editableFields.value.forEach(field => {
-      if (field.id !== editingField.value?.id) {
-        field.isPrimaryKey = false
-      }
-    })
-  }
-}
-
-// 数据类型变化处理
-const onDataTypeChange = (newType: string) => {
-  if (!editingField.value) return
-
-  const dataType = dataTypes.find(dt => dt.type === newType)
-  if (!dataType) return
-
-  // 重置类型参数
-  editingField.value.typeLength = dataType.defaultLength || ''
-  editingField.value.typeScale = dataType.defaultScale || ''
-
-  // 更新完整的字段类型
-  editingField.value.fieldType = formatFieldType(editingField.value)
-}
-
-// 审计字段变化处理
-const onAuditFieldChange = (isAudit: boolean) => {
-  if (!isAudit || !editingField.value) return
-
-  $q.dialog({
-    title: '审计字段智能配置',
-    message: '检测到您勾选了审计字段，是否要自动配置常用的审计字段设置？',
-    options: {
-      type: 'radio',
-      model: 'created_at',
-      items: [
-        { label: 'created_at (创建时间)', value: 'created_at' },
-        { label: 'updated_at (更新时间)', value: 'updated_at' },
-        { label: 'created_by (创建人)', value: 'created_by' },
-        { label: 'updated_by (更新人)', value: 'updated_by' }
-      ]
-    },
-    cancel: true,
-    persistent: true
-  }).onOk(data => {
-    if (!editingField.value) return
-
-    // 根据选择自动配置字段
-    switch (data) {
-      case 'created_at':
-        editingField.value.fieldName = 'created_at'
-        editingField.value.baseType = 'DATETIME'
-        editingField.value.isNotNull = true
-        editingField.value.defaultValue = 'CURRENT_TIMESTAMP'
-        editingField.value.description = '创建时间'
-        break
-      case 'updated_at':
-        editingField.value.fieldName = 'updated_at'
-        editingField.value.baseType = 'DATETIME'
-        editingField.value.isNotNull = true
-        editingField.value.defaultValue = 'CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'
-        editingField.value.description = '更新时间'
-        break
-      case 'created_by':
-        editingField.value.fieldName = 'created_by'
-        editingField.value.baseType = 'BIGINT'
-        editingField.value.isNotNull = false
-        editingField.value.defaultValue = ''
-        editingField.value.description = '创建人ID'
-        break
-      case 'updated_by':
-        editingField.value.fieldName = 'updated_by'
-        editingField.value.baseType = 'BIGINT'
-        editingField.value.isNotNull = false
-        editingField.value.defaultValue = ''
-        editingField.value.description = '更新人ID'
-        break
-    }
-
-    // 更新字段类型显示
-    editingField.value.fieldType = formatFieldType(editingField.value)
-
-    $q.notify({
-      type: 'positive',
-      message: '审计字段配置成功！',
-      position: 'top'
-    })
-  }).onCancel(() => {
-    // 如果取消，保持审计字段勾选状态
-  })
-}
-
-const filterFieldTypes = (val: string, update: (fn: () => void) => void) => {
-  update(() => {
-    if (val === '') {
-      filteredFieldTypes.value = fieldTypeOptions
-    } else {
-      const needle = val.toLowerCase()
-      filteredFieldTypes.value = fieldTypeOptions.filter(
-        type => type.toLowerCase().includes(needle)
-      )
-    }
-  })
-}
-
-const deleteField = (index: number) => {
-  const field = editableFields.value[index]
-  if (!field) return
-
-  $q.dialog({
-    title: '确认删除',
-    message: `确定要删除字段 "${field.fieldName || '未命名字段'}" 吗？`,
-    cancel: true,
-    persistent: true
-  }).onOk(() => {
-    editableFields.value.splice(index, 1)
-    $q.notify({
-      type: 'positive',
-      message: '字段删除成功',
-      position: 'top'
-    })
-  })
-}
 
 // 更新编辑字段的方法
 const updateEditingField = (fieldName: string, property: keyof EditableField, value: any) => {
@@ -1043,15 +571,7 @@ const generateFinalSQL = async () => {
     return
   }
 
-  // 检查是否有字段正在侧边栏编辑
-  if (fieldEditorOpen.value) {
-    $q.notify({
-      type: 'warning',
-      message: '请先保存正在编辑的字段',
-      position: 'top'
-    })
-    return
-  }
+
 
   isGeneratingSQL.value = true
   try {
@@ -1265,63 +785,7 @@ const copyJSON = async () => {
   }
 }
 
-.fields-editor {
-  .field-item {
-    transition: all 0.3s ease;
-    border: 1px solid var(--q-border-color, $border-color);
 
-    &:hover {
-      border-color: var(--q-primary);
-      box-shadow: 0 2px 8px rgba(var(--q-primary-rgb), 0.1);
-    }
-
-    &.field-editing {
-      border-color: var(--q-primary);
-      background: rgba(var(--q-primary-rgb), 0.05);
-    }
-
-    .drag-handle {
-      cursor: move;
-
-      &:hover {
-        .q-icon {
-          color: var(--q-primary) !important;
-        }
-      }
-    }
-
-    .field-display {
-      .q-chip {
-        font-size: 11px;
-      }
-    }
-
-    .field-edit-form {
-      .light-field {
-        :deep(.q-field__control) {
-          background: rgba(255, 255, 255, 0.02);
-        }
-      }
-    }
-  }
-
-  .empty-state {
-    border: 2px dashed var(--q-border-color, $border-color);
-    border-radius: 8px;
-    background: rgba(255, 255, 255, 0.01);
-  }
-}
-
-// 拖拽样式
-.dragArea {
-  min-height: 50px;
-}
-
-.ghost {
-  opacity: 0.5;
-  background: rgba(var(--q-primary-rgb), 0.1);
-  border: 2px dashed var(--q-primary);
-}
 
 .result-card {
   background: var(--q-card-bg, $card-bg);
@@ -1432,67 +896,7 @@ const copyJSON = async () => {
   }
 }
 
-// 侧边栏编辑器样式
-.field-editor-drawer {
-  :deep(.q-drawer__content) {
-    background: var(--q-card-bg, $card-bg);
-  }
 
-  .field-editor-form {
-    .form-section {
-      .section-title {
-        font-size: 14px;
-        font-weight: 600;
-        color: var(--q-primary);
-        display: flex;
-        align-items: center;
-      }
-
-      .light-field {
-        :deep(.q-field__control) {
-          background: rgba(255, 255, 255, 0.02);
-        }
-      }
-
-      .constraint-options {
-        .q-checkbox {
-          :deep(.q-checkbox__label) {
-            font-size: 14px;
-          }
-        }
-      }
-
-      .datatype-section {
-        .type-params {
-          .light-field {
-            :deep(.q-field__control) {
-              background: rgba(255, 255, 255, 0.02);
-            }
-          }
-        }
-
-        .type-preview {
-          text-align: center;
-
-          .q-chip {
-            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
-            font-size: 12px;
-            letter-spacing: 0.5px;
-          }
-        }
-      }
-    }
-
-    .form-actions {
-      position: sticky;
-      bottom: 0;
-      background: var(--q-card-bg, $card-bg);
-      padding-top: 16px;
-      border-top: 1px solid var(--q-border-color, $border-color);
-      margin-top: 16px;
-    }
-  }
-}
 
 // 响应式设计
 @media (max-width: 768px) {
@@ -1511,10 +915,6 @@ const copyJSON = async () => {
     }
   }
 
-  .field-editor-drawer {
-    :deep(.q-drawer) {
-      width: 100% !important;
-    }
-  }
+
 }
 </style>
