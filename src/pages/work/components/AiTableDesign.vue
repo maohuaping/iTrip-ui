@@ -52,6 +52,7 @@
             align="justify" narrow-indicator>
             <q-tab name="structure" icon="table_view" label="表结构详情" />
             <q-tab name="sql" icon="code" label="SQL DDL" />
+            <q-tab name="original-sql" icon="code_off" label="接口原始DDL" />
             <q-tab name="raw" icon="data_object" label="原始数据" />
           </q-tabs>
 
@@ -72,6 +73,23 @@
                   </q-btn>
                 </div>
                 <pre class="sql-code"><code>{{ tableDesignResult.ddlSql }}</code></pre>
+              </div>
+            </q-tab-panel>
+
+            <!-- 接口原始DDL 页签 -->
+            <q-tab-panel name="original-sql" class="q-pa-none">
+              <div class="code-block-container">
+                <div class="code-header">
+                  <span class="code-title">
+                    <q-icon name="code_off" class="q-mr-xs" />
+                    接口返回的原始DDL
+                  </span>
+                  <q-btn flat round dense :icon="originalSqlCopied ? 'check' : 'content_copy'"
+                    :color="originalSqlCopied ? 'positive' : 'grey-7'" @click="copyOriginalSQL" class="copy-btn">
+                    <q-tooltip>{{ originalSqlCopied ? '已复制!' : '复制原始DDL' }}</q-tooltip>
+                  </q-btn>
+                </div>
+                <pre class="sql-code"><code>{{ originalDdlSql || '暂无原始DDL数据' }}</code></pre>
               </div>
             </q-tab-panel>
 
@@ -449,6 +467,10 @@ const isGeneratingSQL = ref(false)
 const activeTab = ref('structure')
 const sqlCopied = ref(false)
 const jsonCopied = ref(false)
+const originalSqlCopied = ref(false)
+
+// 接口返回的原始DDL
+const originalDdlSql = ref('')
 
 // 表设计结果 - 使用API定义的类型
 const tableDesignResult = ref<TableDesignResponseVO | null>(null)
@@ -1256,6 +1278,9 @@ const generateTableDesign = async () => {
 
     // 修复API响应结构问题
     if (response.data?.isOk && response.data?.okData) {
+      // 保存接口返回的原始DDL
+      originalDdlSql.value = response.data.okData.ddlSql || ''
+
       // 转换为可编辑字段并填充编辑器
       editableFields.value = convertToEditableFields(response.data.okData.fields)
       editableTableName.value = response.data.okData.tableName || 'new_table'
@@ -1343,6 +1368,30 @@ const copySQL = async () => {
     })
     setTimeout(() => {
       sqlCopied.value = false
+    }, 2000)
+  } catch (error) {
+    console.error('复制失败:', error)
+    $q.notify({
+      type: 'negative',
+      message: '复制失败',
+      position: 'top'
+    })
+  }
+}
+
+const copyOriginalSQL = async () => {
+  if (!originalDdlSql.value) return
+
+  try {
+    await navigator.clipboard.writeText(originalDdlSql.value)
+    originalSqlCopied.value = true
+    $q.notify({
+      type: 'positive',
+      message: '原始DDL已复制到剪贴板',
+      position: 'top'
+    })
+    setTimeout(() => {
+      originalSqlCopied.value = false
     }, 2000)
   } catch (error) {
     console.error('复制失败:', error)
