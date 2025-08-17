@@ -6,18 +6,8 @@
           <q-icon name="auto_awesome" size="28px" class="q-mr-sm" />
           AI表设计
         </h2>
-        <q-btn
-          color="primary"
-          size="md"
-          icon="table_chart"
-          label="生成表设计"
-          @click="generateTableDesign"
-          :loading="isLoading"
-          :disable="!requirementDescription.trim()"
-          class="q-px-md"
-          unelevated
-          rounded
-        />
+        <q-btn color="primary" size="md" icon="table_chart" label="生成表设计" @click="generateTableDesign"
+          :loading="isLoading" :disable="!requirementDescription.trim()" class="q-px-md" unelevated rounded />
       </div>
 
       <!-- 输入区域 -->
@@ -28,18 +18,8 @@
             需求描述
           </div>
 
-          <q-input
-            v-model="requirementDescription"
-            label="需求描述"
-            placeholder="请输入需求描述，AI将根据描述生成对应的表设计..."
-            outlined
-            dense
-            type="textarea"
-            rows="3"
-            class="light-field"
-            clearable
-            @keyup.ctrl.enter="generateTableDesign"
-          >
+          <q-input v-model="requirementDescription" label="需求描述" placeholder="请输入需求描述，AI将根据描述生成对应的表设计..." outlined dense
+            type="textarea" rows="3" class="light-field" clearable @keyup.ctrl.enter="generateTableDesign">
             <template v-slot:prepend>
               <q-icon name="description" size="16px" />
             </template>
@@ -64,20 +44,9 @@
 
           <div class="row q-gutter-sm">
             <div class="col-md-6 col-12">
-              <q-select
-                v-model="selectedRequirement"
-                :options="filteredRequirements"
-                option-value="requirementId"
-                option-label="requirementName"
-                label="选择需求"
-                outlined
-                dense
-                clearable
-                use-input
-                @filter="filterRequirements"
-                @update:model-value="onRequirementSelected"
-                class="light-field"
-              >
+              <q-select v-model="selectedRequirement" :options="filteredRequirements" option-value="requirementId"
+                option-label="requirementName" label="选择需求" outlined dense clearable use-input
+                @filter="filterRequirements" @update:model-value="onRequirementSelected" class="light-field">
                 <template v-slot:prepend>
                   <q-icon name="assignment" size="16px" />
                 </template>
@@ -104,15 +73,8 @@
               </q-select>
             </div>
             <div class="col-md-6 col-12">
-              <q-btn
-                color="secondary"
-                icon="refresh"
-                label="刷新需求列表"
-                @click="loadRequirements"
-                :loading="loadingRequirements"
-                outline
-                class="full-width"
-              />
+              <q-btn color="secondary" icon="refresh" label="刷新需求列表" @click="loadRequirements"
+                :loading="loadingRequirements" outline class="full-width" />
             </div>
           </div>
         </q-card-section>
@@ -121,15 +83,8 @@
       <!-- 结果展示区域 -->
       <q-card v-if="tableDesignResult" flat bordered class="result-card">
         <q-card-section class="q-pa-none">
-          <q-tabs
-            v-model="activeTab"
-            dense
-            class="text-grey"
-            active-color="primary"
-            indicator-color="primary"
-            align="justify"
-            narrow-indicator
-          >
+          <q-tabs v-model="activeTab" dense class="text-grey" active-color="primary" indicator-color="primary"
+            align="justify" narrow-indicator>
             <q-tab name="sql" icon="code" label="SQL DDL" />
             <q-tab name="structure" icon="table_view" label="表结构详情" />
             <q-tab name="raw" icon="data_object" label="原始数据" />
@@ -146,15 +101,8 @@
                     <q-icon name="code" class="q-mr-xs" />
                     SQL DDL 语句
                   </span>
-                  <q-btn
-                    flat
-                    round
-                    dense
-                    :icon="sqlCopied ? 'check' : 'content_copy'"
-                    :color="sqlCopied ? 'positive' : 'grey-7'"
-                    @click="copySQL"
-                    class="copy-btn"
-                  >
+                  <q-btn flat round dense :icon="sqlCopied ? 'check' : 'content_copy'"
+                    :color="sqlCopied ? 'positive' : 'grey-7'" @click="copySQL" class="copy-btn">
                     <q-tooltip>{{ sqlCopied ? '已复制!' : '复制SQL' }}</q-tooltip>
                   </q-btn>
                 </div>
@@ -174,32 +122,18 @@
                 </p>
               </div>
 
-              <q-table
-                :rows="tableDesignResult.fields || []"
-                :columns="fieldColumns"
-                row-key="fieldName"
-                flat
-                bordered
-                class="field-table"
-                :pagination="{ rowsPerPage: 0 }"
-                hide-pagination
-              >
+              <q-table :rows="tableDesignResult.fields || []" :columns="fieldColumns" row-key="fieldName" flat bordered
+                class="field-table" :pagination="{ rowsPerPage: 0 }" hide-pagination>
                 <template v-slot:body-cell-isPrimaryKey="props">
                   <q-td :props="props">
-                    <q-icon
-                      :name="props.value ? 'check_circle' : 'cancel'"
-                      :color="props.value ? 'positive' : 'negative'"
-                      size="sm"
-                    />
+                    <q-icon :name="props.value ? 'check_circle' : 'cancel'"
+                      :color="props.value ? 'positive' : 'negative'" size="sm" />
                   </q-td>
                 </template>
                 <template v-slot:body-cell-isNotNull="props">
                   <q-td :props="props">
-                    <q-icon
-                      :name="props.value ? 'check_circle' : 'cancel'"
-                      :color="props.value ? 'positive' : 'negative'"
-                      size="sm"
-                    />
+                    <q-icon :name="props.value ? 'check_circle' : 'cancel'"
+                      :color="props.value ? 'positive' : 'negative'" size="sm" />
                   </q-td>
                 </template>
               </q-table>
@@ -232,15 +166,8 @@
                     <q-icon name="data_object" class="q-mr-xs" />
                     原始JSON数据
                   </span>
-                  <q-btn
-                    flat
-                    round
-                    dense
-                    :icon="jsonCopied ? 'check' : 'content_copy'"
-                    :color="jsonCopied ? 'positive' : 'grey-7'"
-                    @click="copyJSON"
-                    class="copy-btn"
-                  >
+                  <q-btn flat round dense :icon="jsonCopied ? 'check' : 'content_copy'"
+                    :color="jsonCopied ? 'positive' : 'grey-7'" @click="copyJSON" class="copy-btn">
                     <q-tooltip>{{ jsonCopied ? '已复制!' : '复制JSON' }}</q-tooltip>
                   </q-btn>
                 </div>
@@ -359,7 +286,7 @@ const filterRequirements = (val: string, update: (fn: () => void) => void) => {
       const needle = val.toLowerCase()
       filteredRequirements.value = requirementOptions.value.filter(
         req => req.requirementName?.toLowerCase().includes(needle) ||
-               req.requirementId?.toLowerCase().includes(needle)
+          req.requirementId?.toLowerCase().includes(needle)
       )
     }
   })
