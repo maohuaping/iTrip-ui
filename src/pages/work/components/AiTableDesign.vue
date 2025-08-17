@@ -175,7 +175,7 @@
                         <q-btn size="sm" flat round icon="more_vert" color="grey-7">
                           <q-tooltip>更多操作</q-tooltip>
                           <q-menu>
-                            <q-list style="min-width: 120px">
+                            <q-list style="min-width: 140px">
                               <q-item clickable v-close-popup @click="duplicateTableRow(props.row)">
                                 <q-item-section avatar>
                                   <q-icon name="content_copy" color="primary" />
@@ -279,7 +279,7 @@
 
   </section>
 
-  <!-- 索引编辑对话框 -->
+  <!-- 索引编辑对话框 (桌面端) -->
   <q-dialog v-model="indexDialogOpen" persistent>
     <q-card style="min-width: 500px">
       <q-card-section class="row items-center q-pb-none">
@@ -332,6 +332,63 @@
       </q-card-actions>
     </q-card>
   </q-dialog>
+
+  <!-- 索引编辑对话框 (移动端) -->
+  <q-dialog v-model="indexDrawerOpen" persistent position="bottom" class="mobile-index-dialog">
+    <q-card class="mobile-index-card">
+      <!-- 对话框头部 -->
+      <q-card-section class="row items-center q-pb-none">
+        <q-icon name="speed" size="24px" class="q-mr-sm" color="primary" />
+        <div class="text-h6 text-weight-medium">{{ isNewIndex ? '新建索引' : '编辑索引' }}</div>
+        <q-space />
+        <q-btn icon="close" flat round dense @click="indexDrawerOpen = false" />
+      </q-card-section>
+
+      <!-- 对话框内容 -->
+      <q-card-section>
+        <div class="column q-gutter-md">
+          <!-- 索引名称 -->
+          <q-input v-if="editingIndex" v-model="editingIndex.indexName" label="索引名称" outlined
+            :rules="[val => !!val || '索引名称不能为空']">
+            <template v-slot:prepend>
+              <q-icon name="speed" />
+            </template>
+          </q-input>
+
+          <!-- 索引类型 -->
+          <q-select v-if="editingIndex" v-model="editingIndex.indexType" :options="indexTypeOptions" label="索引类型"
+            outlined emit-value map-options>
+            <template v-slot:prepend>
+              <q-icon name="category" />
+            </template>
+          </q-select>
+
+          <!-- 索引字段 -->
+          <q-select v-if="editingIndex" v-model="editingIndex.fields" :options="availableFieldOptions" label="索引字段"
+            outlined multiple use-chips emit-value map-options :rules="[val => val && val.length > 0 || '至少选择一个字段']">
+            <template v-slot:prepend>
+              <q-icon name="table_rows" />
+            </template>
+          </q-select>
+
+          <!-- 索引注释 -->
+          <q-input v-if="editingIndex" v-model="editingIndex.comment" label="索引注释（可选）" outlined type="textarea"
+            rows="3">
+            <template v-slot:prepend>
+              <q-icon name="comment" />
+            </template>
+          </q-input>
+        </div>
+      </q-card-section>
+
+      <!-- 对话框底部操作 -->
+      <q-card-actions class="q-pt-none">
+        <q-btn flat label="取消" @click="indexDrawerOpen = false" class="col" />
+        <q-btn color="primary" label="保存" @click="saveIndex"
+          :disable="!editingIndex?.indexName || !editingIndex?.fields?.length" class="col" unelevated />
+      </q-card-actions>
+    </q-card>
+  </q-dialog>
 </template>
 
 <script setup lang="ts">
@@ -342,6 +399,9 @@ import type { TableDesignResponseVO, TableField } from 'src/api/api.schemas'
 // import draggable from 'vuedraggable' // 暂时注释，需要安装包
 
 const $q = useQuasar()
+
+// 移动端检测
+const isMobile = computed(() => $q.screen.lt.md)
 
 // 扩展的字段接口，添加唯一ID和类型参数
 interface EditableField extends TableField {
@@ -425,6 +485,7 @@ const editingRowData = ref<Record<string, EditableField>>({})
 // 索引相关数据
 const editableIndexes = ref<EditableIndex[]>([])
 const indexDialogOpen = ref(false)
+const indexDrawerOpen = ref(false) // 移动端底部抽屉
 const editingIndex = ref<EditableIndex | null>(null)
 const isNewIndex = ref(false)
 
@@ -831,7 +892,13 @@ const openIndexDialog = (index?: EditableIndex) => {
       comment: ''
     }
   }
-  indexDialogOpen.value = true
+
+  // 根据设备类型选择对话框或抽屉
+  if (isMobile.value) {
+    indexDrawerOpen.value = true
+  } else {
+    indexDialogOpen.value = true
+  }
 }
 
 const saveIndex = () => {
@@ -868,6 +935,7 @@ const saveIndex = () => {
   // 重新生成SQL
   updateSqlDdl()
   indexDialogOpen.value = false
+  indexDrawerOpen.value = false
 }
 
 const deleteIndex = (indexId: string) => {
@@ -1443,6 +1511,15 @@ const copyJSON = async () => {
     }
   }
 
+  // 移动端表格样式修复
+  .field-table {
+    :deep(.q-table thead th) {
+      background: rgba(var(--q-primary-rgb, 148, 190, 206), 0.1) !important;
+      color: var(--q-text-color, $text-color) !important;
+      border-bottom: 1px solid var(--q-border-color, $border-color);
+    }
+  }
+
   // 索引表格样式
   .index-table {
     :deep(.q-table__top) {
@@ -1456,11 +1533,43 @@ const copyJSON = async () => {
     :deep(.q-table thead th) {
       padding: 12px 12px;
       font-weight: 600;
-      background-color: #f8f9fa;
+      background: rgba(var(--q-primary-rgb, 148, 190, 206), 0.1) !important;
+      color: var(--q-text-color, $text-color) !important;
+      border-bottom: 1px solid var(--q-border-color, $border-color);
     }
 
     .q-chip {
       margin: 2px;
+    }
+  }
+}
+
+// 移动端对话框样式
+.mobile-index-dialog {
+  :deep(.q-dialog__inner) {
+    padding: 0;
+    align-items: flex-end;
+  }
+
+  .mobile-index-card {
+    width: 100%;
+    max-width: 100%;
+    background: var(--q-card-bg, $card-bg);
+    border-radius: 16px 16px 0 0;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
+    margin: 0;
+
+    .text-h6 {
+      color: var(--q-text-color, $text-color);
+    }
+
+    .q-btn {
+      font-weight: 500;
+    }
+
+    .q-card-actions {
+      padding: 16px;
+      gap: 12px;
     }
   }
 }
