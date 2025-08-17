@@ -433,7 +433,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useQuasar } from 'quasar'
 import { getAi } from 'src/api/ai/ai'
 import type { TableDesignResponseVO, TableField } from 'src/api/api.schemas'
@@ -443,6 +443,9 @@ const $q = useQuasar()
 
 // 移动端检测
 const isMobile = computed(() => $q.screen.lt.md)
+
+// 缓存相关常量
+const CACHE_KEY = 'ai_table_design_cache'
 
 // 扩展的字段接口，添加唯一ID和类型参数
 interface EditableField extends TableField {
@@ -755,6 +758,9 @@ const saveTableRowEdit = (fieldName: string) => {
   // 重新生成SQL DDL
   updateSqlDdl()
 
+  // 保存到缓存
+  saveCacheData()
+
   $q.notify({
     type: 'positive',
     message: '字段更新成功',
@@ -915,6 +921,9 @@ const deleteTableRow = (fieldName: string) => {
     // 重新生成SQL DDL
     updateSqlDdl()
 
+    // 保存到缓存
+    saveCacheData()
+
     $q.notify({
       type: 'positive',
       message: '字段删除成功',
@@ -982,6 +991,10 @@ const saveIndex = () => {
 
   // 重新生成SQL
   updateSqlDdl()
+
+  // 保存到缓存
+  saveCacheData()
+
   indexDialogOpen.value = false
   indexDrawerOpen.value = false
 }
@@ -997,6 +1010,10 @@ const deleteIndex = (indexId: string) => {
     if (index !== -1) {
       editableIndexes.value.splice(index, 1)
       updateSqlDdl()
+
+      // 保存到缓存
+      saveCacheData()
+
       $q.notify({
         type: 'positive',
         message: '索引删除成功',
@@ -1372,6 +1389,9 @@ const generateTableDesign = async () => {
     return
   }
 
+  // 清除之前的缓存数据
+  clearCacheData()
+
   isLoading.value = true
   try {
     const aiApi = getAi()
@@ -1435,6 +1455,9 @@ const generateTableDesign = async () => {
       }
 
       activeTab.value = 'structure' // 默认显示表结构详情页签
+
+      // 保存到缓存
+      saveCacheData()
 
       $q.notify({
         type: 'positive',
@@ -1541,6 +1564,81 @@ const onDatabaseTypeChange = () => {
     position: 'top'
   })
 }
+
+// 缓存管理方法
+const saveCacheData = () => {
+  try {
+    const cacheData = {
+      requirementDescription: requirementDescription.value,
+      tableDesignResult: tableDesignResult.value,
+      editableFields: editableFields.value,
+      editableTableName: editableTableName.value,
+      editableTableDescription: editableTableDescription.value,
+      editableIndexes: editableIndexes.value,
+      originalDdlSql: originalDdlSql.value,
+      databaseType: databaseType.value,
+      activeTab: activeTab.value,
+      timestamp: Date.now()
+    }
+    localStorage.setItem(CACHE_KEY, JSON.stringify(cacheData))
+    console.log('数据已缓存到浏览器')
+  } catch (error) {
+    console.error('缓存数据失败:', error)
+  }
+}
+
+const loadCacheData = () => {
+  try {
+    const cachedData = localStorage.getItem(CACHE_KEY)
+    if (cachedData) {
+      const data = JSON.parse(cachedData)
+
+      // 检查缓存是否过期（7天）
+      const isExpired = Date.now() - data.timestamp > 7 * 24 * 60 * 60 * 1000
+      if (isExpired) {
+        localStorage.removeItem(CACHE_KEY)
+        return false
+      }
+
+      // 恢复数据
+      requirementDescription.value = data.requirementDescription || ''
+      tableDesignResult.value = data.tableDesignResult || null
+      editableFields.value = data.editableFields || []
+      editableTableName.value = data.editableTableName || ''
+      editableTableDescription.value = data.editableTableDescription || ''
+      editableIndexes.value = data.editableIndexes || []
+      originalDdlSql.value = data.originalDdlSql || ''
+      databaseType.value = data.databaseType || 'postgresql'
+      activeTab.value = data.activeTab || 'structure'
+
+      console.log('从浏览器恢复缓存数据')
+      $q.notify({
+        type: 'info',
+        message: '已恢复上次的表设计数据',
+        position: 'top'
+      })
+      return true
+    }
+  } catch (error) {
+    console.error('恢复缓存数据失败:', error)
+    localStorage.removeItem(CACHE_KEY)
+  }
+  return false
+}
+
+const clearCacheData = () => {
+  try {
+    localStorage.removeItem(CACHE_KEY)
+    console.log('已清除缓存数据')
+  } catch (error) {
+    console.error('清除缓存数据失败:', error)
+  }
+}
+
+// 页面挂载时恢复缓存数据
+onMounted(() => {
+  loadCacheData()
+})
 
 
 </script>
