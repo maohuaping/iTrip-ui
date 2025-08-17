@@ -34,51 +34,7 @@
         </q-card-section>
       </q-card>
 
-      <!-- 需求列表选择区域 -->
-      <q-card flat bordered class="filter-card q-mb-lg">
-        <q-card-section class="q-pa-sm">
-          <div class="text-subtitle2 text-weight-medium q-mb-md">
-            <q-icon name="list" class="q-mr-sm" />
-            选择现有需求
-          </div>
 
-          <div class="row q-gutter-sm">
-            <div class="col-md-6 col-12">
-              <q-select v-model="selectedRequirement" :options="filteredRequirements" option-value="requirementId"
-                option-label="requirementName" label="选择需求" outlined dense clearable use-input
-                @filter="filterRequirements" @update:model-value="onRequirementSelected" class="light-field">
-                <template v-slot:prepend>
-                  <q-icon name="assignment" size="16px" />
-                </template>
-                <template v-slot:no-option>
-                  <q-item>
-                    <q-item-section class="text-grey">
-                      没有找到匹配的需求
-                    </q-item-section>
-                  </q-item>
-                </template>
-                <template v-slot:option="scope">
-                  <q-item v-bind="scope.itemProps">
-                    <q-item-section>
-                      <q-item-label>{{ scope.opt.requirementName }}</q-item-label>
-                      <q-item-label caption>{{ scope.opt.requirementId }}</q-item-label>
-                    </q-item-section>
-                    <q-item-section side>
-                      <q-chip size="sm" :color="getSystemCategoryColor(scope.opt.systemCategory)" text-color="white">
-                        {{ scope.opt.systemCategoryDesc }}
-                      </q-chip>
-                    </q-item-section>
-                  </q-item>
-                </template>
-              </q-select>
-            </div>
-            <div class="col-md-6 col-12">
-              <q-btn color="secondary" icon="refresh" label="刷新需求列表" @click="loadRequirements"
-                :loading="loadingRequirements" outline class="full-width" />
-            </div>
-          </div>
-        </q-card-section>
-      </q-card>
 
       <!-- 结果展示区域 -->
       <q-card v-if="tableDesignResult" flat bordered class="result-card">
@@ -182,20 +138,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed } from 'vue'
 import { useQuasar } from 'quasar'
-import { getDevTask } from 'src/api/dev-task/dev-task'
 import { getAi } from 'src/api/ai/ai'
-import type { DevTaskVO, TableDesignResponseVO } from 'src/api/api.schemas'
+import type { TableDesignResponseVO } from 'src/api/api.schemas'
 
 const $q = useQuasar()
 
 // 响应式数据
 const requirementDescription = ref('')
-const selectedRequirement = ref<DevTaskVO | null>(null)
-const requirementOptions = ref<DevTaskVO[]>([])
-const filteredRequirements = ref<DevTaskVO[]>([])
-const loadingRequirements = ref(false)
 const isLoading = ref(false)
 const activeTab = ref('sql')
 const sqlCopied = ref(false)
@@ -253,60 +204,6 @@ const formattedJSON = computed(() => {
 })
 
 // 方法
-const loadRequirements = async () => {
-  loadingRequirements.value = true
-  try {
-    const devTaskApi = getDevTask()
-    const response = await devTaskApi.queryDevTask({
-      pageParam: { current: 1, size: 100 }
-    })
-
-    // 修复API响应结构问题
-    if (response.data?.isOk && response.data?.okData?.records) {
-      requirementOptions.value = response.data.okData.records
-      filteredRequirements.value = response.data.okData.records
-    }
-  } catch (error) {
-    console.error('加载需求列表失败:', error)
-    $q.notify({
-      type: 'negative',
-      message: '加载需求列表失败',
-      position: 'top'
-    })
-  } finally {
-    loadingRequirements.value = false
-  }
-}
-
-const filterRequirements = (val: string, update: (fn: () => void) => void) => {
-  update(() => {
-    if (val === '') {
-      filteredRequirements.value = requirementOptions.value
-    } else {
-      const needle = val.toLowerCase()
-      filteredRequirements.value = requirementOptions.value.filter(
-        req => req.requirementName?.toLowerCase().includes(needle) ||
-          req.requirementId?.toLowerCase().includes(needle)
-      )
-    }
-  })
-}
-
-const onRequirementSelected = (requirement: DevTaskVO | null) => {
-  if (requirement) {
-    requirementDescription.value = requirement.requirementName || ''
-  }
-}
-
-const getSystemCategoryColor = (category?: string) => {
-  const colorMap: Record<string, string> = {
-    'callin': 'blue',
-    'callout': 'green',
-    'system': 'purple',
-    'web': 'orange'
-  }
-  return colorMap[category || ''] || 'grey'
-}
 
 const generateTableDesign = async () => {
   if (!requirementDescription.value.trim()) {
@@ -343,9 +240,10 @@ const generateTableDesign = async () => {
     console.error('生成表设计失败:', error)
 
     // 如果API调用失败，显示错误信息
+    const errorMessage = error instanceof Error ? error.message : '请重试'
     $q.notify({
       type: 'negative',
-      message: `生成表设计失败: ${error.message || '请重试'}`,
+      message: `生成表设计失败: ${errorMessage}`,
       position: 'top'
     })
   } finally {
@@ -401,10 +299,7 @@ const copyJSON = async () => {
   }
 }
 
-// 生命周期
-onMounted(() => {
-  loadRequirements()
-})
+
 </script>
 
 <style lang="scss" scoped>
