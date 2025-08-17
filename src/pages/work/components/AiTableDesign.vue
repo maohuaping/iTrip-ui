@@ -941,6 +941,38 @@ const duplicateTableRow = (row: TableField) => {
   })
 }
 
+// 转换API返回的索引数据为前端期望的格式
+const convertToEditableIndexes = (indexes: any[] = []) => {
+  return indexes.map((index) => {
+    const editableIndex: EditableIndex = {
+      id: Date.now().toString() + '_' + Math.random().toString(36).substr(2, 9),
+      indexName: index.indexName || '',
+      indexType: convertIndexType(index.indexType || 'BTREE'),
+      fields: index.fieldName ? [index.fieldName] : [],
+      comment: index.comment || ''
+    }
+    return editableIndex
+  })
+}
+
+// 转换索引类型
+const convertIndexType = (apiIndexType: string): 'PRIMARY' | 'UNIQUE' | 'NORMAL' | 'FULLTEXT' => {
+  switch (apiIndexType.toUpperCase()) {
+    case 'BTREE':
+    case 'HASH':
+    case 'INDEX':
+      return 'NORMAL'
+    case 'UNIQUE':
+      return 'UNIQUE'
+    case 'PRIMARY':
+      return 'PRIMARY'
+    case 'FULLTEXT':
+      return 'FULLTEXT'
+    default:
+      return 'NORMAL'
+  }
+}
+
 const convertToEditableFields = (fields: TableField[] = []) => {
   return fields.map((field) => {
     const editableField: EditableField = {
@@ -997,7 +1029,8 @@ const generateFinalSQL = async () => {
         isNotNull: field.isNotNull || false,
         description: field.description || '',
         isAuditField: field.isAuditField || false
-      }))
+      })),
+      indexes: editableIndexes.value || []
     }
 
     // 生成SQL DDL
@@ -1143,6 +1176,11 @@ const generateTableDesign = async () => {
       editableFields.value = convertToEditableFields(response.data.okData.fields)
       editableTableName.value = response.data.okData.tableName || 'new_table'
       editableTableDescription.value = response.data.okData.tableDescription || ''
+
+      // 转换索引数据
+      console.log('原始索引数据:', response.data.okData.indexes)
+      editableIndexes.value = convertToEditableIndexes(response.data.okData.indexes || [])
+      console.log('转换后的索引数据:', editableIndexes.value)
 
       activeTab.value = 'structure' // 默认显示表结构详情页签
 
