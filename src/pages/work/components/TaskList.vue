@@ -48,7 +48,7 @@
             <!-- 需求编号搜索 -->
             <div class="col-12 col-sm-6 col-md-3">
               <q-input v-model="filterParams.requirementId" label="需求编号" outlined dense clearable placeholder="请输入需求编号"
-                       class="light-field" @update:model-value="handleFilterChange">
+                class="light-field" @update:model-value="handleFilterChange">
                 <template v-slot:prepend>
                   <q-icon name="tag" size="16px" />
                 </template>
@@ -198,7 +198,7 @@
                                   <div class="document-meta">
                                     <span class="document-type">{{ getFileTypeLabel(file.fileType || '') }}</span>
                                     <span v-if="file.createdAt" class="document-date">{{ formatDate(file.createdAt)
-                                    }}</span>
+                                      }}</span>
                                   </div>
                                 </div>
                                 <q-icon name="open_in_new" size="16px" color="grey-6" />
@@ -245,10 +245,10 @@
 
             <!-- 空状态 -->
             <template v-slot:no-data>
-              <div class="empty-state-wrapper">
-                <div class="empty-state-content">
-                  <q-icon name="task_alt" size="64px" color="grey-5" />
-                  <div class="text-h6 text-grey-6 q-mt-md">暂无任务数据</div>
+              <div class="full-width flex justify-center items-center" style="min-height: 300px; padding: 60px 20px;">
+                <div class="text-center">
+                  <q-icon name="task_alt" size="64px" color="grey-5" class="q-mb-md" />
+                  <div class="text-h6 text-grey-6 q-mb-sm">暂无任务数据</div>
                   <div class="text-body2 text-grey-5">点击"新建任务"开始创建您的第一个任务</div>
                 </div>
               </div>
@@ -1650,15 +1650,7 @@ defineOptions({
     }
   }
 
-  .empty-state {
-    text-align: center;
-    padding: 40px 20px;
-    color: $cursor-muted;
 
-    .q-icon {
-      margin-bottom: 16px;
-    }
-  }
 }
 
 // 添加渐变背景样式
@@ -1959,6 +1951,8 @@ defineOptions({
   display: none;
   /* 隐藏默认的表格底部 */
 }
+
+
 
 /* 优化表格列宽样式 */
 .custom-task-table {
