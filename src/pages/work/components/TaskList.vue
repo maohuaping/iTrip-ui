@@ -35,22 +35,22 @@
 
           <!-- 常规筛选区域 -->
           <div class="row q-col-gutter-md items-end">
-            <!-- 需求编号搜索 -->
-            <div class="col-12 col-sm-6 col-md-3">
-              <q-input v-model="filterParams.requirementId" label="需求编号" outlined dense clearable placeholder="请输入需求编号"
-                class="light-field" @update:model-value="handleFilterChange">
-                <template v-slot:prepend>
-                  <q-icon name="tag" size="16px" />
-                </template>
-              </q-input>
-            </div>
-
             <!-- 需求名称搜索 -->
             <div class="col-12 col-sm-6 col-md-3">
               <q-input v-model="filterParams.requirementName" label="需求名称" outlined dense clearable
                 placeholder="请输入需求名称" class="light-field" @update:model-value="handleFilterChange">
                 <template v-slot:prepend>
                   <q-icon name="description" size="16px" />
+                </template>
+              </q-input>
+            </div>
+
+            <!-- 需求编号搜索 -->
+            <div class="col-12 col-sm-6 col-md-3">
+              <q-input v-model="filterParams.requirementId" label="需求编号" outlined dense clearable placeholder="请输入需求编号"
+                       class="light-field" @update:model-value="handleFilterChange">
+                <template v-slot:prepend>
+                  <q-icon name="tag" size="16px" />
                 </template>
               </q-input>
             </div>
@@ -245,10 +245,12 @@
 
             <!-- 空状态 -->
             <template v-slot:no-data>
-              <div class="empty-state text-center q-pa-sm">
-                <q-icon name="task_alt" size="64px" color="grey-5" />
-                <div class="text-h6 text-grey-6 q-mt-md">暂无任务数据</div>
-                <div class="text-body2 text-grey-5">点击"新建任务"开始创建您的第一个任务</div>
+              <div class="empty-state-wrapper">
+                <div class="empty-state-content">
+                  <q-icon name="task_alt" size="64px" color="grey-5" />
+                  <div class="text-h6 text-grey-6 q-mt-md">暂无任务数据</div>
+                  <div class="text-body2 text-grey-5">点击"新建任务"开始创建您的第一个任务</div>
+                </div>
               </div>
             </template>
           </q-table>
