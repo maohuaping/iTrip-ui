@@ -13,11 +13,14 @@ export const getEnum = () => {
   /**
    * @summary 根据枚举名称获取枚举选项列表
    */
-  const getEnumOptions = (enumName: string) => {
-    return customInstance<ResultListEnumVO>({ url: `/api/enum/${enumName}`, method: 'GET' });
+  const getEnumByName = (enumName: string) => {
+    return customInstance<ResultListEnumVO>({
+      url: `/api/enum/${enumName}/getEnumByName`,
+      method: 'GET',
+    });
   };
-  return { getEnumOptions };
+  return { getEnumByName };
 };
-export type GetEnumOptionsResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getEnum>['getEnumOptions']>>
+export type GetEnumByNameResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getEnum>['getEnumByName']>>
 >;

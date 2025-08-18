@@ -7,7 +7,7 @@
           <q-icon name="task_alt" size="28px" class="q-mr-sm" />
           任务列表
         </h2>
-        <!-- 省略号按钮 -->
+        <!-- 更多按钮 -->
         <q-btn round flat icon="more_horiz" color="text" class="new-task-btn" @click="showTaskMenuButton">
           <q-menu>
             <q-list style="min-width: 200px">
@@ -25,7 +25,7 @@
         </q-btn>
       </div>
 
-      <!-- 过滤查询表头 - 使用卡片样式 -->
+      <!-- 查询表头 - 使用卡片样式 -->
       <q-card flat bordered class="filter-card q-mb-lg">
         <q-card-section class="q-pa-sm">
           <div class="text-subtitle2 text-weight-medium q-mb-md">
@@ -350,6 +350,9 @@
 </template>
 
 <script setup lang="ts">
+import { getEnum } from 'src/api/enum/enum'
+import type { EnumVO } from 'src/api/api.schemas'
+
 import { ref, onMounted, computed, watch } from 'vue'
 import { useQuasar } from 'quasar'
 import { getDevTask } from 'src/api/dev-task/dev-task'
@@ -585,6 +588,7 @@ const handleFilterChange = () => {
 // 在组件挂载时获取数据
 onMounted(() => {
   fetchTasks()
+  loadSystemCategories()
 })
 
 // 添加 requirementBasePath 常量
@@ -891,11 +895,41 @@ const openNewTaskDialog = (taskType: string = 'requirement'): void => {
 const requirementFileInput = ref<HTMLInputElement | null>(null)
 const designFileInput = ref<HTMLInputElement | null>(null)
 
-// 添加系统分类选项
-const systemCategoryOptions = [
-  { label: '呼入系统', value: 'callin' },
-  { label: '呼出系统', value: 'callout' }
-]
+// 系统分类选项
+const systemCategoryOptions = ref<{ label: string; value: string }[]>([])
+
+// 获取系统分类枚举数据
+const enumApi = getEnum()
+const loadSystemCategories = async () => {
+  try {
+    const response = await enumApi.getEnumByName('TaskTypeEnum')
+    if (response.data?.isOk && response.data?.okData) {
+      // 转换枚举数据为下拉框选项格式
+      systemCategoryOptions.value = response.data.okData.map((item: EnumVO) => ({
+        label: item.desc || item.code || '',
+        value: item.code || ''
+      }))
+    } else {
+      console.warn('获取系统分类失败:', response.data?.failMsg)
+      // 显示失败通知
+      $q.notify({
+        type: 'warning',
+        message: `获取系统分类失败: ${response.data?.failMsg || '未知错误'}`,
+        position: 'top',
+        timeout: 3000
+      })
+    }
+  } catch (error) {
+    console.error('获取系统分类异常:', error)
+    // 显示失败通知
+    $q.notify({
+      type: 'warning',
+      message: `获取系统分类失败: ${error || '未知错误'}`,
+      position: 'top',
+      timeout: 3000
+    })
+  }
+}
 
 // 添加状态选项
 const statusOptions = [
