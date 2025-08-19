@@ -2,58 +2,64 @@
     <section id="toolBox" class="q-mb-xl">
         <div class="q-pa-sm">
             <div class="row justify-between items-center q-mb-lg">
-                <h2 class="text-h5 text-weight-bold q-my-none">
-                    <q-icon name="auto_awesome" size="28px" class="q-mr-sm" />
+                <h2 class="text-h5 text-weight-bold q-my-none text-cursor-text">
+                    <q-icon name="auto_awesome" size="28px" class="q-mr-sm" color="cursor-primary" />
                     工具箱
                 </h2>
             </div>
 
             <!-- 随机号码生成器 -->
             <div class="q-mb-lg">
-                <div class="text-h6 q-mb-md">
-                    <q-icon name="phone" size="24px" class="q-mr-sm" />
+                <div class="text-h6 q-mb-md text-cursor-text">
+                    <q-icon name="phone" size="24px" class="q-mr-sm" color="cursor-primary" />
                     随机号码生成器
-                </div>
-
-                <div class="row q-gutter-md q-mb-md">
-                    <q-btn color="primary" size="md" icon="refresh" label="生成随机号码" @click="generateRandomPhones"
-                        :loading="isLoading" class="q-px-md" unelevated rounded />
-                    <q-btn color="secondary" size="md" icon="content_copy" label="复制全部" @click="copyAllPhones"
-                        :disable="!phoneList.length" class="q-px-md" unelevated rounded />
                 </div>
 
                 <!-- 号码展示区域 -->
                 <div v-if="phoneList.length" class="phone-display-area">
-                    <div class="text-subtitle2 q-mb-sm text-grey-7">
-                        已生成 {{ phoneList.length }} 个随机号码：
+                    <div class="row items-center justify-between q-mb-sm">
+                        <div class="text-subtitle2 text-cursor-muted">
+                            已生成 {{ phoneList.length }} 个随机号码：
+                        </div>
+                        <q-btn color="primary" size="sm" icon="refresh" @click="generateRandomPhones"
+                            :loading="isLoading" dense round unelevated />
                     </div>
-                    <div class="row q-gutter-sm">
-                        <div v-for="(phoneData, index) in phoneList" :key="index" class="phone-item">
-                            <q-chip :label="`${phoneData.phone} (${phoneData.idNo})`" color="blue-1" text-color="blue-9"
-                                class="phone-chip" clickable
-                                @click="copyPhone(`${phoneData.phone} (${phoneData.idNo})`)" icon-right="content_copy">
-                            </q-chip>
+                    <div class="q-gutter-y-sm">
+                        <div v-for="(phoneData, index) in phoneList" :key="index" class="phone-item-wrapper-horizontal">
+                            <div class="row q-gutter-sm items-center">
+                                <!-- 手机号 -->
+                                <div class="phone-item-horizontal">
+                                    <div class="item-label-horizontal text-cursor-muted">手机号</div>
+                                    <q-chip :label="phoneData.phone" color="cursor-primary" text-color="white"
+                                        class="phone-chip" clickable
+                                        @click="phoneData.phone && copyPhone(phoneData.phone)"
+                                        icon-right="content_copy">
+                                    </q-chip>
+                                </div>
+                                <!-- 证件号 -->
+                                <div class="phone-item-horizontal">
+                                    <div class="item-label-horizontal text-cursor-muted">证件号</div>
+                                    <q-chip :label="phoneData.idNo" color="cursor-secondary" text-color="white"
+                                        class="phone-chip" clickable
+                                        @click="phoneData.idNo && copyPhone(phoneData.idNo)" icon-right="content_copy">
+                                    </q-chip>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- 空状态 -->
-                <div v-else class="empty-state text-center q-pa-lg">
-                    <q-icon name="phone_disabled" size="48px" color="grey-4" />
-                    <div class="text-grey-6 q-mt-sm">点击按钮生成随机号码</div>
+                <div v-else class="empty-state text-center q-pa-md">
+                    <div class="row items-center justify-center q-gutter-sm">
+                        <q-icon name="phone_disabled" size="32px" color="cursor-muted" />
+                        <span class="text-cursor-muted">点击生成随机号码</span>
+                        <q-btn color="primary" size="sm" icon="refresh" @click="generateRandomPhones"
+                            :loading="isLoading" dense round unelevated />
+                    </div>
                 </div>
             </div>
         </div>
-
-        <!-- 复制成功提示 -->
-        <q-dialog v-model="showCopySuccess" position="top">
-            <q-banner class="bg-positive text-white">
-                <template v-slot:avatar>
-                    <q-icon name="check_circle" />
-                </template>
-                复制成功！
-            </q-banner>
-        </q-dialog>
     </section>
 </template>
 
@@ -129,44 +135,32 @@ const copyPhone = async (phone: string) => {
     }
 }
 
-// 复制所有号码
-const copyAllPhones = async () => {
-    if (!phoneList.value.length) return
 
-    try {
-        const allPhones = phoneList.value.map(item => `${item.phone} (${item.idNo})`).join('\n')
-        await navigator.clipboard.writeText(allPhones)
-        showCopySuccess.value = true
-        setTimeout(() => {
-            showCopySuccess.value = false
-        }, 2000)
-
-        $q.notify({
-            type: 'positive',
-            message: `已复制全部 ${phoneList.value.length} 个号码`,
-            position: 'top'
-        })
-    } catch (error) {
-        console.error('复制失败:', error)
-        $q.notify({
-            type: 'negative',
-            message: '复制失败，请手动复制',
-            position: 'top'
-        })
-    }
-}
 </script>
 
 <style scoped>
 .phone-display-area {
-    background: #f8f9fa;
+    background: var(--q-cursor-surface);
     border-radius: 8px;
     padding: 16px;
-    border: 1px solid #e9ecef;
+    border: 1px solid var(--q-cursor-border);
 }
 
-.phone-item {
-    display: inline-block;
+.phone-item-wrapper-horizontal {
+    margin-bottom: 8px;
+}
+
+.phone-item-horizontal {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+}
+
+.item-label-horizontal {
+    font-size: 11px;
+    font-weight: 500;
+    margin-bottom: 2px;
 }
 
 .phone-chip {
@@ -179,18 +173,17 @@ const copyAllPhones = async () => {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
-.copy-icon {
-    opacity: 0.7;
-    transition: opacity 0.2s ease;
-}
-
-.copy-icon:hover {
-    opacity: 1;
-}
-
 .empty-state {
-    background: #f8f9fa;
+    background: var(--q-cursor-surface);
     border-radius: 8px;
-    border: 2px dashed #dee2e6;
+    border: 2px dashed var(--q-cursor-border);
+}
+
+.text-cursor-text {
+    color: var(--q-cursor-text);
+}
+
+.text-cursor-muted {
+    color: var(--q-cursor-muted);
 }
 </style>
