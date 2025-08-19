@@ -786,6 +786,22 @@ export interface ResultListSysConfig {
 }
 
 /**
+ * 成功数据
+ */
+export interface GetRandomPhoneVO {
+  /** 手机号列表 */
+  phoneList?: string[];
+}
+
+export interface ResultGetRandomPhoneVO {
+  /** 是否成功 */
+  isOk?: boolean;
+  okData?: GetRandomPhoneVO;
+  /** 失败消息 */
+  failMsg?: string;
+}
+
+/**
  * 枚举选项
  */
 export interface EnumVO {

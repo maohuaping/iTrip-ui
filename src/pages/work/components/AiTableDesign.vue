@@ -52,8 +52,8 @@
             align="justify" narrow-indicator>
             <q-tab name="structure" icon="table_view" label="表结构详情" />
             <q-tab name="sql" icon="code" label="SQL DDL" />
-            <q-tab name="original-sql" icon="code_off" label="接口原始DDL" />
-            <q-tab name="raw" icon="data_object" label="原始数据" />
+            <q-tab name="original-sql" icon="code_off" label="原始 DDL" />
+            <q-tab name="raw" icon="data_object" label="原生响应" />
           </q-tabs>
 
           <q-separator />
