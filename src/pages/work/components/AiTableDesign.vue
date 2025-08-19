@@ -1371,20 +1371,6 @@ const generateTableDesign = async () => {
       console.log('转换后的索引数据:', editableIndexes.value)
       console.log('索引数量:', editableIndexes.value.length)
 
-      // 详细转换验证
-      if (editableIndexes.value.length > 0) {
-        console.log('索引转换验证:')
-        editableIndexes.value.forEach((idx, i) => {
-          console.log(`索引 ${i + 1}:`, {
-            id: idx.id,
-            name: idx.indexName,
-            type: idx.indexType,
-            fields: idx.fields,
-            comment: idx.comment
-          })
-        })
-      }
-
       // 根据表结构动态生成DDL，而不是使用API返回的DDL
       const tableStructure = {
         tableName: editableTableName.value,
