@@ -9,8 +9,6 @@
         <div class="row q-gutter-sm">
           <q-btn color="primary" size="md" icon="auto_awesome" label="生成表设计草稿" @click="generateTableDesign"
             :loading="isLoading" :disable="!requirementDescription.trim()" class="q-px-md" unelevated rounded />
-          <q-btn v-if="editableFields.length > 0" color="secondary" size="md" icon="code" label="生成最终SQL"
-            @click="generateFinalSQL" :loading="isGeneratingSQL" class="q-px-md" unelevated rounded />
         </div>
       </div>
 
@@ -473,7 +471,6 @@ interface EditableIndex extends TableIndex {
 // 响应式数据
 const requirementDescription = ref('')
 const isLoading = ref(false)
-const isGeneratingSQL = ref(false)
 const activeTab = ref('structure')
 const sqlCopied = ref(false)
 const jsonCopied = ref(false)
@@ -1161,70 +1158,6 @@ const convertToEditableFields = (fields: TableField[] = []) => {
   })
 }
 
-const generateFinalSQL = async () => {
-  if (editableFields.value.length === 0) {
-    $q.notify({
-      type: 'warning',
-      message: '请先添加字段',
-      position: 'top'
-    })
-    return
-  }
-
-
-
-  isGeneratingSQL.value = true
-  try {
-    // 构建表结构数据
-    const tableStructure = {
-      tableName: editableTableName.value,
-      tableDescription: editableTableDescription.value,
-      fields: editableFields.value.map(field => ({
-        fieldName: field.fieldName || '',
-        fieldType: field.fieldType || 'VARCHAR(50)',
-        isPrimaryKey: field.isPrimaryKey || false,
-        isNotNull: field.isNotNull || false,
-        description: field.description || '',
-        isAuditField: field.isAuditField || false
-      })),
-      indexes: editableIndexes.value || []
-    }
-
-    // 生成SQL DDL
-    const ddlSql = generateDDLFromFields(tableStructure, databaseType.value)
-
-    // 更新结果数据
-    tableDesignResult.value = {
-      inputPrompt: requirementDescription.value,
-      tableName: editableTableName.value,
-      tableDescription: editableTableDescription.value,
-      ddlSql: ddlSql,
-      fields: tableStructure.fields,
-      indexes: [], // 可以后续扩展索引功能
-      rawResponse: JSON.stringify(tableStructure),
-      durationMs: 0,
-      durationSeconds: 0,
-      model: 'user-edited'
-    }
-
-    activeTab.value = 'structure'
-
-    $q.notify({
-      type: 'positive',
-      message: '最终SQL生成成功！',
-      position: 'top'
-    })
-  } catch (error) {
-    console.error('生成最终SQL失败:', error)
-    $q.notify({
-      type: 'negative',
-      message: '生成最终SQL失败',
-      position: 'top'
-    })
-  } finally {
-    isGeneratingSQL.value = false
-  }
-}
 
 const generateDDLFromFields = (tableStructure: any, dbType: string = 'mysql') => {
   const { tableName, tableDescription, fields, indexes = [] } = tableStructure

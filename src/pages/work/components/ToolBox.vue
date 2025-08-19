@@ -8,7 +8,7 @@
                 </h2>
             </div>
 
-            <!-- 随机号码生成器 -->
+            <!-- 随机号码生成器 -->s
             <div class="q-mb-lg">
                 <div class="text-h6 q-mb-md text-cursor-text">
                     <q-icon name="phone" size="24px" class="q-mr-sm" color="cursor-primary" />
