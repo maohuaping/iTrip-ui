@@ -508,10 +508,10 @@ export interface DevTaskVO {
  */
 export interface IPageDevTaskVO {
   size?: number;
-  pages?: number;
-  total?: number;
-  current?: number;
   records?: DevTaskVO[];
+  current?: number;
+  total?: number;
+  pages?: number;
 }
 
 /**
@@ -585,10 +585,10 @@ export interface DevLogVO {
  */
 export interface IPageDevLogVO {
   size?: number;
-  pages?: number;
-  total?: number;
-  current?: number;
   records?: DevLogVO[];
+  current?: number;
+  total?: number;
+  pages?: number;
 }
 
 export interface ResultIPageDevLogVO {
@@ -655,6 +655,24 @@ export interface UserResponseVO {
 export interface VerifyCodeRequestDTO {
   type: string;
   email: string;
+}
+
+/**
+ * 成功数据
+ */
+export interface GetRandomPhoneVO {
+  /** 手机号 */
+  phone?: string;
+  /** 证件号 */
+  idNo?: string;
+}
+
+export interface ResultGetRandomPhoneVO {
+  /** 是否成功 */
+  isOk?: boolean;
+  okData?: GetRandomPhoneVO;
+  /** 失败消息 */
+  failMsg?: string;
 }
 
 export interface ResultWorkLogEntity {
@@ -781,22 +799,6 @@ export interface ResultListSysConfig {
   isOk?: boolean;
   /** 成功数据 */
   okData?: SysConfig[];
-  /** 失败消息 */
-  failMsg?: string;
-}
-
-/**
- * 成功数据
- */
-export interface GetRandomPhoneVO {
-  /** 手机号列表 */
-  phoneList?: string[];
-}
-
-export interface ResultGetRandomPhoneVO {
-  /** 是否成功 */
-  isOk?: boolean;
-  okData?: GetRandomPhoneVO;
   /** 失败消息 */
   failMsg?: string;
 }

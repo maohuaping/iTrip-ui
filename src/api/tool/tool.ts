@@ -9,15 +9,12 @@ import type { ResultGetRandomPhoneVO } from '../api.schemas';
 
 import { customInstance } from '../../boot/orval-client';
 
-export const getRandom = () => {
+export const getTool = () => {
   const getRandomPhone = () => {
-    return customInstance<ResultGetRandomPhoneVO>({
-      url: `/api/random/random/getRandomPhone`,
-      method: 'GET',
-    });
+    return customInstance<ResultGetRandomPhoneVO>({ url: `/tool/getRandomPhone`, method: 'GET' });
   };
   return { getRandomPhone };
 };
 export type GetRandomPhoneResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRandom>['getRandomPhone']>>
+  Awaited<ReturnType<ReturnType<typeof getTool>['getRandomPhone']>>
 >;
