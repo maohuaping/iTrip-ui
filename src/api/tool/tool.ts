@@ -10,8 +10,14 @@ import type { ResultGetRandomPhoneVO } from '../api.schemas';
 import { customInstance } from '../../boot/orval-client';
 
 export const getTool = () => {
+  /**
+   * @summary 获取随机中国手机号和身份证号
+   */
   const getRandomPhone = () => {
-    return customInstance<ResultGetRandomPhoneVO>({ url: `/tool/getRandomPhone`, method: 'GET' });
+    return customInstance<ResultGetRandomPhoneVO>({
+      url: `/api/tool/getRandomPhone`,
+      method: 'GET',
+    });
   };
   return { getRandomPhone };
 };

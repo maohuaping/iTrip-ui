@@ -657,24 +657,6 @@ export interface VerifyCodeRequestDTO {
   email: string;
 }
 
-/**
- * 成功数据
- */
-export interface GetRandomPhoneVO {
-  /** 手机号 */
-  phone?: string;
-  /** 证件号 */
-  idNo?: string;
-}
-
-export interface ResultGetRandomPhoneVO {
-  /** 是否成功 */
-  isOk?: boolean;
-  okData?: GetRandomPhoneVO;
-  /** 失败消息 */
-  failMsg?: string;
-}
-
 export interface ResultWorkLogEntity {
   /** 是否成功 */
   isOk?: boolean;
@@ -784,6 +766,24 @@ export interface TravelGuideDTO {
   attractions?: Attraction[];
   /** 旅游建议 */
   tips?: string;
+}
+
+/**
+ * 成功数据
+ */
+export interface GetRandomPhoneVO {
+  /** 手机号 */
+  phone?: string;
+  /** 证件号 */
+  idNo?: string;
+}
+
+export interface ResultGetRandomPhoneVO {
+  /** 是否成功 */
+  isOk?: boolean;
+  okData?: GetRandomPhoneVO;
+  /** 失败消息 */
+  failMsg?: string;
 }
 
 export interface ResultSysConfig {
