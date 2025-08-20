@@ -17,7 +17,6 @@
                 </q-item-section>
                 <q-item-section>
                   <q-item-label>新建任务</q-item-label>
-                  <q-item-label caption>创建新的任务</q-item-label>
                 </q-item-section>
               </q-item>
             </q-list>
@@ -198,7 +197,7 @@
                                   <div class="document-meta">
                                     <span class="document-type">{{ getFileTypeLabel(file.fileType || '') }}</span>
                                     <span v-if="file.createdAt" class="document-date">{{ formatDate(file.createdAt)
-                                      }}</span>
+                                    }}</span>
                                   </div>
                                 </div>
                                 <q-icon name="open_in_new" size="16px" color="grey-6" />
@@ -591,6 +590,7 @@ const handleFilterChange = () => {
 onMounted(() => {
   fetchTasks()
   loadSystemCategories()
+  loadTaskTypes()
 })
 
 // 添加 requirementBasePath 常量
@@ -682,10 +682,7 @@ const copyToClipboard = (text: string): void => {
 }
 
 // 添加新建任务相关的数据
-const taskTypes = [
-  { label: '呼入任务', value: 'incoming' },
-  { label: '呼出任务', value: 'outgoing' }
-]
+const taskTypes = ref<{ label: string; value: string }[]>([])
 
 // 修改newTask定义，明确指定类型
 interface TaskType {
@@ -717,10 +714,10 @@ interface NewTask {
   docsList: DocLists;
 }
 
-// 初始化newTask，使用正确的类型
+// 初始化newTask，type初始化为空对象，等待从接口获取
 const newTask = ref<NewTask>({
   title: '',
-  type: { label: '呼入任务', value: 'incoming' },
+  type: { label: '', value: '' }, // 初始化为空，等待从接口获取
   id: '',
   docs: {
     requirement: false,
@@ -806,7 +803,7 @@ const removeDoc = (type: 'requirement' | 'design', index: number): void => {
 const resetNewTaskForm = (): void => {
   newTask.value = {
     title: '',
-    type: { label: '呼入任务', value: 'incoming' },
+    type: { label: '', value: '' }, // 初始化为空，等待从接口获取
     id: '',
     docs: {
       requirement: false,
@@ -826,9 +823,8 @@ const resetNewTaskForm = (): void => {
 // 修改创建任务方法，使用dev-task API
 const createTask = async (): Promise<void> => {
   try {
-    // 明确转换systemCategory类型
-    const systemCategory: SystemType =
-      newTask.value.type.value === 'incoming' ? 'callin' : 'callout';
+    // 直接使用下拉框选择的任务类型值作为systemCategory
+    const systemCategory: SystemType = newTask.value.type.value as SystemType;
 
     // 使用DevTask接口
     const devTask: DevTask = {
@@ -877,17 +873,16 @@ const createTask = async (): Promise<void> => {
   }
 }
 
-// 添加打开新建任务对话框方法的返回类型 - 移除错误的属性访问
+// 修改openNewTaskDialog方法，使用从接口获取的任务类型
 const openNewTaskDialog = (taskType: string = 'requirement'): void => {
-  // 根据任务类型设置默认值
-  if (taskType === 'requirement') {
-    newTask.value.type = { label: '需求任务', value: 'requirement' }
-  } else if (taskType === 'design') {
-    newTask.value.type = { label: '设计任务', value: 'design' }
-  } else if (taskType === 'test') {
-    newTask.value.type = { label: '测试任务', value: 'test' }
-  } else { // 'other'
-    newTask.value.type = { label: '其他任务', value: 'other' }
+  // 从接口获取的任务类型中查找匹配的类型
+  const foundType = taskTypes.value.find(type => type.value === taskType)
+
+  if (foundType) {
+    newTask.value.type = foundType
+  } else if (taskTypes.value.length > 0) {
+    // 如果没找到匹配的类型，使用第一个可用的类型
+    newTask.value.type = taskTypes.value[0]
   }
 
   showNewTaskDialog.value = true
@@ -930,6 +925,59 @@ const loadSystemCategories = async () => {
       position: 'top',
       timeout: 3000
     })
+  }
+}
+
+// 获取任务类型枚举数据
+const loadTaskTypes = async () => {
+  try {
+    const response = await enumApi.getEnumByName('TaskTypeEnum')
+    if (response.data?.isOk && response.data?.okData) {
+      // 转换枚举数据为下拉框选项格式
+      taskTypes.value = response.data.okData.map((item: EnumVO) => ({
+        label: item.desc || item.code || '',
+        value: item.code || ''
+      }))
+
+      // 从接口获取的数据中设置默认值
+      if (taskTypes.value.length > 0) {
+        newTask.value.type = taskTypes.value[0]
+      }
+    } else {
+      console.warn('获取任务类型失败:', response.data?.failMsg)
+      // 显示失败通知
+      $q.notify({
+        type: 'warning',
+        message: `获取任务类型失败: ${response.data?.failMsg || '未知错误'}`,
+        position: 'top',
+        timeout: 3000
+      })
+
+      // 如果获取失败，使用默认值
+      taskTypes.value = [
+        { label: '呼入任务', value: 'incoming' },
+        { label: '呼出任务', value: 'outgoing' }
+      ]
+      // 设置默认类型
+      newTask.value.type = taskTypes.value[0]
+    }
+  } catch (error) {
+    console.error('获取任务类型异常:', error)
+    // 显示失败通知
+    $q.notify({
+      type: 'warning',
+      message: `获取任务类型失败: ${error || '未知错误'}`,
+      position: 'top',
+      timeout: 3000
+    })
+
+    // 如果获取异常，使用默认值
+    taskTypes.value = [
+      { label: '呼入任务', value: 'incoming' },
+      { label: '呼出任务', value: 'outgoing' }
+    ]
+    // 设置默认类型
+    newTask.value.type = taskTypes.value[0]
   }
 }
 
