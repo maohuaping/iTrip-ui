@@ -508,10 +508,10 @@ export interface DevTaskVO {
  */
 export interface IPageDevTaskVO {
   size?: number;
-  records?: DevTaskVO[];
-  current?: number;
-  total?: number;
   pages?: number;
+  total?: number;
+  current?: number;
+  records?: DevTaskVO[];
 }
 
 /**
@@ -585,10 +585,10 @@ export interface DevLogVO {
  */
 export interface IPageDevLogVO {
   size?: number;
-  records?: DevLogVO[];
-  current?: number;
-  total?: number;
   pages?: number;
+  total?: number;
+  current?: number;
+  records?: DevLogVO[];
 }
 
 export interface ResultIPageDevLogVO {
@@ -804,20 +804,15 @@ export interface ResultListSysConfig {
 }
 
 /**
- * 枚举选项
+ * 成功数据
  */
-export interface EnumVO {
-  /** 枚举值/编码 */
-  code?: string;
-  /** 枚举描述/显示名称 */
-  desc?: string;
-}
+export type ResultListMapStringObjectOkDataItem = { [key: string]: { [key: string]: unknown } };
 
-export interface ResultListEnumVO {
+export interface ResultListMapStringObject {
   /** 是否成功 */
   isOk?: boolean;
   /** 成功数据 */
-  okData?: EnumVO[];
+  okData?: ResultListMapStringObjectOkDataItem[];
   /** 失败消息 */
   failMsg?: string;
 }

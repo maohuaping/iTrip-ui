@@ -5,7 +5,7 @@
  * 前端提供UI，后端提供API
  * OpenAPI spec version: 1.0
  */
-import type { ResultListEnumVO } from '../api.schemas';
+import type { ResultListMapStringObject } from '../api.schemas';
 
 import { customInstance } from '../../boot/orval-client';
 
@@ -14,7 +14,7 @@ export const getEnum = () => {
    * @summary 根据枚举名称获取枚举选项列表
    */
   const getEnumByName = (enumName: string) => {
-    return customInstance<ResultListEnumVO>({
+    return customInstance<ResultListMapStringObject>({
       url: `/api/enum/${enumName}/getEnumByName`,
       method: 'GET',
     });
