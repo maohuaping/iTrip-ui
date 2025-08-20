@@ -158,8 +158,7 @@
             <template v-slot:body-cell-systemCategory="props">
               <q-td :props="props" class="system-category-cell">
                 <div class="system-category-text">
-                  {{ props.row.systemCategory === 'callin' ? '呼入' : props.row.systemCategory === 'callout' ? '呼出' : '其他'
-                  }}
+                  {{props.row.systemCategoryDesc || ''}}
                 </div>
               </q-td>
             </template>
