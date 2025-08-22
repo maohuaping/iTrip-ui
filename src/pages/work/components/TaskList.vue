@@ -357,6 +357,7 @@ import type { SysFile, UploadFileBody } from 'src/api/api.schemas'
 // 初始化
 const $q = useQuasar()
 const devTaskApi = getDevTask()
+const sysFileApi = getSysFile()
 
 // 控制新建任务对话框的显示
 const showNewTaskDialog = ref(false)
@@ -718,28 +719,69 @@ const newTask = ref<NewTask>({
 // 判断是否有文档的计算属性
 const hasDocuments = computed(() => newTask.value.docsList.length > 0)
 
-// 处理文件选择
-const handleFileSelect = (files: File[] | null): void => {
+// 处理文件选择 - 立即上传
+const handleFileSelect = async (files: File[] | null): Promise<void> => {
   if (!files || files.length === 0) return
 
-  files.forEach(file => {
-    const sysFile: SysFile = {
-      fileName: file.name,
-      fileType: file.name.split('.').pop() || '',
-      fileUrl: '', // 将在上传时设置
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
+  // 设置上传状态
+  isUploading.value = true
+  uploadProgress.value = 0
+
+  try {
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i]
+      if (!file) continue
+
+      // 更新进度
+      uploadProgress.value = (i / files.length) * 50 // 前50%用于准备
+
+      try {
+        // 调用上传API
+        const uploadFileBody: UploadFileBody = {
+          file: file
+        }
+
+        const response = await sysFileApi.uploadFile(uploadFileBody)
+
+        if (response.data?.isOk && response.data.okData) {
+          // 上传成功，添加到文档列表
+          const sysFile: SysFile = {
+            ...response.data.okData,
+            fileName: file.name,
+            fileType: file.name.split('.').pop() || '',
+          }
+
+          newTask.value.docsList.push(sysFile)
+
+          $q.notify({
+            message: `文件 "${file.name}" 上传成功`,
+            color: 'positive',
+            position: 'top',
+            timeout: 1500
+          })
+        } else {
+          throw new Error(response.data?.failMsg || '上传失败')
+        }
+      } catch (error) {
+        console.error('文件上传失败:', error)
+        $q.notify({
+          message: `文件 "${file.name}" 上传失败: ${error instanceof Error ? error.message : '未知错误'}`,
+          color: 'negative',
+          position: 'top',
+          timeout: 3000
+        })
+      }
+
+      // 更新进度
+      uploadProgress.value = ((i + 1) / files.length) * 100
     }
-
-    newTask.value.docsList.push(sysFile)
-
-    $q.notify({
-      message: `已添加文件: ${file.name}`,
-      color: 'positive',
-      position: 'top',
-      timeout: 1500
-    })
-  })
+  } finally {
+    // 重置上传状态
+    setTimeout(() => {
+      isUploading.value = false
+      uploadProgress.value = 0
+    }, 1000)
+  }
 }
 
 // 处理文件移除
@@ -749,10 +791,17 @@ const handleFileRemove = (): void => {
 }
 
 // 删除单个文档
-const removeDoc = (index: number): void => {
+const removeDoc = async (index: number): Promise<void> => {
+  const doc = newTask.value.docsList[index]
+
+  // 从本地列表中移除
   newTask.value.docsList.splice(index, 1)
+
+  // TODO: 如果需要的话，可以在这里调用删除文件的API
+  // 目前只是从本地列表中移除，文件仍保存在服务器上
+
   $q.notify({
-    message: '文档已删除',
+    message: '文档已从列表中删除',
     color: 'positive',
     position: 'top',
     timeout: 1000
@@ -770,13 +819,13 @@ const handleDragLeave = (event: DragEvent): void => {
   isDragOver.value = false
 }
 
-const handleDrop = (event: DragEvent): void => {
+const handleDrop = async (event: DragEvent): Promise<void> => {
   event.preventDefault()
   isDragOver.value = false
 
   const files = event.dataTransfer?.files
   if (files && files.length > 0) {
-    processFiles(Array.from(files))
+    await processFiles(Array.from(files))
   }
 }
 
@@ -784,18 +833,18 @@ const triggerFileInput = (): void => {
   fileInputRef.value?.click()
 }
 
-const handleFileInputChange = (event: Event): void => {
+const handleFileInputChange = async (event: Event): Promise<void> => {
   const target = event.target as HTMLInputElement
   const files = target.files
   if (files && files.length > 0) {
-    processFiles(Array.from(files))
+    await processFiles(Array.from(files))
   }
   // 清空input值，允许重复选择同一文件
   target.value = ''
 }
 
 // 处理文件的统一函数
-const processFiles = (files: File[]): void => {
+const processFiles = async (files: File[]): Promise<void> => {
   // 验证文件类型
   const allowedTypes = ['.pdf', '.doc', '.docx', '.xls', '.xlsx', '.txt', '.md']
   const validFiles = files.filter(file => {
@@ -841,7 +890,7 @@ const processFiles = (files: File[]): void => {
     }
 
     if (newFiles.length > 0) {
-      handleFileSelect(newFiles)
+      await handleFileSelect(newFiles)
     }
   }
 }
@@ -866,6 +915,29 @@ const resetNewTaskForm = (): void => {
 // 修改创建任务方法，使用dev-task API
 const createTask = async (): Promise<void> => {
   try {
+    // 检查是否有文件正在上传
+    if (isUploading.value) {
+      $q.notify({
+        message: '请等待文件上传完成',
+        color: 'warning',
+        position: 'top',
+        timeout: 2000
+      })
+      return
+    }
+
+    // 检查是否有文件URL为空的情况（上传失败的文件）
+    const failedUploads = newTask.value.docsList.filter(doc => !doc.fileUrl)
+    if (failedUploads.length > 0) {
+      $q.notify({
+        message: `有 ${failedUploads.length} 个文件上传失败，请重新上传`,
+        color: 'warning',
+        position: 'top',
+        timeout: 3000
+      })
+      return
+    }
+
     // 直接使用下拉框选择的任务类型值作为systemCategory
     const systemCategory: SystemType = newTask.value.type.value as SystemType;
 
@@ -1380,8 +1452,7 @@ const handleAddDocument = (task: DevTaskVO): void => {
   // TODO: 实现添加文档功能
 }
 
-// 在现有的 ref 定义后添加
-const sysFileApi = getSysFile()
+// 删除重复的sysFileApi声明
 
 // 这个旧版本的函数已经被简化的新版本替代，删除此版本
 
@@ -2061,6 +2132,7 @@ defineOptions({
 /* 自定义表格样式，保持原有的美观效果 */
 .custom-task-table {
   /* 继承原有的表格样式 */
+  border-radius: 8px;
 }
 
 .custom-task-table .q-table__top {
