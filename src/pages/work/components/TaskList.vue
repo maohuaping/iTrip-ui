@@ -744,21 +744,63 @@ const handleFileSelect = async (files: File[] | null): Promise<void> => {
         const response = await sysFileApi.uploadFile(uploadFileBody)
 
         if (response.data?.isOk && response.data.okData) {
-          // 上传成功，添加到文档列表
-          const sysFile: SysFile = {
-            ...response.data.okData,
-            fileName: file.name,
-            fileType: file.name.split('.').pop() || '',
+          // 上传成功后，尝试移动文件到最终目录
+          try {
+            const fileName = response.data.okData.fileName || file.name
+            const moveResponse = await sysFileApi.moveToFinalDirectory({ tempFileName: fileName })
+
+            if (moveResponse.data?.isOk) {
+              // 文件移动成功，添加到文档列表
+              const sysFile: SysFile = {
+                ...response.data.okData,
+                fileName: file.name,
+                fileType: file.name.split('.').pop() || '',
+              }
+
+              newTask.value.docsList.push(sysFile)
+
+              $q.notify({
+                message: `文件 "${file.name}" 上传成功`,
+                color: 'positive',
+                position: 'top',
+                timeout: 1500
+              })
+            } else {
+              console.warn('文件移动失败:', moveResponse.data?.failMsg)
+              // 即使移动失败，也添加到列表中
+              const sysFile: SysFile = {
+                ...response.data.okData,
+                fileName: file.name,
+                fileType: file.name.split('.').pop() || '',
+              }
+
+              newTask.value.docsList.push(sysFile)
+
+              $q.notify({
+                message: `文件 "${file.name}" 上传成功（文件移动可能失败）`,
+                color: 'warning',
+                position: 'top',
+                timeout: 2000
+              })
+            }
+          } catch (moveError) {
+            console.warn('文件移动异常:', moveError)
+            // 即使移动异常，也添加到列表中
+            const sysFile: SysFile = {
+              ...response.data.okData,
+              fileName: file.name,
+              fileType: file.name.split('.').pop() || '',
+            }
+
+            newTask.value.docsList.push(sysFile)
+
+            $q.notify({
+              message: `文件 "${file.name}" 上传成功（文件移动异常）`,
+              color: 'warning',
+              position: 'top',
+              timeout: 2000
+            })
           }
-
-          newTask.value.docsList.push(sysFile)
-
-          $q.notify({
-            message: `文件 "${file.name}" 上传成功`,
-            color: 'positive',
-            position: 'top',
-            timeout: 1500
-          })
         } else {
           throw new Error(response.data?.failMsg || '上传失败')
         }

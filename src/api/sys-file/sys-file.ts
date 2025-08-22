@@ -6,6 +6,7 @@
  * OpenAPI spec version: 1.0
  */
 import type {
+  MoveToFinalDirectoryParams,
   OpenFileParams,
   ResultString,
   ResultSysFile,
@@ -26,7 +27,7 @@ export const getSysFile = () => {
     return customInstance<ResultSysFile>({
       url: `/api/sysFile/uploadFile`,
       method: 'POST',
-      data: formData,
+      data: formData
     });
   };
   /**
@@ -41,18 +42,31 @@ export const getSysFile = () => {
     });
   };
   /**
+   * @summary 将文件从临时目录移动到最终目录
+   */
+  const moveToFinalDirectory = (params: MoveToFinalDirectoryParams) => {
+    return customInstance<ResultString>({
+      url: `/api/sysFile/moveToFinal`,
+      method: 'POST',
+      params,
+    });
+  };
+  /**
    * @summary 打开文件
    */
   const openFile = (params: OpenFileParams) => {
     return customInstance<ResultString>({ url: `/api/sysFile/openFile`, method: 'GET', params });
   };
-  return { uploadFile, saveSysFile, openFile };
+  return { uploadFile, saveSysFile, moveToFinalDirectory, openFile };
 };
 export type UploadFileResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getSysFile>['uploadFile']>>
 >;
 export type SaveSysFileResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getSysFile>['saveSysFile']>>
+>;
+export type MoveToFinalDirectoryResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getSysFile>['moveToFinalDirectory']>>
 >;
 export type OpenFileResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getSysFile>['openFile']>>
