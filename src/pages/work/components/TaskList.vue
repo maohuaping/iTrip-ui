@@ -289,12 +289,11 @@
               @dragover.prevent="handleDragOver" @dragleave.prevent="handleDragLeave" @drop.prevent="handleDrop"
               @click="triggerFileInput">
               <div class="drag-upload-content">
-                <q-icon :name="isUploading ? 'cloud_upload' : 'cloud_upload'" size="48px"
-                  :color="isDragOver ? 'primary' : 'grey-5'" class="q-mb-md" />
-                <div class="text-h6 text-weight-medium q-mb-xs" :class="isDragOver ? 'text-primary' : 'text-grey-7'">
-                  {{ isDragOver ? '释放文件开始上传' : '拖拽文件到此处或点击选择' }}
+                <q-icon :name="isUploading ? 'cloud_upload' : 'cloud_upload'" size="48px" class="q-mb-md upload-icon" />
+                <div class="text-h6 text-weight-medium q-mb-xs upload-title">
+                  {{ isDragOver ? '释放文件开始上传' : isUploading ? '正在上传文件...' : '拖拽文件到此处或点击选择' }}
                 </div>
-                <div class="text-caption text-grey-6">
+                <div class="text-caption upload-subtitle">
                   支持 PDF、Word、Excel、文本文档等格式，单个文件不超过 10MB
                 </div>
                 <div v-if="isUploading" class="q-mt-md">
@@ -2356,41 +2355,86 @@ defineOptions({
 
 /* 拖拽上传区域样式 */
 .drag-upload-area {
-  border: 2px dashed #e0e0e0;
+  border: 2px dashed $cursor-border;
   border-radius: 12px;
   padding: 40px 20px;
   text-align: center;
   cursor: pointer;
   transition: all 0.3s ease;
-  background: rgba(#f8f9fa, 0.3);
+  background: rgba($cursor-surface, 0.6);
   position: relative;
   min-height: 180px;
   display: flex;
   align-items: center;
   justify-content: center;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 2px 8px rgba($cursor-bg, 0.3);
 
   &:hover {
-    border-color: $primary;
-    background: rgba($primary, 0.05);
+    border-color: $cursor-primary;
+    background: rgba($cursor-primary, 0.08);
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba($primary, 0.15);
+    box-shadow: 0 4px 16px rgba($cursor-primary, 0.15);
+
+    .upload-icon {
+      color: $cursor-primary !important;
+      transform: scale(1.05);
+    }
+
+    .upload-title {
+      color: $cursor-primary !important;
+    }
+
+    .upload-subtitle {
+      color: $cursor-primary !important;
+      opacity: 0.8;
+    }
   }
 
   &.drag-over {
-    border-color: $primary;
-    background: rgba($primary, 0.1);
+    border-color: $cursor-accent;
+    background: rgba($cursor-accent, 0.12);
     transform: scale(1.02);
-    box-shadow: 0 8px 25px rgba($primary, 0.2);
+    box-shadow: 0 8px 25px rgba($cursor-accent, 0.25);
 
     .drag-upload-content {
       transform: scale(1.05);
     }
+
+    .upload-icon {
+      color: $cursor-accent !important;
+      transform: scale(1.1) rotate(5deg);
+    }
+
+    .upload-title {
+      color: $cursor-accent !important;
+      font-weight: 600;
+    }
+
+    .upload-subtitle {
+      color: $cursor-accent !important;
+      opacity: 0.9;
+    }
   }
 
   &.uploading {
-    border-color: $positive;
-    background: rgba($positive, 0.05);
+    border-color: $cursor-success;
+    background: rgba($cursor-success, 0.08);
     pointer-events: none;
+
+    .upload-icon {
+      color: $cursor-success !important;
+      animation: pulse 2s infinite;
+    }
+
+    .upload-title {
+      color: $cursor-success !important;
+    }
+
+    .upload-subtitle {
+      color: $cursor-success !important;
+      opacity: 0.7;
+    }
   }
 }
 
@@ -2398,8 +2442,19 @@ defineOptions({
   transition: transform 0.3s ease;
   width: 100%;
 
-  .q-icon {
+  .upload-icon {
     transition: all 0.3s ease;
+    color: $cursor-muted !important;
+  }
+
+  .upload-title {
+    color: $cursor-text !important;
+    transition: color 0.3s ease;
+  }
+
+  .upload-subtitle {
+    color: $cursor-muted !important;
+    transition: color 0.3s ease;
   }
 }
 
@@ -2408,15 +2463,22 @@ defineOptions({
   display: flex;
   align-items: center;
   padding: 12px 16px;
-  border: 1px solid #e0e0e0;
+  border: 1px solid $cursor-border;
   border-radius: 8px;
-  background: #fafafa;
+  background: rgba($cursor-surface, 0.8);
   transition: all 0.3s ease;
+  backdrop-filter: blur(4px);
+  box-shadow: 0 1px 4px rgba($cursor-bg, 0.2);
 
   &:hover {
-    border-color: $primary;
-    background: rgba($primary, 0.05);
+    border-color: $cursor-primary;
+    background: rgba($cursor-primary, 0.08);
     transform: translateX(4px);
+    box-shadow: 0 2px 8px rgba($cursor-primary, 0.15);
+  }
+
+  .q-icon {
+    color: $cursor-primary;
   }
 
   .ellipsis {
@@ -2426,16 +2488,34 @@ defineOptions({
     text-overflow: ellipsis;
     white-space: nowrap;
     font-weight: 500;
-    color: #2c3e50;
+    color: $cursor-text;
   }
 
   .q-btn {
     opacity: 0.7;
-    transition: opacity 0.3s ease;
+    transition: all 0.3s ease;
+    color: $cursor-muted;
 
     &:hover {
       opacity: 1;
+      color: $cursor-primary;
+      transform: scale(1.1);
     }
+  }
+}
+
+/* 动画定义 */
+@keyframes pulse {
+
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.7;
+    transform: scale(1.05);
   }
 }
 
@@ -2445,11 +2525,11 @@ defineOptions({
     padding: 24px 16px;
     min-height: 140px;
 
-    .text-h6 {
+    .upload-title {
       font-size: 16px;
     }
 
-    .q-icon {
+    .upload-icon {
       font-size: 36px !important;
     }
   }
