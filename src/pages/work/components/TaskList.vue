@@ -186,7 +186,7 @@
                                   <div class="document-meta">
                                     <span class="document-type">{{ getFileTypeLabel(file.fileType || '') }}</span>
                                     <span v-if="file.createdAt" class="document-date">{{ formatDate(file.createdAt)
-                                    }}</span>
+                                      }}</span>
                                   </div>
                                 </div>
                                 <q-icon name="open_in_new" size="16px" color="grey-6" />
@@ -283,18 +283,30 @@
             <div class="text-caption text-grey-7">上传相关文档</div>
           </div>
 
-          <!-- 文件上传区域 -->
+          <!-- 拖拽上传区域 -->
           <div class="q-mb-md">
-            <q-file v-model="newTask.uploadFiles" label="选择相关文档" outlined dense class="light-field"
-              accept=".pdf,.doc,.docx,.xls,.xlsx,.txt,.md" @update:model-value="handleFileSelect($event)"
-              @remove="handleFileRemove" clearable use-chips multiple>
-              <template v-slot:prepend>
-                <q-icon name="description" size="16px" />
-              </template>
-              <template v-slot:append>
-                <q-icon name="attach_file" size="16px" />
-              </template>
-            </q-file>
+            <div class="drag-upload-area" :class="{ 'drag-over': isDragOver, 'uploading': isUploading }"
+              @dragover.prevent="handleDragOver" @dragleave.prevent="handleDragLeave" @drop.prevent="handleDrop"
+              @click="triggerFileInput">
+              <div class="drag-upload-content">
+                <q-icon :name="isUploading ? 'cloud_upload' : 'cloud_upload'" size="48px"
+                  :color="isDragOver ? 'primary' : 'grey-5'" class="q-mb-md" />
+                <div class="text-h6 text-weight-medium q-mb-xs" :class="isDragOver ? 'text-primary' : 'text-grey-7'">
+                  {{ isDragOver ? '释放文件开始上传' : '拖拽文件到此处或点击选择' }}
+                </div>
+                <div class="text-caption text-grey-6">
+                  支持 PDF、Word、Excel、文本文档等格式，单个文件不超过 10MB
+                </div>
+                <div v-if="isUploading" class="q-mt-md">
+                  <q-spinner-dots size="24px" color="primary" />
+                  <div class="text-caption q-mt-xs">正在上传...</div>
+                </div>
+              </div>
+
+              <!-- 隐藏的文件输入框 -->
+              <input ref="fileInputRef" type="file" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.txt,.md"
+                @change="handleFileInputChange" style="display: none;" />
+            </div>
           </div>
 
           <!-- 显示已上传的文档列表 -->
@@ -446,6 +458,10 @@ const pagination = ref({
 // 文件上传相关状态
 const uploadProgress = ref(0)
 const isUploading = ref(false)
+
+// 拖拽上传相关状态
+const isDragOver = ref(false)
+const fileInputRef = ref<HTMLInputElement | null>(null)
 
 // 统一的搜索函数
 const fetchTasks = async (): Promise<void> => {
@@ -744,6 +760,93 @@ const removeDoc = (index: number): void => {
   })
 }
 
+// 拖拽上传相关函数
+const handleDragOver = (event: DragEvent): void => {
+  event.preventDefault()
+  isDragOver.value = true
+}
+
+const handleDragLeave = (event: DragEvent): void => {
+  event.preventDefault()
+  isDragOver.value = false
+}
+
+const handleDrop = (event: DragEvent): void => {
+  event.preventDefault()
+  isDragOver.value = false
+
+  const files = event.dataTransfer?.files
+  if (files && files.length > 0) {
+    processFiles(Array.from(files))
+  }
+}
+
+const triggerFileInput = (): void => {
+  fileInputRef.value?.click()
+}
+
+const handleFileInputChange = (event: Event): void => {
+  const target = event.target as HTMLInputElement
+  const files = target.files
+  if (files && files.length > 0) {
+    processFiles(Array.from(files))
+  }
+  // 清空input值，允许重复选择同一文件
+  target.value = ''
+}
+
+// 处理文件的统一函数
+const processFiles = (files: File[]): void => {
+  // 验证文件类型
+  const allowedTypes = ['.pdf', '.doc', '.docx', '.xls', '.xlsx', '.txt', '.md']
+  const validFiles = files.filter(file => {
+    const extension = '.' + file.name.split('.').pop()?.toLowerCase()
+    return allowedTypes.includes(extension)
+  })
+
+  // 验证文件大小 (限制为 10MB)
+  const maxSize = 10 * 1024 * 1024 // 10MB
+  const oversizedFiles = validFiles.filter(file => file.size > maxSize)
+
+  if (oversizedFiles.length > 0) {
+    $q.notify({
+      message: `文件 "${oversizedFiles[0]?.name}" 超过 10MB 限制`,
+      color: 'warning',
+      position: 'top',
+      timeout: 3000
+    })
+    return
+  }
+
+  if (validFiles.length !== files.length) {
+    $q.notify({
+      message: `只支持 ${allowedTypes.join(', ')} 格式的文件`,
+      color: 'warning',
+      position: 'top',
+      timeout: 3000
+    })
+  }
+
+  if (validFiles.length > 0) {
+    // 检查是否有重复文件
+    const existingFileNames = newTask.value.docsList.map(doc => doc.fileName)
+    const newFiles = validFiles.filter(file => !existingFileNames.includes(file.name))
+
+    if (newFiles.length !== validFiles.length) {
+      $q.notify({
+        message: '已过滤重复文件',
+        color: 'info',
+        position: 'top',
+        timeout: 2000
+      })
+    }
+
+    if (newFiles.length > 0) {
+      handleFileSelect(newFiles)
+    }
+  }
+}
+
 
 // 修复重置表单函数
 const resetNewTaskForm = (): void => {
@@ -754,6 +857,11 @@ const resetNewTaskForm = (): void => {
     docsList: [],
     uploadFiles: null
   }
+
+  // 重置拖拽状态
+  isDragOver.value = false
+  isUploading.value = false
+  uploadProgress.value = 0
 }
 
 // 修改创建任务方法，使用dev-task API
@@ -2243,6 +2351,107 @@ defineOptions({
 
   &:hover {
     background: rgba($cursor-primary, 0.5);
+  }
+}
+
+/* 拖拽上传区域样式 */
+.drag-upload-area {
+  border: 2px dashed #e0e0e0;
+  border-radius: 12px;
+  padding: 40px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: rgba(#f8f9fa, 0.3);
+  position: relative;
+  min-height: 180px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &:hover {
+    border-color: $primary;
+    background: rgba($primary, 0.05);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba($primary, 0.15);
+  }
+
+  &.drag-over {
+    border-color: $primary;
+    background: rgba($primary, 0.1);
+    transform: scale(1.02);
+    box-shadow: 0 8px 25px rgba($primary, 0.2);
+
+    .drag-upload-content {
+      transform: scale(1.05);
+    }
+  }
+
+  &.uploading {
+    border-color: $positive;
+    background: rgba($positive, 0.05);
+    pointer-events: none;
+  }
+}
+
+.drag-upload-content {
+  transition: transform 0.3s ease;
+  width: 100%;
+
+  .q-icon {
+    transition: all 0.3s ease;
+  }
+}
+
+/* 已上传文档列表样式优化 */
+.uploaded-doc {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background: #fafafa;
+  transition: all 0.3s ease;
+
+  &:hover {
+    border-color: $primary;
+    background: rgba($primary, 0.05);
+    transform: translateX(4px);
+  }
+
+  .ellipsis {
+    flex: 1;
+    margin: 0 8px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-weight: 500;
+    color: #2c3e50;
+  }
+
+  .q-btn {
+    opacity: 0.7;
+    transition: opacity 0.3s ease;
+
+    &:hover {
+      opacity: 1;
+    }
+  }
+}
+
+/* 响应式设计 */
+@media (max-width: 600px) {
+  .drag-upload-area {
+    padding: 24px 16px;
+    min-height: 140px;
+
+    .text-h6 {
+      font-size: 16px;
+    }
+
+    .q-icon {
+      font-size: 36px !important;
+    }
   }
 }
 </style>
