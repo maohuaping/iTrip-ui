@@ -326,6 +326,14 @@ export interface ResultTodo {
   failMsg?: string;
 }
 
+export interface ResultSysFile {
+  /** 是否成功 */
+  isOk?: boolean;
+  okData?: SysFile;
+  /** 失败消息 */
+  failMsg?: string;
+}
+
 /**
  * 系统文件信息
  */
@@ -348,14 +356,6 @@ export interface SysFile {
   fileUrl?: string;
   /** 需求ID */
   requirementId?: number;
-}
-
-export interface ResultSysFile {
-  /** 是否成功 */
-  isOk?: boolean;
-  okData?: SysFile;
-  /** 失败消息 */
-  failMsg?: string;
 }
 
 /**
@@ -431,6 +431,21 @@ export interface SubscriptionRequestDTO {
   expirationTime?: number;
 }
 
+export interface SaveDevTaskInParam {
+  /** 需求编号 */
+  requirementId?: string;
+  /** 需求名称 */
+  requirementName?: string;
+  /** 需求关联的需求文档名称。如果关联多个需求文档，会以;进行分隔 */
+  relatedRequirementDocs?: string;
+  /** 系统分类 */
+  systemCategory?: string;
+  /** 关联的文件 */
+  sysFileId?: string;
+  /** 需求的归属用户ID */
+  userId?: number;
+}
+
 /**
  * 需求
  */
@@ -451,12 +466,20 @@ export interface DevTask {
   requirementName?: string;
   /** 需求关联的需求文档名称。如果关联多个需求文档，会以;进行分隔 */
   relatedRequirementDocs?: string;
-  /** 需求关联的设计文档名称。如果关联多个设计文档，会以;进行分隔 */
-  relatedDesignDocs?: string;
+  /** 关联的文件 */
+  sysFileId?: string;
   /** 系统分类 */
   systemCategory?: string;
   /** 需求的归属用户ID */
   userId?: number;
+}
+
+export interface ResultDevTask {
+  /** 是否成功 */
+  isOk?: boolean;
+  okData?: DevTask;
+  /** 失败消息 */
+  failMsg?: string;
 }
 
 /**
@@ -817,14 +840,6 @@ export interface ResultListMapStringObject {
   failMsg?: string;
 }
 
-export interface ResultDevTask {
-  /** 是否成功 */
-  isOk?: boolean;
-  okData?: DevTask;
-  /** 失败消息 */
-  failMsg?: string;
-}
-
 export interface ResultListDevTask {
   /** 是否成功 */
   isOk?: boolean;
@@ -1147,6 +1162,10 @@ export type UpdateShowTicketsParams = {
 
 export type UpdateShowTicketsBody = { [key: string]: boolean };
 
+export type UploadFileBody = {
+  file: Blob;
+};
+
 export type TestUploadBody = {
   file: Blob;
 };
@@ -1156,6 +1175,10 @@ export type GetTravelGuideParams = {
    * 目的地名称
    */
   destination?: string;
+};
+
+export type OpenFileParams = {
+  fileName: string;
 };
 
 export type GenerateInsertScriptParams = {

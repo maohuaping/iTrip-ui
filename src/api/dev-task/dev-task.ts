@@ -6,13 +6,12 @@
  * OpenAPI spec version: 1.0
  */
 import type {
-  DevTask,
   QueryDevTaskInParam,
-  ResultBoolean,
   ResultDevTask,
   ResultIPageDevTaskVO,
   ResultListDevTask,
   ResultListString,
+  SaveDevTaskInParam,
 } from '../api.schemas';
 
 import { customInstance } from '../../boot/orval-client';
@@ -21,12 +20,12 @@ export const getDevTask = () => {
   /**
    * @summary 新增
    */
-  const saveDevTask = (devTask: DevTask) => {
-    return customInstance<ResultBoolean>({
+  const saveDevTask = (saveDevTaskInParam: SaveDevTaskInParam) => {
+    return customInstance<ResultDevTask>({
       url: `/api/devTask/saveDevTask`,
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      data: devTask,
+      data: saveDevTaskInParam,
     });
   };
   /**

@@ -5,11 +5,28 @@
  * 前端提供UI，后端提供API
  * OpenAPI spec version: 1.0
  */
-import type { ResultSysFile, SysFile } from '../api.schemas';
+import type {
+  OpenFileParams,
+  ResultString,
+  ResultSysFile,
+  SysFile,
+  UploadFileBody,
+} from '../api.schemas';
 
 import { customInstance } from '../../boot/orval-client';
 
 export const getSysFile = () => {
+  /**
+   * @summary 上传文件至指定目录
+   */
+  const uploadFile = (uploadFileBody: UploadFileBody) => {
+    return customInstance<ResultSysFile>({
+      url: `/api/sysFile/uploadFile`,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      data: uploadFileBody,
+    });
+  };
   /**
    * @summary 新增系统文件
    */
@@ -21,8 +38,20 @@ export const getSysFile = () => {
       data: sysFile,
     });
   };
-  return { saveSysFile };
+  /**
+   * @summary 打开文件
+   */
+  const openFile = (params: OpenFileParams) => {
+    return customInstance<ResultString>({ url: `/api/sysFile/openFile`, method: 'GET', params });
+  };
+  return { uploadFile, saveSysFile, openFile };
 };
+export type UploadFileResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getSysFile>['uploadFile']>>
+>;
 export type SaveSysFileResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getSysFile>['saveSysFile']>>
+>;
+export type OpenFileResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getSysFile>['openFile']>>
 >;

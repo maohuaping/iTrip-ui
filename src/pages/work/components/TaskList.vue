@@ -79,22 +79,12 @@
           <div v-show="showAdvancedFilter" class="advanced-filter q-mt-md">
             <q-separator class="q-mb-md" />
             <div class="row q-col-gutter-md items-end">
-              <!-- 需求文档搜索 -->
+              <!-- 关联文档搜索 -->
               <div class="col-12 col-sm-6 col-md-3">
-                <q-input v-model="filterParams.relatedRequirementDocs" label="需求文档" outlined dense clearable
-                  placeholder="请输入需求文档名称" class="light-field" @update:model-value="handleFilterChange">
+                <q-input v-model="filterParams.relatedRequirementDocs" label="关联文档" outlined dense clearable
+                  placeholder="请输入文档名称" class="light-field" @update:model-value="handleFilterChange">
                   <template v-slot:prepend>
                     <q-icon name="article" size="16px" />
-                  </template>
-                </q-input>
-              </div>
-
-              <!-- 设计文档搜索 -->
-              <div class="col-12 col-sm-6 col-md-3">
-                <q-input v-model="filterParams.relatedDesignDocs" label="设计文档" outlined dense clearable
-                  placeholder="请输入设计文档名称" class="light-field" @update:model-value="handleFilterChange">
-                  <template v-slot:prepend>
-                    <q-icon name="design_services" size="16px" />
                   </template>
                 </q-input>
               </div>
@@ -158,7 +148,7 @@
             <template v-slot:body-cell-systemCategory="props">
               <q-td :props="props" class="system-category-cell">
                 <div class="system-category-text">
-                  {{props.row.systemCategoryDesc || ''}}
+                  {{ props.row.systemCategoryDesc || '' }}
                 </div>
               </q-td>
             </template>
@@ -290,54 +280,41 @@
         <div class="q-mb-md">
           <div class="row justify-between items-center q-mb-xs">
             <div class="text-subtitle2 text-cursor-text">关联文档</div>
-            <div class="text-caption text-grey-7">点击标签上传相关文档</div>
+            <div class="text-caption text-grey-7">上传相关文档</div>
           </div>
 
-          <div class="row q-gutter-sm q-mb-md">
-            <div class="doc-label doc-requirement cursor-pointer" :class="{ 'doc-active': hasRequirementDocs }"
-              @click="triggerFileUpload('requirement')">
-              需求
-            </div>
-
-            <div class="doc-label doc-design cursor-pointer" :class="{ 'doc-active': hasDesignDocs }"
-              @click="triggerFileUpload('design')">
-              设计
-            </div>
+          <!-- 文件上传区域 -->
+          <div class="q-mb-md">
+            <q-file v-model="newTask.uploadFiles" label="选择相关文档" outlined dense class="light-field"
+              accept=".pdf,.doc,.docx,.xls,.xlsx,.txt,.md" @update:model-value="handleFileSelect($event)"
+              @remove="handleFileRemove" clearable use-chips multiple>
+              <template v-slot:prepend>
+                <q-icon name="description" size="16px" />
+              </template>
+              <template v-slot:append>
+                <q-icon name="attach_file" size="16px" />
+              </template>
+            </q-file>
           </div>
 
           <!-- 显示已上传的文档列表 -->
-          <div class="q-mt-md">
-            <!-- 需求文档列表 -->
-            <div v-if="newTask.docsList.requirement.length > 0">
-              <div class="text-caption text-weight-medium q-mb-xs">需求文档:</div>
-              <div class="q-gutter-y-sm">
-                <div v-for="(doc, index) in newTask.docsList.requirement" :key="index"
-                  class="uploaded-doc requirement-doc">
-                  <q-icon name="description" size="18px" class="q-mr-xs" />
-                  <span class="ellipsis">{{ doc }}</span>
-                  <q-btn flat round dense icon="close" size="xs" @click="removeDoc('requirement', index)"
-                    class="q-ml-xs" />
-                </div>
-              </div>
-            </div>
-
-            <!-- 设计文档列表 -->
-            <div v-if="newTask.docsList.design.length > 0" class="q-mt-sm">
-              <div class="text-caption text-weight-medium q-mb-xs">设计文档:</div>
-              <div class="q-gutter-y-sm">
-                <div v-for="(doc, index) in newTask.docsList.design" :key="index" class="uploaded-doc design-doc">
-                  <q-icon name="description" size="18px" class="q-mr-xs" />
-                  <span class="ellipsis">{{ doc }}</span>
-                  <q-btn flat round dense icon="close" size="xs" @click="removeDoc('design', index)" class="q-ml-xs" />
-                </div>
+          <div v-if="newTask.docsList.length > 0" class="q-mt-md">
+            <div class="text-caption text-weight-medium q-mb-xs">已上传文档:</div>
+            <div class="q-gutter-y-sm">
+              <div v-for="(doc, index) in newTask.docsList" :key="index" class="uploaded-doc">
+                <q-icon name="description" size="18px" class="q-mr-xs" />
+                <span class="ellipsis">{{ doc.fileName }}</span>
+                <q-btn flat round dense icon="close" size="xs" @click="removeDoc(index)" class="q-mr-xs" />
+                <q-btn flat round dense icon="download" size="xs" @click="downloadFile(doc)" class="q-ml-xs" />
               </div>
             </div>
           </div>
 
-          <!-- 隐藏的文件上传输入框 -->
-          <input type="file" ref="requirementFileInput" @change="handleFileUpload('requirement', $event)"
-            style="display: none" />
-          <input type="file" ref="designFileInput" @change="handleFileUpload('design', $event)" style="display: none" />
+          <!-- 上传进度条 -->
+          <div v-if="uploadProgress > 0 && uploadProgress < 100" class="q-mt-md">
+            <q-linear-progress :value="uploadProgress / 100" color="primary" class="q-mb-xs" />
+            <div class="text-caption text-center">{{ uploadProgress.toFixed(1) }}%</div>
+          </div>
         </div>
       </q-card-section>
 
@@ -351,7 +328,7 @@
 
 <script setup lang="ts">
 import { getEnum } from 'src/api/enum/enum'
-import type { EnumVO } from 'src/api/api.schemas'
+// EnumVO 类型已不再需要，移除此导入
 
 import { ref, onMounted, computed, watch } from 'vue'
 import { useQuasar } from 'quasar'
@@ -361,6 +338,10 @@ import type { DevTask, DevTaskVO, QueryDevTaskInParam, IPageDevTaskVO, RelatedFi
 // 导入AI API
 import { getAi } from 'src/api/ai/ai'
 import type { NamingSuggestion, VariableNamingResponseVO } from 'src/api/api.schemas'
+
+// 在 script setup 部分添加以下导入
+import { getSysFile } from 'src/api/sys-file/sys-file'
+import type { SysFile, UploadFileBody } from 'src/api/api.schemas'
 
 // 初始化
 const $q = useQuasar()
@@ -462,6 +443,10 @@ const pagination = ref({
   rowsNumber: 0
 })
 
+// 文件上传相关状态
+const uploadProgress = ref(0)
+const isUploading = ref(false)
+
 // 统一的搜索函数
 const fetchTasks = async (): Promise<void> => {
   try {
@@ -477,17 +462,26 @@ const fetchTasks = async (): Promise<void> => {
       }
     }
 
-    // 构建查询参数 - 修复类型问题
+    // 构建查询参数 - 修复类型问题，只传递有值的参数
     const queryParams: QueryDevTaskInParam = {
-      requirementId: filterParams.value.requirementId || undefined,
-      requirementName: filterParams.value.requirementName || undefined,
-      systemCategory: systemCategory || undefined,
-      relatedRequirementDocs: filterParams.value.relatedRequirementDocs || undefined,
-      relatedDesignDocs: filterParams.value.relatedDesignDocs || undefined,
       pageParam: {
         current: pagination.value.page,
         size: pagination.value.rowsPerPage
       }
+    }
+
+    // 只添加有值的参数
+    if (filterParams.value.requirementId) {
+      queryParams.requirementId = filterParams.value.requirementId
+    }
+    if (filterParams.value.requirementName) {
+      queryParams.requirementName = filterParams.value.requirementName
+    }
+    if (systemCategory) {
+      queryParams.systemCategory = systemCategory
+    }
+    if (filterParams.value.relatedRequirementDocs) {
+      queryParams.relatedRequirementDocs = filterParams.value.relatedRequirementDocs
     }
 
     // 调用API获取数据
@@ -689,28 +683,12 @@ interface TaskType {
   value: string;
 }
 
-interface DocLists {
-  requirement: string[];
-  design: string[];
-}
-
-interface DocNames {
-  requirement: string;
-  design: string;
-}
-
-interface DocFlags {
-  requirement: boolean;
-  design: boolean;
-}
-
 interface NewTask {
   title: string;
   type: TaskType;
   id: string;
-  docs: DocFlags;
-  docNames: DocNames;
-  docsList: DocLists;
+  docsList: SysFile[];
+  uploadFiles: File[] | null;
 }
 
 // 初始化newTask，type初始化为空对象，等待从接口获取
@@ -718,85 +696,54 @@ const newTask = ref<NewTask>({
   title: '',
   type: { label: '', value: '' }, // 初始化为空，等待从接口获取
   id: '',
-  docs: {
-    requirement: false,
-    design: false
-  },
-  docNames: {
-    requirement: '',
-    design: ''
-  },
-  docsList: {
-    requirement: [],
-    design: []
-  }
+  docsList: [],
+  uploadFiles: null
 })
 
 // 判断是否有文档的计算属性
-const hasRequirementDocs = computed(() => newTask.value.docsList.requirement.length > 0)
-const hasDesignDocs = computed(() => newTask.value.docsList.design.length > 0)
+const hasDocuments = computed(() => newTask.value.docsList.length > 0)
 
-// 添加触发文件上传点击事件返回类型
-const triggerFileUpload = (type: 'requirement' | 'design'): void => {
-  if (type === 'requirement' && requirementFileInput.value) {
-    requirementFileInput.value.click()
-  } else if (type === 'design' && designFileInput.value) {
-    designFileInput.value.click()
-  }
-}
+// 处理文件选择
+const handleFileSelect = (files: File[] | null): void => {
+  if (!files || files.length === 0) return
 
-// 修改处理文件上传，添加到文档数组而不是替换
-const handleFileUpload = (type: 'requirement' | 'design', event: Event): void => {
-  const target = event.target as HTMLInputElement
-  const files = target.files
-
-  if (files && files.length > 0) {
-    const file = files[0]!
-    const fileName = file.name
-
-    // 添加文件名到对应的文档数组
-    if (type === 'requirement') {
-      newTask.value.docsList.requirement.push(fileName)
-    } else if (type === 'design') {
-      newTask.value.docsList.design.push(fileName)
+  files.forEach(file => {
+    const sysFile: SysFile = {
+      fileName: file.name,
+      fileType: file.name.split('.').pop() || '',
+      fileUrl: '', // 将在上传时设置
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
     }
 
-    // 同时更新单文档字段，用分号分隔的文件名列表
-    updateDocNamesFromList(type)
+    newTask.value.docsList.push(sysFile)
 
-    // 清空文件输入框，方便下次选择同一个文件
-    target.value = ''
-
-    // 提示用户文件名已获取
     $q.notify({
-      message: `已添加文件: ${fileName}`,
+      message: `已添加文件: ${file.name}`,
       color: 'positive',
       position: 'top',
       timeout: 1500
     })
-  }
+  })
 }
 
-// 添加从数组更新到字符串函数的返回类型
-const updateDocNamesFromList = (type: 'requirement' | 'design'): void => {
-  if (type === 'requirement') {
-    newTask.value.docNames.requirement = newTask.value.docsList.requirement.join(';')
-  } else if (type === 'design') {
-    newTask.value.docNames.design = newTask.value.docsList.design.join(';')
-  }
+// 处理文件移除
+const handleFileRemove = (): void => {
+  // Quasar的file组件会自动处理移除，这里只需要清空docsList
+  newTask.value.docsList = []
 }
 
-// 添加移除文档方法的返回类型
-const removeDoc = (type: 'requirement' | 'design', index: number): void => {
-  if (type === 'requirement') {
-    newTask.value.docsList.requirement.splice(index, 1)
-  } else if (type === 'design') {
-    newTask.value.docsList.design.splice(index, 1)
-  }
-
-  // 更新字符串形式的文档名
-  updateDocNamesFromList(type)
+// 删除单个文档
+const removeDoc = (index: number): void => {
+  newTask.value.docsList.splice(index, 1)
+  $q.notify({
+    message: '文档已删除',
+    color: 'positive',
+    position: 'top',
+    timeout: 1000
+  })
 }
+
 
 // 修复重置表单函数
 const resetNewTaskForm = (): void => {
@@ -804,18 +751,8 @@ const resetNewTaskForm = (): void => {
     title: '',
     type: { label: '', value: '' }, // 初始化为空，等待从接口获取
     id: '',
-    docs: {
-      requirement: false,
-      design: false
-    },
-    docNames: {
-      requirement: '',
-      design: ''
-    },
-    docsList: {
-      requirement: [],
-      design: []
-    }
+    docsList: [],
+    uploadFiles: null
   }
 }
 
@@ -827,14 +764,11 @@ const createTask = async (): Promise<void> => {
 
     // 使用DevTask接口
     const devTask: DevTask = {
-      requirementId: newTask.value.id,
-      requirementName: newTask.value.title,
+      requirementId: newTask.value.id || '',
+      requirementName: newTask.value.title || '',
       systemCategory,
-      relatedRequirementDocs: newTask.value.docsList.requirement.length > 0
-        ? newTask.value.docsList.requirement.join(';')
-        : '',
-      relatedDesignDocs: newTask.value.docsList.design.length > 0
-        ? newTask.value.docsList.design.join(';')
+      relatedRequirementDocs: newTask.value.docsList.length > 0
+        ? newTask.value.docsList.map(doc => doc.fileName || '').join(';')
         : ''
     };
 
@@ -881,15 +815,16 @@ const openNewTaskDialog = (taskType: string = 'requirement'): void => {
     newTask.value.type = foundType
   } else if (taskTypes.value.length > 0) {
     // 如果没找到匹配的类型，使用第一个可用的类型
-    newTask.value.type = taskTypes.value[0]
+    newTask.value.type = taskTypes.value[0]!
+  } else {
+    // 如果没有任何类型，设置默认值
+    newTask.value.type = { label: '', value: '' }
   }
 
   showNewTaskDialog.value = true
 }
 
-// 添加文件上传相关的ref
-const requirementFileInput = ref<HTMLInputElement | null>(null)
-const designFileInput = ref<HTMLInputElement | null>(null)
+// 文件上传相关的引用已经不再需要
 
 // 系统分类选项
 const systemCategoryOptions = ref<{ label: string; value: string }[]>([])
@@ -901,7 +836,7 @@ const loadSystemCategories = async () => {
     const response = await enumApi.getEnumByName('TaskTypeEnum')
     if (response.data?.isOk && response.data?.okData) {
       // 转换枚举数据为下拉框选项格式
-      systemCategoryOptions.value = response.data.okData.map((item: EnumVO) => ({
+      systemCategoryOptions.value = response.data.okData.map((item: any) => ({
         label: item.desc || item.code || '',
         value: item.code || ''
       }))
@@ -933,14 +868,14 @@ const loadTaskTypes = async () => {
     const response = await enumApi.getEnumByName('TaskTypeEnum')
     if (response.data?.isOk && response.data?.okData) {
       // 转换枚举数据为下拉框选项格式
-      taskTypes.value = response.data.okData.map((item: EnumVO) => ({
+      taskTypes.value = response.data.okData.map((item: any) => ({
         label: item.desc || item.code || '',
         value: item.code || ''
       }))
 
       // 从接口获取的数据中设置默认值
       if (taskTypes.value.length > 0) {
-        newTask.value.type = taskTypes.value[0]
+        newTask.value.type = taskTypes.value[0]!
       }
     } else {
       console.warn('获取任务类型失败:', response.data?.failMsg)
@@ -958,7 +893,7 @@ const loadTaskTypes = async () => {
         { label: '呼出任务', value: 'outgoing' }
       ]
       // 设置默认类型
-      newTask.value.type = taskTypes.value[0]
+      newTask.value.type = taskTypes.value[0]!
     }
   } catch (error) {
     console.error('获取任务类型异常:', error)
@@ -976,7 +911,7 @@ const loadTaskTypes = async () => {
       { label: '呼出任务', value: 'outgoing' }
     ]
     // 设置默认类型
-    newTask.value.type = taskTypes.value[0]
+    newTask.value.type = taskTypes.value[0]!
   }
 }
 
@@ -1185,7 +1120,7 @@ const getDocumentCount = (task: DevTaskVO): number => {
 }
 
 // 新增方法：获取文件图标
-const getFileIcon = (fileType: string): string => {
+const getFileIcon = (fileType: string | undefined): string => {
   const iconMap: Record<string, string> = {
     'requirement': 'description',
     'design': 'design_services',
@@ -1208,11 +1143,12 @@ const getFileIcon = (fileType: string): string => {
     'default': 'insert_drive_file'
   }
 
-  return iconMap[fileType.toLowerCase()] || iconMap.default
+  const key = fileType?.toLowerCase() || 'default'
+  return iconMap[key] || 'insert_drive_file'
 }
 
 // 新增方法：获取文件图标颜色
-const getFileIconColor = (fileType: string): string => {
+const getFileIconColor = (fileType: string | undefined): string => {
   const colorMap: Record<string, string> = {
     'requirement': 'blue',
     'design': 'purple',
@@ -1235,11 +1171,12 @@ const getFileIconColor = (fileType: string): string => {
     'default': 'grey-6'
   }
 
-  return colorMap[fileType.toLowerCase()] || colorMap.default
+  const key = fileType?.toLowerCase() || 'default'
+  return colorMap[key] || 'grey-6'
 }
 
 // 新增方法：获取文件类型标签
-const getFileTypeLabel = (fileType: string): string => {
+const getFileTypeLabel = (fileType: string | undefined): string => {
   const labelMap: Record<string, string> = {
     'requirement': '需求文档',
     'design': '设计文档',
@@ -1262,7 +1199,8 @@ const getFileTypeLabel = (fileType: string): string => {
     'default': '未知文件'
   }
 
-  return labelMap[fileType.toLowerCase()] || labelMap.default
+  const key = fileType?.toLowerCase() || 'default'
+  return labelMap[key] || '未知文件'
 }
 
 // 新增方法：格式化日期
@@ -1333,6 +1271,35 @@ const handleAddDocument = (task: DevTaskVO): void => {
     type: 'info'
   })
   // TODO: 实现添加文档功能
+}
+
+// 在现有的 ref 定义后添加
+const sysFileApi = getSysFile()
+
+// 这个旧版本的函数已经被简化的新版本替代，删除此版本
+
+// 旧的uploadFile函数已被简化的新版本替代，删除此旧版本
+
+// 这些函数已经被简化的新函数替代，不再需要
+
+// 添加下载文件方法
+const downloadFile = (file: SysFile): void => {
+  if (file.fileUrl) {
+    // 创建一个临时的 a 标签来下载文件
+    const link = document.createElement('a')
+    link.href = file.fileUrl
+    link.download = file.fileName || 'download'
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  } else {
+    $q.notify({
+      message: '文件下载链接不可用',
+      color: 'warning',
+      position: 'top',
+      timeout: 2000
+    })
+  }
 }
 
 defineOptions({
