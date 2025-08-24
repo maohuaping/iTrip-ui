@@ -21,11 +21,14 @@ export const getSysFile = () => {
    * @summary 上传文件至指定目录
    */
   const uploadFile = (uploadFileBody: UploadFileBody) => {
+    const formData = new FormData();
+    formData.append(`file`, uploadFileBody.file);
+
     return customInstance<ResultSysFile>({
       url: `/api/sysFile/uploadFile`,
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      data: uploadFileBody,
+      headers: { 'Content-Type': 'multipart/form-data' },
+      data: formData,
     });
   };
   /**
