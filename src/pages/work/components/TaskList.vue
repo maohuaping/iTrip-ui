@@ -344,7 +344,7 @@ import { getEnum } from 'src/api/enum/enum'
 import { ref, onMounted, computed, watch } from 'vue'
 import { useQuasar } from 'quasar'
 import { getDevTask } from 'src/api/dev-task/dev-task'
-import type { DevTask, DevTaskVO, QueryDevTaskInParam, IPageDevTaskVO, RelatedFile } from 'src/api/api.schemas'
+import type { DevTask, DevTaskVO, QueryDevTaskInParam, IPageDevTaskVO, RelatedFile, SaveDevTaskInParam } from 'src/api/api.schemas'
 
 // 导入AI API
 import { getAi } from 'src/api/ai/ai'
@@ -942,17 +942,18 @@ const createTask = async (): Promise<void> => {
     // 直接使用下拉框选择的任务类型值作为systemCategory
     const systemCategory: SystemType = newTask.value.type.value as SystemType;
 
-    // 使用DevTask接口
-    const devTask: DevTask = {
+    // 使用SaveDevTaskInParam接口，将文件列表传递给uploadedFiles字段
+    const saveDevTaskParam: SaveDevTaskInParam = {
       requirementId: newTask.value.id || '',
       requirementName: newTask.value.title || '',
       systemCategory,
       relatedRequirementDocs: newTask.value.docsList.length > 0
         ? newTask.value.docsList.map(doc => doc.fileName || '').join(';')
-        : ''
+        : '',
+      uploadedFiles: newTask.value.docsList // 将SysFile[]直接传递给uploadedFiles字段
     };
 
-    const response = await devTaskApi.saveDevTask(devTask);
+    const response = await devTaskApi.saveDevTask(saveDevTaskParam);
 
     if (response.data?.isOk) {
       $q.notify({
