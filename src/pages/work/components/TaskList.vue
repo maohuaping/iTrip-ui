@@ -744,12 +744,19 @@ const handleFileSelect = async (files: File[] | null): Promise<void> => {
         const response = await sysFileApi.uploadFile(uploadFileBody)
 
         if (response.data?.isOk && response.data.okData) {
+          // 添加调试日志
+          console.log('文件上传成功，API响应数据:', response.data.okData)
+
           // 上传成功，直接构建 SysFile 对象并添加到文档列表
           const sysFile: SysFile = {
             ...response.data.okData,
             fileName: response.data.okData.fileName || file.name,
-            fileType: file.name.split('.').pop() || '',
+            fileType: response.data.okData.fileType || file.name.split('.').pop() || '',
           }
+
+          // 添加调试日志检查fileUrl
+          console.log('构建的SysFile对象:', sysFile)
+          console.log('fileUrl是否存在:', !!sysFile.fileUrl)
 
           // 添加到文档列表
           newTask.value.docsList.push(sysFile)
@@ -928,8 +935,21 @@ const createTask = async (): Promise<void> => {
     }
 
     // 检查是否有文件URL为空的情况（上传失败的文件）
-    const failedUploads = newTask.value.docsList.filter(doc => !doc.fileUrl)
+    console.log('检查文档列表:', newTask.value.docsList)
+
+    // 检查文件是否有必要的字段（id或fileName至少要有一个，表示上传成功）
+    const failedUploads = newTask.value.docsList.filter(doc => !doc.fileUrl && !doc.id)
+    console.log('上传失败的文件:', failedUploads)
+
     if (failedUploads.length > 0) {
+      console.error('发现上传失败的文件:', failedUploads.map(doc => ({
+        fileName: doc.fileName,
+        fileUrl: doc.fileUrl,
+        id: doc.id,
+        hasFileUrl: !!doc.fileUrl,
+        hasId: !!doc.id
+      })))
+
       $q.notify({
         message: `有 ${failedUploads.length} 个文件上传失败，请重新上传`,
         color: 'warning',
@@ -937,6 +957,12 @@ const createTask = async (): Promise<void> => {
         timeout: 3000
       })
       return
+    }
+
+    // 如果文件没有fileUrl但有id，说明上传成功但API可能没返回fileUrl
+    const filesWithoutUrl = newTask.value.docsList.filter(doc => !doc.fileUrl && doc.id)
+    if (filesWithoutUrl.length > 0) {
+      console.warn('这些文件没有fileUrl但有id，可能是API没有返回fileUrl:', filesWithoutUrl)
     }
 
     // 直接使用下拉框选择的任务类型值作为systemCategory
