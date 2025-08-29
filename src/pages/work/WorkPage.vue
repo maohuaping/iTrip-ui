@@ -354,25 +354,84 @@
         <q-card-section class="q-pt-none">
           <q-input v-model="newUrl.name" label="名称" dense outlined class="q-mb-md" />
           <q-input v-model="newUrl.address" label="链接地址" dense outlined class="q-mb-md" />
-          <q-select v-model="newUrl.tag" :options="tagOptions" label="分类标签" dense outlined use-input use-chips
-            input-debounce="300" new-value-mode="add-unique" @filter="filterTagOptions" @input-value="onTagInputValue"
-            class="q-mb-md" hint="可选择现有分类或输入新分类">
-            <template v-slot:no-option>
-              <q-item>
-                <q-item-section class="text-grey">
-                  没有找到匹配的分类，输入回车创建新分类
-                </q-item-section>
-              </q-item>
-            </template>
 
-            <template v-slot:option="scope">
-              <q-item v-bind="scope.itemProps">
-                <q-item-section>
-                  <q-item-label>{{ scope.opt }}</q-item-label>
-                </q-item-section>
-              </q-item>
-            </template>
-          </q-select>
+          <!-- 优化后的分类标签选择器 -->
+          <div class="q-mb-md">
+            <q-select v-model="newUrl.tag" :options="filteredTagOptions" label="分类标签" dense outlined use-input
+              hide-selected input-debounce="300" new-value-mode="add-unique" @filter="filterTagOptions"
+              @new-value="createNewTag" @input-value="onTagInputValue" clearable class="category-select">
+
+              <template v-slot:prepend>
+                <q-icon name="folder" />
+              </template>
+
+              <!-- 选中项显示模板 -->
+              <template v-slot:selected-item="scope">
+                <q-chip removable @remove="scope.removeAtIndex(scope.index)" :tabindex="scope.tabindex" color="primary"
+                  text-color="white" class="q-ma-none">
+                  <q-icon name="folder" size="12px" class="q-mr-xs" />
+                  {{ scope.opt }}
+                </q-chip>
+              </template>
+
+              <!-- 下拉选项模板 -->
+              <template v-slot:option="scope">
+                <q-item v-bind="scope.itemProps">
+                  <q-item-section avatar>
+                    <q-icon :name="getTagIcon(scope.opt)" :color="getTagColor(scope.opt)" size="20px" />
+                  </q-item-section>
+                  <q-item-section>
+                    <q-item-label>{{ scope.opt }}</q-item-label>
+                    <q-item-label caption>
+                      {{ getTagDescription(scope.opt) }}
+                    </q-item-label>
+                  </q-item-section>
+                  <q-item-section side v-if="isExistingTag(scope.opt)">
+                    <q-chip size="sm" color="grey-4" text-color="grey-8">
+                      {{ getTagCount(scope.opt) }}个链接
+                    </q-chip>
+                  </q-item-section>
+                </q-item>
+              </template>
+
+              <!-- 无匹配项时的提示 -->
+              <template v-slot:no-option>
+                <q-item>
+                  <q-item-section class="text-grey-6">
+                    <div class="row items-center">
+                      <q-icon name="add_circle_outline" class="q-mr-sm" />
+                      <span>输入回车创建新分类 "{{ tagInputValue }}"</span>
+                    </div>
+                  </q-item-section>
+                </q-item>
+              </template>
+
+              <!-- 底部创建新标签按钮 -->
+              <template v-slot:after-options v-if="tagInputValue && !isExistingTag(tagInputValue)">
+                <q-separator />
+                <q-item clickable @click="createNewTag(tagInputValue)">
+                  <q-item-section avatar>
+                    <q-icon name="add_circle" color="primary" />
+                  </q-item-section>
+                  <q-item-section>
+                    <q-item-label class="text-primary">创建新分类 "{{ tagInputValue }}"</q-item-label>
+                  </q-item-section>
+                </q-item>
+              </template>
+            </q-select>
+
+            <!-- 分类建议 -->
+            <div v-if="!newUrl.tag" class="q-mt-sm">
+              <div class="text-caption text-grey-6 q-mb-xs">推荐分类：</div>
+              <div class="row q-gutter-xs">
+                <q-chip v-for="tag in suggestedTags" :key="tag.name" clickable outline :color="tag.color" size="sm"
+                  @click="selectSuggestedTag(tag.name)" class="suggested-tag">
+                  <q-icon :name="tag.icon" size="14px" class="q-mr-xs" />
+                  {{ tag.name }}
+                </q-chip>
+              </div>
+            </div>
+          </div>
         </q-card-section>
 
         <q-card-actions align="right">
@@ -1360,34 +1419,67 @@ const formatOracleTimestamp = (date: Date): string => {
   return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}.${milliseconds}`
 }
 
-// 标签选项
+// 标签选项相关
 const tagOptions = ref<string[]>([])
 const allTagOptions = ref<string[]>([])
+const filteredTagOptions = ref<string[]>([])
+const tagInputValue = ref('')
+
+// 推荐分类
+const suggestedTags = ref([
+  { name: '开发环境', icon: 'code', color: 'blue' },
+  { name: '消保', icon: 'security', color: 'green' },
+  { name: '控制台', icon: 'dashboard', color: 'orange' },
+  { name: 'api平台', icon: 'api', color: 'purple' },
+  { name: '邮箱', icon: 'email', color: 'red' },
+  { name: '网页版AI', icon: 'smart_toy', color: 'teal' },
+  { name: '协作', icon: 'groups', color: 'indigo' },
+  { name: '流水线', icon: 'account_tree', color: 'cyan' },
+  { name: '工具', icon: 'build', color: 'amber' },
+  { name: '文档', icon: 'description', color: 'brown' }
+])
 
 // 获取标签分类
 const fetchTagOptions = async () => {
   try {
-    const response = await urlApi.getUrlTag()
-    if (response.data?.isOk && response.data.okData) {
-      allTagOptions.value = response.data.okData
-      tagOptions.value = [...allTagOptions.value]
+    // 首先从现有URL中提取标签，过滤掉undefined
+    const existingTags = [...new Set(urlList.value.map(url => url.tag).filter((tag): tag is string => Boolean(tag)))]
+
+    // 尝试从API获取
+    try {
+      const response = await urlApi.getUrlTag()
+      if (response.data?.isOk && response.data.okData) {
+        allTagOptions.value = [...new Set([...existingTags, ...response.data.okData])]
+      } else {
+        throw new Error('API返回数据格式错误')
+      }
+    } catch (apiError) {
+      console.warn('从API获取标签失败，使用现有标签:', apiError)
+      // 如果API失败，使用现有标签加上默认标签
+      const defaultTags = ['开发环境', '消保', '控制台', 'api平台', '邮箱', '网页版AI', '协作', '流水线', '工具', '文档']
+      allTagOptions.value = [...new Set([...existingTags, ...defaultTags])]
     }
+
+    tagOptions.value = [...allTagOptions.value]
+    filteredTagOptions.value = [...allTagOptions.value]
   } catch (error) {
     console.error('获取标签分类失败:', error)
-    // 如果获取失败，使用默认分类
-    allTagOptions.value = ['工具', '学习', '娱乐', '工作', '其他']
+    // 完全失败时使用默认分类
+    allTagOptions.value = ['开发环境', '消保', '控制台', 'api平台', '邮箱', '网页版AI', '协作', '流水线', '工具', '文档']
     tagOptions.value = [...allTagOptions.value]
+    filteredTagOptions.value = [...allTagOptions.value]
   }
 }
 
 // 过滤标签选项
 const filterTagOptions = (val: string, update: (fn: () => void) => void) => {
   update(() => {
+    tagInputValue.value = val
     if (val === '') {
-      tagOptions.value = [...allTagOptions.value]
+      filteredTagOptions.value = [...allTagOptions.value]
     } else {
       const needle = val.toLowerCase()
-      tagOptions.value = allTagOptions.value.filter(
+      filteredTagOptions.value = allTagOptions.value.filter(
         tag => tag.toLowerCase().includes(needle)
       )
     }
@@ -1396,7 +1488,8 @@ const filterTagOptions = (val: string, update: (fn: () => void) => void) => {
 
 // 处理标签输入值
 const onTagInputValue = (val: string) => {
-  // 这里可以添加自定义逻辑，比如验证输入格式等
+  tagInputValue.value = val
+  // 验证输入格式
   if (val && val.length > 20) {
     $q.notify({
       color: 'warning',
@@ -1404,6 +1497,94 @@ const onTagInputValue = (val: string) => {
       icon: 'warning'
     })
   }
+}
+
+// 创建新标签
+const createNewTag = (tagName: string) => {
+  if (!tagName || tagName.trim() === '') return tagName
+
+  const trimmedTag = tagName.trim()
+
+  // 检查是否已存在
+  if (!allTagOptions.value.includes(trimmedTag)) {
+    allTagOptions.value.push(trimmedTag)
+    tagOptions.value = [...allTagOptions.value]
+    filteredTagOptions.value = [...allTagOptions.value]
+
+    $q.notify({
+      color: 'positive',
+      message: `新分类 "${trimmedTag}" 已创建`,
+      icon: 'check_circle'
+    })
+  }
+
+  return trimmedTag
+}
+
+// 选择推荐标签
+const selectSuggestedTag = (tagName: string) => {
+  newUrl.value.tag = tagName
+}
+
+// 检查是否是现有标签
+const isExistingTag = (tagName: string): boolean => {
+  return allTagOptions.value.includes(tagName)
+}
+
+// 获取标签图标
+const getTagIcon = (tagName: string): string => {
+  const iconMap: Record<string, string> = {
+    '开发环境': 'code',
+    '消保': 'security',
+    '控制台': 'dashboard',
+    'api平台': 'api',
+    '邮箱': 'email',
+    '网页版AI': 'smart_toy',
+    '协作': 'groups',
+    '流水线': 'account_tree',
+    '工具': 'build',
+    '文档': 'description'
+  }
+  return iconMap[tagName] || 'folder'
+}
+
+// 获取标签颜色
+const getTagColor = (tagName: string): string => {
+  const colorMap: Record<string, string> = {
+    '开发环境': 'blue',
+    '消保': 'green',
+    '控制台': 'orange',
+    'api平台': 'purple',
+    '邮箱': 'red',
+    '网页版AI': 'teal',
+    '协作': 'indigo',
+    '流水线': 'cyan',
+    '工具': 'amber',
+    '文档': 'brown'
+  }
+  return colorMap[tagName] || 'grey'
+}
+
+// 获取标签描述
+const getTagDescription = (tagName: string): string => {
+  const descMap: Record<string, string> = {
+    '开发环境': '开发相关的工具和环境',
+    '消保': '消费者保护相关系统',
+    '控制台': '管理和监控平台',
+    'api平台': 'API管理和文档',
+    '邮箱': '邮件系统和工具',
+    '网页版AI': 'AI工具和服务',
+    '协作': '团队协作工具',
+    '流水线': 'CI/CD和部署',
+    '工具': '实用工具和软件',
+    '文档': '文档和资料'
+  }
+  return descMap[tagName] || '自定义分类'
+}
+
+// 获取标签下的链接数量
+const getTagCount = (tagName: string): number => {
+  return urlList.value.filter(url => url.tag === tagName).length
 }
 
 // 在组件挂载时加载待办事项
@@ -2541,6 +2722,67 @@ onUnmounted(() => {
   }
 }
 
+/* 分类选择器样式 */
+.category-select {
+  .q-field__control {
+    border-radius: 8px;
+  }
+
+  .q-field__native {
+    color: var(--q-text-color);
+  }
+}
+
+/* 推荐标签样式 */
+.suggested-tag {
+  transition: all 0.2s ease;
+  cursor: pointer;
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+/* 分类选择器下拉项优化 */
+.q-menu .q-list .q-item {
+  border-radius: 6px;
+  margin: 2px 6px;
+
+  &:hover {
+    background: rgba(var(--q-primary-rgb), 0.08);
+  }
+
+  .q-item__section--avatar {
+    min-width: 36px;
+  }
+
+  .q-item__section--side {
+    padding-left: 8px;
+  }
+}
+
+/* 新建分类项特殊样式 */
+.q-menu .q-list .q-item[data-new-tag="true"] {
+  background: rgba(var(--q-primary-rgb), 0.05);
+  border: 1px dashed rgba(var(--q-primary-rgb), 0.3);
+
+  &:hover {
+    background: rgba(var(--q-primary-rgb), 0.1);
+    border-color: rgba(var(--q-primary-rgb), 0.5);
+  }
+}
+
+/* 选中的chip样式优化 */
+.q-chip.q-chip--outline {
+  border-width: 1px;
+  font-weight: 500;
+}
+
 /* 响应式设计 */
 @media (max-width: 600px) {
   .pinned-section {
@@ -2559,6 +2801,18 @@ onUnmounted(() => {
     .submenu-list .url-item {
       padding-left: 16px;
     }
+  }
+
+  /* 移动端分类选择器优化 */
+  .category-select {
+    .q-field__control {
+      border-radius: 6px;
+    }
+  }
+
+  .suggested-tag {
+    font-size: 12px;
+    padding: 4px 8px;
   }
 }
 </style>
