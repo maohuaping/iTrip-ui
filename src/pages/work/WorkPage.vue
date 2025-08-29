@@ -79,46 +79,110 @@
 
     <q-drawer v-model="leftDrawerOpen" show-if-above bordered :width="240" class="narrow-drawer">
       <q-list>
-        <div class="drawer-header q-px-md">
-          <q-item-label header class="q-py-sm">
-            我的链接
-          </q-item-label>
-
-          <div class="expand-actions q-py-sm">
-            <q-btn flat dense no-caps class="expand-btn" :color="allExpanded ? 'primary' : 'blue-7'"
-              :label="allExpanded ? '全部收起' : '全部展开'" @click="toggleAllGroups" />
-          </div>
-        </div>
-
         <q-separator />
 
         <template v-if="!loading">
-          <!-- 使用expand-icon="none"隐藏默认箭头 -->
-          <q-expansion-item v-for="(group, tag) in groupedUrls" :key="tag" :model-value="expandedGroups[tag] || false"
-            @update:model-value="(val) => updateExpandedState(tag, val)" header-class="cursor-pointer group-header"
-            expand-separator expand-icon="none">
-            <template v-slot:header>
-              <q-item-section avatar>
-                <q-icon name="folder" />
-              </q-item-section>
-
-              <q-item-section>
-                {{ tag }}
-              </q-item-section>
-            </template>
-
-            <q-list class="submenu-list">
-              <q-item v-for="url in group" :key="url.id" clickable tag="a" :href="url.address" target="_blank"
-                class="url-item">
+          <!-- 置顶链接区域 -->
+          <div v-if="pinnedUrls.length > 0" class="pinned-section">
+            <q-item-label header class="text-weight-medium text-primary pinned-header">
+              <q-icon name="push_pin" size="16px" class="q-mr-xs" />
+              置顶链接
+            </q-item-label>
+            <q-list class="pinned-list">
+              <q-item v-for="url in pinnedUrls" :key="`pinned-${url.id}`" clickable tag="a" :href="url.address"
+                target="_blank" class="url-item pinned-item">
                 <q-item-section avatar>
-                  <q-icon name="link" />
+                  <q-icon name="star" color="amber" />
                 </q-item-section>
                 <q-item-section>
                   <q-item-label>{{ url.name }}</q-item-label>
                 </q-item-section>
+                <q-item-section side>
+                  <q-btn flat round dense size="sm" icon="more_vert" @click.stop.prevent="showUrlMenu(url)">
+                    <q-menu>
+                      <q-list style="min-width: 120px">
+                        <q-item clickable v-close-popup @click="unpinUrl(url)">
+                          <q-item-section avatar>
+                            <q-icon name="push_pin" rotation="45" />
+                          </q-item-section>
+                          <q-item-section>取消置顶</q-item-section>
+                        </q-item>
+                        <q-item clickable v-close-popup @click="editUrl(url)">
+                          <q-item-section avatar>
+                            <q-icon name="edit" />
+                          </q-item-section>
+                          <q-item-section>编辑</q-item-section>
+                        </q-item>
+                        <q-item clickable v-close-popup @click="deleteUrl(url)">
+                          <q-item-section avatar>
+                            <q-icon name="delete" color="negative" />
+                          </q-item-section>
+                          <q-item-section class="text-negative">删除</q-item-section>
+                        </q-item>
+                      </q-list>
+                    </q-menu>
+                  </q-btn>
+                </q-item-section>
               </q-item>
             </q-list>
-          </q-expansion-item>
+            <q-separator class="q-my-sm" />
+          </div>
+
+          <!-- 分组链接区域 -->
+          <div v-if="Object.keys(groupedUrls).length > 0" class="grouped-section">
+            <!-- 使用expand-icon="none"隐藏默认箭头 -->
+            <q-expansion-item v-for="(group, tag) in groupedUrls" :key="tag" :model-value="expandedGroups[tag] || false"
+              @update:model-value="(val) => updateExpandedState(tag, val)" header-class="cursor-pointer group-header"
+              expand-separator expand-icon="none">
+              <template v-slot:header>
+                <q-item-section avatar>
+                  <q-icon name="folder" />
+                </q-item-section>
+
+                <q-item-section>
+                  {{ tag }}
+                </q-item-section>
+              </template>
+
+              <q-list class="submenu-list">
+                <q-item v-for="url in group" :key="url.id" clickable tag="a" :href="url.address" target="_blank"
+                  class="url-item">
+                  <q-item-section avatar>
+                    <q-icon name="link" />
+                  </q-item-section>
+                  <q-item-section>
+                    <q-item-label>{{ url.name }}</q-item-label>
+                  </q-item-section>
+                  <q-item-section side>
+                    <q-btn flat round dense size="sm" icon="more_vert" @click.stop.prevent="showUrlMenu(url)">
+                      <q-menu>
+                        <q-list style="min-width: 120px">
+                          <q-item clickable v-close-popup @click="pinUrl(url)">
+                            <q-item-section avatar>
+                              <q-icon name="push_pin" />
+                            </q-item-section>
+                            <q-item-section>置顶</q-item-section>
+                          </q-item>
+                          <q-item clickable v-close-popup @click="editUrl(url)">
+                            <q-item-section avatar>
+                              <q-icon name="edit" />
+                            </q-item-section>
+                            <q-item-section>编辑</q-item-section>
+                          </q-item>
+                          <q-item clickable v-close-popup @click="deleteUrl(url)">
+                            <q-item-section avatar>
+                              <q-icon name="delete" color="negative" />
+                            </q-item-section>
+                            <q-item-section class="text-negative">删除</q-item-section>
+                          </q-item>
+                        </q-list>
+                      </q-menu>
+                    </q-btn>
+                  </q-item-section>
+                </q-item>
+              </q-list>
+            </q-expansion-item>
+          </div>
         </template>
 
         <q-item v-else>
@@ -348,6 +412,7 @@ interface TodoItem {
 // 定义URL数据类型 - 使用正确的接口类型
 interface UrlItem extends SysUrl {
   id: number // 确保id是必选的
+  isPinned?: boolean // 添加置顶标识
 }
 
 const $q = useQuasar()
@@ -435,11 +500,17 @@ const allExpanded = computed(() => {
   return tagKeys.every(tag => expandedGroups[tag])
 })
 
-// 按标签分组的URL
+// 置顶链接
+const pinnedUrls = computed(() => {
+  return urlList.value.filter(url => url.isPinned)
+})
+
+// 普通链接按标签分组
 const groupedUrls = computed(() => {
   const groups: Record<string, UrlItem[]> = {}
 
-  urlList.value.forEach(url => {
+  // 只分组非置顶的链接
+  urlList.value.filter(url => !url.isPinned).forEach(url => {
     const tag = url.tag || '未分类'
     if (!groups[tag]) {
       groups[tag] = []
@@ -574,12 +645,121 @@ const fetchUrlList = async () => {
   }
 }
 
+// 置顶链接
+const pinUrl = async (url: UrlItem) => {
+  try {
+    // 本地更新状态
+    const targetUrl = urlList.value.find(u => u.id === url.id)
+    if (targetUrl) {
+      targetUrl.isPinned = true
+    }
+
+    // 调用API更新（如果后端支持isPinned字段）
+    // 这里暂时只是本地状态更新，您可以根据后端API调整
+
+    $q.notify({
+      color: 'positive',
+      message: `"${url.name}" 已置顶`,
+      icon: 'push_pin'
+    })
+  } catch (error) {
+    console.error('置顶失败:', error)
+    $q.notify({
+      color: 'negative',
+      message: '置顶失败',
+      icon: 'error'
+    })
+  }
+}
+
+// 取消置顶
+const unpinUrl = async (url: UrlItem) => {
+  try {
+    // 本地更新状态
+    const targetUrl = urlList.value.find(u => u.id === url.id)
+    if (targetUrl) {
+      targetUrl.isPinned = false
+    }
+
+    $q.notify({
+      color: 'positive',
+      message: `"${url.name}" 已取消置顶`,
+      icon: 'push_pin'
+    })
+  } catch (error) {
+    console.error('取消置顶失败:', error)
+    $q.notify({
+      color: 'negative',
+      message: '取消置顶失败',
+      icon: 'error'
+    })
+  }
+}
+
+// 编辑链接
+const editUrl = (url: UrlItem) => {
+  newUrl.value = {
+    ...url
+  }
+  addUrlDialog.value = true
+}
+
+// 删除链接
+const deleteUrl = async (url: UrlItem) => {
+  try {
+    $q.dialog({
+      title: '确认删除',
+      message: `确定要删除链接 "${url.name}" 吗？此操作不可撤销。`,
+      ok: {
+        label: '确认删除',
+        color: 'negative',
+        flat: false
+      },
+      cancel: {
+        label: '取消',
+        color: 'grey-7',
+        flat: true
+      },
+      persistent: true
+    }).onOk(async () => {
+      try {
+        // 调用删除API
+        await urlApi.deleteUrl(String(url.id))
+
+        $q.notify({
+          color: 'positive',
+          message: `链接 "${url.name}" 删除成功`,
+          icon: 'delete'
+        })
+
+        // 重新获取列表
+        await fetchUrlList()
+      } catch (error) {
+        console.error('删除失败:', error)
+        $q.notify({
+          color: 'negative',
+          message: '删除失败',
+          icon: 'error'
+        })
+      }
+    })
+  } catch (error) {
+    console.error('删除链接出错:', error)
+  }
+}
+
+// 显示链接菜单（占位方法，实际菜单在模板中定义）
+const showUrlMenu = (url: UrlItem) => {
+  // 这个方法主要是为了TypeScript类型检查，实际菜单逻辑在模板中
+  console.log('显示链接菜单:', url.name)
+}
+
 // 模拟数据（用于开发阶段测试）
 const mockData = {
   success: true,
   payload: [
     {
-      id: 4,
+      id: 1,
       createdBy: 14,
       createdAt: "2025-04-15T17:59:06",
       updatedBy: 14,
@@ -587,10 +767,23 @@ const mockData = {
       tag: "开发环境",
       name: "虚拟机",
       address: "https://vdesk.picclife.cn/por/service.csp",
-      userId: 14
+      userId: 14,
+      isPinned: true
     },
     {
-      id: 7,
+      id: 2,
+      createdBy: 14,
+      createdAt: "2025-04-15T17:59:06",
+      updatedBy: 14,
+      updatedAt: "2025-04-15T17:59:06",
+      tag: "消保",
+      name: "消保控制台",
+      address: "http://localhost:3000",
+      userId: 14,
+      isPinned: true
+    },
+    {
+      id: 3,
       createdBy: 14,
       createdAt: "2025-04-15T17:59:06",
       updatedBy: 14,
@@ -598,9 +791,69 @@ const mockData = {
       tag: "流水线",
       name: "回访流水线-develop",
       address: "http://devops.itservice.piccnet/console/pipeline/x8cbec/p-72a6ff7240494d7ab76684d7c519b422/history",
-      userId: 14
+      userId: 14,
+      isPinned: false
     },
-    // ...其他URL项
+    {
+      id: 4,
+      createdBy: 14,
+      createdAt: "2025-04-15T17:59:06",
+      updatedBy: 14,
+      updatedAt: "2025-04-15T17:59:06",
+      tag: "控制台",
+      name: "api平台",
+      address: "http://api.example.com",
+      userId: 14,
+      isPinned: false
+    },
+    {
+      id: 5,
+      createdBy: 14,
+      createdAt: "2025-04-15T17:59:06",
+      updatedBy: 14,
+      updatedAt: "2025-04-15T17:59:06",
+      tag: "邮箱",
+      name: "企业邮箱",
+      address: "https://mail.company.com",
+      userId: 14,
+      isPinned: false
+    },
+    {
+      id: 6,
+      createdBy: 14,
+      createdAt: "2025-04-15T17:59:06",
+      updatedBy: 14,
+      updatedAt: "2025-04-15T17:59:06",
+      tag: "网页版AI",
+      name: "ChatGPT",
+      address: "https://chat.openai.com",
+      userId: 14,
+      isPinned: false
+    },
+    {
+      id: 7,
+      createdBy: 14,
+      createdAt: "2025-04-15T17:59:06",
+      updatedBy: 14,
+      updatedAt: "2025-04-15T17:59:06",
+      tag: "协作",
+      name: "协作平台",
+      address: "https://teams.microsoft.com",
+      userId: 14,
+      isPinned: false
+    },
+    {
+      id: 8,
+      createdBy: 14,
+      createdAt: "2025-04-15T17:59:06",
+      updatedBy: 14,
+      updatedAt: "2025-04-15T17:59:06",
+      tag: "工具",
+      name: "在线工具",
+      address: "https://tool.lu",
+      userId: 14,
+      isPinned: false
+    }
   ]
 }
 
@@ -2166,6 +2419,146 @@ onUnmounted(() => {
   .text-caption {
     font-size: 12px;
     line-height: 1.4;
+  }
+}
+
+/* 置顶链接区域样式 */
+.pinned-section {
+  margin-bottom: 8px;
+
+  .pinned-header {
+    font-size: 12px;
+    color: var(--q-primary);
+    padding: 8px 16px 4px 16px;
+    display: flex;
+    align-items: center;
+
+    .q-icon {
+      color: var(--q-primary);
+    }
+  }
+
+  .pinned-list {
+    .pinned-item {
+      background: rgba(var(--q-primary-rgb), 0.05);
+      border-left: 3px solid var(--q-primary);
+      margin: 2px 8px;
+      border-radius: 0 4px 4px 0;
+      transition: all 0.2s ease;
+
+      &:hover {
+        background: rgba(var(--q-primary-rgb), 0.1);
+        transform: translateX(2px);
+      }
+
+      .q-item__section--avatar {
+        min-width: 40px;
+
+        .q-icon {
+          color: var(--q-amber);
+        }
+      }
+
+      .q-item__section--side {
+        .q-btn {
+          opacity: 0;
+          transition: opacity 0.2s ease;
+        }
+      }
+
+      &:hover .q-item__section--side .q-btn {
+        opacity: 1;
+      }
+    }
+  }
+}
+
+/* 分组链接区域样式 */
+.grouped-section {
+  .group-header {
+    .q-item__section--avatar {
+      min-width: 40px;
+    }
+  }
+
+  .submenu-list {
+    .url-item {
+      padding-left: 24px;
+      transition: all 0.2s ease;
+
+      &:hover {
+        background: rgba(var(--q-primary-rgb), 0.05);
+        transform: translateX(2px);
+      }
+
+      .q-item__section--side {
+        .q-btn {
+          opacity: 0;
+          transition: opacity 0.2s ease;
+        }
+      }
+
+      &:hover .q-item__section--side .q-btn {
+        opacity: 1;
+      }
+    }
+  }
+}
+
+/* 侧边栏整体优化 */
+.narrow-drawer {
+  .q-list {
+    .q-item {
+      &.url-item {
+        .q-item__label {
+          font-size: 14px;
+          line-height: 1.2;
+        }
+      }
+    }
+  }
+}
+
+/* 右键菜单样式 */
+.q-menu {
+  .q-list {
+    .q-item {
+      border-radius: 4px;
+      margin: 2px 4px;
+
+      &:hover {
+        background: rgba(var(--q-primary-rgb), 0.1);
+      }
+
+      .q-item__section--avatar {
+        min-width: 32px;
+
+        .q-icon {
+          font-size: 16px;
+        }
+      }
+    }
+  }
+}
+
+/* 响应式设计 */
+@media (max-width: 600px) {
+  .pinned-section {
+    .pinned-header {
+      padding: 6px 12px 2px 12px;
+      font-size: 11px;
+    }
+
+    .pinned-list .pinned-item {
+      margin: 1px 4px;
+      padding: 8px 12px;
+    }
+  }
+
+  .grouped-section {
+    .submenu-list .url-item {
+      padding-left: 16px;
+    }
   }
 }
 </style>
