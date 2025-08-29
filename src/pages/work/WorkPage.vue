@@ -10,7 +10,7 @@
 
         <q-toolbar-title class="row items-center justify-center">
           <!-- 使用Quasar的split button组件 - 改进版 -->
-          <!-- <q-btn-dropdown flat color="primary" no-caps dense class="q-mr-sm copy-btn-dropdown"
+          <q-btn-dropdown flat color="primary" no-caps dense class="q-mr-sm copy-btn-dropdown"
             :label="selectedText || 'Flex20190429'" icon="content_copy" dropdown-icon="arrow_drop_down" split
             @click="handleTextSelection(selectedText || 'Flex20190429')">
             <q-list>
@@ -52,7 +52,7 @@
                 </q-item-section>
               </q-item>
             </q-list>
-          </q-btn-dropdown> -->
+          </q-btn-dropdown>
 
           <!-- 主页按钮 -->
           <q-btn flat dense icon="home" no-caps :label="$q.screen.gt.xs ? '主页' : ''" class="q-ml-sm" aria-label="回到主页"

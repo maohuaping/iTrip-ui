@@ -18,7 +18,7 @@ import { customInstance } from '../../boot/orval-client';
 
 export const getDevTask = () => {
   /**
-   * @summary 新增
+   * @summary 新增开发任务
    */
   const saveDevTask = (saveDevTaskInParam: SaveDevTaskInParam) => {
     return customInstance<ResultDevTask>({

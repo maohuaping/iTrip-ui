@@ -440,8 +440,6 @@ export interface SaveDevTaskInParam {
   relatedRequirementDocs?: string;
   /** 系统分类 */
   systemCategory?: string;
-  /** 关联的文件 */
-  sysFileId?: string;
   /** 上传的文件列表 */
   uploadedFiles?: SysFile[];
   /** 需求的归属用户ID */
@@ -533,10 +531,10 @@ export interface DevTaskVO {
  */
 export interface IPageDevTaskVO {
   size?: number;
-  pages?: number;
-  total?: number;
-  current?: number;
   records?: DevTaskVO[];
+  current?: number;
+  total?: number;
+  pages?: number;
 }
 
 /**
@@ -610,10 +608,10 @@ export interface DevLogVO {
  */
 export interface IPageDevLogVO {
   size?: number;
-  pages?: number;
-  total?: number;
-  current?: number;
   records?: DevLogVO[];
+  current?: number;
+  total?: number;
+  pages?: number;
 }
 
 export interface ResultIPageDevLogVO {
