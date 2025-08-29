@@ -139,7 +139,7 @@
               <q-td :props="props" class="requirement-id-cell">
                 <div class="requirement-id-content cursor-pointer"
                   @click="copyToClipboard(props.row.requirementId || '')" title="点击复制需求编号">
-                  #{{ props.row.requirementId || '无编号' }}
+                  {{ props.row.requirementId || '无编号' }}
                 </div>
               </q-td>
             </template>
