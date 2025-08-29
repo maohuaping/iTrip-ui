@@ -225,8 +225,60 @@
                   <q-btn flat round dense color="primary" icon="call_split"
                     @click="handleSystemClick(props.row.systemCategory || 'other', props.row.requirementId || '')"
                     title="Git分支" class="action-btn" />
-                  <q-btn flat round dense color="secondary" icon="more_vert" @click="showTaskMenu(props.row)"
-                    title="更多操作" class="action-btn" />
+                  <q-btn flat round dense color="secondary" icon="more_vert" title="更多操作" class="action-btn">
+                    <q-menu>
+                      <q-list style="min-width: 200px">
+                        <q-item clickable v-close-popup @click="$q.notify(`查看任务详情: ${props.row.requirementName}`)">
+                          <q-item-section avatar>
+                            <q-icon name="info" color="blue" />
+                          </q-item-section>
+                          <q-item-section>
+                            <q-item-label>查看详情</q-item-label>
+                          </q-item-section>
+                        </q-item>
+
+                        <q-item clickable v-close-popup @click="$q.notify(`编辑任务: ${props.row.requirementName}`)">
+                          <q-item-section avatar>
+                            <q-icon name="edit" color="green" />
+                          </q-item-section>
+                          <q-item-section>
+                            <q-item-label>编辑</q-item-label>
+                          </q-item-section>
+                        </q-item>
+
+                        <q-separator />
+
+                        <q-item clickable v-close-popup @click="deleteTask(props.row)">
+                          <q-item-section avatar>
+                            <q-icon name="delete" color="negative" />
+                          </q-item-section>
+                          <q-item-section>
+                            <q-item-label class="text-negative">删除</q-item-label>
+                          </q-item-section>
+                        </q-item>
+
+                        <q-separator />
+
+                        <q-item clickable v-close-popup @click="$q.notify(`暂停任务: ${props.row.requirementName}`)">
+                          <q-item-section avatar>
+                            <q-icon name="cancel" color="warning" />
+                          </q-item-section>
+                          <q-item-section>
+                            <q-item-label>取消</q-item-label>
+                          </q-item-section>
+                        </q-item>
+
+                        <q-item clickable v-close-popup @click="$q.notify(`完成任务: ${props.row.requirementName}`)">
+                          <q-item-section avatar>
+                            <q-icon name="check_circle" color="positive" />
+                          </q-item-section>
+                          <q-item-section>
+                            <q-item-label>完成</q-item-label>
+                          </q-item-section>
+                        </q-item>
+                      </q-list>
+                    </q-menu>
+                  </q-btn>
                 </div>
               </q-td>
             </template>
@@ -1246,15 +1298,61 @@ const deleteTask = async (task: DevTaskVO): Promise<void> => {
 
 // 添加任务菜单方法 - 修复类型
 const showTaskMenu = (task: DevTaskVO) => {
+  console.log('showTaskMenu 被调用，任务:', task)
+
   $q.bottomSheet({
     message: `任务: ${task.requirementName || '未命名任务'} (ID: ${task.requirementId || 'N/A'})`,
     actions: [
-      { label: '查看详情', icon: 'info', handler: () => $q.notify(`查看任务详情: ${task.requirementName}`) },
-      { label: '编辑', icon: 'edit', handler: () => $q.notify(`编辑任务: ${task.requirementName}`) },
-      { label: '删除', icon: 'delete', color: 'negative', handler: () => deleteTask(task) },
-      { label: '取消', icon: 'cancel', color: 'warning', handler: () => $q.notify(`暂停任务: ${task.requirementName}`) },
-      { label: '完成', icon: 'check_circle', color: 'positive', handler: () => $q.notify(`完成任务: ${task.requirementName}`) },
+      {
+        label: '查看详情',
+        icon: 'info',
+        handler: () => {
+          console.log('查看详情被点击')
+          $q.notify(`查看任务详情: ${task.requirementName}`)
+        }
+      },
+      {
+        label: '编辑',
+        icon: 'edit',
+        handler: () => {
+          console.log('编辑被点击')
+          $q.notify(`编辑任务: ${task.requirementName}`)
+        }
+      },
+      {
+        label: '删除',
+        icon: 'delete',
+        color: 'negative',
+        handler: () => {
+          console.log('删除被点击，调用 deleteTask')
+          deleteTask(task)
+        }
+      },
+      {
+        label: '取消',
+        icon: 'cancel',
+        color: 'warning',
+        handler: () => {
+          console.log('取消被点击')
+          $q.notify(`暂停任务: ${task.requirementName}`)
+        }
+      },
+      {
+        label: '完成',
+        icon: 'check_circle',
+        color: 'positive',
+        handler: () => {
+          console.log('完成被点击')
+          $q.notify(`完成任务: ${task.requirementName}`)
+        }
+      },
     ]
+  }).onOk(() => {
+    console.log('BottomSheet onOk 被调用')
+  }).onCancel(() => {
+    console.log('BottomSheet onCancel 被调用')
+  }).onDismiss(() => {
+    console.log('BottomSheet onDismiss 被调用')
   });
 };
 
