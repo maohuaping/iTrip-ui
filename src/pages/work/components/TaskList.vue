@@ -1679,14 +1679,6 @@ const generateTaskId = (): void => {
 
   const taskId = `${year}${month}${day}${hours}${minutes}${seconds}`
   newTask.value.id = taskId
-
-  $q.notify({
-    message: `已生成任务编号: ${taskId}`,
-    color: 'positive',
-    position: 'top',
-    timeout: 1500,
-    icon: 'schedule'
-  })
 }
 
 defineOptions({
