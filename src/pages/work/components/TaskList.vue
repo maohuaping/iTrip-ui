@@ -224,8 +224,8 @@
                 <div class="action-buttons">
                   <q-btn flat round dense color="primary" icon="call_split"
                     @click="handleSystemClick(props.row.systemCategory || 'other', props.row.requirementId || '')"
-                    title="Git分支" class="action-btn" />
-                  <q-btn flat round dense color="secondary" icon="more_vert" title="更多操作" class="action-btn">
+                    title="Git分支" class="action-btn git-btn" />
+                  <q-btn flat round dense color="grey-7" icon="more_vert" title="更多操作" class="action-btn more-btn">
                     <q-menu>
                       <q-list style="min-width: 200px">
                         <q-item clickable v-close-popup @click="$q.notify(`查看任务详情: ${props.row.requirementName}`)">
@@ -2515,25 +2515,68 @@ defineOptions({
 
 /* 操作列优化 */
 .actions-cell {
-  padding: 12px 16px;
+  padding: 8px 12px;
   border-bottom: 1px solid var(--q-border-color);
   width: 10% !important;
-  min-width: 100px !important;
+  min-width: 90px !important;
 }
 
-/* 保持原有的操作按钮样式 */
+/* 优化操作按钮样式 */
 .action-buttons {
   display: flex;
-  gap: 8px;
+  gap: 4px;
   justify-content: center;
+  align-items: center;
 }
 
 .action-btn {
-  transition: transform 0.2s ease;
-}
+  transition: all 0.2s ease;
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  min-height: 32px;
+  border-radius: 6px;
 
-.action-btn:hover {
-  transform: scale(1.1);
+  /* 统一按钮尺寸和样式 */
+  :deep(.q-btn__content) {
+    padding: 0;
+    min-width: unset;
+    min-height: unset;
+  }
+
+  :deep(.q-icon) {
+    font-size: 18px;
+  }
+
+  /* 添加微妙的背景效果 */
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  /* Git分支按钮特殊样式 */
+  &.git-btn {
+    background-color: rgba(var(--q-primary-rgb), 0.1);
+
+    &:hover {
+      background-color: rgba(var(--q-primary-rgb), 0.15);
+      transform: translateY(-1px) scale(1.02);
+    }
+  }
+
+  /* 更多操作按钮特殊样式 */
+  &.more-btn {
+    background-color: rgba(107, 114, 128, 0.1);
+
+    &:hover {
+      background-color: rgba(107, 114, 128, 0.15);
+      transform: translateY(-1px) scale(1.02);
+    }
+  }
 }
 
 /* 响应式设计优化 */
@@ -2556,6 +2599,23 @@ defineOptions({
 
   .actions-cell {
     width: 10% !important;
+    min-width: 85px !important;
+    padding: 6px 8px;
+  }
+
+  .action-buttons {
+    gap: 2px;
+  }
+
+  .action-btn {
+    width: 28px;
+    height: 28px;
+    min-width: 28px;
+    min-height: 28px;
+
+    :deep(.q-icon) {
+      font-size: 16px;
+    }
   }
 }
 
@@ -2568,10 +2628,33 @@ defineOptions({
   .requirement-name-cell,
   .requirement-id-cell,
   .system-category-cell,
-  .documents-cell,
-  .actions-cell {
+  .documents-cell {
     width: auto !important;
     min-width: unset !important;
+  }
+
+  .actions-cell {
+    width: auto !important;
+    min-width: 75px !important;
+    padding: 4px 6px;
+
+    .action-buttons {
+      gap: 1px;
+      flex-direction: row;
+      align-items: center;
+    }
+
+    .action-btn {
+      width: 24px;
+      height: 24px;
+      min-width: 24px;
+      min-height: 24px;
+      border-radius: 4px;
+
+      :deep(.q-icon) {
+        font-size: 14px;
+      }
+    }
   }
 
   .requirement-name-cell {
