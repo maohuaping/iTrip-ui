@@ -320,7 +320,12 @@
             <q-select v-model="newTask.type" :options="taskTypes" label="任务类型" outlined dense class="light-field" />
           </div>
           <div class="col-12 col-sm-7">
-            <q-input v-model="newTask.id" label="任务编号" outlined dense class="light-field" />
+            <q-input v-model="newTask.id" label="任务编号" outlined dense class="light-field">
+              <template v-slot:append>
+                <q-btn flat round dense icon="schedule" color="primary" size="sm" @click="generateTaskId"
+                  title="生成时间戳编号 (yyyyMMddHHmmss)" class="generate-id-btn" />
+              </template>
+            </q-input>
           </div>
         </div>
 
@@ -1662,6 +1667,28 @@ const downloadFile = (file: SysFile): void => {
   }
 }
 
+// 生成任务编号方法
+const generateTaskId = (): void => {
+  const now = new Date()
+  const year = now.getFullYear()
+  const month = String(now.getMonth() + 1).padStart(2, '0')
+  const day = String(now.getDate()).padStart(2, '0')
+  const hours = String(now.getHours()).padStart(2, '0')
+  const minutes = String(now.getMinutes()).padStart(2, '0')
+  const seconds = String(now.getSeconds()).padStart(2, '0')
+
+  const taskId = `${year}${month}${day}${hours}${minutes}${seconds}`
+  newTask.value.id = taskId
+
+  $q.notify({
+    message: `已生成任务编号: ${taskId}`,
+    color: 'positive',
+    position: 'top',
+    timeout: 1500,
+    icon: 'schedule'
+  })
+}
+
 defineOptions({
   name: 'TaskList'
 })
@@ -2687,6 +2714,40 @@ defineOptions({
 
   &:hover {
     background: rgba($cursor-primary, 0.5);
+  }
+}
+
+/* 生成任务编号按钮样式 */
+.generate-id-btn {
+  transition: all 0.2s ease;
+
+  &:hover {
+    transform: scale(1.1);
+    background-color: rgba(var(--q-primary-rgb), 0.1);
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+
+  /* 添加微妙的脉冲动画 */
+  &:focus {
+    animation: gentle-pulse 0.6s ease-in-out;
+  }
+}
+
+/* 微妙的脉冲动画 */
+@keyframes gentle-pulse {
+
+  0%,
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(var(--q-primary-rgb), 0.4);
+  }
+
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 0 0 4px rgba(var(--q-primary-rgb), 0.1);
   }
 }
 
