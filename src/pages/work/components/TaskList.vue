@@ -186,7 +186,7 @@
                                   <div class="document-meta">
                                     <span class="document-type">{{ getFileTypeLabel(file.fileType || '') }}</span>
                                     <span v-if="file.createdAt" class="document-date">{{ formatDate(file.createdAt)
-                                      }}</span>
+                                    }}</span>
                                   </div>
                                 </div>
                                 <q-icon name="open_in_new" size="16px" color="grey-6" />
@@ -1434,38 +1434,27 @@ const handleDocumentClick = async (file: RelatedFile): Promise<void> => {
     return
   }
 
-  // 如果有文件URL，直接打开
-  if (file.fileUrl) {
-    window.open(file.fileUrl, '_blank')
-    return
-  }
-
-  // 否则使用本地路径打开
-  const fullPath = `${requirementBasePath}${file.fileName}`
-
+  // 优先使用API接口打开文件
   try {
-    const response = await fetch(`http://localhost:8090/open?path=${encodeURIComponent(fullPath)}`)
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`)
-    }
+    console.log('尝试使用API打开文件:', file.fileName)
 
-    const result = await response.json()
+    const response = await sysFileApi.openFile({ fileName: file.fileName })
 
-    if (result.success) {
+    if (response.data?.isOk && response.data.okData) {
       $q.notify({
-        message: `文件 "${file.fileName}" 已打开`,
+        message: `文件 "${file.fileName}" 已通过API打开`,
         type: 'positive'
       })
+      console.log('API打开文件成功:', response.data.okData)
     } else {
-      $q.notify({
-        message: result.message || '打开文件失败',
-        type: 'negative'
-      })
+      throw new Error(response.data?.failMsg || 'API打开文件失败')
     }
   } catch (error) {
-    console.error('无法打开文件:', error)
+    console.error('API打开文件失败:', error)
+
+    // API调用失败，只给提示
     $q.notify({
-      message: '无法打开文件，请确保本地服务已启动',
+      message: `无法打开文件 "${file.fileName}"，请稍后重试`,
       type: 'negative'
     })
   }
