@@ -20,6 +20,8 @@ export interface ResultString {
 export interface WorkLogEntity {
   /** 主键ID */
   id?: number;
+  /** 是否有效 */
+  isValid?: number;
   /** 创建人 */
   createdBy?: number;
   /** 创建时间 */
@@ -51,6 +53,8 @@ export interface ResultBoolean {
 export interface UserSettingsEntity {
   /** 主键ID */
   id?: number;
+  /** 是否有效 */
+  isValid?: number;
   /** 创建人 */
   createdBy?: number;
   /** 创建时间 */
@@ -73,6 +77,8 @@ export interface UserSettingsEntity {
 export interface SysConfig {
   /** 主键ID */
   id?: number;
+  /** 是否有效 */
+  isValid?: number;
   /** 创建人 */
   createdBy?: number;
   /** 创建时间 */
@@ -99,6 +105,8 @@ export interface SysConfig {
 export interface DailyTask {
   /** 主键ID */
   id?: number;
+  /** 是否有效 */
+  isValid?: number;
   /** 创建人 */
   createdBy?: number;
   /** 创建时间 */
@@ -166,6 +174,8 @@ export interface ResultSysUrl {
 export interface SysUrl {
   /** 主键ID */
   id?: number;
+  /** 是否有效 */
+  isValid?: number;
   /** 创建人 */
   createdBy?: number;
   /** 创建时间 */
@@ -264,6 +274,8 @@ export interface TodoVO {
 export interface TravelPlanEntity {
   /** 主键ID */
   id?: number;
+  /** 是否有效 */
+  isValid?: number;
   /** 创建人 */
   createdBy?: number;
   /** 创建时间 */
@@ -296,6 +308,8 @@ export interface TravelPlanEntity {
 export interface Todo {
   /** 主键ID */
   id?: number;
+  /** 是否有效 */
+  isValid?: number;
   /** 创建人 */
   createdBy?: number;
   /** 创建时间 */
@@ -340,6 +354,8 @@ export interface ResultSysFile {
 export interface SysFile {
   /** 主键ID */
   id?: number;
+  /** 是否有效 */
+  isValid?: number;
   /** 创建人 */
   createdBy?: number;
   /** 创建时间 */
@@ -392,6 +408,8 @@ export interface ScanIdentifyResponseVO {
 export interface DecisionAnalysis {
   /** 主键ID */
   id?: number;
+  /** 是否有效 */
+  isValid?: number;
   /** 创建人 */
   createdBy?: number;
   /** 创建时间 */
@@ -452,6 +470,8 @@ export interface SaveDevTaskInParam {
 export interface DevTask {
   /** 主键ID */
   id?: number;
+  /** 是否有效 */
+  isValid?: number;
   /** 创建人 */
   createdBy?: number;
   /** 创建时间 */
@@ -567,6 +587,8 @@ export interface ResultIPageDevTaskVO {
 export interface DevLog {
   /** 主键ID */
   id?: number;
+  /** 是否有效 */
+  isValid?: number;
   /** 创建人 */
   createdBy?: number;
   /** 创建时间 */

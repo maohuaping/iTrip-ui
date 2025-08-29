@@ -1177,6 +1177,73 @@ computed(() => {
   return 0;
 });
 
+// 删除任务方法
+const deleteTask = async (task: DevTaskVO): Promise<void> => {
+  try {
+    if (!task.id) {
+      $q.notify({
+        message: '任务ID不存在，无法删除',
+        type: 'negative',
+        position: 'top',
+        timeout: 2000
+      })
+      return
+    }
+
+    // 显示确认对话框
+    $q.dialog({
+      title: '确认删除',
+      message: `确定要删除任务 "${task.requirementName || '未命名任务'}" 吗？此操作不可撤销。`,
+      ok: {
+        label: '确认删除',
+        color: 'negative',
+        flat: false
+      },
+      cancel: {
+        label: '取消',
+        color: 'grey-7',
+        flat: true
+      },
+      persistent: true
+    }).onOk(async () => {
+      try {
+        // 调用删除API
+        const response = await devTaskApi.deleteDevTask(task.id!)
+
+        if (response.data?.isOk) {
+          $q.notify({
+            message: `任务 "${task.requirementName || '未命名任务'}" 删除成功`,
+            type: 'positive',
+            position: 'top',
+            timeout: 2000
+          })
+
+          // 重新获取任务列表
+          await fetchTasks()
+        } else {
+          throw new Error(response.data?.failMsg || '删除失败')
+        }
+      } catch (error) {
+        console.error('删除任务失败:', error)
+        $q.notify({
+          message: `删除失败: ${error instanceof Error ? error.message : '未知错误'}`,
+          type: 'negative',
+          position: 'top',
+          timeout: 3000
+        })
+      }
+    })
+  } catch (error) {
+    console.error('删除任务出错:', error)
+    $q.notify({
+      message: '删除任务出错',
+      type: 'negative',
+      position: 'top',
+      timeout: 2000
+    })
+  }
+}
+
 // 添加任务菜单方法 - 修复类型
 const showTaskMenu = (task: DevTaskVO) => {
   $q.bottomSheet({
@@ -1184,7 +1251,7 @@ const showTaskMenu = (task: DevTaskVO) => {
     actions: [
       { label: '查看详情', icon: 'info', handler: () => $q.notify(`查看任务详情: ${task.requirementName}`) },
       { label: '编辑', icon: 'edit', handler: () => $q.notify(`编辑任务: ${task.requirementName}`) },
-      { label: '删除', icon: 'delete', color: 'negative', handler: () => $q.notify(`删除任务: ${task.requirementName}`) },
+      { label: '删除', icon: 'delete', color: 'negative', handler: () => deleteTask(task) },
       { label: '取消', icon: 'cancel', color: 'warning', handler: () => $q.notify(`暂停任务: ${task.requirementName}`) },
       { label: '完成', icon: 'check_circle', color: 'positive', handler: () => $q.notify(`完成任务: ${task.requirementName}`) },
     ]

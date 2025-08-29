@@ -11,12 +11,22 @@ import type {
   ResultIPageDevTaskVO,
   ResultListDevTask,
   ResultListString,
+  ResultString,
   SaveDevTaskInParam,
 } from '../api.schemas';
 
 import { customInstance } from '../../boot/orval-client';
 
 export const getDevTask = () => {
+  /**
+   * @summary 删除开发任务
+   */
+  const deleteDevTask = (id: string) => {
+    return customInstance<ResultString>({
+      url: `/api/devTask/${id}/deleteDevTask`,
+      method: 'POST',
+    });
+  };
   /**
    * @summary 新增开发任务
    */
@@ -61,6 +71,7 @@ export const getDevTask = () => {
     return customInstance<ResultListDevTask>({ url: `/api/devTask/getMyDevTask`, method: 'GET' });
   };
   return {
+    deleteDevTask,
     saveDevTask,
     queryDevTask,
     getDevTaskById,
@@ -68,6 +79,9 @@ export const getDevTask = () => {
     getCurrentUserRequirement,
   };
 };
+export type DeleteDevTaskResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getDevTask>['deleteDevTask']>>
+>;
 export type SaveDevTaskResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getDevTask>['saveDevTask']>>
 >;
