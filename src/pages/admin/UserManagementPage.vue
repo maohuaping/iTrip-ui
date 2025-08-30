@@ -1083,6 +1083,19 @@ onMounted(() => {
     .search-section .search-controls {
         grid-template-columns: 1fr;
         gap: 12px;
+
+        // 修复搜索输入框在手机端的宽度问题
+        .search-input {
+            min-width: unset;
+            width: 100%;
+        }
+
+        // 修复筛选框在手机端的宽度问题
+        .status-filter,
+        .role-filter {
+            min-width: unset;
+            width: 100%;
+        }
     }
 
     .stats-content {
@@ -1117,6 +1130,17 @@ onMounted(() => {
     .stats-content {
         flex-direction: column;
         gap: 16px;
+    }
+
+    // 为更小的屏幕进一步优化
+    .search-section {
+        .search-card {
+            margin: 0 -4px; // 稍微扩展到边缘
+        }
+
+        .search-controls {
+            padding: 0 4px; // 内部稍微留点边距
+        }
     }
 }
 </style>
