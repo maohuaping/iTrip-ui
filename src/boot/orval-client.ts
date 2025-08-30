@@ -2,6 +2,7 @@ import { defineBoot } from '#q-app/wrappers';
 import type { AxiosRequestConfig, AxiosResponse } from 'axios';
 import { Notify, Loading } from 'quasar';
 import { api } from './axios'; // 导入现有的 api 实例
+import { useAuthStore } from 'src/stores/auth';
 
 // 为 Orval 创建自定义实例函数
 export const customInstance = <T>(config: AxiosRequestConfig): Promise<AxiosResponse<T>> => {
@@ -11,10 +12,9 @@ export const customInstance = <T>(config: AxiosRequestConfig): Promise<AxiosResp
     message: '加载中...'
   });
 
-  // 从localStorage或其他存储中获取token
-  // const token = localStorage.getItem('auth_token');
-  // 在登录注册没有做好之前，先尝试使用临时token
-  const token = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1aWQiOjE0LCJ1c2VybmFtZSI6IuWcn-aLqOm8oDIxMTUiLCJyb2xlIjoiUk9MRV9BRE1JTiIsImV4cCI6MTgxODAwNTYzMzMzNn0.iIVsnzmoWS5gex_J4209F6koVmAhHqdW_fmraLFJHCo';
+  // 从认证store中获取token
+  const authStore = useAuthStore();
+  const token = authStore.token;
 
   // 创建请求配置
   const requestConfig = {
@@ -38,9 +38,15 @@ export const customInstance = <T>(config: AxiosRequestConfig): Promise<AxiosResp
       if (error.response) {
         switch (error.response.status) {
           case 401:
+            // 清除认证信息并跳转到登录页
+            authStore.logout();
+            // 这里需要在浏览器环境中才能访问router
+            if (typeof window !== 'undefined') {
+              window.location.href = '/login';
+            }
             Notify.create({
               type: 'negative',
-              message: '请重新登录',
+              message: '登录已过期，请重新登录',
               position: 'top',
             });
             break;

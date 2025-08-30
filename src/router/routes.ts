@@ -3,29 +3,51 @@ import type { RouteRecordRaw } from 'vue-router';
 const routes: RouteRecordRaw[] = [
   {
     path: '/',
-    // component: () => import('layouts/MainLayout.vue'),
-    // children: [
-    //   { path: '', component: () => import('pages/IndexPage.vue') },
-    //   // 其他需要 MainLayout 的路由...
-    // ],
-    redirect: '/trip'
+    redirect: '/trip',
+    meta: { requiresAuth: true }
   },
   {
     path: '/trip',
     component: () => import('layouts/CleanLayout.vue'),
+    meta: { requiresAuth: true },
     children: [
-      { path: '', component: () => import('pages/trip/TripPage.vue') },
-      { path: 'plan', component: () => import('pages/trip/PlanTrip.vue') },
-      { path: 'detail/:id', component: () => import('pages/trip/TripDetailPage.vue') },
-      { path: 'edit/:id', component: () => import('pages/trip/TripEditPage.vue') },
-      { path: 'test', component: () => import('pages/trip/TripPageTest.vue') }
+      { 
+        path: '', 
+        component: () => import('pages/trip/TripPage.vue'),
+        meta: { requiresAuth: true }
+      },
+      { 
+        path: 'plan', 
+        component: () => import('pages/trip/PlanTrip.vue'),
+        meta: { requiresAuth: true }
+      },
+      { 
+        path: 'detail/:id', 
+        component: () => import('pages/trip/TripDetailPage.vue'),
+        meta: { requiresAuth: true }
+      },
+      { 
+        path: 'edit/:id', 
+        component: () => import('pages/trip/TripEditPage.vue'),
+        meta: { requiresAuth: true }
+      },
+      { 
+        path: 'test', 
+        component: () => import('pages/trip/TripPageTest.vue'),
+        meta: { requiresAuth: true }
+      }
     ]
   },
   {
     path: '/work',
     component: () => import('layouts/CleanLayout.vue'),
+    meta: { requiresAuth: true },
     children: [
-      { path: '', component: () => import('pages/work/WorkPage.vue') }
+      { 
+        path: '', 
+        component: () => import('pages/work/WorkPage.vue'),
+        meta: { requiresAuth: true }
+      }
     ]
   },
   {
@@ -36,29 +58,49 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/holiday',
     component: () => import('layouts/HolidayLayout.vue'),
+    meta: { requiresAuth: true },
     children: [
-      { path: '', component: () => import('pages/holiday/HolidayPage.vue') }
+      { 
+        path: '', 
+        component: () => import('pages/holiday/HolidayPage.vue'),
+        meta: { requiresAuth: true }
+      }
     ]
   },
   {
     path: '/todo',
     component: () => import('layouts/CleanLayout.vue'),
+    meta: { requiresAuth: true },
     children: [
-      { path: '', component: () => import('pages/todo/index.vue') }
+      { 
+        path: '', 
+        component: () => import('pages/todo/index.vue'),
+        meta: { requiresAuth: true }
+      }
     ]
   },
   {
     path: '/ai',
     component: () => import('layouts/CleanLayout.vue'),
+    meta: { requiresAuth: true },
     children: [
-      { path: '', component: () => import('pages/ai/AiPage.vue') }
+      { 
+        path: '', 
+        component: () => import('pages/ai/AiPage.vue'),
+        meta: { requiresAuth: true }
+      }
     ]
   },
   {
     path: '/tasks',
     component: () => import('layouts/CleanLayout.vue'),
+    meta: { requiresAuth: true },
     children: [
-      { path: '', component: () => import('pages/tasks/TaskManagement.vue') }
+      { 
+        path: '', 
+        component: () => import('pages/tasks/TaskManagement.vue'),
+        meta: { requiresAuth: true }
+      }
     ]
   },
 

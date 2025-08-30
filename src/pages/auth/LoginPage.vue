@@ -68,8 +68,13 @@
 <script setup lang="ts">
 import { ref, onUnmounted } from 'vue';
 import { useQuasar } from 'quasar';
+import { useRouter, useRoute } from 'vue-router';
+import { useAuthStore } from 'src/stores/auth';
 
 const $q = useQuasar();
+const router = useRouter();
+const route = useRoute();
+const authStore = useAuthStore();
 
 // 表单数据
 const email = ref('');
@@ -159,8 +164,20 @@ const handleEmailVerification = async () => {
     // TODO: 调用验证码验证API
     // const result = await api.verifyEmailCode(email.value, verificationCode.value);
 
-    // 模拟API调用
+    // 模拟API调用和返回的token
     await new Promise(resolve => setTimeout(resolve, 1000));
+
+    // 模拟从服务器返回的认证信息
+    const mockToken = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1aWQiOjE0LCJ1c2VybmFtZSI6IuWcn-aLqOm8oDIxMTUiLCJyb2xlIjoiUk9MRV9BRE1JTiIsImV4cCI6MTgxODAwNTYzMzMzNn0.iIVsnzmoWS5gex_J4209F6koVmAhHqdW_fmraLFJHCo';
+    const mockUserData = {
+      id: 1,
+      email: email.value,
+      username: email.value.split('@')[0],
+      role: 'USER'
+    };
+
+    // 保存认证信息到store
+    authStore.login(mockToken, mockUserData);
 
     $q.notify({
       type: 'positive',
@@ -168,8 +185,9 @@ const handleEmailVerification = async () => {
       position: 'top'
     });
 
-    // TODO: 处理登录成功逻辑，如跳转到主页
-    // router.push('/dashboard');
+    // 登录成功后重定向
+    const redirectPath = (route.query.redirect as string) || '/trip';
+    router.push(redirectPath);
 
   } catch (error) {
     $q.notify({
