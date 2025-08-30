@@ -103,6 +103,18 @@ const routes: RouteRecordRaw[] = [
       }
     ]
   },
+  {
+    path: '/admin',
+    component: () => import('layouts/CleanLayout.vue'),
+    meta: { requiresAuth: true },
+    children: [
+      { 
+        path: 'users', 
+        component: () => import('pages/admin/UserManagementPage.vue'),
+        meta: { requiresAuth: true }
+      }
+    ]
+  },
 
   // Always leave this as last one,
   // but you can also remove it
