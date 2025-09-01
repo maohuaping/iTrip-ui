@@ -112,6 +112,11 @@ const routes: RouteRecordRaw[] = [
         path: 'users', 
         component: () => import('pages/admin/UserManagementPage.vue'),
         meta: { requiresAuth: true }
+      },
+      { 
+        path: 'tree-util', 
+        component: () => import('pages/admin/TreeUtilPage.vue'),
+        meta: { requiresAuth: true }
       }
     ]
   },

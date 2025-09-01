@@ -1071,35 +1071,71 @@ onMounted(() => {
 // 响应式设计
 @media (max-width: 768px) {
     .user-management-container {
-        padding: 16px;
+        padding: 12px;
     }
 
-    .page-header .header-content {
-        flex-direction: column;
-        gap: 16px;
-        align-items: stretch;
-    }
+    .page-header {
+        margin-bottom: 16px;
 
-    .search-section .search-controls {
-        grid-template-columns: 1fr;
-        gap: 12px;
-
-        // 修复搜索输入框在手机端的宽度问题
-        .search-input {
-            min-width: unset;
-            width: 100%;
+        .header-content {
+            flex-direction: column;
+            gap: 16px;
+            align-items: stretch;
         }
 
-        // 修复筛选框在手机端的宽度问题
-        .status-filter,
-        .role-filter {
-            min-width: unset;
-            width: 100%;
+        .header-buttons {
+            flex-direction: row;
+            justify-content: stretch;
+            gap: 8px;
+
+            .export-btn,
+            .add-btn {
+                flex: 1;
+                height: 40px;
+                font-size: 14px;
+                padding: 0 16px;
+            }
+        }
+    }
+
+    .search-section {
+        margin-bottom: 16px;
+
+        .search-card {
+            border-radius: 12px;
+        }
+
+        .search-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            align-items: stretch;
+
+            .search-input {
+                min-width: unset !important;
+                width: 100%;
+                order: 1;
+            }
+
+            .status-filter,
+            .role-filter {
+                min-width: unset !important;
+                width: 100%;
+
+                &.status-filter {
+                    order: 2;
+                }
+
+                &.role-filter {
+                    order: 3;
+                }
+            }
         }
     }
 
     .stats-content {
         justify-content: space-around;
+        gap: 20px;
     }
 
     .user-dialog {
@@ -1111,35 +1147,180 @@ onMounted(() => {
 
     :deep(.q-table--horizontal-separator thead th),
     :deep(.q-table--horizontal-separator tbody td) {
-        padding: 8px 4px;
+        padding: 6px 4px;
         font-size: 12px;
+    }
+
+    // 优化表格在移动端的显示
+    .users-table {
+        :deep(.q-table__container) {
+            border-radius: 12px;
+        }
+
+        :deep(.q-table thead th) {
+            font-size: 12px;
+            padding: 8px 4px;
+        }
+
+        :deep(.q-table tbody td) {
+            padding: 8px 4px;
+            font-size: 12px;
+        }
+
+        .action-buttons {
+            flex-wrap: wrap;
+            gap: 2px;
+
+            .action-btn {
+                width: 28px;
+                height: 28px;
+                font-size: 14px;
+            }
+        }
     }
 }
 
 @media (max-width: 480px) {
     .user-management-container {
-        padding: 12px;
+        padding: 8px;
     }
 
-    .page-header .title-section {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 8px;
+    .page-header {
+        .title-section {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 8px;
+
+            .title-icon {
+                align-self: center;
+            }
+
+            .page-title {
+                font-size: 24px;
+                text-align: center;
+                width: 100%;
+            }
+
+            .page-subtitle {
+                text-align: center;
+                width: 100%;
+            }
+        }
+
+        .header-buttons {
+            flex-direction: column;
+            gap: 8px;
+
+            .export-btn,
+            .add-btn {
+                width: 100%;
+                height: 44px;
+                font-size: 15px;
+            }
+        }
+    }
+
+    .search-section {
+        margin-bottom: 12px;
+
+        .search-card {
+            margin: 0 -4px;
+            border-radius: 8px;
+        }
+
+        .search-controls {
+            padding: 16px 12px;
+            gap: 10px;
+        }
     }
 
     .stats-content {
         flex-direction: column;
-        gap: 16px;
+        gap: 12px;
+        padding: 16px 12px;
+
+        .stat-item {
+            .stat-value {
+                font-size: 18px;
+            }
+        }
     }
 
-    // 为更小的屏幕进一步优化
-    .search-section {
-        .search-card {
-            margin: 0 -4px; // 稍微扩展到边缘
+    .users-section {
+        .users-card {
+            border-radius: 8px;
+            margin: 0 -4px;
         }
 
-        .search-controls {
-            padding: 0 4px; // 内部稍微留点边距
+        .stats-bar {
+            padding: 16px 12px;
+        }
+
+        .batch-actions {
+            padding: 8px 12px;
+            flex-direction: column;
+            gap: 8px;
+            align-items: stretch;
+
+            .batch-info {
+                text-align: center;
+                font-size: 13px;
+            }
+
+            .batch-buttons {
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+        }
+    }
+
+    .users-table {
+        :deep(.q-table thead th) {
+            font-size: 11px;
+            padding: 6px 2px;
+        }
+
+        :deep(.q-table tbody td) {
+            padding: 6px 2px;
+            font-size: 11px;
+        }
+
+        .user-info {
+            .username {
+                font-size: 12px;
+            }
+
+            .email {
+                font-size: 10px;
+            }
+        }
+
+        .action-buttons {
+            justify-content: center;
+
+            .action-btn {
+                width: 24px;
+                height: 24px;
+                font-size: 12px;
+            }
+        }
+    }
+
+    .user-dialog {
+        width: 95vw;
+        margin: 0 auto;
+
+        .user-form {
+            .form-row {
+                gap: 8px;
+                margin-bottom: 12px;
+            }
+
+            .form-input {
+                :deep(.q-field__control) {
+                    min-height: 44px;
+                }
+            }
         }
     }
 }
