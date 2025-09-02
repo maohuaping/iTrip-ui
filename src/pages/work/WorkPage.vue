@@ -307,7 +307,7 @@
                   </q-item-section>
 
                   <!-- 滑动删除按钮 - 默认隐藏 -->
-                  <div v-show="swipeDeleteVisible[item.id] || false" class="swipe-delete-btn"
+                  <div v-show="item.id && (swipeDeleteVisible[item.id] || false)" class="swipe-delete-btn"
                     @click="confirmDelete(todoItems.indexOf(item))">
                     <q-icon name="delete" color="white" size="20px" />
                   </div>
@@ -681,14 +681,18 @@ const fetchUrlList = async () => {
 
     // 检查返回的数据格式是否符合预期
     if (response.data?.isOk && response.data.okData) {
-      // 确保每个URL都有id
+      // 确保每个URL都有id，并将isTop映射为isPinned
       urlList.value = response.data.okData.map(url => ({
         ...url,
-        id: url.id || 0 // 提供默认值
+        id: url.id || 0, // 提供默认值
+        isPinned: url.isTop === 1 // 将isTop转换为isPinned
       })) as UrlItem[]
     } else {
-      // 模拟数据用于测试
-      urlList.value = mockData.payload
+      // 模拟数据用于测试，也需要进行映射
+      urlList.value = mockData.payload.map(url => ({
+        ...url,
+        isPinned: url.isPinned || false // 确保isPinned字段存在
+      })) as UrlItem[]
     }
   } catch (error) {
     console.error('获取URL列表失败:', error)
@@ -697,8 +701,11 @@ const fetchUrlList = async () => {
       message: '获取链接列表失败',
       icon: 'error'
     })
-    // 测试用
-    urlList.value = mockData.payload
+    // 测试用，也需要进行映射
+    urlList.value = mockData.payload.map(url => ({
+      ...url,
+      isPinned: url.isPinned || false // 确保isPinned字段存在
+    })) as UrlItem[]
   } finally {
     loading.value = false
   }
@@ -707,14 +714,20 @@ const fetchUrlList = async () => {
 // 置顶链接
 const pinUrl = async (url: UrlItem) => {
   try {
+    // 调用API更新置顶状态
+    const updateParam = {
+      id: String(url.id),
+      isTop: 1 // 1表示置顶
+    }
+    
+    await urlApi.updateUrl(updateParam)
+
     // 本地更新状态
     const targetUrl = urlList.value.find(u => u.id === url.id)
     if (targetUrl) {
       targetUrl.isPinned = true
+      targetUrl.isTop = 1
     }
-
-    // 调用API更新（如果后端支持isPinned字段）
-    // 这里暂时只是本地状态更新，您可以根据后端API调整
 
     $q.notify({
       color: 'positive',
@@ -734,10 +747,19 @@ const pinUrl = async (url: UrlItem) => {
 // 取消置顶
 const unpinUrl = async (url: UrlItem) => {
   try {
+    // 调用API更新置顶状态
+    const updateParam = {
+      id: String(url.id),
+      isTop: 0 // 0表示不置顶
+    }
+    
+    await urlApi.updateUrl(updateParam)
+
     // 本地更新状态
     const targetUrl = urlList.value.find(u => u.id === url.id)
     if (targetUrl) {
       targetUrl.isPinned = false
+      targetUrl.isTop = 0
     }
 
     $q.notify({

@@ -8,9 +8,10 @@
 import type {
   GetUrlByConditionInParam,
   ResultListString,
-  ResultListSysUrl,
+  ResultListSysUrlVO,
   ResultString,
   ResultSysUrl,
+  ResultSysUrlVO,
   SaveUrlInParam,
   UpdateUrlCategoryInParam,
   UpdateUrlInParam,
@@ -29,7 +30,7 @@ export const getUrl = () => {
    * @summary 修改URL
    */
   const updateUrl = (updateUrlInParam: UpdateUrlInParam) => {
-    return customInstance<ResultSysUrl>({
+    return customInstance<ResultSysUrlVO>({
       url: `/api/url/updateUrl`,
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -62,7 +63,7 @@ export const getUrl = () => {
    * @summary 根据条件来查询URL
    */
   const getUrlByCondition = (getUrlByConditionInParam: GetUrlByConditionInParam) => {
-    return customInstance<ResultListSysUrl>({
+    return customInstance<ResultListSysUrlVO>({
       url: `/api/url/getUrlByCondition`,
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

@@ -162,6 +162,50 @@ export interface UpdateUrlInParam {
   isTop?: number;
 }
 
+export interface ResultSysUrlVO {
+  /** 是否成功 */
+  isOk?: boolean;
+  okData?: SysUrlVO;
+  /** 失败消息 */
+  failMsg?: string;
+}
+
+/**
+ * 成功数据
+ */
+export interface SysUrlVO {
+  /** 主键ID */
+  id?: string;
+  /** URL所属分组 */
+  tag?: string;
+  /** URL名称 */
+  name?: string;
+  /** URL地址 */
+  address?: string;
+  /** 用户ID */
+  userId?: string;
+  /** 是否置顶 */
+  isTop?: number;
+}
+
+export interface UpdateUrlCategoryInParam {
+  /** 旧分类名称 */
+  oldTag: string;
+  /** 新分类名称 */
+  newTag: string;
+}
+
+export interface SaveUrlInParam {
+  /** URL所属分组 */
+  tag?: string;
+  /** URL名称 */
+  name?: string;
+  /** URL地址 */
+  address?: string;
+  /** 是否置顶 */
+  isTop?: number;
+}
+
 export interface ResultSysUrl {
   /** 是否成功 */
   isOk?: boolean;
@@ -198,24 +242,6 @@ export interface SysUrl {
   isTop?: number;
 }
 
-export interface UpdateUrlCategoryInParam {
-  /** 旧分类名称 */
-  oldTag: string;
-  /** 新分类名称 */
-  newTag: string;
-}
-
-export interface SaveUrlInParam {
-  /** URL所属分组 */
-  tag?: string;
-  /** URL名称 */
-  name?: string;
-  /** URL地址 */
-  address?: string;
-  /** 是否置顶 */
-  isTop?: number;
-}
-
 export interface GetUrlByConditionInParam {
   /** URL所属分组 */
   tag?: string;
@@ -227,11 +253,11 @@ export interface GetUrlByConditionInParam {
   userId?: string;
 }
 
-export interface ResultListSysUrl {
+export interface ResultListSysUrlVO {
   /** 是否成功 */
   isOk?: boolean;
   /** 成功数据 */
-  okData?: SysUrl[];
+  okData?: SysUrlVO[];
   /** 失败消息 */
   failMsg?: string;
 }
@@ -554,10 +580,10 @@ export interface DevTaskVO {
  */
 export interface IPageDevTaskVO {
   size?: number;
-  pages?: number;
-  total?: number;
-  current?: number;
   records?: DevTaskVO[];
+  current?: number;
+  total?: number;
+  pages?: number;
 }
 
 /**
@@ -633,10 +659,10 @@ export interface DevLogVO {
  */
 export interface IPageDevLogVO {
   size?: number;
-  pages?: number;
-  total?: number;
-  current?: number;
   records?: DevLogVO[];
+  current?: number;
+  total?: number;
+  pages?: number;
 }
 
 export interface ResultIPageDevLogVO {
