@@ -8,9 +8,8 @@
 import type {
   MoveToFinalDirectoryParams,
   OpenFileParams,
+  ResultSaveSysFileVO,
   ResultString,
-  ResultSysFile,
-  SysFile,
   UploadFileBody,
 } from '../api.schemas';
 
@@ -18,28 +17,17 @@ import { customInstance } from '../../boot/orval-client';
 
 export const getSysFile = () => {
   /**
-   * @summary 上传文件至指定目录
+   * @summary 上传文件并保存
    */
   const uploadFile = (uploadFileBody: UploadFileBody) => {
     const formData = new FormData();
     formData.append(`file`, uploadFileBody.file);
 
-    return customInstance<ResultSysFile>({
+    return customInstance<ResultSaveSysFileVO>({
       url: `/api/sysFile/uploadFile`,
       method: 'POST',
       headers: { 'Content-Type': 'multipart/form-data' },
       data: formData,
-    });
-  };
-  /**
-   * @summary 新增系统文件
-   */
-  const saveSysFile = (sysFile: SysFile) => {
-    return customInstance<ResultSysFile>({
-      url: `/api/sysFile/saveSysFile`,
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      data: sysFile,
     });
   };
   /**
@@ -58,13 +46,10 @@ export const getSysFile = () => {
   const openFile = (params: OpenFileParams) => {
     return customInstance<ResultString>({ url: `/api/sysFile/openFile`, method: 'GET', params });
   };
-  return { uploadFile, saveSysFile, moveToFinalDirectory, openFile };
+  return { uploadFile, moveToFinalDirectory, openFile };
 };
 export type UploadFileResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getSysFile>['uploadFile']>>
->;
-export type SaveSysFileResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getSysFile>['saveSysFile']>>
 >;
 export type MoveToFinalDirectoryResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getSysFile>['moveToFinalDirectory']>>

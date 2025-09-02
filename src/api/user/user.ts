@@ -5,7 +5,7 @@
  * 前端提供UI，后端提供API
  * OpenAPI spec version: 1.0
  */
-import type { ResultBoolean, ResultUserResponseVO } from '../api.schemas';
+import type { ResultBoolean, ResultGetAllUserVO, ResultListGetAllUserVO } from '../api.schemas';
 
 import { customInstance } from '../../boot/orval-client';
 
@@ -17,14 +17,23 @@ export const getUser = () => {
     return customInstance<ResultBoolean>({ url: `/api/user/logout`, method: 'POST' });
   };
   /**
+   * @summary 查询用户
+   */
+  const queryUser = () => {
+    return customInstance<ResultListGetAllUserVO>({ url: `/api/user/queryUser`, method: 'GET' });
+  };
+  /**
    * @summary 获取当前用户信息
    */
   const getCurrentUser = () => {
-    return customInstance<ResultUserResponseVO>({ url: `/api/user/me`, method: 'GET' });
+    return customInstance<ResultGetAllUserVO>({ url: `/api/user/me`, method: 'GET' });
   };
-  return { logout, getCurrentUser };
+  return { logout, queryUser, getCurrentUser };
 };
 export type LogoutResult = NonNullable<Awaited<ReturnType<ReturnType<typeof getUser>['logout']>>>;
+export type QueryUserResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getUser>['queryUser']>>
+>;
 export type GetCurrentUserResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getUser>['getCurrentUser']>>
 >;

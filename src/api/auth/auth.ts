@@ -6,12 +6,13 @@
  * OpenAPI spec version: 1.0
  */
 import type {
+  LoginInParam,
   RegisterRequestDTO,
   ResultBoolean,
+  ResultLoginVO,
   ResultString,
-  ResultUserLoginResponseVO,
+  ResultUserLoginVO,
   UpdatePasswordRequestDTO,
-  UserLoginRequestDTO,
   VerifyCodeRequestDTO,
 } from '../api.schemas';
 
@@ -43,12 +44,23 @@ export const getAuth = () => {
   /**
    * @summary 登录
    */
-  const login = (userLoginRequestDTO: UserLoginRequestDTO) => {
-    return customInstance<ResultUserLoginResponseVO>({
+  const login = (loginInParam: LoginInParam) => {
+    return customInstance<ResultLoginVO>({
       url: `/api/auth/login`,
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      data: userLoginRequestDTO,
+      data: loginInParam,
+    });
+  };
+  /**
+   * @summary 验证码确认登录/注册
+   */
+  const confirmVerifyCode = (registerRequestDTO: RegisterRequestDTO) => {
+    return customInstance<ResultUserLoginVO>({
+      url: `/api/auth/confirm`,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      data: registerRequestDTO,
     });
   };
   /**
@@ -68,7 +80,7 @@ export const getAuth = () => {
   const getVapidPublicKey = () => {
     return customInstance<ResultString>({ url: `/api/auth/vapidPublicKey`, method: 'GET' });
   };
-  return { register, updatePassword, login, sendVerifyCode, getVapidPublicKey };
+  return { register, updatePassword, login, confirmVerifyCode, sendVerifyCode, getVapidPublicKey };
 };
 export type RegisterResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getAuth>['register']>>
@@ -77,6 +89,9 @@ export type UpdatePasswordResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getAuth>['updatePassword']>>
 >;
 export type LoginResult = NonNullable<Awaited<ReturnType<ReturnType<typeof getAuth>['login']>>>;
+export type ConfirmVerifyCodeResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getAuth>['confirmVerifyCode']>>
+>;
 export type SendVerifyCodeResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getAuth>['sendVerifyCode']>>
 >;

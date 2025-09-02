@@ -158,6 +158,8 @@ export interface UpdateUrlInParam {
   name?: string;
   /** URL地址 */
   address?: string;
+  /** 是否置顶 */
+  isTop?: number;
 }
 
 export interface ResultSysUrl {
@@ -192,6 +194,8 @@ export interface SysUrl {
   address?: string;
   /** 用户ID */
   userId?: number;
+  /** 是否置顶 */
+  isTop?: number;
 }
 
 export interface UpdateUrlCategoryInParam {
@@ -208,6 +212,8 @@ export interface SaveUrlInParam {
   name?: string;
   /** URL地址 */
   address?: string;
+  /** 是否置顶 */
+  isTop?: number;
 }
 
 export interface GetUrlByConditionInParam {
@@ -340,38 +346,28 @@ export interface ResultTodo {
   failMsg?: string;
 }
 
-export interface ResultSysFile {
+export interface ResultSaveSysFileVO {
   /** 是否成功 */
   isOk?: boolean;
-  okData?: SysFile;
+  okData?: SaveSysFileVO;
   /** 失败消息 */
   failMsg?: string;
 }
 
 /**
- * 系统文件信息
+ * 成功数据
  */
-export interface SysFile {
+export interface SaveSysFileVO {
   /** 主键ID */
-  id?: number;
-  /** 是否有效 */
-  isValid?: number;
-  /** 创建人 */
-  createdBy?: number;
-  /** 创建时间 */
-  createdAt?: string;
-  /** 更新人 */
-  updatedBy?: number;
-  /** 更新时间 */
-  updatedAt?: string;
+  id?: string;
   /** 文件类型 */
   fileType?: string;
   /** 文件名称 */
   fileName?: string;
   /** 文件地址 */
   fileUrl?: string;
-  /** 需求ID */
-  requirementId?: number;
+  /** 开发任务ID */
+  devTaskId?: string;
 }
 
 /**
@@ -449,19 +445,11 @@ export interface SubscriptionRequestDTO {
   expirationTime?: number;
 }
 
-export interface SaveDevTaskInParam {
-  /** 需求编号 */
-  requirementId?: string;
-  /** 需求名称 */
-  requirementName?: string;
-  /** 需求关联的需求文档名称。如果关联多个需求文档，会以;进行分隔 */
-  relatedRequirementDocs?: string;
-  /** 系统分类 */
-  systemCategory?: string;
-  /** 上传的文件列表 */
-  uploadedFiles?: SysFile[];
-  /** 需求的归属用户ID */
-  userId?: number;
+export interface UpdateDevTaskInParam {
+  /** 任务id */
+  id?: string;
+  /** 是否置顶 */
+  isTop?: number;
 }
 
 /**
@@ -486,8 +474,6 @@ export interface DevTask {
   requirementName?: string;
   /** 需求关联的需求文档名称。如果关联多个需求文档，会以;进行分隔 */
   relatedRequirementDocs?: string;
-  /** 关联的文件 */
-  sysFileId?: string;
   /** 系统分类 */
   systemCategory?: string;
   /** 需求的归属用户ID */
@@ -500,6 +486,21 @@ export interface ResultDevTask {
   okData?: DevTask;
   /** 失败消息 */
   failMsg?: string;
+}
+
+export interface SaveDevTaskInParam {
+  /** 需求编号 */
+  requirementId?: string;
+  /** 需求名称 */
+  requirementName?: string;
+  /** 需求关联的需求文档名称。如果关联多个需求文档，会以;进行分隔 */
+  relatedRequirementDocs?: string;
+  /** 系统分类 */
+  systemCategory?: string;
+  /** 上传的文件列表 */
+  uploadedFilesId?: string[];
+  /** 需求的归属用户ID */
+  userId?: number;
 }
 
 /**
@@ -544,6 +545,8 @@ export interface DevTaskVO {
   systemCategoryDesc?: string;
   /** 需求的归属用户ID */
   userId?: number;
+  /** 关联的文件 */
+  sysFileId?: string;
 }
 
 /**
@@ -551,10 +554,10 @@ export interface DevTaskVO {
  */
 export interface IPageDevTaskVO {
   size?: number;
-  records?: DevTaskVO[];
-  current?: number;
-  total?: number;
   pages?: number;
+  total?: number;
+  current?: number;
+  records?: DevTaskVO[];
 }
 
 /**
@@ -630,10 +633,10 @@ export interface DevLogVO {
  */
 export interface IPageDevLogVO {
   size?: number;
-  records?: DevLogVO[];
-  current?: number;
-  total?: number;
   pages?: number;
+  total?: number;
+  current?: number;
+  records?: DevLogVO[];
 }
 
 export interface ResultIPageDevLogVO {
@@ -642,6 +645,64 @@ export interface ResultIPageDevLogVO {
   okData?: IPageDevLogVO;
   /** 失败消息 */
   failMsg?: string;
+}
+
+/**
+ * 获取表定义信息请求参数
+ */
+export interface GetTableInfoInParam {
+  /** 表名 */
+  tableName: string;
+  /** 模式名（可选） */
+  schemaName?: string;
+}
+
+export interface ResultTableInfoVO {
+  /** 是否成功 */
+  isOk?: boolean;
+  okData?: TableInfoVO;
+  /** 失败消息 */
+  failMsg?: string;
+}
+
+/**
+ * 表字段信息
+ */
+export interface TableColumnInfoVO {
+  /** 字段名 */
+  columnName?: string;
+  /** 数据类型 */
+  dataType?: string;
+  /** 是否允许为空 */
+  isNullable?: string;
+  /** 默认值 */
+  columnDefault?: string;
+  /** 字段注释 */
+  columnComment?: string;
+  /** 字符最大长度 */
+  characterMaximumLength?: number;
+  /** 数字精度 */
+  numericPrecision?: number;
+  /** 数字小数位数 */
+  numericScale?: number;
+  /** 字段序号 */
+  ordinalPosition?: number;
+}
+
+/**
+ * 表定义信息
+ */
+export interface TableInfoVO {
+  /** 表名 */
+  tableName?: string;
+  /** 模式名 */
+  schemaName?: string;
+  /** 表注释 */
+  tableComment?: string;
+  /** 表类型 */
+  tableType?: string;
+  /** 字段信息列表 */
+  columns?: TableColumnInfoVO[];
 }
 
 export interface RegisterRequestDTO {
@@ -664,15 +725,37 @@ export interface UpdatePasswordRequestDTO {
   newPwd: string;
 }
 
-export interface UserLoginRequestDTO {
-  email: string;
-  password: string;
+export interface LoginInParam {
+  /** 邮箱 */
+  email?: string;
 }
 
-export interface ResultUserLoginResponseVO {
+/**
+ * 用户信息
+ */
+export interface GetAllUserVO {
+  id?: number;
+  username?: string;
+  email?: string;
+  role?: string;
+  avatarUrl?: string;
+}
+
+/**
+ * 登录响应
+ */
+export interface LoginVO {
+  /** 状态类型：SEND_CODE - 已发送验证码，LOGIN_SUCCESS - 登录成功 */
+  status?: string;
+  /** 提示消息 */
+  message?: string;
+  loginInfo?: UserLoginVO;
+}
+
+export interface ResultLoginVO {
   /** 是否成功 */
   isOk?: boolean;
-  okData?: UserLoginResponseVO;
+  okData?: LoginVO;
   /** 失败消息 */
   failMsg?: string;
 }
@@ -680,21 +763,18 @@ export interface ResultUserLoginResponseVO {
 /**
  * 用户登录响应
  */
-export interface UserLoginResponseVO {
+export interface UserLoginVO {
   /** 用户token */
   token?: string;
-  user?: UserResponseVO;
+  user?: GetAllUserVO;
 }
 
-/**
- * 用户信息
- */
-export interface UserResponseVO {
-  id?: number;
-  username?: string;
-  email?: string;
-  role?: string;
-  avatarUrl?: string;
+export interface ResultUserLoginVO {
+  /** 是否成功 */
+  isOk?: boolean;
+  okData?: UserLoginVO;
+  /** 失败消息 */
+  failMsg?: string;
 }
 
 export interface VerifyCodeRequestDTO {
@@ -760,10 +840,19 @@ export interface ResultUserSettingsEntity {
   failMsg?: string;
 }
 
-export interface ResultUserResponseVO {
+export interface ResultListGetAllUserVO {
   /** 是否成功 */
   isOk?: boolean;
-  okData?: UserResponseVO;
+  /** 成功数据 */
+  okData?: GetAllUserVO[];
+  /** 失败消息 */
+  failMsg?: string;
+}
+
+export interface ResultGetAllUserVO {
+  /** 是否成功 */
+  isOk?: boolean;
+  okData?: GetAllUserVO;
   /** 失败消息 */
   failMsg?: string;
 }
@@ -867,6 +956,20 @@ export interface ResultListDevTask {
   isOk?: boolean;
   /** 成功数据 */
   okData?: DevTask[];
+  /** 失败消息 */
+  failMsg?: string;
+}
+
+/**
+ * 成功数据
+ */
+export type ResultMapStringObjectOkData = { [key: string]: { [key: string]: unknown } };
+
+export interface ResultMapStringObject {
+  /** 是否成功 */
+  isOk?: boolean;
+  /** 成功数据 */
+  okData?: ResultMapStringObjectOkData;
   /** 失败消息 */
   failMsg?: string;
 }
@@ -1217,6 +1320,10 @@ export type GetSignedUrlParams = {
 
 export type GetPublicUrlParams = {
   objectName: string;
+};
+
+export type GetAllTablesParams = {
+  schemaName?: string;
 };
 
 export type OptimizePromptParams = {

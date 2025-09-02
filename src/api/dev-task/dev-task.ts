@@ -11,8 +11,10 @@ import type {
   ResultIPageDevTaskVO,
   ResultListDevTask,
   ResultListString,
+  ResultMapStringObject,
   ResultString,
   SaveDevTaskInParam,
+  UpdateDevTaskInParam,
 } from '../api.schemas';
 
 import { customInstance } from '../../boot/orval-client';
@@ -25,6 +27,17 @@ export const getDevTask = () => {
     return customInstance<ResultString>({
       url: `/api/devTask/${id}/deleteDevTask`,
       method: 'POST',
+    });
+  };
+  /**
+   * @summary 更新开发任务
+   */
+  const updateDevTask = (updateDevTaskInParam: UpdateDevTaskInParam) => {
+    return customInstance<ResultDevTask>({
+      url: `/api/devTask/updateDevTask`,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      data: updateDevTaskInParam,
     });
   };
   /**
@@ -70,17 +83,35 @@ export const getDevTask = () => {
   const getCurrentUserRequirement = () => {
     return customInstance<ResultListDevTask>({ url: `/api/devTask/getMyDevTask`, method: 'GET' });
   };
+  /**
+   * @summary 备份DevTask表数据
+   */
+  const backupDevTask = () => {
+    return customInstance<ResultMapStringObject>({ url: `/api/devTask/backup`, method: 'GET' });
+  };
+  /**
+   * @summary 下载DevTask备份文件
+   */
+  const downloadBackup = () => {
+    return customInstance<void>({ url: `/api/devTask/backup/download`, method: 'GET' });
+  };
   return {
     deleteDevTask,
+    updateDevTask,
     saveDevTask,
     queryDevTask,
     getDevTaskById,
     getAllDevTaskNames,
     getCurrentUserRequirement,
+    backupDevTask,
+    downloadBackup,
   };
 };
 export type DeleteDevTaskResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getDevTask>['deleteDevTask']>>
+>;
+export type UpdateDevTaskResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getDevTask>['updateDevTask']>>
 >;
 export type SaveDevTaskResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getDevTask>['saveDevTask']>>
@@ -96,4 +127,10 @@ export type GetAllDevTaskNamesResult = NonNullable<
 >;
 export type GetCurrentUserRequirementResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getDevTask>['getCurrentUserRequirement']>>
+>;
+export type BackupDevTaskResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getDevTask>['backupDevTask']>>
+>;
+export type DownloadBackupResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getDevTask>['downloadBackup']>>
 >;
