@@ -251,74 +251,139 @@
       </q-card>
 
       <!-- Signal Parameters Data Table -->
-      <q-card class="q-pa-md">
-        <q-card-section>
-          <div class="row items-center justify-between">
-            <div class="text-h6">所有信号参数记录</div>
+      <q-card flat bordered class="signal-table-card q-mb-lg">
+        <q-card-section class="q-pa-sm">
+          <div class="row justify-between items-center q-mb-md q-pa-sm">
+            <div class="text-h6 text-weight-bold">
+              <q-icon name="signal_cellular_alt" size="28px" class="q-mr-sm" />
+              所有信号参数记录
+            </div>
             <q-btn
-              label="刷新数据"
               color="primary"
-              outline
               icon="refresh"
+              label="刷新数据"
+              dense
+              unelevated
               :loading="loadingTable"
               @click="loadSignalParams"
             />
           </div>
-        </q-card-section>
-        
-        <q-card-section>
+
           <q-table
             :rows="signalParamsList"
-            :columns="columns"
+            :columns="tableColumns"
             :loading="loadingTable"
             row-key="id"
             flat
             bordered
-            :pagination="{ rowsPerPage: 10 }"
-            class="signal-params-table"
+            class="custom-signal-table"
+            v-model:pagination="tablePagination"
+            :rows-per-page-options="[5, 10, 20, 50]"
+            :rows-per-page-label="'每页条数'"
+            :no-data-label="'暂无数据'"
+            :loading-label="'加载中...'"
+            :pagination-label="getPaginationLabel"
+            binary-state-sort
           >
+            <!-- 自定义列模板 - ID -->
+            <template v-slot:body-cell-id="props">
+              <q-td :props="props" class="id-cell">
+                <div class="id-content cursor-pointer" @click="copyToClipboard(props.value?.toString() || '')" 
+                     title="点击复制ID">
+                  {{ props.value }}
+                </div>
+              </q-td>
+            </template>
+
+            <!-- 自定义列模板 - 图片 -->
             <template v-slot:body-cell-imageUrl="props">
-              <q-td :props="props">
+              <q-td :props="props" class="image-cell">
                 <q-btn
                   v-if="props.value"
                   flat
+                  round
                   dense
-                  icon="image"
                   color="primary"
+                  icon="image"
+                  size="sm"
                   @click="viewImage(props.value)"
+                  class="image-btn"
                 >
                   <q-tooltip>查看图片</q-tooltip>
                 </q-btn>
-                <span v-else>-</span>
+                <span v-else class="text-grey-5">无</span>
               </q-td>
             </template>
             
+            <!-- 自定义列模板 - 准确度 -->
             <template v-slot:body-cell-accuracy="props">
-              <q-td :props="props">
+              <q-td :props="props" class="accuracy-cell">
                 <q-chip
                   :color="props.value >= 90 ? 'green' : props.value >= 70 ? 'orange' : 'red'"
                   text-color="white"
                   size="sm"
+                  class="accuracy-chip"
                 >
                   {{ props.value }}%
                 </q-chip>
               </q-td>
             </template>
-            
-            <template v-slot:body-cell-actions="props">
-              <q-td :props="props">
+
+            <!-- 自定义列模板 - 邻区信息 -->
+            <template v-slot:body-cell-neighborInfo="props">
+              <q-td :props="props" class="neighbor-cell">
                 <q-btn
                   flat
+                  round
                   dense
-                  icon="delete"
-                  color="negative"
-                  @click="deleteSignalParam(props.row)"
+                  color="info"
+                  icon="info"
+                  size="sm"
+                  class="neighbor-btn"
                 >
-                  <q-tooltip>删除记录</q-tooltip>
+                  <q-tooltip class="neighbor-tooltip">
+                    <div class="neighbor-details">
+                      <div><strong>EARFCN-NBR:</strong> {{ props.row.earfcnNbr || '-' }}</div>
+                      <div><strong>PCI-NBR:</strong> {{ props.row.pciNbr || '-' }}</div>
+                      <div><strong>RSRP-NBR:</strong> {{ props.row.rsrpNbr || '-' }}</div>
+                    </div>
+                  </q-tooltip>
                 </q-btn>
               </q-td>
             </template>
             
+            <!-- 自定义列模板 - 操作 -->
+            <template v-slot:body-cell-actions="props">
+              <q-td :props="props" class="actions-cell">
+                <div class="action-buttons">
+                  <q-btn
+                    flat
+                    round
+                    dense
+                    color="negative"
+                    icon="delete"
+                    size="sm"
+                    @click="deleteSignalParam(props.row)"
+                    class="action-btn delete-btn"
+                  >
+                    <q-tooltip>删除记录</q-tooltip>
+                  </q-btn>
+                </div>
+              </q-td>
+            </template>
+            
+            <!-- 空状态 -->
+            <template v-slot:no-data>
+              <div class="full-width flex justify-center items-center" style="min-height: 300px; padding: 60px 20px;">
+                <div class="text-center">
+                  <q-icon name="signal_cellular_alt" size="64px" color="grey-5" class="q-mb-md" />
+                  <div class="text-h6 text-grey-6 q-mb-sm">暂无信号参数数据</div>
+                  <div class="text-body2 text-grey-5">上传图片来识别射频信号参数</div>
+                </div>
+              </div>
+            </template>
+
+            <!-- 加载状态 -->
             <template v-slot:loading>
               <q-inner-loading showing color="primary" />
             </template>
@@ -365,105 +430,135 @@ const selectedImageUrl = ref('');
 
 const rfSignalApi = getRfSignalParams();
 
-// Table columns configuration
-const columns = [
+// 表格分页配置
+const tablePagination = ref({
+  page: 1,
+  rowsPerPage: 10,
+  rowsNumber: 0
+});
+
+// 表格列定义
+const tableColumns = [
   {
     name: 'id',
     label: 'ID',
     field: 'id',
-    align: 'left',
+    align: 'left' as const,
     sortable: true,
-    style: 'width: 120px'
+    style: 'width: 120px; min-width: 120px'
   },
   {
     name: 'tac',
     label: 'TAC',
     field: 'tac',
-    align: 'center',
-    sortable: true
+    align: 'center' as const,
+    sortable: true,
+    style: 'width: 100px'
   },
   {
     name: 'plmn',
     label: 'PLMN',
     field: 'plmn',
-    align: 'center',
-    sortable: true
+    align: 'center' as const,
+    sortable: true,
+    style: 'width: 100px'
   },
   {
     name: 'workMode',
     label: '工作模式',
     field: 'workMode',
-    align: 'center',
-    sortable: true
+    align: 'center' as const,
+    sortable: true,
+    style: 'width: 100px'
   },
   {
     name: 'pci',
     label: 'PCI',
     field: 'pci',
-    align: 'center',
-    sortable: true
+    align: 'center' as const,
+    sortable: true,
+    style: 'width: 80px'
   },
   {
     name: 'rsrq',
     label: 'RSRQ',
     field: 'rsrq',
-    align: 'center',
-    sortable: true
+    align: 'center' as const,
+    sortable: true,
+    style: 'width: 80px'
   },
   {
     name: 'rssi',
     label: 'RSSI',
     field: 'rssi',
-    align: 'center',
-    sortable: true
+    align: 'center' as const,
+    sortable: true,
+    style: 'width: 80px'
   },
   {
     name: 'ssbRsrp',
     label: 'SSB-RSRP',
     field: 'ssbRsrp',
-    align: 'center',
-    sortable: true
+    align: 'center' as const,
+    sortable: true,
+    style: 'width: 100px'
   },
   {
     name: 'ssbSinr',
     label: 'SSB-SINR',
     field: 'ssbSinr',
-    align: 'center',
-    sortable: true
+    align: 'center' as const,
+    sortable: true,
+    style: 'width: 100px'
   },
   {
     name: 'nrBand',
     label: 'NR频段',
     field: 'nrBand',
-    align: 'center',
-    sortable: true
+    align: 'center' as const,
+    sortable: true,
+    style: 'width: 100px'
   },
   {
     name: 'accuracy',
     label: '准确度',
     field: 'accuracy',
-    align: 'center',
-    sortable: true
+    align: 'center' as const,
+    sortable: true,
+    style: 'width: 100px'
+  },
+  {
+    name: 'neighborInfo',
+    label: '邻区信息',
+    field: 'neighborInfo',
+    align: 'center' as const,
+    sortable: false,
+    style: 'width: 100px'
   },
   {
     name: 'imageUrl',
     label: '图片',
     field: 'imageUrl',
-    align: 'center'
+    align: 'center' as const,
+    sortable: false,
+    style: 'width: 80px'
   },
   {
     name: 'createdAt',
     label: '创建时间',
     field: 'createdAt',
-    align: 'center',
+    align: 'center' as const,
     sortable: true,
-    format: (val: string) => formatDateTime(val)
+    format: (val: string) => formatDateTime(val),
+    style: 'width: 160px'
   },
   {
     name: 'actions',
     label: '操作',
-    field: '',
-    align: 'center'
+    field: 'actions',
+    align: 'center' as const,
+    sortable: false,
+    style: 'width: 80px'
   }
 ];
 
@@ -525,6 +620,8 @@ const loadSignalParams = async () => {
     const response = await rfSignalApi.querySignalParam();
     if (response.data.isOk && response.data.okData) {
       signalParamsList.value = response.data.okData;
+      // 更新分页信息
+      tablePagination.value.rowsNumber = response.data.okData.length;
     } else {
       throw new Error(response.data.failMsg || '获取数据失败');
     }
@@ -577,6 +674,34 @@ const deleteSignalParam = async (row: SignalParamsVO) => {
   });
 };
 
+// 复制文本到剪贴板
+const copyToClipboard = (text: string): void => {
+  navigator.clipboard.writeText(text)
+    .then(() => {
+      $q.notify({
+        message: '已复制到剪贴板',
+        color: 'positive',
+        position: 'top',
+        timeout: 1000
+      });
+    })
+    .catch((error: Error) => {
+      console.error('复制失败:', error);
+    });
+};
+
+// 自定义分页标签函数
+const getPaginationLabel = (firstRowIndex: number, endRowIndex: number, totalRowsNumber: number) => {
+  if (totalRowsNumber === 0) {
+    return '暂无数据';
+  }
+
+  const currentPage = Math.ceil(firstRowIndex / tablePagination.value.rowsPerPage);
+  const totalPages = Math.ceil(totalRowsNumber / tablePagination.value.rowsPerPage);
+
+  return `第 ${currentPage} 页，共 ${totalPages} 页 (显示第 ${firstRowIndex}-${endRowIndex} 条，总计 ${totalRowsNumber} 条)`;
+};
+
 // Load data when component mounts
 onMounted(() => {
   loadSignalParams();
@@ -588,23 +713,273 @@ const formatDateTime = (dateTime?: string) => {
 };
 </script>
 
-<style scoped>
-.signal-params-table :deep(.q-table__top),
-.signal-params-table :deep(.q-table__bottom),
-.signal-params-table :deep(thead tr:first-child th) {
-  background-color: #f5f5f5;
+<style lang="scss" scoped>
+@import 'src/css/quasar.variables.scss';
+
+/* 信号参数表格卡片样式 */
+.signal-table-card {
+  border-radius: 12px;
+  box-shadow: $elevation-2;
+  background: $cursor-surface;
+  border: 1px solid $cursor-border;
 }
 
-.signal-params-table :deep(thead tr th) {
-  position: sticky;
-  z-index: 1;
+/* 自定义表格样式 */
+.custom-signal-table {
+  border-radius: 8px;
+  background: $cursor-surface;
+  
+  /* 隐藏默认的表格顶部和底部 */
+  :deep(.q-table__top) {
+    display: none;
+  }
+  
+  :deep(.q-table__bottom) {
+    display: none;
+  }
+  
+  /* 表头样式 */
+  :deep(thead tr:first-child th) {
+    background-color: $cursor-bg;
+    font-weight: 600;
+    color: $cursor-text;
+    border-bottom: 2px solid $cursor-border;
+    font-size: 14px;
+    padding: 12px 8px;
+  }
+  
+  /* 表格行样式 */
+  :deep(tbody tr) {
+    background-color: $cursor-surface;
+    border-bottom: 1px solid $cursor-border;
+    
+    &:hover {
+      background-color: $hover-bg;
+    }
+  }
+  
+  /* 表格单元格 */
+  :deep(td), :deep(th) {
+    border-right: 1px solid $cursor-border;
+    color: $cursor-text;
+    
+    &:last-child {
+      border-right: none;
+    }
+  }
+  
+  /* 表格容器 */
+  :deep(.q-table__container) {
+    background: $cursor-surface;
+    border: 1px solid $cursor-border;
+    border-radius: 8px;
+  }
 }
 
-.signal-params-table :deep(thead tr:first-child th) {
-  top: 0;
+/* ID列样式 */
+.id-cell {
+  padding: 12px 8px;
 }
 
-.signal-params-table :deep(.q-table tbody tr:hover) {
-  background-color: #f8f9fa;
+.id-content {
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 12px;
+  font-weight: 500;
+  color: $cursor-text;
+  transition: color 0.2s ease;
+  cursor: pointer;
+  
+  &:hover {
+    color: $cursor-primary;
+    text-decoration: underline;
+  }
+}
+
+/* 图片列样式 */
+.image-cell {
+  padding: 8px;
+  text-align: center;
+}
+
+.image-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+  color: $cursor-primary;
+  
+  &:hover {
+    background-color: rgba($cursor-primary, 0.1);
+    transform: scale(1.1);
+  }
+}
+
+/* 准确度列样式 */
+.accuracy-cell {
+  padding: 8px;
+  text-align: center;
+}
+
+.accuracy-chip {
+  font-weight: 600;
+  min-width: 60px;
+  font-size: 12px;
+}
+
+/* 邻区信息列样式 */
+.neighbor-cell {
+  padding: 8px;
+  text-align: center;
+}
+
+.neighbor-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+  color: $cursor-info;
+  
+  &:hover {
+    background-color: rgba($cursor-info, 0.1);
+    transform: scale(1.1);
+  }
+}
+
+.neighbor-tooltip {
+  max-width: 300px;
+  background: $cursor-bg;
+  color: $cursor-text;
+  border: 1px solid $cursor-border;
+}
+
+.neighbor-details {
+  font-size: 14px;
+  line-height: 1.6;
+  
+  div {
+    margin-bottom: 4px;
+    color: $cursor-text;
+    
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+  
+  strong {
+    color: $cursor-primary;
+  }
+}
+
+/* 操作列样式 */
+.actions-cell {
+  padding: 8px 12px;
+  text-align: center;
+}
+
+.action-buttons {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+}
+
+.action-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: $elevation-1;
+  }
+  
+  &:active {
+    transform: translateY(0);
+  }
+  
+  &.delete-btn {
+    color: $cursor-error;
+    
+    &:hover {
+      background-color: rgba($cursor-error, 0.1);
+      transform: translateY(-1px) scale(1.05);
+    }
+  }
+}
+
+/* 表格标题样式 */
+.text-h6 {
+  color: $cursor-text;
+}
+
+/* 响应式设计 */
+@media (max-width: 1200px) {
+  .custom-signal-table {
+    font-size: 13px;
+    
+    :deep(th), :deep(td) {
+      padding: 8px 6px;
+    }
+  }
+  
+  .id-content {
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 768px) {
+  .custom-signal-table {
+    font-size: 12px;
+    
+    :deep(th), :deep(td) {
+      padding: 6px 4px;
+    }
+    
+    .action-btn {
+      width: 28px;
+      height: 28px;
+      
+      :deep(.q-icon) {
+        font-size: 16px;
+      }
+    }
+  }
+  
+  .id-content {
+    font-size: 10px;
+  }
+}
+
+/* 表格滚动条样式 */
+.custom-signal-table :deep(.q-table__container) {
+  &::-webkit-scrollbar {
+    height: 8px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: $cursor-border;
+    border-radius: 4px;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: $cursor-muted;
+    border-radius: 4px;
+    
+    &:hover {
+      background: $cursor-text;
+    }
+  }
+}
+
+/* 空状态样式 */
+.custom-signal-table :deep(.q-table__no-data) {
+  color: $cursor-muted;
+}
+
+/* 加载状态样式 */
+.custom-signal-table :deep(.q-inner-loading) {
+  background: rgba($cursor-bg, 0.8);
 }
 </style>
+
