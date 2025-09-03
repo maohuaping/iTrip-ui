@@ -49,10 +49,13 @@ export const getRfSignalParams = () => {
   /**
    * @summary 获取所有射频信号参数列表
    */
-  const getAllSignalParams = () => {
-    return customInstance<ResultListSignalParamsVO>({ url: `/api/signal/list`, method: 'GET' });
+  const querySignalParam = () => {
+    return customInstance<ResultListSignalParamsVO>({
+      url: `/api/signal/querySignalParam`,
+      method: 'GET',
+    });
   };
-  return { recognizeSignalParams, getSignalParamsById, deleteSignalParams, getAllSignalParams };
+  return { recognizeSignalParams, getSignalParamsById, deleteSignalParams, querySignalParam };
 };
 export type RecognizeSignalParamsResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getRfSignalParams>['recognizeSignalParams']>>
@@ -63,6 +66,6 @@ export type GetSignalParamsByIdResult = NonNullable<
 export type DeleteSignalParamsResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getRfSignalParams>['deleteSignalParams']>>
 >;
-export type GetAllSignalParamsResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRfSignalParams>['getAllSignalParams']>>
+export type QuerySignalParamResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getRfSignalParams>['querySignalParam']>>
 >;
