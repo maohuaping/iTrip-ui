@@ -7,21 +7,18 @@ body {
 }
 
 
-/* 强制隐藏 html 和 body 的垂直滚动条 */
+/* 允许页面正常滚动 */
 
 html,
 body {
-    overflow-y: hidden !important;
+    overflow-y: auto;
 }
 
 
-/* * 
- * 这个规则会影响应用中所有使用了 QLayout 的页面
- * 它会隐藏页面容器的滚动条
- */
+/* 允许页面容器正常滚动 */
 
 .q-page-container {
-    overflow: hidden !important;
+    overflow: auto;
 }
 
 @import 'quasar.variables';

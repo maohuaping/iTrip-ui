@@ -1,5 +1,5 @@
 <template>
-  <q-page class="q-pa-md" style="min-height: 100vh;">
+  <q-page class="q-pa-md" style="min-height: 100vh; overflow-y: auto;">
     <div class="q-gutter-md" style="max-width: 1200px; margin: 0 auto;">
       <h4 class="text-center q-mb-lg">射频信号参数识别</h4>
       
