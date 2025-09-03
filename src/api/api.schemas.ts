@@ -396,6 +396,58 @@ export interface SaveSysFileVO {
   devTaskId?: string;
 }
 
+export interface ResultSignalParamsVO {
+  /** 是否成功 */
+  isOk?: boolean;
+  okData?: SignalParamsVO;
+  /** 失败消息 */
+  failMsg?: string;
+}
+
+/**
+ * 射频信号参数响应对象
+ */
+export interface SignalParamsVO {
+  /** 主键ID */
+  id?: number;
+  /** TAC参数 */
+  tac?: number;
+  /** PLMN参数 */
+  plmn?: number;
+  /** EARFCN-NBR参数(可能包含多个值，用逗号分隔) */
+  earfcnNbr?: string;
+  /** PCI-NBR参数(可能包含多个值，用逗号分隔) */
+  pciNbr?: string;
+  /** RSRP-NBR参数(可能包含多个值，用逗号分隔) */
+  rsrpNbr?: string;
+  /** 工作模式(如SA等) */
+  workMode?: string;
+  /** PCI值 */
+  pci?: number;
+  /** RSRQ值 */
+  rsrq?: number;
+  /** RSSI值 */
+  rssi?: number;
+  /** SSB-RSRP值 */
+  ssbRsrp?: number;
+  /** SSB-SINR值 */
+  ssbSinr?: number;
+  /** NR_BAND值 */
+  nrBand?: number;
+  /** NR-Power值 */
+  nrPower?: number;
+  /** NR-CQI值 */
+  nrCqi?: number;
+  /** 原始图片地址 */
+  imageUrl?: string;
+  /** 识别准确度(0-100) */
+  accuracy?: number;
+  /** 创建时间 */
+  createdAt?: string;
+  /** 更新时间 */
+  updatedAt?: string;
+}
+
 /**
  * 扫码识别请求
  */
@@ -963,6 +1015,15 @@ export interface ResultListSysConfig {
   failMsg?: string;
 }
 
+export interface ResultListSignalParamsVO {
+  /** 是否成功 */
+  isOk?: boolean;
+  /** 成功数据 */
+  okData?: SignalParamsVO[];
+  /** 失败消息 */
+  failMsg?: string;
+}
+
 /**
  * 成功数据
  */
@@ -1319,6 +1380,22 @@ export type UploadFileBody = {
 
 export type MoveToFinalDirectoryParams = {
   tempFileName: string;
+};
+
+export type RecognizeSignalParamsParams = {
+  /**
+   * 识别模式，可选值：auto(自动识别)、manual(手动校验)
+   */
+  recognitionMode?: string;
+  /**
+   * 备注信息
+   */
+  remarks?: string;
+};
+
+export type RecognizeSignalParamsBody = {
+  /** 射频信号参数图片文件 */
+  imageFile: Blob;
 };
 
 export type TestUploadBody = {

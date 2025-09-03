@@ -11,7 +11,7 @@ import { customInstance } from '../../boot/orval-client';
 
 export const getClear = () => {
   /**
-   * @summary 清理无效数据
+   * @summary 系统文件
    */
   const clearSysFile = () => {
     return customInstance<ResultString>({ url: `/api/clear/sysFile`, method: 'POST' });
