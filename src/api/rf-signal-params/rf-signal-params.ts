@@ -23,11 +23,14 @@ export const getRfSignalParams = () => {
     recognizeSignalParamsBody: RecognizeSignalParamsBody,
     params?: RecognizeSignalParamsParams,
   ) => {
+    const formData = new FormData();
+    formData.append(`imageFile`, recognizeSignalParamsBody.imageFile);
+
     return customInstance<ResultSignalParamsVO>({
       url: `/api/signal/recognize`,
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      data: recognizeSignalParamsBody,
+      headers: { 'Content-Type': 'multipart/form-data' },
+      data: formData,
       params,
     });
   };

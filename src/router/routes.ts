@@ -3,8 +3,15 @@ import type { RouteRecordRaw } from 'vue-router';
 const routes: RouteRecordRaw[] = [
   {
     path: '/',
-    redirect: '/trip',
-    meta: { requiresAuth: true }
+    component: () => import('layouts/CleanLayout.vue'),
+    meta: { requiresAuth: true },
+    children: [
+      { 
+        path: '', 
+        component: () => import('pages/IndexPage.vue'),
+        meta: { requiresAuth: true }
+      }
+    ]
   },
   {
     path: '/trip',
