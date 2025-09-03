@@ -501,6 +501,65 @@ export interface DecisionAnalysis {
 }
 
 /**
+ * OCR识别结果
+ */
+export interface OcrResultVO {
+  /** 识别到的文本内容列表 */
+  textDetections?: TextDetection[];
+  /** 识别语言 */
+  language?: string;
+  /** 图片旋转角度 */
+  angle?: number;
+  /** 完整的识别文本（所有文本行拼接） */
+  fullText?: string;
+  /** 原始响应数据 */
+  rawResponse?: string;
+}
+
+/**
+ * 坐标多边形
+ */
+export interface Polygon {
+  /** 左上角x坐标 */
+  x1?: number;
+  /** 左上角y坐标 */
+  y1?: number;
+  /** 右上角x坐标 */
+  x2?: number;
+  /** 右上角y坐标 */
+  y2?: number;
+  /** 右下角x坐标 */
+  x3?: number;
+  /** 右下角y坐标 */
+  y3?: number;
+  /** 左下角x坐标 */
+  x4?: number;
+  /** 左下角y坐标 */
+  y4?: number;
+}
+
+export interface ResultOcrResultVO {
+  /** 是否成功 */
+  isOk?: boolean;
+  okData?: OcrResultVO;
+  /** 失败消息 */
+  failMsg?: string;
+}
+
+/**
+ * 文本检测结果
+ */
+export interface TextDetection {
+  /** 识别的文本内容 */
+  detectedText?: string;
+  /** 置信度 */
+  confidence?: number;
+  polygon?: Polygon;
+  /** 高级信息（仅部分接口返回） */
+  advancedInfo?: string;
+}
+
+/**
  * 加密密钥信息
  */
 export interface Keys {
@@ -632,10 +691,10 @@ export interface DevTaskVO {
  */
 export interface IPageDevTaskVO {
   size?: number;
-  pages?: number;
-  total?: number;
-  current?: number;
   records?: DevTaskVO[];
+  current?: number;
+  total?: number;
+  pages?: number;
 }
 
 /**
@@ -711,10 +770,10 @@ export interface DevLogVO {
  */
 export interface IPageDevLogVO {
   size?: number;
-  pages?: number;
-  total?: number;
-  current?: number;
   records?: DevLogVO[];
+  current?: number;
+  total?: number;
+  pages?: number;
 }
 
 export interface ResultIPageDevLogVO {
@@ -1400,6 +1459,37 @@ export type RecognizeSignalParamsBody = {
 
 export type TestUploadBody = {
   file: Blob;
+};
+
+export type TableOcrBody = {
+  /** 图片文件 */
+  imageFile: Blob;
+};
+
+export type GeneralHandwritingOcrBody = {
+  /** 图片文件 */
+  imageFile: Blob;
+};
+
+export type GeneralBasicOcrBody = {
+  /** 图片文件 */
+  imageFile: Blob;
+};
+
+export type GeneralAccurateOcrBody = {
+  /** 图片文件 */
+  imageFile: Blob;
+};
+
+export type OcrByUrlParams = {
+  /**
+   * 图片URL
+   */
+  imageUrl: string;
+  /**
+   * OCR类型
+   */
+  ocrType: string;
 };
 
 export type GetTravelGuideParams = {
