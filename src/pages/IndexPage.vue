@@ -1,21 +1,21 @@
 <template>
-  <q-page class="q-pa-md">
-    <div class="q-gutter-md">
-      <h4 class="text-center q-mb-lg">RF Signal Parameters Recognition</h4>
+  <q-page class="q-pa-md" style="min-height: 100vh;">
+    <div class="q-gutter-md" style="max-width: 1200px; margin: 0 auto;">
+      <h4 class="text-center q-mb-lg">射频信号参数识别</h4>
       
       <!-- File Upload Section -->
       <q-card class="q-pa-md">
         <q-card-section>
-          <div class="text-h6">Upload Signal Parameters Image</div>
+          <div class="text-h6">上传信号参数图片</div>
           <div class="text-subtitle2 text-grey-7 q-mb-md">
-            Upload an image file to recognize RF signal parameters
+            上传图片文件来识别射频信号参数
           </div>
         </q-card-section>
         
         <q-card-section>
           <q-file
             v-model="selectedFile"
-            label="Select image file"
+            label="选择图片文件"
             accept=".jpg,.jpeg,.png,.gif"
             max-file-size="10485760"
             @rejected="onRejected"
@@ -29,7 +29,7 @@
           
           <div class="row q-gutter-sm">
             <q-btn
-              label="Upload & Recognize"
+              label="上传并识别"
               color="primary"
               :loading="uploading"
               :disable="!selectedFile"
@@ -37,7 +37,7 @@
               icon="upload"
             />
             <q-btn
-              label="Clear"
+              label="清除"
               color="grey"
               outline
               @click="clearFile"
@@ -48,9 +48,9 @@
       </q-card>
 
       <!-- Results Section -->
-      <q-card v-if="recognitionResult" class="q-pa-md">
+      <q-card v-if="recognitionResult" class="q-pa-md q-mb-xl">
         <q-card-section>
-          <div class="text-h6">Recognition Results</div>
+          <div class="text-h6">识别结果</div>
         </q-card-section>
         
         <q-card-section>
@@ -73,7 +73,7 @@
                   <div class="col-6">
                     <q-item dense>
                       <q-item-section>
-                        <q-item-label caption>ID</q-item-label>
+                        <q-item-label caption>识别ID</q-item-label>
                         <q-item-label>{{ recognitionResult.id }}</q-item-label>
                       </q-item-section>
                     </q-item>
@@ -81,7 +81,7 @@
                   <div class="col-6">
                     <q-item dense>
                       <q-item-section>
-                        <q-item-label caption>Accuracy</q-item-label>
+                        <q-item-label caption>识别准确度</q-item-label>
                         <q-item-label>{{ recognitionResult.accuracy }}%</q-item-label>
                       </q-item-section>
                     </q-item>
@@ -111,7 +111,7 @@
                   <div class="col-6">
                     <q-item dense>
                       <q-item-section>
-                        <q-item-label caption>Work Mode</q-item-label>
+                        <q-item-label caption>工作模式</q-item-label>
                         <q-item-label>{{ recognitionResult.workMode }}</q-item-label>
                       </q-item-section>
                     </q-item>
@@ -168,7 +168,7 @@
                   <div class="col-6">
                     <q-item dense>
                       <q-item-section>
-                        <q-item-label caption>NR Band</q-item-label>
+                        <q-item-label caption>NR频段</q-item-label>
                         <q-item-label>{{ recognitionResult.nrBand }}</q-item-label>
                       </q-item-section>
                     </q-item>
@@ -176,7 +176,7 @@
                   <div class="col-6">
                     <q-item dense>
                       <q-item-section>
-                        <q-item-label caption>NR Power</q-item-label>
+                        <q-item-label caption>NR功率</q-item-label>
                         <q-item-label>{{ recognitionResult.nrPower }}</q-item-label>
                       </q-item-section>
                     </q-item>
@@ -187,7 +187,7 @@
                   <div class="col-6">
                     <q-item dense>
                       <q-item-section>
-                        <q-item-label caption>NR CQI</q-item-label>
+                        <q-item-label caption>NR-CQI</q-item-label>
                         <q-item-label>{{ recognitionResult.nrCqi }}</q-item-label>
                       </q-item-section>
                     </q-item>
@@ -199,7 +199,7 @@
           
           <!-- Neighbor Cell Information -->
           <q-separator class="q-my-md" />
-          <div class="text-subtitle1 q-mb-sm">Neighbor Cell Information</div>
+          <div class="text-subtitle1 q-mb-sm">邻区信息</div>
           <div class="row q-gutter-sm">
             <div class="col-12 col-md-4">
               <q-item dense>
@@ -233,7 +233,7 @@
             <div class="col-6">
               <q-item dense>
                 <q-item-section>
-                  <q-item-label caption>Created At</q-item-label>
+                  <q-item-label caption>创建时间</q-item-label>
                   <q-item-label class="text-caption">{{ formatDateTime(recognitionResult.createdAt) }}</q-item-label>
                 </q-item-section>
               </q-item>
@@ -241,7 +241,7 @@
             <div class="col-6">
               <q-item dense>
                 <q-item-section>
-                  <q-item-label caption>Updated At</q-item-label>
+                  <q-item-label caption>更新时间</q-item-label>
                   <q-item-label class="text-caption">{{ formatDateTime(recognitionResult.updatedAt) }}</q-item-label>
                 </q-item-section>
               </q-item>
@@ -269,7 +269,7 @@ const rfSignalApi = getRfSignalParams();
 const onRejected = (rejectedEntries: any[]) => {
   $q.notify({
     type: 'negative',
-    message: `${rejectedEntries.length} file(s) rejected. Please check file size and format.`
+    message: `${rejectedEntries.length} 个文件被拒绝。请检查文件大小和格式。`
   });
 };
 
@@ -282,7 +282,7 @@ const uploadFile = async () => {
   if (!selectedFile.value) {
     $q.notify({
       type: 'negative',
-      message: 'Please select a file first'
+      message: '请先选择一个文件'
     });
     return;
   }
@@ -299,16 +299,16 @@ const uploadFile = async () => {
       recognitionResult.value = response.data.okData;
       $q.notify({
         type: 'positive',
-        message: 'Signal parameters recognized successfully!'
+        message: '信号参数识别成功！'
       });
     } else {
-      throw new Error(response.data.failMsg || 'Recognition failed');
+      throw new Error(response.data.failMsg || '识别失败');
     }
   } catch (error: any) {
     console.error('Upload error:', error);
     $q.notify({
       type: 'negative',
-      message: error.message || 'Failed to recognize signal parameters'
+      message: error.message || '识别信号参数失败'
     });
   } finally {
     uploading.value = false;
