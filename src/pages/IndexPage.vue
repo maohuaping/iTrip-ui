@@ -258,25 +258,15 @@
               <q-icon name="signal_cellular_alt" size="28px" class="q-mr-sm" />
               所有信号参数记录
             </div>
-            <div class="row q-gutter-sm">
-              <q-btn
-                color="primary"
-                icon="refresh"
-                label="刷新数据"
-                dense
-                unelevated
-                :loading="loadingTable"
-                @click="loadSignalParams"
-              />
-              <q-btn
-                color="secondary"
-                icon="bug_report"
-                label="测试API"
-                dense
-                unelevated
-                @click="testApiConnection"
-              />
-            </div>
+            <q-btn
+              color="primary"
+              icon="refresh"
+              label="刷新数据"
+              dense
+              unelevated
+              :loading="loadingTable"
+              @click="loadSignalParams"
+            />
           </div>
 
           <q-table
@@ -626,25 +616,23 @@ const uploadFile = async () => {
 // Load all signal parameters
 const loadSignalParams = async () => {
   loadingTable.value = true;
-  console.log('开始加载信号参数数据...');
   
   try {
     const response = await rfSignalApi.querySignalParam();
-    console.log('API响应:', response);
     
     if (response.data && response.data.isOk && response.data.okData) {
       signalParamsList.value = response.data.okData;
       // 更新分页信息
       tablePagination.value.rowsNumber = response.data.okData.length;
-      console.log('成功加载', response.data.okData.length, '条信号参数记录');
       
-      $q.notify({
-        type: 'positive',
-        message: `成功加载 ${response.data.okData.length} 条信号参数记录`,
-        timeout: 2000
-      });
+      if (response.data.okData.length > 0) {
+        $q.notify({
+          type: 'positive',
+          message: `成功加载 ${response.data.okData.length} 条信号参数记录`,
+          timeout: 2000
+        });
+      }
     } else {
-      console.error('API返回错误:', response.data);
       throw new Error(response.data?.failMsg || '获取数据失败');
     }
   } catch (error: any) {
@@ -654,7 +642,7 @@ const loadSignalParams = async () => {
     if (error.code === 'ECONNREFUSED' || error.message.includes('Network Error')) {
       $q.notify({
         type: 'negative',
-        message: '无法连接到服务器，请确保后端服务正在运行 (http://localhost:8080)',
+        message: '无法连接到服务器，请确保后端服务正在运行',
         timeout: 5000
       });
     } else {
@@ -669,44 +657,6 @@ const loadSignalParams = async () => {
   }
 };
 
-// 测试API连接
-const testApiConnection = async () => {
-  console.log('测试API连接...');
-  
-  try {
-    // 使用fetch直接测试API连接
-    const response = await fetch('http://localhost:8080/api/signal/querySignalParam', {
-      method: 'GET',
-      headers: {
-        'Accept': '*/*',
-        'Content-Type': 'application/x-www-form-urlencoded'
-      }
-    });
-    
-    console.log('直接fetch响应状态:', response.status);
-    
-    if (response.ok) {
-      const data = await response.json();
-      console.log('直接fetch响应数据:', data);
-      
-      $q.notify({
-        type: 'positive',
-        message: `API连接成功！状态码: ${response.status}`,
-        timeout: 3000
-      });
-    } else {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-    }
-  } catch (error: any) {
-    console.error('API连接测试失败:', error);
-    
-    $q.notify({
-      type: 'negative',
-      message: `API连接失败: ${error.message}`,
-      timeout: 5000
-    });
-  }
-};
 
 // View image in dialog
 const viewImage = (imageUrl: string) => {
