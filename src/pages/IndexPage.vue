@@ -47,208 +47,7 @@
         </q-card-section>
       </q-card>
 
-      <!-- Results Section -->
-      <q-card v-if="recognitionResult" class="q-pa-md q-mb-md">
-        <q-card-section>
-          <div class="text-h6">最新识别结果</div>
-        </q-card-section>
-        
-        <q-card-section>
-          <div class="row q-gutter-md">
-            <!-- Image Display -->
-            <div class="col-12 col-md-4">
-              <q-img
-                v-if="recognitionResult.imageUrl"
-                :src="recognitionResult.imageUrl"
-                style="max-height: 300px"
-                fit="contain"
-                class="rounded-borders"
-              />
-            </div>
-            
-            <!-- Parameters Display -->
-            <div class="col-12 col-md-8">
-              <div class="q-gutter-sm">
-                <div class="row">
-                  <div class="col-6">
-                    <q-item dense>
-                      <q-item-section>
-                        <q-item-label caption>识别ID</q-item-label>
-                        <q-item-label>{{ recognitionResult.id }}</q-item-label>
-                      </q-item-section>
-                    </q-item>
-                  </div>
-                  <div class="col-6">
-                    <q-item dense>
-                      <q-item-section>
-                        <q-item-label caption>识别准确度</q-item-label>
-                        <q-item-label>{{ recognitionResult.accuracy }}%</q-item-label>
-                      </q-item-section>
-                    </q-item>
-                  </div>
-                </div>
-                
-                <div class="row">
-                  <div class="col-6">
-                    <q-item dense>
-                      <q-item-section>
-                        <q-item-label caption>TAC</q-item-label>
-                        <q-item-label>{{ recognitionResult.tac }}</q-item-label>
-                      </q-item-section>
-                    </q-item>
-                  </div>
-                  <div class="col-6">
-                    <q-item dense>
-                      <q-item-section>
-                        <q-item-label caption>PLMN</q-item-label>
-                        <q-item-label>{{ recognitionResult.plmn }}</q-item-label>
-                      </q-item-section>
-                    </q-item>
-                  </div>
-                </div>
-                
-                <div class="row">
-                  <div class="col-6">
-                    <q-item dense>
-                      <q-item-section>
-                        <q-item-label caption>工作模式</q-item-label>
-                        <q-item-label>{{ recognitionResult.workMode }}</q-item-label>
-                      </q-item-section>
-                    </q-item>
-                  </div>
-                  <div class="col-6">
-                    <q-item dense>
-                      <q-item-section>
-                        <q-item-label caption>PCI</q-item-label>
-                        <q-item-label>{{ recognitionResult.pci }}</q-item-label>
-                      </q-item-section>
-                    </q-item>
-                  </div>
-                </div>
-                
-                <div class="row">
-                  <div class="col-6">
-                    <q-item dense>
-                      <q-item-section>
-                        <q-item-label caption>RSRQ</q-item-label>
-                        <q-item-label>{{ recognitionResult.rsrq }}</q-item-label>
-                      </q-item-section>
-                    </q-item>
-                  </div>
-                  <div class="col-6">
-                    <q-item dense>
-                      <q-item-section>
-                        <q-item-label caption>RSSI</q-item-label>
-                        <q-item-label>{{ recognitionResult.rssi }}</q-item-label>
-                      </q-item-section>
-                    </q-item>
-                  </div>
-                </div>
-                
-                <div class="row">
-                  <div class="col-6">
-                    <q-item dense>
-                      <q-item-section>
-                        <q-item-label caption>SSB-RSRP</q-item-label>
-                        <q-item-label>{{ recognitionResult.ssbRsrp }}</q-item-label>
-                      </q-item-section>
-                    </q-item>
-                  </div>
-                  <div class="col-6">
-                    <q-item dense>
-                      <q-item-section>
-                        <q-item-label caption>SSB-SINR</q-item-label>
-                        <q-item-label>{{ recognitionResult.ssbSinr }}</q-item-label>
-                      </q-item-section>
-                    </q-item>
-                  </div>
-                </div>
-                
-                <div class="row">
-                  <div class="col-6">
-                    <q-item dense>
-                      <q-item-section>
-                        <q-item-label caption>NR频段</q-item-label>
-                        <q-item-label>{{ recognitionResult.nrBand }}</q-item-label>
-                      </q-item-section>
-                    </q-item>
-                  </div>
-                  <div class="col-6">
-                    <q-item dense>
-                      <q-item-section>
-                        <q-item-label caption>NR功率</q-item-label>
-                        <q-item-label>{{ recognitionResult.nrPower }}</q-item-label>
-                      </q-item-section>
-                    </q-item>
-                  </div>
-                </div>
-                
-                <div class="row">
-                  <div class="col-6">
-                    <q-item dense>
-                      <q-item-section>
-                        <q-item-label caption>NR-CQI</q-item-label>
-                        <q-item-label>{{ recognitionResult.nrCqi }}</q-item-label>
-                      </q-item-section>
-                    </q-item>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          <!-- Neighbor Cell Information -->
-          <q-separator class="q-my-md" />
-          <div class="text-subtitle1 q-mb-sm">邻区信息</div>
-          <div class="row q-gutter-sm">
-            <div class="col-12 col-md-4">
-              <q-item dense>
-                <q-item-section>
-                  <q-item-label caption>EARFCN-NBR</q-item-label>
-                  <q-item-label class="text-caption">{{ recognitionResult.earfcnNbr }}</q-item-label>
-                </q-item-section>
-              </q-item>
-            </div>
-            <div class="col-12 col-md-4">
-              <q-item dense>
-                <q-item-section>
-                  <q-item-label caption>PCI-NBR</q-item-label>
-                  <q-item-label class="text-caption">{{ recognitionResult.pciNbr }}</q-item-label>
-                </q-item-section>
-              </q-item>
-            </div>
-            <div class="col-12 col-md-4">
-              <q-item dense>
-                <q-item-section>
-                  <q-item-label caption>RSRP-NBR</q-item-label>
-                  <q-item-label class="text-caption">{{ recognitionResult.rsrpNbr }}</q-item-label>
-                </q-item-section>
-              </q-item>
-            </div>
-          </div>
-          
-          <!-- Timestamps -->
-          <q-separator class="q-my-md" />
-          <div class="row q-gutter-sm">
-            <div class="col-6">
-              <q-item dense>
-                <q-item-section>
-                  <q-item-label caption>创建时间</q-item-label>
-                  <q-item-label class="text-caption">{{ formatDateTime(recognitionResult.createdAt) }}</q-item-label>
-                </q-item-section>
-              </q-item>
-            </div>
-            <div class="col-6">
-              <q-item dense>
-                <q-item-section>
-                  <q-item-label caption>更新时间</q-item-label>
-                  <q-item-label class="text-caption">{{ formatDateTime(recognitionResult.updatedAt) }}</q-item-label>
-                </q-item-section>
-              </q-item>
-            </div>
-          </div>
-        </q-card-section>
-      </q-card>
+
 
       <!-- Signal Parameters Data Table -->
       <q-card flat bordered class="signal-table-card q-mb-lg">
@@ -422,7 +221,6 @@ import type { SignalParamsVO } from 'src/api/api.schemas';
 const $q = useQuasar();
 const selectedFile = ref<File | null>(null);
 const uploading = ref(false);
-const recognitionResult = ref<SignalParamsVO | null>(null);
 const signalParamsList = ref<SignalParamsVO[]>([]);
 const loadingTable = ref(false);
 const showImageDialog = ref(false);
@@ -571,7 +369,6 @@ const onRejected = (rejectedEntries: any[]) => {
 
 const clearFile = () => {
   selectedFile.value = null;
-  recognitionResult.value = null;
 };
 
 const uploadFile = async () => {
@@ -592,12 +389,15 @@ const uploadFile = async () => {
     );
     
     if (response.data.isOk && response.data.okData) {
-      recognitionResult.value = response.data.okData;
       $q.notify({
         type: 'positive',
         message: '信号参数识别成功！'
       });
-      // Refresh the table data after successful upload
+      
+      // 清除选中的文件
+      selectedFile.value = null;
+      
+      // 刷新表格数据
       await loadSignalParams();
     } else {
       throw new Error(response.data.failMsg || '识别失败');
