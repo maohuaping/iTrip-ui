@@ -124,7 +124,7 @@
                             <q-select v-model="pagination.rowsPerPage" :options="[10, 20, 50, 100]" label="每页条数"
                                 outlined dense style="width: 100px" />
                             <q-btn color="primary" icon="refresh" label="刷新数据" dense unelevated :loading="loading"
-                                @click="loadHistory" />
+                                @click="loadHistory" :disable="loading" />
                         </div>
                     </div>
 
@@ -543,6 +543,7 @@ const uploadAndParse = async () => {
 
 // 加载历史记录
 const loadHistory = async () => {
+    console.log('开始加载历史记录...')
     loading.value = true
     try {
         const response = await messageParse.getParseHistory({
@@ -550,9 +551,13 @@ const loadHistory = async () => {
             pageSize: pagination.value.rowsPerPage
         })
 
+        console.log('API响应:', response.data)
+
         if (response.data.isOk && response.data.okData) {
             historyList.value = response.data.okData
             tablePagination.value.rowsNumber = response.data.okData.length
+
+            console.log(`成功加载 ${response.data.okData.length} 条记录`)
 
             if (response.data.okData.length > 0) {
                 $q.notify({
@@ -562,6 +567,7 @@ const loadHistory = async () => {
                 })
             }
         } else {
+            console.error('API返回失败:', response.data.failMsg)
             $q.notify({
                 type: 'negative',
                 message: response.data.failMsg || '加载历史记录失败'
@@ -575,6 +581,7 @@ const loadHistory = async () => {
         })
     } finally {
         loading.value = false
+        console.log('加载历史记录完成，loading状态已重置')
     }
 }
 
