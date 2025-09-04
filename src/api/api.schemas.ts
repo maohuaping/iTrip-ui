@@ -685,6 +685,51 @@ export interface SubscriptionRequestDTO {
   expirationTime?: number;
 }
 
+/**
+ * 消息解析结果
+ */
+export interface MessageParseResultVO {
+  /** 解析结果ID */
+  id?: number;
+  /** 原始图片URL */
+  imageUrl?: string;
+  /** OCR识别的原始文本 */
+  rawText?: string;
+  /** 解析出的人员信息列表 */
+  persons?: string[];
+  /** 解析出的公司信息列表 */
+  companies?: string[];
+  /** 解析出的套餐信息列表 */
+  products?: string[];
+  /** 解析状态：SUCCESS-成功，FAILED-失败 */
+  parseStatus?: string;
+  /** 解析失败原因 */
+  failReason?: string;
+  /** 备注信息 */
+  remark?: string;
+  /** 创建时间 */
+  createTime?: string;
+  /** 更新时间 */
+  updateTime?: string;
+}
+
+export interface ResultMessageParseResultVO {
+  /** 是否成功 */
+  isOk?: boolean;
+  okData?: MessageParseResultVO;
+  /** 失败消息 */
+  failMsg?: string;
+}
+
+export interface ResultListMessageParseResultVO {
+  /** 是否成功 */
+  isOk?: boolean;
+  /** 成功数据 */
+  okData?: MessageParseResultVO[];
+  /** 失败消息 */
+  failMsg?: string;
+}
+
 export interface UpdateDevTaskInParam {
   /** 任务id */
   id?: string;
@@ -759,7 +804,7 @@ export interface QueryDevTaskInParam {
   /** 主键ID */
   id?: string;
   /** 需求编号 */
-  requirementId?: string;
+  reqNo?: string;
   /** 需求名称 */
   requirementName?: string;
   /** 需求关联的需求文档名称。如果关联多个需求文档，会以;进行分隔 */
@@ -1581,6 +1626,19 @@ export type OcrByUrlParams = {
    * OCR类型
    */
   ocrType: string;
+};
+
+export type ParseMessageFromImageParams = {
+  remark?: string;
+};
+
+export type ParseMessageFromImageBody = {
+  imageFile: Blob;
+};
+
+export type GetParseHistoryParams = {
+  pageNum?: number;
+  pageSize?: number;
 };
 
 export type GetTravelGuideParams = {

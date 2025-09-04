@@ -137,8 +137,8 @@
             <!-- 自定义列模板 - 需求编号 -->
             <template v-slot:body-cell-reqNo="props">
               <q-td :props="props" class="requirement-id-cell">
-                <div class="requirement-id-content cursor-pointer" @click="copyToClipboard(props.row.reqNo || '')"
-                  title="点击复制需求编号">
+                <div class="requirement-id-content cursor-pointer" @click="copyCommitMessage(props.row.reqNo || '')"
+                  title="点击复制commit消息格式">
                   {{ props.row.reqNo || '无编号' }}
                 </div>
               </q-td>
@@ -744,6 +744,40 @@ const copyToClipboard = (text: string): void => {
     })
     .catch((error: Error) => {
       console.error('复制失败:', error)
+    })
+}
+
+// 复制commit消息格式到剪贴板
+const copyCommitMessage = (reqNo: string): void => {
+  if (!reqNo) {
+    $q.notify({
+      message: '需求编号为空，无法生成commit消息',
+      color: 'warning',
+      position: 'top',
+      timeout: 2000
+    })
+    return
+  }
+
+  const commitMessage = `feat ${reqNo}:`
+  navigator.clipboard.writeText(commitMessage)
+    .then(() => {
+      // 复制成功提示
+      $q.notify({
+        message: `已复制commit消息: "${commitMessage}"`,
+        color: 'positive',
+        position: 'top',
+        timeout: 2000
+      })
+    })
+    .catch((error: Error) => {
+      console.error('复制commit消息失败:', error)
+      $q.notify({
+        message: '复制commit消息失败',
+        color: 'negative',
+        position: 'top',
+        timeout: 2000
+      })
     })
 }
 
