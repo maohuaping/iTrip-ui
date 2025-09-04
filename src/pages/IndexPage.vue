@@ -30,6 +30,60 @@
 
 
 
+      <!-- Data Analysis Charts -->
+      <q-card flat bordered class="analysis-card q-mb-lg">
+        <q-card-section class="q-pa-sm">
+          <div class="row justify-between items-center q-mb-md q-pa-sm">
+            <div class="text-h6 text-weight-bold">
+              <q-icon name="analytics" size="28px" class="q-mr-sm" />
+              信号参数分析图表
+            </div>
+            <div class="row q-gutter-sm">
+              <q-select v-model="chartTimeRange" :options="timeRangeOptions" label="时间范围" dense outlined
+                style="min-width: 120px" @update:model-value="updateCharts" />
+              <q-select v-model="chartType" :options="chartTypeOptions" label="图表类型" dense outlined
+                style="min-width: 120px" @update:model-value="updateCharts" />
+            </div>
+          </div>
+
+          <div class="row q-gutter-md">
+            <!-- 信号强度趋势图 -->
+            <div class="col-12 col-md-6">
+              <div class="chart-container">
+                <div class="chart-title">信号强度趋势</div>
+                <div ref="signalTrendChart" style="height: 300px;"></div>
+              </div>
+            </div>
+
+            <!-- 信号质量分布图 -->
+            <div class="col-12 col-md-6">
+              <div class="chart-container">
+                <div class="chart-title">信号质量分布</div>
+                <div ref="qualityDistChart" style="height: 300px;"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="row q-gutter-md q-mt-md">
+            <!-- 邻区信息统计 -->
+            <div class="col-12 col-md-6">
+              <div class="chart-container">
+                <div class="chart-title">工作模式分布</div>
+                <div ref="workModeChart" style="height: 300px;"></div>
+              </div>
+            </div>
+
+            <!-- 准确度统计 -->
+            <div class="col-12 col-md-6">
+              <div class="chart-container">
+                <div class="chart-title">识别准确度统计</div>
+                <div ref="accuracyChart" style="height: 300px;"></div>
+              </div>
+            </div>
+          </div>
+        </q-card-section>
+      </q-card>
+
       <!-- Signal Parameters Data Table -->
       <q-card flat bordered class="signal-table-card q-mb-lg">
         <q-card-section class="q-pa-sm">
@@ -142,10 +196,34 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, nextTick } from 'vue';
 import { useQuasar } from 'quasar';
 import { getRfSignalParams } from 'src/api/rf-signal-params/rf-signal-params';
 import type { SignalParamsVO } from 'src/api/api.schemas';
+import * as echarts from 'echarts/core';
+import {
+  TitleComponent,
+  ToolboxComponent,
+  TooltipComponent,
+  GridComponent,
+  LegendComponent
+} from 'echarts/components';
+import { LineChart, BarChart, PieChart } from 'echarts/charts';
+import { UniversalTransition } from 'echarts/features';
+import { CanvasRenderer } from 'echarts/renderers';
+
+echarts.use([
+  TitleComponent,
+  ToolboxComponent,
+  TooltipComponent,
+  GridComponent,
+  LegendComponent,
+  LineChart,
+  BarChart,
+  PieChart,
+  UniversalTransition,
+  CanvasRenderer
+]);
 
 const $q = useQuasar();
 const selectedFile = ref<File | null>(null);
@@ -156,6 +234,33 @@ const showImageDialog = ref(false);
 const selectedImageUrl = ref('');
 
 const rfSignalApi = getRfSignalParams();
+
+// 图表相关状态
+const chartTimeRange = ref('24h');
+const chartType = ref('line');
+const signalTrendChart = ref<HTMLElement>();
+const qualityDistChart = ref<HTMLElement>();
+const workModeChart = ref<HTMLElement>();
+const accuracyChart = ref<HTMLElement>();
+
+let signalTrendChartInstance: echarts.ECharts | null = null;
+let qualityDistChartInstance: echarts.ECharts | null = null;
+let workModeChartInstance: echarts.ECharts | null = null;
+let accuracyChartInstance: echarts.ECharts | null = null;
+
+// 图表配置选项
+const timeRangeOptions = [
+  { label: '最近1小时', value: '1h' },
+  { label: '最近24小时', value: '24h' },
+  { label: '最近7天', value: '7d' },
+  { label: '最近30天', value: '30d' }
+];
+
+const chartTypeOptions = [
+  { label: '折线图', value: 'line' },
+  { label: '柱状图', value: 'bar' },
+  { label: '散点图', value: 'scatter' }
+];
 
 // 表格分页配置
 const tablePagination = ref({
@@ -363,6 +468,8 @@ const loadSignalParams = async () => {
           message: `成功加载 ${response.data.okData.length} 条信号参数记录`,
           timeout: 2000
         });
+        // 更新图表
+        updateCharts();
       }
     } else {
       throw new Error(response.data?.failMsg || '获取数据失败');
@@ -456,9 +563,238 @@ const getPaginationLabel = (firstRowIndex: number, endRowIndex: number, totalRow
   return `第 ${currentPage} 页，共 ${totalPages} 页 (显示第 ${firstRowIndex}-${endRowIndex} 条，总计 ${totalRowsNumber} 条)`;
 };
 
+// 初始化图表
+const initCharts = async () => {
+  await nextTick();
+
+  if (signalTrendChart.value) {
+    signalTrendChartInstance = echarts.init(signalTrendChart.value);
+  }
+  if (qualityDistChart.value) {
+    qualityDistChartInstance = echarts.init(qualityDistChart.value);
+  }
+  if (workModeChart.value) {
+    workModeChartInstance = echarts.init(workModeChart.value);
+  }
+  if (accuracyChart.value) {
+    accuracyChartInstance = echarts.init(accuracyChart.value);
+  }
+
+  updateCharts();
+};
+
+// 更新图表数据
+const updateCharts = () => {
+  if (!signalParamsList.value.length) return;
+
+  updateSignalTrendChart();
+  updateQualityDistChart();
+  updateWorkModeChart();
+  updateAccuracyChart();
+};
+
+// 更新信号强度趋势图
+const updateSignalTrendChart = () => {
+  if (!signalTrendChartInstance) return;
+
+  const data = signalParamsList.value
+    .filter(item => item.createdAt && item.rssi !== undefined && item.ssbRsrp !== undefined)
+    .sort((a, b) => new Date(a.createdAt!).getTime() - new Date(b.createdAt!).getTime())
+    .map(item => ({
+      time: new Date(item.createdAt!).toLocaleString(),
+      rssi: item.rssi,
+      ssbRsrp: item.ssbRsrp
+    }));
+
+  const option = {
+    title: {
+      text: '信号强度变化趋势',
+      textStyle: { fontSize: 14 }
+    },
+    tooltip: {
+      trigger: 'axis',
+      axisPointer: { type: 'cross' }
+    },
+    legend: {
+      data: ['RSSI', 'SSB-RSRP']
+    },
+    xAxis: {
+      type: 'category',
+      data: data.map(d => d.time),
+      axisLabel: { rotate: 45 }
+    },
+    yAxis: {
+      type: 'value',
+      name: '信号强度 (dBm)'
+    },
+    series: [
+      {
+        name: 'RSSI',
+        type: chartType.value,
+        data: data.map(d => d.rssi),
+        smooth: true,
+        lineStyle: { color: '#1976d2' }
+      },
+      {
+        name: 'SSB-RSRP',
+        type: chartType.value,
+        data: data.map(d => d.ssbRsrp),
+        smooth: true,
+        lineStyle: { color: '#388e3c' }
+      }
+    ]
+  };
+
+  signalTrendChartInstance.setOption(option);
+};
+
+// 更新信号质量分布图
+const updateQualityDistChart = () => {
+  if (!qualityDistChartInstance) return;
+
+  const rssiRanges = [
+    { name: '优秀 (>-70)', min: -70, max: 0 },
+    { name: '良好 (-70~-85)', min: -85, max: -70 },
+    { name: '一般 (-85~-100)', min: -100, max: -85 },
+    { name: '较差 (<-100)', min: -150, max: -100 }
+  ];
+
+  const distribution = rssiRanges.map(range => ({
+    name: range.name,
+    value: signalParamsList.value.filter(item =>
+      item.rssi !== undefined &&
+      item.rssi > range.min &&
+      item.rssi <= range.max
+    ).length
+  }));
+
+  const option = {
+    title: {
+      text: 'RSSI信号质量分布',
+      textStyle: { fontSize: 14 }
+    },
+    tooltip: {
+      trigger: 'item',
+      formatter: '{a} <br/>{b}: {c} ({d}%)'
+    },
+    series: [
+      {
+        name: '信号质量',
+        type: 'pie',
+        radius: '60%',
+        data: distribution,
+        emphasis: {
+          itemStyle: {
+            shadowBlur: 10,
+            shadowOffsetX: 0,
+            shadowColor: 'rgba(0, 0, 0, 0.5)'
+          }
+        }
+      }
+    ]
+  };
+
+  qualityDistChartInstance.setOption(option);
+};
+
+// 更新工作模式分布图
+const updateWorkModeChart = () => {
+  if (!workModeChartInstance) return;
+
+  const modeCount = signalParamsList.value.reduce((acc, item) => {
+    const mode = item.workMode || '未知';
+    acc[mode] = (acc[mode] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+
+  const data = Object.entries(modeCount).map(([name, value]) => ({ name, value }));
+
+  const option = {
+    title: {
+      text: '工作模式分布',
+      textStyle: { fontSize: 14 }
+    },
+    tooltip: {
+      trigger: 'item'
+    },
+    xAxis: {
+      type: 'category',
+      data: data.map(d => d.name)
+    },
+    yAxis: {
+      type: 'value',
+      name: '数量'
+    },
+    series: [
+      {
+        name: '数量',
+        type: 'bar',
+        data: data.map(d => d.value),
+        itemStyle: {
+          color: '#ff9800'
+        }
+      }
+    ]
+  };
+
+  workModeChartInstance.setOption(option);
+};
+
+// 更新准确度统计图
+const updateAccuracyChart = () => {
+  if (!accuracyChartInstance) return;
+
+  const accuracyRanges = [
+    { name: '90-100%', min: 90, max: 100 },
+    { name: '80-90%', min: 80, max: 90 },
+    { name: '70-80%', min: 70, max: 80 },
+    { name: '<70%', min: 0, max: 70 }
+  ];
+
+  const distribution = accuracyRanges.map(range => ({
+    name: range.name,
+    value: signalParamsList.value.filter(item =>
+      item.accuracy !== undefined &&
+      item.accuracy >= range.min &&
+      item.accuracy < range.max
+    ).length
+  }));
+
+  const option = {
+    title: {
+      text: '识别准确度分布',
+      textStyle: { fontSize: 14 }
+    },
+    tooltip: {
+      trigger: 'item'
+    },
+    xAxis: {
+      type: 'category',
+      data: distribution.map(d => d.name)
+    },
+    yAxis: {
+      type: 'value',
+      name: '数量'
+    },
+    series: [
+      {
+        name: '数量',
+        type: 'bar',
+        data: distribution.map(d => d.value),
+        itemStyle: {
+          color: '#4caf50'
+        }
+      }
+    ]
+  };
+
+  accuracyChartInstance.setOption(option);
+};
+
 // Load data when component mounts
-onMounted(() => {
-  loadSignalParams();
+onMounted(async () => {
+  await loadSignalParams();
+  await initCharts();
 });
 
 const formatDateTime = (dateTime?: string) => {
@@ -469,6 +805,29 @@ const formatDateTime = (dateTime?: string) => {
 
 <style lang="scss" scoped>
 @import 'src/css/quasar.variables.scss';
+
+/* 分析图表卡片样式 */
+.analysis-card {
+  border-radius: 12px;
+  box-shadow: $elevation-2;
+  background: $cursor-surface;
+  border: 1px solid $cursor-border;
+}
+
+.chart-container {
+  background: $cursor-surface;
+  border-radius: 8px;
+  padding: 16px;
+  border: 1px solid $cursor-border;
+}
+
+.chart-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: $cursor-text;
+  margin-bottom: 12px;
+  text-align: center;
+}
 
 /* 信号参数表格卡片样式 */
 .signal-table-card {
