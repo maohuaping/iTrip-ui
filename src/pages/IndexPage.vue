@@ -2,7 +2,7 @@
   <q-page class="q-pa-md" style="min-height: 100vh; overflow-y: auto;">
     <div class="q-gutter-md" style="max-width: 1200px; margin: 0 auto;">
       <h4 class="text-center q-mb-lg">射频信号参数识别</h4>
-      
+
       <!-- File Upload Section -->
       <q-card class="q-pa-md">
         <q-card-section>
@@ -11,38 +11,19 @@
             上传图片文件来识别射频信号参数
           </div>
         </q-card-section>
-        
+
         <q-card-section>
-          <q-file
-            v-model="selectedFile"
-            label="选择图片文件"
-            accept=".jpg,.jpeg,.png,.gif"
-            max-file-size="10485760"
-            @rejected="onRejected"
-            outlined
-            class="q-mb-md"
-          >
+          <q-file v-model="selectedFile" label="选择图片文件" accept=".jpg,.jpeg,.png,.gif" max-file-size="10485760"
+            @rejected="onRejected" outlined class="q-mb-md">
             <template v-slot:prepend>
               <q-icon name="attach_file" />
             </template>
           </q-file>
-          
+
           <div class="row q-gutter-sm">
-            <q-btn
-              label="上传并识别"
-              color="primary"
-              :loading="uploading"
-              :disable="!selectedFile"
-              @click="uploadFile"
-              icon="upload"
-            />
-            <q-btn
-              label="清除"
-              color="grey"
-              outline
-              @click="clearFile"
-              :disable="uploading"
-            />
+            <q-btn label="上传并识别" color="primary" :loading="uploading" :disable="!selectedFile" @click="uploadFile"
+              icon="upload" />
+            <q-btn label="清除" color="grey" outline @click="clearFile" :disable="uploading" />
           </div>
         </q-card-section>
       </q-card>
@@ -57,38 +38,19 @@
               <q-icon name="signal_cellular_alt" size="28px" class="q-mr-sm" />
               所有信号参数记录
             </div>
-            <q-btn
-              color="primary"
-              icon="refresh"
-              label="刷新数据"
-              dense
-              unelevated
-              :loading="loadingTable"
-              @click="loadSignalParams"
-            />
+            <q-btn color="primary" icon="refresh" label="刷新数据" dense unelevated :loading="loadingTable"
+              @click="loadSignalParams" />
           </div>
 
-          <q-table
-            :rows="signalParamsList"
-            :columns="tableColumns"
-            :loading="loadingTable"
-            row-key="id"
-            flat
-            bordered
-            class="custom-signal-table"
-            v-model:pagination="tablePagination"
-            :rows-per-page-options="[5, 10, 20, 50]"
-            :rows-per-page-label="'每页条数'"
-            :no-data-label="'暂无数据'"
-            :loading-label="'加载中...'"
-            :pagination-label="getPaginationLabel"
-            binary-state-sort
-          >
+          <q-table :rows="signalParamsList" :columns="tableColumns" :loading="loadingTable" row-key="id" flat bordered
+            class="custom-signal-table" v-model:pagination="tablePagination" :rows-per-page-options="[5, 10, 20, 50]"
+            :rows-per-page-label="'每页条数'" :no-data-label="'暂无数据'" :loading-label="'加载中...'"
+            :pagination-label="getPaginationLabel" binary-state-sort>
             <!-- 自定义列模板 - ID -->
             <template v-slot:body-cell-id="props">
               <q-td :props="props" class="id-cell">
-                <div class="id-content cursor-pointer" @click="copyToClipboard(props.value?.toString() || '')" 
-                     title="点击复制ID">
+                <div class="id-content cursor-pointer" @click="copyToClipboard(props.value?.toString() || '')"
+                  title="点击复制ID">
                   {{ props.value }}
                 </div>
               </q-td>
@@ -97,32 +59,19 @@
             <!-- 自定义列模板 - 图片 -->
             <template v-slot:body-cell-imageUrl="props">
               <q-td :props="props" class="image-cell">
-                <q-btn
-                  v-if="props.value"
-                  flat
-                  round
-                  dense
-                  color="primary"
-                  icon="image"
-                  size="sm"
-                  @click="viewImage(props.value)"
-                  class="image-btn"
-                >
+                <q-btn v-if="props.value" flat round dense color="primary" icon="image" size="sm"
+                  @click="viewImage(props.value)" class="image-btn">
                   <q-tooltip>查看图片</q-tooltip>
                 </q-btn>
                 <span v-else class="text-grey-5">无</span>
               </q-td>
             </template>
-            
+
             <!-- 自定义列模板 - 准确度 -->
             <template v-slot:body-cell-accuracy="props">
               <q-td :props="props" class="accuracy-cell">
-                <q-chip
-                  :color="props.value >= 90 ? 'green' : props.value >= 70 ? 'orange' : 'red'"
-                  text-color="white"
-                  size="sm"
-                  class="accuracy-chip"
-                >
+                <q-chip :color="props.value >= 90 ? 'green' : props.value >= 70 ? 'orange' : 'red'" text-color="white"
+                  size="sm" class="accuracy-chip">
                   {{ props.value }}%
                 </q-chip>
               </q-td>
@@ -131,15 +80,7 @@
             <!-- 自定义列模板 - 邻区信息 -->
             <template v-slot:body-cell-neighborInfo="props">
               <q-td :props="props" class="neighbor-cell">
-                <q-btn
-                  flat
-                  round
-                  dense
-                  color="info"
-                  icon="info"
-                  size="sm"
-                  class="neighbor-btn"
-                >
+                <q-btn flat round dense color="info" icon="info" size="sm" class="neighbor-btn">
                   <q-tooltip class="neighbor-tooltip">
                     <div class="neighbor-details">
                       <div><strong>EARFCN-NBR:</strong> {{ props.row.earfcnNbr || '-' }}</div>
@@ -150,27 +91,19 @@
                 </q-btn>
               </q-td>
             </template>
-            
+
             <!-- 自定义列模板 - 操作 -->
             <template v-slot:body-cell-actions="props">
               <q-td :props="props" class="actions-cell">
                 <div class="action-buttons">
-                  <q-btn
-                    flat
-                    round
-                    dense
-                    color="negative"
-                    icon="delete"
-                    size="sm"
-                    @click="deleteSignalParam(props.row)"
-                    class="action-btn delete-btn"
-                  >
+                  <q-btn flat round dense color="negative" icon="delete" size="sm" @click="deleteSignalParam(props.row)"
+                    class="action-btn delete-btn">
                     <q-tooltip>删除记录</q-tooltip>
                   </q-btn>
                 </div>
               </q-td>
             </template>
-            
+
             <!-- 空状态 -->
             <template v-slot:no-data>
               <div class="full-width flex justify-center items-center" style="min-height: 300px; padding: 60px 20px;">
@@ -198,13 +131,9 @@
             <q-space />
             <q-btn icon="close" flat round dense v-close-popup />
           </q-card-section>
-          
+
           <q-card-section>
-            <q-img
-              :src="selectedImageUrl"
-              fit="contain"
-              style="max-height: 70vh"
-            />
+            <q-img :src="selectedImageUrl" fit="contain" style="max-height: 70vh" />
           </q-card-section>
         </q-card>
       </q-dialog>
@@ -235,7 +164,7 @@ const tablePagination = ref({
   rowsNumber: 0
 });
 
-// 表格列定义
+// 表格列定义 - 按重要性和变化频率排序
 const tableColumns = [
   {
     name: 'id',
@@ -245,46 +174,7 @@ const tableColumns = [
     sortable: true,
     style: 'width: 120px; min-width: 120px'
   },
-  {
-    name: 'tac',
-    label: 'TAC',
-    field: 'tac',
-    align: 'center' as const,
-    sortable: true,
-    style: 'width: 100px'
-  },
-  {
-    name: 'plmn',
-    label: 'PLMN',
-    field: 'plmn',
-    align: 'center' as const,
-    sortable: true,
-    style: 'width: 100px'
-  },
-  {
-    name: 'workMode',
-    label: '工作模式',
-    field: 'workMode',
-    align: 'center' as const,
-    sortable: true,
-    style: 'width: 100px'
-  },
-  {
-    name: 'pci',
-    label: 'PCI',
-    field: 'pci',
-    align: 'center' as const,
-    sortable: true,
-    style: 'width: 80px'
-  },
-  {
-    name: 'rsrq',
-    label: 'RSRQ',
-    field: 'rsrq',
-    align: 'center' as const,
-    sortable: true,
-    style: 'width: 80px'
-  },
+  // 核心信号参数 - 最重要且变化频繁的参数
   {
     name: 'rssi',
     label: 'RSSI',
@@ -310,12 +200,20 @@ const tableColumns = [
     style: 'width: 100px'
   },
   {
-    name: 'nrBand',
-    label: 'NR频段',
-    field: 'nrBand',
+    name: 'neighborInfo',
+    label: '邻区信息',
+    field: 'neighborInfo',
+    align: 'center' as const,
+    sortable: false,
+    style: 'width: 100px'
+  },
+  {
+    name: 'rsrq',
+    label: 'RSRQ',
+    field: 'rsrq',
     align: 'center' as const,
     sortable: true,
-    style: 'width: 100px'
+    style: 'width: 80px'
   },
   {
     name: 'accuracy',
@@ -325,14 +223,48 @@ const tableColumns = [
     sortable: true,
     style: 'width: 100px'
   },
+  // 网络配置参数 - 相对稳定的参数
   {
-    name: 'neighborInfo',
-    label: '邻区信息',
-    field: 'neighborInfo',
+    name: 'workMode',
+    label: '工作模式',
+    field: 'workMode',
     align: 'center' as const,
-    sortable: false,
+    sortable: true,
     style: 'width: 100px'
   },
+  {
+    name: 'pci',
+    label: 'PCI',
+    field: 'pci',
+    align: 'center' as const,
+    sortable: true,
+    style: 'width: 80px'
+  },
+  {
+    name: 'nrBand',
+    label: 'NR频段',
+    field: 'nrBand',
+    align: 'center' as const,
+    sortable: true,
+    style: 'width: 100px'
+  },
+  {
+    name: 'tac',
+    label: 'TAC',
+    field: 'tac',
+    align: 'center' as const,
+    sortable: true,
+    style: 'width: 100px'
+  },
+  {
+    name: 'plmn',
+    label: 'PLMN',
+    field: 'plmn',
+    align: 'center' as const,
+    sortable: true,
+    style: 'width: 100px'
+  },
+  // 辅助信息
   {
     name: 'imageUrl',
     label: '图片',
@@ -381,22 +313,22 @@ const uploadFile = async () => {
   }
 
   uploading.value = true;
-  
+
   try {
     const response = await rfSignalApi.recognizeSignalParams(
       { imageFile: selectedFile.value },
       { recognitionMode: 'auto' }
     );
-    
+
     if (response.data.isOk && response.data.okData) {
       $q.notify({
         type: 'positive',
         message: '信号参数识别成功！'
       });
-      
+
       // 清除选中的文件
       selectedFile.value = null;
-      
+
       // 刷新表格数据
       await loadSignalParams();
     } else {
@@ -416,15 +348,15 @@ const uploadFile = async () => {
 // Load all signal parameters
 const loadSignalParams = async () => {
   loadingTable.value = true;
-  
+
   try {
     const response = await rfSignalApi.querySignalParam();
-    
+
     if (response.data && response.data.isOk && response.data.okData) {
       signalParamsList.value = response.data.okData;
       // 更新分页信息
       tablePagination.value.rowsNumber = response.data.okData.length;
-      
+
       if (response.data.okData.length > 0) {
         $q.notify({
           type: 'positive',
@@ -437,7 +369,7 @@ const loadSignalParams = async () => {
     }
   } catch (error: any) {
     console.error('Load signal params error:', error);
-    
+
     // 检查是否是网络错误
     if (error.code === 'ECONNREFUSED' || error.message.includes('Network Error')) {
       $q.notify({
@@ -467,7 +399,7 @@ const viewImage = (imageUrl: string) => {
 // Delete signal parameter record
 const deleteSignalParam = async (row: SignalParamsVO) => {
   if (!row.id) return;
-  
+
   $q.dialog({
     title: '确认删除',
     message: `确定要删除ID为 ${row.id} 的信号参数记录吗？`,
@@ -550,16 +482,16 @@ const formatDateTime = (dateTime?: string) => {
 .custom-signal-table {
   border-radius: 8px;
   background: $cursor-surface;
-  
+
   /* 隐藏默认的表格顶部和底部 */
   :deep(.q-table__top) {
     display: none;
   }
-  
+
   :deep(.q-table__bottom) {
     display: none;
   }
-  
+
   /* 表头样式 */
   :deep(thead tr:first-child th) {
     background-color: $cursor-bg;
@@ -569,27 +501,28 @@ const formatDateTime = (dateTime?: string) => {
     font-size: 14px;
     padding: 12px 8px;
   }
-  
+
   /* 表格行样式 */
   :deep(tbody tr) {
     background-color: $cursor-surface;
     border-bottom: 1px solid $cursor-border;
-    
+
     &:hover {
       background-color: $hover-bg;
     }
   }
-  
+
   /* 表格单元格 */
-  :deep(td), :deep(th) {
+  :deep(td),
+  :deep(th) {
     border-right: 1px solid $cursor-border;
     color: $cursor-text;
-    
+
     &:last-child {
       border-right: none;
     }
   }
-  
+
   /* 表格容器 */
   :deep(.q-table__container) {
     background: $cursor-surface;
@@ -610,7 +543,7 @@ const formatDateTime = (dateTime?: string) => {
   color: $cursor-text;
   transition: color 0.2s ease;
   cursor: pointer;
-  
+
   &:hover {
     color: $cursor-primary;
     text-decoration: underline;
@@ -629,7 +562,7 @@ const formatDateTime = (dateTime?: string) => {
   border-radius: 50%;
   transition: all 0.2s ease;
   color: $cursor-primary;
-  
+
   &:hover {
     background-color: rgba($cursor-primary, 0.1);
     transform: scale(1.1);
@@ -660,7 +593,7 @@ const formatDateTime = (dateTime?: string) => {
   border-radius: 50%;
   transition: all 0.2s ease;
   color: $cursor-info;
-  
+
   &:hover {
     background-color: rgba($cursor-info, 0.1);
     transform: scale(1.1);
@@ -677,16 +610,16 @@ const formatDateTime = (dateTime?: string) => {
 .neighbor-details {
   font-size: 14px;
   line-height: 1.6;
-  
+
   div {
     margin-bottom: 4px;
     color: $cursor-text;
-    
+
     &:last-child {
       margin-bottom: 0;
     }
   }
-  
+
   strong {
     color: $cursor-primary;
   }
@@ -710,19 +643,19 @@ const formatDateTime = (dateTime?: string) => {
   height: 32px;
   border-radius: 6px;
   transition: all 0.2s ease;
-  
+
   &:hover {
     transform: translateY(-1px);
     box-shadow: $elevation-1;
   }
-  
+
   &:active {
     transform: translateY(0);
   }
-  
+
   &.delete-btn {
     color: $cursor-error;
-    
+
     &:hover {
       background-color: rgba($cursor-error, 0.1);
       transform: translateY(-1px) scale(1.05);
@@ -739,12 +672,13 @@ const formatDateTime = (dateTime?: string) => {
 @media (max-width: 1200px) {
   .custom-signal-table {
     font-size: 13px;
-    
-    :deep(th), :deep(td) {
+
+    :deep(th),
+    :deep(td) {
       padding: 8px 6px;
     }
   }
-  
+
   .id-content {
     font-size: 11px;
   }
@@ -753,21 +687,22 @@ const formatDateTime = (dateTime?: string) => {
 @media (max-width: 768px) {
   .custom-signal-table {
     font-size: 12px;
-    
-    :deep(th), :deep(td) {
+
+    :deep(th),
+    :deep(td) {
       padding: 6px 4px;
     }
-    
+
     .action-btn {
       width: 28px;
       height: 28px;
-      
+
       :deep(.q-icon) {
         font-size: 16px;
       }
     }
   }
-  
+
   .id-content {
     font-size: 10px;
   }
@@ -778,16 +713,16 @@ const formatDateTime = (dateTime?: string) => {
   &::-webkit-scrollbar {
     height: 8px;
   }
-  
+
   &::-webkit-scrollbar-track {
     background: $cursor-border;
     border-radius: 4px;
   }
-  
+
   &::-webkit-scrollbar-thumb {
     background: $cursor-muted;
     border-radius: 4px;
-    
+
     &:hover {
       background: $cursor-text;
     }
@@ -804,4 +739,3 @@ const formatDateTime = (dateTime?: string) => {
   background: rgba($cursor-bg, 0.8);
 }
 </style>
-
