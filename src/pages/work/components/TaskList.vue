@@ -46,7 +46,7 @@
 
             <!-- 需求编号搜索 -->
             <div class="col-12 col-sm-6 col-md-3">
-              <q-input v-model="filterParams.requirementId" label="需求编号" outlined dense clearable placeholder="请输入需求编号"
+              <q-input v-model="filterParams.reqNo" label="需求编号" outlined dense clearable placeholder="请输入需求编号"
                 class="light-field" @update:model-value="handleFilterChange">
                 <template v-slot:prepend>
                   <q-icon name="tag" size="16px" />
@@ -135,11 +135,11 @@
             </template>
 
             <!-- 自定义列模板 - 需求编号 -->
-            <template v-slot:body-cell-requirementId="props">
+            <template v-slot:body-cell-reqNo="props">
               <q-td :props="props" class="requirement-id-cell">
-                <div class="requirement-id-content cursor-pointer"
-                  @click="copyToClipboard(props.row.requirementId || '')" title="点击复制需求编号">
-                  {{ props.row.requirementId || '无编号' }}
+                <div class="requirement-id-content cursor-pointer" @click="copyToClipboard(props.row.reqNo || '')"
+                  title="点击复制需求编号">
+                  {{ props.row.reqNo || '无编号' }}
                 </div>
               </q-td>
             </template>
@@ -223,8 +223,8 @@
               <q-td :props="props" class="actions-cell">
                 <div class="action-buttons">
                   <q-btn flat round dense color="primary" icon="call_split"
-                    @click="handleSystemClick(props.row.systemCategory || 'other', props.row.requirementId || '')"
-                    title="Git分支" class="action-btn git-btn" />
+                    @click="handleSystemClick(props.row.systemCategory || 'other', props.row.reqNo || '')" title="Git分支"
+                    class="action-btn git-btn" />
                   <q-btn flat round dense color="grey-7" icon="more_vert" title="更多操作" class="action-btn more-btn">
                     <q-menu>
                       <q-list style="min-width: 200px">
@@ -409,7 +409,7 @@ import type { NamingSuggestion, VariableNamingResponseVO } from 'src/api/api.sch
 
 // 在 script setup 部分添加以下导入
 import { getSysFile } from 'src/api/sys-file/sys-file'
-import type { SysFile, UploadFileBody } from 'src/api/api.schemas'
+import type { SaveSysFileVO, UploadFileBody } from 'src/api/api.schemas'
 
 // 初始化
 const $q = useQuasar()
@@ -478,7 +478,7 @@ const currentPagination = computed(() => {
 
 // 过滤参数 - 修复类型问题
 const filterParams = ref({
-  requirementId: '',
+  reqNo: '',
   requirementName: '',
   systemCategory: null as { label: string; value: string } | string | null, // 支持对象和字符串类型
   relatedRequirementDocs: '',
@@ -544,8 +544,8 @@ const fetchTasks = async (): Promise<void> => {
     }
 
     // 只添加有值的参数
-    if (filterParams.value.requirementId) {
-      queryParams.requirementId = filterParams.value.requirementId
+    if (filterParams.value.reqNo) {
+      queryParams.requirementId = filterParams.value.reqNo
     }
     if (filterParams.value.requirementName) {
       queryParams.requirementName = filterParams.value.requirementName
@@ -621,7 +621,7 @@ const handleReset = () => {
   console.log('重置搜索条件')
 
   filterParams.value = {
-    requirementId: '',
+    reqNo: '',
     requirementName: '',
     systemCategory: null,
     relatedRequirementDocs: '',
@@ -760,7 +760,7 @@ interface NewTask {
   title: string;
   type: TaskType;
   id: string;
-  docsList: SysFile[];
+  docsList: SaveSysFileVO[];
   uploadFiles: File[] | null;
 }
 
@@ -804,8 +804,8 @@ const handleFileSelect = async (files: File[] | null): Promise<void> => {
           // 添加调试日志
           console.log('文件上传成功，API响应数据:', response.data.okData)
 
-          // 上传成功，直接构建 SysFile 对象并添加到文档列表
-          const sysFile: SysFile = {
+          // 上传成功，直接构建 SaveSysFileVO 对象并添加到文档列表
+          const sysFile: SaveSysFileVO = {
             ...response.data.okData,
             fileName: response.data.okData.fileName || file.name,
             fileType: response.data.okData.fileType || file.name.split('.').pop() || '',
@@ -942,7 +942,7 @@ const processFiles = async (files: File[]): Promise<void> => {
 
   if (validFiles.length > 0) {
     // 检查是否有重复文件
-    const existingFileNames = newTask.value.docsList.map(doc => doc.fileName)
+    const existingFileNames = newTask.value.docsList.map((doc: SaveSysFileVO) => doc.fileName)
     const newFiles = validFiles.filter(file => !existingFileNames.includes(file.name))
 
     if (newFiles.length !== validFiles.length) {
@@ -995,11 +995,11 @@ const createTask = async (): Promise<void> => {
     console.log('检查文档列表:', newTask.value.docsList)
 
     // 检查文件是否有必要的字段（id或fileName至少要有一个，表示上传成功）
-    const failedUploads = newTask.value.docsList.filter(doc => !doc.fileUrl && !doc.id)
+    const failedUploads = newTask.value.docsList.filter((doc: SaveSysFileVO) => !doc.fileUrl && !doc.id)
     console.log('上传失败的文件:', failedUploads)
 
     if (failedUploads.length > 0) {
-      console.error('发现上传失败的文件:', failedUploads.map(doc => ({
+      console.error('发现上传失败的文件:', failedUploads.map((doc: SaveSysFileVO) => ({
         fileName: doc.fileName,
         fileUrl: doc.fileUrl,
         id: doc.id,
@@ -1017,7 +1017,7 @@ const createTask = async (): Promise<void> => {
     }
 
     // 如果文件没有fileUrl但有id，说明上传成功但API可能没返回fileUrl
-    const filesWithoutUrl = newTask.value.docsList.filter(doc => !doc.fileUrl && doc.id)
+    const filesWithoutUrl = newTask.value.docsList.filter((doc: SaveSysFileVO) => !doc.fileUrl && doc.id)
     if (filesWithoutUrl.length > 0) {
       console.warn('这些文件没有fileUrl但有id，可能是API没有返回fileUrl:', filesWithoutUrl)
     }
@@ -1025,15 +1025,15 @@ const createTask = async (): Promise<void> => {
     // 直接使用下拉框选择的任务类型值作为systemCategory
     const systemCategory: SystemType = newTask.value.type.value as SystemType;
 
-    // 使用SaveDevTaskInParam接口，将文件列表传递给uploadedFiles字段
+    // 使用SaveDevTaskInParam接口，将文件ID列表传递给uploadedFilesId字段
     const saveDevTaskParam: SaveDevTaskInParam = {
       requirementId: newTask.value.id || '',
       requirementName: newTask.value.title || '',
       systemCategory,
       relatedRequirementDocs: newTask.value.docsList.length > 0
-        ? newTask.value.docsList.map(doc => doc.fileName || '').join(';')
+        ? newTask.value.docsList.map((doc: SaveSysFileVO) => doc.fileName || '').join(';')
         : '',
-      uploadedFiles: newTask.value.docsList // 将SysFile[]直接传递给uploadedFiles字段
+      uploadedFilesId: newTask.value.docsList.map((doc: SaveSysFileVO) => doc.id || '').filter(id => id) // 将文件ID列表传递给uploadedFilesId字段
     };
 
     const response = await devTaskApi.saveDevTask(saveDevTaskParam);
@@ -1306,7 +1306,7 @@ const showTaskMenu = (task: DevTaskVO) => {
   console.log('showTaskMenu 被调用，任务:', task)
 
   $q.bottomSheet({
-    message: `任务: ${task.requirementName || '未命名任务'} (ID: ${task.requirementId || 'N/A'})`,
+    message: `任务: ${task.requirementName || '未命名任务'} (ID: ${task.reqNo || 'N/A'})`,
     actions: [
       {
         label: '查看详情',
@@ -1407,9 +1407,9 @@ const tableColumns = [
     style: 'width: 35%; min-width: 250px' // 使用百分比 + 最小宽度
   },
   {
-    name: 'requirementId',
+    name: 'reqNo',
     label: '需求编号',
-    field: 'requirementId',
+    field: 'reqNo',
     align: 'left' as const,
     sortable: true,
     style: 'width: 25%; min-width: 180px' // 增加需求编号列宽
@@ -1648,7 +1648,7 @@ const handleAddDocument = (task: DevTaskVO): void => {
 // 这些函数已经被简化的新函数替代，不再需要
 
 // 添加下载文件方法
-const downloadFile = (file: SysFile): void => {
+const downloadFile = (file: SaveSysFileVO): void => {
   if (file.fileUrl) {
     // 创建一个临时的 a 标签来下载文件
     const link = document.createElement('a')
