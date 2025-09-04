@@ -17,6 +17,15 @@ import { customInstance } from '../../boot/orval-client';
 
 export const getRfSignalParams = () => {
   /**
+   * @summary 删除射频信号参数记录
+   */
+  const deleteSignalParams = (id: number) => {
+    return customInstance<ResultBoolean>({
+      url: `/api/signal/${id}/delSignalParams`,
+      method: 'POST',
+    });
+  };
+  /**
    * @summary 识别射频信号参数图片
    */
   const recognizeSignalParams = (
@@ -35,37 +44,34 @@ export const getRfSignalParams = () => {
     });
   };
   /**
-   * @summary 根据ID查询射频信号参数
-   */
-  const getSignalParamsById = (id: number) => {
-    return customInstance<ResultSignalParamsVO>({ url: `/api/signal/${id}`, method: 'GET' });
-  };
-  /**
-   * @summary 删除射频信号参数记录
-   */
-  const deleteSignalParams = (id: number) => {
-    return customInstance<ResultBoolean>({ url: `/api/signal/${id}`, method: 'DELETE' });
-  };
-  /**
    * @summary 获取所有射频信号参数列表
    */
   const querySignalParam = () => {
     return customInstance<ResultListSignalParamsVO>({
       url: `/api/signal/querySignalParam`,
+      method: 'POST',
+    });
+  };
+  /**
+   * @summary 根据ID查询射频信号参数
+   */
+  const getSignalParamsById = (id: number) => {
+    return customInstance<ResultSignalParamsVO>({
+      url: `/api/signal/${id}/getByID`,
       method: 'GET',
     });
   };
-  return { recognizeSignalParams, getSignalParamsById, deleteSignalParams, querySignalParam };
+  return { deleteSignalParams, recognizeSignalParams, querySignalParam, getSignalParamsById };
 };
-export type RecognizeSignalParamsResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRfSignalParams>['recognizeSignalParams']>>
->;
-export type GetSignalParamsByIdResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRfSignalParams>['getSignalParamsById']>>
->;
 export type DeleteSignalParamsResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getRfSignalParams>['deleteSignalParams']>>
 >;
+export type RecognizeSignalParamsResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getRfSignalParams>['recognizeSignalParams']>>
+>;
 export type QuerySignalParamResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getRfSignalParams>['querySignalParam']>>
+>;
+export type GetSignalParamsByIdResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getRfSignalParams>['getSignalParamsById']>>
 >;

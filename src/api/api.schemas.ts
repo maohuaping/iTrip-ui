@@ -448,6 +448,15 @@ export interface SignalParamsVO {
   updatedAt?: string;
 }
 
+export interface ResultListSignalParamsVO {
+  /** 是否成功 */
+  isOk?: boolean;
+  /** 成功数据 */
+  okData?: SignalParamsVO[];
+  /** 失败消息 */
+  failMsg?: string;
+}
+
 /**
  * 扫码识别请求
  */
@@ -691,10 +700,10 @@ export interface DevTaskVO {
  */
 export interface IPageDevTaskVO {
   size?: number;
-  records?: DevTaskVO[];
-  current?: number;
-  total?: number;
   pages?: number;
+  total?: number;
+  current?: number;
+  records?: DevTaskVO[];
 }
 
 /**
@@ -770,10 +779,10 @@ export interface DevLogVO {
  */
 export interface IPageDevLogVO {
   size?: number;
-  records?: DevLogVO[];
-  current?: number;
-  total?: number;
   pages?: number;
+  total?: number;
+  current?: number;
+  records?: DevLogVO[];
 }
 
 export interface ResultIPageDevLogVO {
@@ -1070,15 +1079,6 @@ export interface ResultListSysConfig {
   isOk?: boolean;
   /** 成功数据 */
   okData?: SysConfig[];
-  /** 失败消息 */
-  failMsg?: string;
-}
-
-export interface ResultListSignalParamsVO {
-  /** 是否成功 */
-  isOk?: boolean;
-  /** 成功数据 */
-  okData?: SignalParamsVO[];
   /** 失败消息 */
   failMsg?: string;
 }
@@ -1442,18 +1442,11 @@ export type MoveToFinalDirectoryParams = {
 };
 
 export type RecognizeSignalParamsParams = {
-  /**
-   * 识别模式，可选值：auto(自动识别)、manual(手动校验)
-   */
   recognitionMode?: string;
-  /**
-   * 备注信息
-   */
   remarks?: string;
 };
 
 export type RecognizeSignalParamsBody = {
-  /** 射频信号参数图片文件 */
   imageFile: Blob;
 };
 
