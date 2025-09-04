@@ -27,87 +27,6 @@
                     </div>
                 </q-card-section>
 
-                <!-- 解析结果展示区域 -->
-                <q-card-section v-if="parseResult" class="result-section">
-                    <q-separator class="q-mb-md" />
-                    <div class="text-h6 q-mb-md">
-                        <q-icon name="analytics" class="q-mr-sm" />
-                        解析结果
-                    </div>
-
-                    <q-card flat bordered class="result-card">
-                        <q-card-section>
-                            <div class="row q-gutter-sm q-mb-md">
-                                <q-chip v-if="parseResult.parseStatus === 'SUCCESS'" color="positive" text-color="white"
-                                    icon="check_circle" size="md">
-                                    解析成功
-                                </q-chip>
-                                <q-chip v-else color="negative" text-color="white" icon="error" size="md">
-                                    解析失败
-                                </q-chip>
-                            </div>
-
-                            <div v-if="parseResult.parseStatus === 'SUCCESS'" class="results-grid">
-                                <div v-if="parseResult.persons && parseResult.persons.length > 0" class="result-item">
-                                    <div class="result-label">
-                                        <q-icon name="person" class="q-mr-xs" />
-                                        人员信息
-                                    </div>
-                                    <div class="result-content">
-                                        <q-chip v-for="person in parseResult.persons" :key="person" color="blue"
-                                            text-color="white" size="sm" class="q-mr-xs q-mb-xs">
-                                            {{ person }}
-                                        </q-chip>
-                                    </div>
-                                </div>
-
-                                <div v-if="parseResult.companies && parseResult.companies.length > 0"
-                                    class="result-item">
-                                    <div class="result-label">
-                                        <q-icon name="business" class="q-mr-xs" />
-                                        公司信息
-                                    </div>
-                                    <div class="result-content">
-                                        <q-chip v-for="company in parseResult.companies" :key="company" color="green"
-                                            text-color="white" size="sm" class="q-mr-xs q-mb-xs">
-                                            {{ company }}
-                                        </q-chip>
-                                    </div>
-                                </div>
-
-                                <div v-if="parseResult.products && parseResult.products.length > 0" class="result-item">
-                                    <div class="result-label">
-                                        <q-icon name="inventory" class="q-mr-xs" />
-                                        产品信息
-                                    </div>
-                                    <div class="result-content">
-                                        <q-chip v-for="product in parseResult.products" :key="product" color="orange"
-                                            text-color="white" size="sm" class="q-mr-xs q-mb-xs">
-                                            {{ product }}
-                                        </q-chip>
-                                    </div>
-                                </div>
-
-                                <div v-if="parseResult.rawText" class="result-item full-width">
-                                    <div class="result-label">
-                                        <q-icon name="text_fields" class="q-mr-xs" />
-                                        原始识别文本
-                                    </div>
-                                    <div class="result-content">
-                                        <div class="raw-text-container">
-                                            {{ parseResult.rawText }}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div v-else-if="parseResult.failReason" class="text-negative">
-                                <q-icon name="error" class="q-mr-xs" />
-                                <strong>失败原因:</strong> {{ parseResult.failReason }}
-                            </div>
-                        </q-card-section>
-                    </q-card>
-                </q-card-section>
             </q-card>
 
             <!-- History Records Table -->
@@ -382,7 +301,6 @@ const messageParse = getMessageParse()
 // 上传相关
 const selectedFile = ref<File | null>(null)
 const uploading = ref(false)
-const parseResult = ref<MessageParseResultVO | null>(null)
 
 // 历史记录相关
 const historyList = ref<MessageParseResultVO[]>([])
@@ -485,19 +403,11 @@ const onRejected = (rejectedEntries: any[]) => {
 
 // 文件选择处理
 const onFileSelected = (file: File | null) => {
-    if (file) {
-        selectedFile.value = file
-        // 清除之前的解析结果
-        parseResult.value = null
-    } else {
-        selectedFile.value = null
-        parseResult.value = null
-    }
+    selectedFile.value = file
 }
 
 const clearFile = () => {
     selectedFile.value = null
-    parseResult.value = null
 }
 
 // 上传并解析
@@ -517,11 +427,12 @@ const uploadAndParse = async () => {
         )
 
         if (response.data.isOk && response.data.okData) {
-            parseResult.value = response.data.okData
             $q.notify({
                 type: 'positive',
                 message: '图片解析完成！'
             })
+            // 清除选中的文件
+            selectedFile.value = null
             // 解析成功后刷新历史记录
             loadHistory()
         } else {
@@ -695,61 +606,6 @@ onMounted(() => {
 @import 'src/css/quasar.variables.scss';
 
 
-/* 结果展示区域 */
-.result-section {
-    background: $cursor-bg;
-    border-radius: 8px;
-    margin-top: 8px;
-}
-
-.result-card {
-    border: 1px solid $cursor-border;
-}
-
-.results-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 16px;
-}
-
-.result-item {
-    padding: 12px;
-    border: 1px solid $cursor-border;
-    border-radius: 8px;
-    background: $cursor-surface;
-
-    &.full-width {
-        grid-column: 1 / -1;
-    }
-}
-
-.result-label {
-    font-weight: 600;
-    color: $cursor-text;
-    margin-bottom: 8px;
-    display: flex;
-    align-items: center;
-}
-
-.result-content {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px;
-}
-
-.raw-text-container {
-    background: $cursor-bg;
-    border: 1px solid $cursor-border;
-    border-radius: 6px;
-    padding: 12px;
-    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
-    font-size: 13px;
-    line-height: 1.5;
-    white-space: pre-wrap;
-    word-break: break-word;
-    max-height: 200px;
-    overflow-y: auto;
-}
 
 /* 历史记录表格卡片样式 */
 .history-table-card {
