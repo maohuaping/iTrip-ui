@@ -111,6 +111,18 @@ const routes: RouteRecordRaw[] = [
     ]
   },
   {
+    path: '/message-parse',
+    component: () => import('layouts/CleanLayout.vue'),
+    meta: { requiresAuth: true },
+    children: [
+      { 
+        path: '', 
+        component: () => import('pages/message-parse/MessageParsePage.vue'),
+        meta: { requiresAuth: true }
+      }
+    ]
+  },
+  {
     path: '/admin',
     component: () => import('layouts/CleanLayout.vue'),
     meta: { requiresAuth: true },
