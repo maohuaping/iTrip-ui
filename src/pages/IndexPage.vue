@@ -40,9 +40,9 @@
             </div>
             <div class="row q-gutter-sm">
               <q-select v-model="chartTimeRange" :options="timeRangeOptions" label="时间范围" dense outlined
-                style="min-width: 120px" @update:model-value="updateCharts" />
+                style="min-width: 120px" @update:model-value="updateCharts" emit-value map-options />
               <q-select v-model="chartType" :options="chartTypeOptions" label="图表类型" dense outlined
-                style="min-width: 120px" @update:model-value="updateCharts" />
+                style="min-width: 120px" @update:model-value="updateCharts" emit-value map-options />
             </div>
           </div>
 
@@ -95,15 +95,6 @@
               </q-td>
             </template>
 
-            <!-- 自定义列模板 - 准确度 -->
-            <template v-slot:body-cell-accuracy="props">
-              <q-td :props="props" class="accuracy-cell">
-                <q-chip :color="props.value >= 90 ? 'green' : props.value >= 70 ? 'orange' : 'red'" text-color="white"
-                  size="sm" class="accuracy-chip">
-                  {{ props.value }}%
-                </q-chip>
-              </q-td>
-            </template>
 
             <!-- 自定义列模板 - SCC状态 -->
             <template v-slot:body-cell-hasScc="props">
@@ -252,7 +243,7 @@ const tableColumns = [
     name: 'id',
     label: 'ID',
     field: 'id',
-    align: 'left' as const,
+    align: 'center' as const,
     sortable: true,
     style: 'width: 80px; min-width: 80px',
     format: (val: any) => val ? val.toString().slice(-4) : '-'
@@ -328,14 +319,6 @@ const tableColumns = [
     sortable: false,
     style: 'width: 100px'
   },
-  {
-    name: 'accuracy',
-    label: '准确度',
-    field: 'accuracy',
-    align: 'center' as const,
-    sortable: true,
-    style: 'width: 100px'
-  },
   // 辅助信息
   {
     name: 'imageUrl',
@@ -384,7 +367,7 @@ const tableColumns = [
   },
   {
     name: 'createdAt',
-    label: '创建时间',
+    label: '记录时间',
     field: 'createdAt',
     align: 'center' as const,
     sortable: true,
@@ -661,23 +644,23 @@ const updateSignalTrendChart = () => {
     series: [
       {
         name: 'RSSI',
-        type: chartType.value === 'scatter' ? 'scatter' : 'line',
+        type: chartType.value,
         data: data.map(d => d.rssi),
-        smooth: true,
-        lineStyle: { color: '#1976d2', width: 2 },
+        smooth: chartType.value === 'line',
+        lineStyle: chartType.value === 'line' ? { color: '#1976d2', width: 2 } : undefined,
         itemStyle: { color: '#1976d2' },
         symbol: 'circle',
-        symbolSize: 4
+        symbolSize: chartType.value === 'scatter' ? 6 : 4
       },
       {
         name: 'SSB-RSRP',
-        type: chartType.value === 'scatter' ? 'scatter' : 'line',
+        type: chartType.value,
         data: data.map(d => d.ssbRsrp),
-        smooth: true,
-        lineStyle: { color: '#388e3c', width: 2 },
+        smooth: chartType.value === 'line',
+        lineStyle: chartType.value === 'line' ? { color: '#388e3c', width: 2 } : undefined,
         itemStyle: { color: '#388e3c' },
         symbol: 'circle',
-        symbolSize: 4
+        symbolSize: chartType.value === 'scatter' ? 6 : 4
       }
     ]
   };
@@ -768,6 +751,7 @@ const formatDateTime = (dateTime?: string) => {
     border-bottom: 2px solid $cursor-border;
     font-size: 14px;
     padding: 12px 8px;
+    text-align: center;
   }
 
   /* 表格行样式 */
@@ -837,17 +821,6 @@ const formatDateTime = (dateTime?: string) => {
   }
 }
 
-/* 准确度列样式 */
-.accuracy-cell {
-  padding: 8px;
-  text-align: center;
-}
-
-.accuracy-chip {
-  font-weight: 600;
-  min-width: 60px;
-  font-size: 12px;
-}
 
 /* SCC状态列样式 */
 .scc-cell {
