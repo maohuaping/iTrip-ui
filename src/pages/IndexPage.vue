@@ -295,12 +295,21 @@ const tableColumns = [
     format: (val: any) => val ?? '-'
   },
   {
-    name: 'hasScc',
-    label: 'SCC状态',
-    field: 'hasScc',
+    name: 'nrCqi',
+    label: 'NR-CQI',
+    field: 'nrCqi',
     align: 'center' as const,
     sortable: true,
     style: 'width: 80px',
+    format: (val: any) => val ?? '-'
+  },
+  {
+    name: 'hasScc',
+    label: 'SCC',
+    field: 'hasScc',
+    align: 'center' as const,
+    sortable: true,
+    style: 'width: 60px',
     format: (val: any) => {
       if (val === null || val === undefined) return '-';
       return val === true ? '存在' : '不存在';
@@ -357,15 +366,6 @@ const tableColumns = [
     align: 'center' as const,
     sortable: true,
     style: 'width: 100px',
-    format: (val: any) => val ?? '-'
-  },
-  {
-    name: 'nrCqi',
-    label: 'NR-CQI',
-    field: 'nrCqi',
-    align: 'center' as const,
-    sortable: true,
-    style: 'width: 80px',
     format: (val: any) => val ?? '-'
   },
   {
