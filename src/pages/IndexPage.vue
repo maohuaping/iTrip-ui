@@ -88,6 +88,8 @@
             binary-state-sort 
             @request="onRequest"
             :server-pagination="true"
+            :hide-pagination="false"
+            :hide-bottom="false"
           >
 
             <!-- 自定义列模板 - 图片 -->
@@ -244,7 +246,7 @@ const chartTypeOptions = [
 // 表格分页配置
 const tablePagination = ref({
   page: 1,
-  rowsPerPage: 10,
+  rowsPerPage: 5,
   rowsNumber: 0
 });
 
@@ -432,8 +434,13 @@ const uploadFile = async () => {
       // 清除选中的文件
       selectedFile.value = null;
 
-      // 刷新表格数据
-      await loadSignalParams();
+      // 刷新表格数据 - 回到第一页显示最新数据
+      await onRequest({
+        pagination: {
+          page: 1,
+          rowsPerPage: tablePagination.value.rowsPerPage
+        }
+      });
     } else {
       throw new Error(response.data.failMsg || '识别失败');
     }
@@ -450,27 +457,38 @@ const uploadFile = async () => {
 
 // 分页请求处理函数
 const onRequest = async (props: any) => {
-  const { page, rowsPerPage, sortBy, descending } = props.pagination;
+  const { page, rowsPerPage } = props.pagination;
+  
+  console.log('分页请求参数:', { page, rowsPerPage });
   
   loadingTable.value = true;
 
   try {
-    const response = await rfSignalApi.querySignalParam({
+    const queryParams = {
+      // 不传入具体的查询条件，获取所有数据
       pageParam: {
         current: page,
         size: rowsPerPage
       }
-    });
+    };
+    
+    console.log('API请求参数:', queryParams);
+    
+    const response = await rfSignalApi.querySignalParam(queryParams);
 
     if (response.data && response.data.isOk && response.data.okData) {
       const pageData = response.data.okData;
+      
+      console.log('分页响应数据:', pageData);
       
       signalParamsList.value = pageData.records || [];
       
       // 更新分页信息
       tablePagination.value.page = pageData.current || 1;
-      tablePagination.value.rowsPerPage = pageData.size || 10;
+      tablePagination.value.rowsPerPage = pageData.size || 5;
       tablePagination.value.rowsNumber = pageData.total || 0;
+      
+      console.log('更新后的分页状态:', tablePagination.value);
 
       if (pageData.records && pageData.records.length > 0) {
         $q.notify({
@@ -537,8 +555,10 @@ const deleteSignalParam = async (row: SignalParamsVO) => {
           type: 'positive',
           message: '删除成功！'
         });
-        // Refresh the table data
-        await loadSignalParams();
+        // Refresh the table data - 保持当前页
+        await onRequest({
+          pagination: tablePagination.value
+        });
       } else {
         throw new Error(response.data.failMsg || '删除失败');
       }
@@ -706,9 +726,12 @@ const handleResize = () => {
 
 // Load data when component mounts
 onMounted(async () => {
-  // 初始化表格数据
+  // 初始化表格数据 - 触发第一次分页请求，设置较小的每页条数以测试分页
   await onRequest({
-    pagination: tablePagination.value
+    pagination: {
+      page: 1,
+      rowsPerPage: 5
+    }
   });
   await initCharts();
   
@@ -767,13 +790,36 @@ const formatDateTime = (dateTime?: string) => {
   border-radius: 8px;
   background: $cursor-surface;
 
-  /* 隐藏默认的表格顶部和底部 */
+  /* 隐藏默认的表格顶部，保留底部分页 */
   :deep(.q-table__top) {
     display: none;
   }
 
+  /* 显示底部分页控件 */
   :deep(.q-table__bottom) {
-    display: none;
+    display: flex !important;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    background: $cursor-surface;
+    border-top: 1px solid $cursor-border;
+  }
+  
+  /* 分页控件样式 */
+  :deep(.q-table__bottom .q-table__control) {
+    color: $cursor-text;
+  }
+  
+  :deep(.q-table__bottom .q-btn) {
+    color: $cursor-text;
+    
+    &:hover {
+      background-color: rgba($cursor-primary, 0.1);
+    }
+  }
+  
+  :deep(.q-table__bottom .q-select) {
+    color: $cursor-text;
   }
 
   /* 表头样式 */
