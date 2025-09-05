@@ -103,9 +103,9 @@
             <!-- 自定义列模板 - ID -->
             <template v-slot:body-cell-id="props">
               <q-td :props="props" class="id-cell">
-                <div class="id-content cursor-pointer" @click="copyToClipboard(props.value?.toString() || '')"
-                  title="点击复制ID">
-                  {{ props.value }}
+                <div class="id-content cursor-pointer" @click="copyToClipboard(props.row.id?.toString() || '')"
+                  :title="`点击复制完整ID: ${props.row.id}`">
+                  {{ props.value ? props.value.toString().slice(-4) : '-' }}
                 </div>
               </q-td>
             </template>
@@ -277,8 +277,8 @@ const tableColumns = [
     field: 'id',
     align: 'left' as const,
     sortable: true,
-    style: 'width: 120px; min-width: 120px',
-    format: (val: any) => val ?? '-'
+    style: 'width: 80px; min-width: 80px',
+    format: (val: any) => val ? val.toString().slice(-4) : '-'
   },
   {
     name: 'plmn',
@@ -342,6 +342,15 @@ const tableColumns = [
     sortable: true,
     style: 'width: 100px'
   },
+  // 辅助信息
+  {
+    name: 'imageUrl',
+    label: '图片',
+    field: 'imageUrl',
+    align: 'center' as const,
+    sortable: false,
+    style: 'width: 80px'
+  },
   // 网络配置参数 - 相对稳定的参数
   {
     name: 'workMode',
@@ -378,15 +387,6 @@ const tableColumns = [
     sortable: true,
     style: 'width: 100px',
     format: (val: any) => val ?? '-'
-  },
-  // 辅助信息
-  {
-    name: 'imageUrl',
-    label: '图片',
-    field: 'imageUrl',
-    align: 'center' as const,
-    sortable: false,
-    style: 'width: 80px'
   },
   {
     name: 'createdAt',
