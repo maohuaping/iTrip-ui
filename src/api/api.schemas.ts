@@ -534,6 +534,12 @@ export interface SignalParamsVO {
   nrPower?: number;
   /** NR-CQI值 */
   nrCqi?: number;
+  /** 上行AMBR值 */
+  ulAmbr?: string;
+  /** 下行AMBR值 */
+  dlAmbr?: string;
+  /** 是否存在SCC(Secondary Component Carrier)，null表示无法判断(如earfcnNbr为'-') */
+  hasScc?: boolean;
   /** 原始图片地址 */
   imageUrl?: string;
   /** 创建时间 */
