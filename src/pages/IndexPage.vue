@@ -277,7 +277,17 @@ const tableColumns = [
     field: 'id',
     align: 'left' as const,
     sortable: true,
-    style: 'width: 120px; min-width: 120px'
+    style: 'width: 120px; min-width: 120px',
+    format: (val: any) => val ?? '-'
+  },
+  {
+    name: 'plmn',
+    label: 'PLMN',
+    field: 'plmnDesc',
+    align: 'center' as const,
+    sortable: true,
+    style: 'width: 100px',
+    format: (val: any) => val ?? '-'
   },
   // 核心信号参数 - 最重要且变化频繁的参数
   {
@@ -286,7 +296,8 @@ const tableColumns = [
     field: 'rssi',
     align: 'center' as const,
     sortable: true,
-    style: 'width: 80px'
+    style: 'width: 80px',
+    format: (val: any) => val ?? '-'
   },
   {
     name: 'ssbRsrp',
@@ -294,7 +305,8 @@ const tableColumns = [
     field: 'ssbRsrp',
     align: 'center' as const,
     sortable: true,
-    style: 'width: 100px'
+    style: 'width: 100px',
+    format: (val: any) => val ?? '-'
   },
   {
     name: 'ssbSinr',
@@ -302,7 +314,8 @@ const tableColumns = [
     field: 'ssbSinr',
     align: 'center' as const,
     sortable: true,
-    style: 'width: 100px'
+    style: 'width: 100px',
+    format: (val: any) => val ?? '-'
   },
   {
     name: 'neighborInfo',
@@ -318,7 +331,8 @@ const tableColumns = [
     field: 'rsrq',
     align: 'center' as const,
     sortable: true,
-    style: 'width: 80px'
+    style: 'width: 80px',
+    format: (val: any) => val ?? '-'
   },
   {
     name: 'accuracy',
@@ -335,7 +349,8 @@ const tableColumns = [
     field: 'workMode',
     align: 'center' as const,
     sortable: true,
-    style: 'width: 100px'
+    style: 'width: 100px',
+    format: (val: any) => val ?? '-'
   },
   {
     name: 'pci',
@@ -343,7 +358,8 @@ const tableColumns = [
     field: 'pci',
     align: 'center' as const,
     sortable: true,
-    style: 'width: 80px'
+    style: 'width: 80px',
+    format: (val: any) => val ?? '-'
   },
   {
     name: 'nrBand',
@@ -351,7 +367,8 @@ const tableColumns = [
     field: 'nrBand',
     align: 'center' as const,
     sortable: true,
-    style: 'width: 100px'
+    style: 'width: 100px',
+    format: (val: any) => val ?? '-'
   },
   {
     name: 'tac',
@@ -359,15 +376,8 @@ const tableColumns = [
     field: 'tac',
     align: 'center' as const,
     sortable: true,
-    style: 'width: 100px'
-  },
-  {
-    name: 'plmn',
-    label: 'PLMN',
-    field: 'plmn',
-    align: 'center' as const,
-    sortable: true,
-    style: 'width: 100px'
+    style: 'width: 100px',
+    format: (val: any) => val ?? '-'
   },
   // 辅助信息
   {

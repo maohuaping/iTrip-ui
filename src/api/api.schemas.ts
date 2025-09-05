@@ -508,6 +508,8 @@ export interface SignalParamsVO {
   tac?: number;
   /** PLMN参数 */
   plmn?: number;
+  /** PLMN参数 */
+  plmnDesc?: string;
   /** EARFCN-NBR参数(可能包含多个值，用逗号分隔) */
   earfcnNbr?: string;
   /** PCI-NBR参数(可能包含多个值，用逗号分隔) */
@@ -534,8 +536,6 @@ export interface SignalParamsVO {
   nrCqi?: number;
   /** 原始图片地址 */
   imageUrl?: string;
-  /** 识别准确度(0-100) */
-  accuracy?: number;
   /** 创建时间 */
   createdAt?: string;
   /** 更新时间 */
@@ -843,10 +843,10 @@ export interface DevTaskVO {
  */
 export interface IPageDevTaskVO {
   size?: number;
-  pages?: number;
-  total?: number;
-  current?: number;
   records?: DevTaskVO[];
+  current?: number;
+  total?: number;
+  pages?: number;
 }
 
 /**
@@ -922,10 +922,10 @@ export interface DevLogVO {
  */
 export interface IPageDevLogVO {
   size?: number;
-  pages?: number;
-  total?: number;
-  current?: number;
   records?: DevLogVO[];
+  current?: number;
+  total?: number;
+  pages?: number;
 }
 
 export interface ResultIPageDevLogVO {
