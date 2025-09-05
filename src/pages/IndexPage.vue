@@ -74,15 +74,6 @@
             class="custom-signal-table" v-model:pagination="tablePagination" :rows-per-page-options="[5, 10, 20, 50]"
             :rows-per-page-label="'每页条数'" :no-data-label="'暂无数据'" :loading-label="'加载中...'"
             :pagination-label="getPaginationLabel" binary-state-sort>
-            <!-- 自定义列模板 - ID -->
-            <template v-slot:body-cell-id="props">
-              <q-td :props="props" class="id-cell">
-                <div class="id-content cursor-pointer" @click="copyToClipboard(props.row.id?.toString() || '')"
-                  :title="`点击复制完整ID: ${props.row.id}`">
-                  {{ props.value ? props.value.toString().slice(-4) : '-' }}
-                </div>
-              </q-td>
-            </template>
 
             <!-- 自定义列模板 - 图片 -->
             <template v-slot:body-cell-imageUrl="props">
@@ -240,13 +231,13 @@ const tablePagination = ref({
 // 表格列定义 - 按重要性和变化频率排序
 const tableColumns = [
   {
-    name: 'id',
-    label: 'ID',
-    field: 'id',
+    name: 'time',
+    label: '时间',
+    field: 'createdAt',
     align: 'center' as const,
     sortable: true,
     style: 'width: 80px; min-width: 80px',
-    format: (val: any) => val ? val.toString().slice(-4) : '-'
+    format: (val: string) => val ? new Date(val).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', hour12: false }) : '-'
   },
   {
     name: 'plmn',
@@ -783,23 +774,13 @@ const formatDateTime = (dateTime?: string) => {
   }
 }
 
-/* ID列样式 */
-.id-cell {
+/* 时间列样式 */
+.time-cell {
   padding: 12px 8px;
-}
-
-.id-content {
   font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 500;
   color: $cursor-text;
-  transition: color 0.2s ease;
-  cursor: pointer;
-
-  &:hover {
-    color: $cursor-primary;
-    text-decoration: underline;
-  }
 }
 
 /* 图片列样式 */
@@ -934,9 +915,6 @@ const formatDateTime = (dateTime?: string) => {
     }
   }
 
-  .id-content {
-    font-size: 11px;
-  }
 }
 
 @media (max-width: 768px) {
@@ -958,9 +936,6 @@ const formatDateTime = (dateTime?: string) => {
     }
   }
 
-  .id-content {
-    font-size: 10px;
-  }
 }
 
 /* 表格滚动条样式 */
