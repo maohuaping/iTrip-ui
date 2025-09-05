@@ -105,6 +105,15 @@
               </q-td>
             </template>
 
+            <!-- 自定义列模板 - SCC状态 -->
+            <template v-slot:body-cell-hasScc="props">
+              <q-td :props="props" class="scc-cell">
+                <q-icon v-if="props.value === true" name="check" color="positive" size="18px" />
+                <q-icon v-else-if="props.value === false" name="close" color="negative" size="18px" />
+                <span v-else class="text-grey-5">-</span>
+              </q-td>
+            </template>
+
             <!-- 自定义列模板 - 邻区信息 -->
             <template v-slot:body-cell-neighborInfo="props">
               <q-td :props="props" class="neighbor-cell">
@@ -309,11 +318,7 @@ const tableColumns = [
     field: 'hasScc',
     align: 'center' as const,
     sortable: true,
-    style: 'width: 60px',
-    format: (val: any) => {
-      if (val === null || val === undefined) return '-';
-      return val === true ? '存在' : '不存在';
-    }
+    style: 'width: 60px'
   },
   {
     name: 'neighborInfo',
@@ -842,6 +847,20 @@ const formatDateTime = (dateTime?: string) => {
   font-weight: 600;
   min-width: 60px;
   font-size: 12px;
+}
+
+/* SCC状态列样式 */
+.scc-cell {
+  padding: 8px;
+  text-align: center;
+}
+
+.scc-cell .q-icon {
+  transition: transform 0.2s ease;
+}
+
+.scc-cell .q-icon:hover {
+  transform: scale(1.1);
 }
 
 /* 邻区信息列样式 */
