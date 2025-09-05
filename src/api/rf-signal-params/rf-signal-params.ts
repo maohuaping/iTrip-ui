@@ -6,10 +6,11 @@
  * OpenAPI spec version: 1.0
  */
 import type {
+  QuerySignalParamInParam,
   RecognizeSignalParamsBody,
   RecognizeSignalParamsParams,
   ResultBoolean,
-  ResultListSignalParamsVO,
+  ResultIPageSignalParamsVO,
   ResultSignalParamsVO,
 } from '../api.schemas';
 
@@ -44,12 +45,14 @@ export const getRfSignalParams = () => {
     });
   };
   /**
-   * @summary 获取所有射频信号参数列表
+   * @summary 分页查询射频信号参数列表
    */
-  const querySignalParam = () => {
-    return customInstance<ResultListSignalParamsVO>({
+  const querySignalParam = (querySignalParamInParam: QuerySignalParamInParam) => {
+    return customInstance<ResultIPageSignalParamsVO>({
       url: `/api/signal/querySignalParam`,
       method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      data: querySignalParamInParam,
     });
   };
   /**

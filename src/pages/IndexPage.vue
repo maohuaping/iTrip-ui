@@ -70,20 +70,25 @@
               @click="loadSignalParams" />
           </div>
 
-          <!-- 按日期分组的数据展示 -->
-          <div v-if="!loadingTable && groupedSignalData.length > 0" class="grouped-data-container">
-            <div v-for="group in groupedSignalData" :key="group.date" class="date-group q-mb-lg">
-              <!-- 日期标题 -->
-              <div class="date-header q-pa-md">
-                <q-icon name="calendar_today" size="20px" class="q-mr-sm" />
-                <span class="text-h6">{{ formatDateHeader(group.date) }}</span>
-                <q-badge color="primary" class="q-ml-md">{{ group.data.length }} 条记录</q-badge>
-              </div>
-              
-              <!-- 该日期的数据表格 -->
-              <q-table :rows="group.data" :columns="tableColumns" row-key="id" flat bordered
-                class="custom-signal-table date-table" :hide-pagination="true" 
-                :rows-per-page="0" binary-state-sort>
+          <!-- 分页数据表格 -->
+          <q-table 
+            :rows="signalParamsList" 
+            :columns="tableColumns" 
+            :loading="loadingTable" 
+            row-key="id" 
+            flat 
+            bordered
+            class="custom-signal-table" 
+            v-model:pagination="tablePagination" 
+            :rows-per-page-options="[5, 10, 20, 50]"
+            :rows-per-page-label="'每页条数'" 
+            :no-data-label="'暂无数据'" 
+            :loading-label="'加载中...'"
+            :pagination-label="getPaginationLabel" 
+            binary-state-sort 
+            @request="onRequest"
+            :server-pagination="true"
+          >
 
             <!-- 自定义列模板 - 图片 -->
             <template v-slot:body-cell-imageUrl="props">
@@ -133,25 +138,22 @@
               </q-td>
             </template>
 
-              </q-table>
-            </div>
-          </div>
+            <!-- 空状态 -->
+            <template v-slot:no-data>
+              <div class="full-width flex justify-center items-center" style="min-height: 300px; padding: 60px 20px;">
+                <div class="text-center">
+                  <q-icon name="signal_cellular_alt" size="64px" color="grey-5" class="q-mb-md" />
+                  <div class="text-h6 text-grey-6 q-mb-sm">暂无信号参数数据</div>
+                  <div class="text-body2 text-grey-5">上传图片来识别射频信号参数</div>
+                </div>
+              </div>
+            </template>
 
-          <!-- 空状态 -->
-          <div v-else-if="!loadingTable && groupedSignalData.length === 0" 
-               class="full-width flex justify-center items-center" 
-               style="min-height: 300px; padding: 60px 20px;">
-            <div class="text-center">
-              <q-icon name="signal_cellular_alt" size="64px" color="grey-5" class="q-mb-md" />
-              <div class="text-h6 text-grey-6 q-mb-sm">暂无信号参数数据</div>
-              <div class="text-body2 text-grey-5">上传图片来识别射频信号参数</div>
-            </div>
-          </div>
-
-          <!-- 加载状态 -->
-          <div v-if="loadingTable" class="full-width flex justify-center items-center" style="min-height: 300px;">
-            <q-inner-loading showing color="primary" />
-          </div>
+            <!-- 加载状态 -->
+            <template v-slot:loading>
+              <q-inner-loading showing color="primary" />
+            </template>
+          </q-table>
         </q-card-section>
       </q-card>
 
@@ -209,30 +211,10 @@ const uploading = ref(false);
 const signalParamsList = ref<SignalParamsVO[]>([]);
 const loadingTable = ref(false);
 
-// 按日期分组的数据
-const groupedSignalData = computed(() => {
-  const groups: { [key: string]: SignalParamsVO[] } = {};
-  
-  signalParamsList.value.forEach(item => {
-    if (item.createdAt) {
-      const date = new Date(item.createdAt).toLocaleDateString('zh-CN');
-      if (!groups[date]) {
-        groups[date] = [];
-      }
-      groups[date].push(item);
-    }
-  });
-
-  // 按日期排序，最新的在前
-  return Object.keys(groups)
-    .sort((a, b) => new Date(b).getTime() - new Date(a).getTime())
-    .map(date => ({
-      date,
-      data: groups[date].sort((a, b) => 
-        new Date(b.createdAt!).getTime() - new Date(a.createdAt!).getTime()
-      )
-    }));
-});
+// 分页相关数据
+const totalRecords = ref(0);
+const currentPage = ref(1);
+const pageSize = ref(10);
 const showImageDialog = ref(false);
 const selectedImageUrl = ref('');
 
@@ -259,7 +241,7 @@ const chartTypeOptions = [
   { label: '散点图', value: 'scatter' }
 ];
 
-// 表格分页配置 (现在主要用于图表数据统计)
+// 表格分页配置
 const tablePagination = ref({
   page: 1,
   rowsPerPage: 10,
@@ -466,22 +448,34 @@ const uploadFile = async () => {
   }
 };
 
-// Load all signal parameters
-const loadSignalParams = async () => {
+// 分页请求处理函数
+const onRequest = async (props: any) => {
+  const { page, rowsPerPage, sortBy, descending } = props.pagination;
+  
   loadingTable.value = true;
 
   try {
-    const response = await rfSignalApi.querySignalParam();
+    const response = await rfSignalApi.querySignalParam({
+      pageParam: {
+        current: page,
+        size: rowsPerPage
+      }
+    });
 
     if (response.data && response.data.isOk && response.data.okData) {
-      signalParamsList.value = response.data.okData;
+      const pageData = response.data.okData;
+      
+      signalParamsList.value = pageData.records || [];
+      
       // 更新分页信息
-      tablePagination.value.rowsNumber = response.data.okData.length;
+      tablePagination.value.page = pageData.current || 1;
+      tablePagination.value.rowsPerPage = pageData.size || 10;
+      tablePagination.value.rowsNumber = pageData.total || 0;
 
-      if (response.data.okData.length > 0) {
+      if (pageData.records && pageData.records.length > 0) {
         $q.notify({
           type: 'positive',
-          message: `成功加载 ${response.data.okData.length} 条信号参数记录`,
+          message: `成功加载第 ${pageData.current} 页，共 ${pageData.total} 条记录`,
           timeout: 2000
         });
         // 更新图表
@@ -510,6 +504,13 @@ const loadSignalParams = async () => {
   } finally {
     loadingTable.value = false;
   }
+};
+
+// 兼容性：保持原有的loadSignalParams函数
+const loadSignalParams = async () => {
+  await onRequest({
+    pagination: tablePagination.value
+  });
 };
 
 
@@ -567,20 +568,16 @@ const copyToClipboard = (text: string): void => {
     });
 };
 
-// 格式化日期显示
-const formatDateHeader = (dateStr: string) => {
-  const date = new Date(dateStr);
-  const today = new Date();
-  const yesterday = new Date(today);
-  yesterday.setDate(yesterday.getDate() - 1);
-  
-  if (date.toDateString() === today.toDateString()) {
-    return '今天';
-  } else if (date.toDateString() === yesterday.toDateString()) {
-    return '昨天';
-  } else {
-    return dateStr;
+// 自定义分页标签函数
+const getPaginationLabel = (firstRowIndex: number, endRowIndex: number, totalRowsNumber: number) => {
+  if (totalRowsNumber === 0) {
+    return '暂无数据';
   }
+
+  const currentPage = Math.ceil(firstRowIndex / tablePagination.value.rowsPerPage);
+  const totalPages = Math.ceil(totalRowsNumber / tablePagination.value.rowsPerPage);
+
+  return `第 ${currentPage} 页，共 ${totalPages} 页 (显示第 ${firstRowIndex}-${endRowIndex} 条，总计 ${totalRowsNumber} 条)`;
 };
 
 // 初始化图表
@@ -709,7 +706,10 @@ const handleResize = () => {
 
 // Load data when component mounts
 onMounted(async () => {
-  await loadSignalParams();
+  // 初始化表格数据
+  await onRequest({
+    pagination: tablePagination.value
+  });
   await initCharts();
   
   // 添加窗口大小变化监听
@@ -978,53 +978,6 @@ const formatDateTime = (dateTime?: string) => {
     }
   }
 
-}
-
-/* 按日期分组的容器样式 */
-.grouped-data-container {
-  .date-group {
-    border-radius: 12px;
-    border: 1px solid $cursor-border;
-    background: $cursor-surface;
-    overflow: hidden;
-    box-shadow: $elevation-1;
-    
-    &:last-child {
-      margin-bottom: 0;
-    }
-  }
-  
-  .date-header {
-    background: linear-gradient(135deg, $cursor-bg 0%, rgba($cursor-primary, 0.05) 100%);
-    border-bottom: 1px solid $cursor-border;
-    display: flex;
-    align-items: center;
-    font-weight: 600;
-    color: $cursor-text;
-    
-    .q-icon {
-      color: $cursor-primary;
-    }
-    
-    .text-h6 {
-      color: $cursor-text;
-      font-weight: 600;
-    }
-  }
-  
-  .date-table {
-    margin: 0;
-    border: none;
-    
-    :deep(.q-table__container) {
-      border: none;
-      border-radius: 0;
-    }
-    
-    :deep(thead tr:first-child th) {
-      background-color: rgba($cursor-bg, 0.5);
-    }
-  }
 }
 
 /* 表格滚动条样式 */

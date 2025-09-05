@@ -548,11 +548,49 @@ export interface SignalParamsVO {
   updatedAt?: string;
 }
 
-export interface ResultListSignalParamsVO {
+/**
+ * 分页参数
+ */
+export interface PageParam {
+  /** 当前页 */
+  current?: number;
+  /** 每页显示条数，默认 10 */
+  size?: number;
+}
+
+export interface QuerySignalParamInParam {
+  /** 主键ID */
+  id?: string;
+  /** TAC参数 */
+  tac?: number;
+  /** PLMN参数 */
+  plmn?: number;
+  /** 工作模式(如SA等) */
+  workMode?: string;
+  /** PCI值 */
+  pci?: number;
+  /** NR_BAND值 */
+  nrBand?: number;
+  /** 是否存在SCC */
+  hasScc?: boolean;
+  pageParam?: PageParam;
+}
+
+/**
+ * 成功数据
+ */
+export interface IPageSignalParamsVO {
+  size?: number;
+  pages?: number;
+  total?: number;
+  current?: number;
+  records?: SignalParamsVO[];
+}
+
+export interface ResultIPageSignalParamsVO {
   /** 是否成功 */
   isOk?: boolean;
-  /** 成功数据 */
-  okData?: SignalParamsVO[];
+  okData?: IPageSignalParamsVO;
   /** 失败消息 */
   failMsg?: string;
 }
@@ -796,16 +834,6 @@ export interface SaveDevTaskInParam {
   userId?: number;
 }
 
-/**
- * 分页参数
- */
-export interface PageParam {
-  /** 当前页 */
-  current?: number;
-  /** 每页显示条数，默认 10 */
-  size?: number;
-}
-
 export interface QueryDevTaskInParam {
   /** 主键ID */
   id?: string;
@@ -849,10 +877,10 @@ export interface DevTaskVO {
  */
 export interface IPageDevTaskVO {
   size?: number;
-  records?: DevTaskVO[];
-  current?: number;
-  total?: number;
   pages?: number;
+  total?: number;
+  current?: number;
+  records?: DevTaskVO[];
 }
 
 /**
@@ -928,10 +956,10 @@ export interface DevLogVO {
  */
 export interface IPageDevLogVO {
   size?: number;
-  records?: DevLogVO[];
-  current?: number;
-  total?: number;
   pages?: number;
+  total?: number;
+  current?: number;
+  records?: DevLogVO[];
 }
 
 export interface ResultIPageDevLogVO {
