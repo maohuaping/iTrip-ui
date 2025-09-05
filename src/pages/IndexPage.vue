@@ -318,14 +318,6 @@ const tableColumns = [
     format: (val: any) => val ?? '-'
   },
   {
-    name: 'neighborInfo',
-    label: '邻区信息',
-    field: 'neighborInfo',
-    align: 'center' as const,
-    sortable: false,
-    style: 'width: 100px'
-  },
-  {
     name: 'rsrq',
     label: 'RSRQ',
     field: 'rsrq',
@@ -333,6 +325,26 @@ const tableColumns = [
     sortable: true,
     style: 'width: 80px',
     format: (val: any) => val ?? '-'
+  },
+  {
+    name: 'hasScc',
+    label: 'SCC状态',
+    field: 'hasScc',
+    align: 'center' as const,
+    sortable: true,
+    style: 'width: 80px',
+    format: (val: any) => {
+      if (val === null || val === undefined) return '-';
+      return val === true ? '存在' : '不存在';
+    }
+  },
+  {
+    name: 'neighborInfo',
+    label: '邻区信息',
+    field: 'neighborInfo',
+    align: 'center' as const,
+    sortable: false,
+    style: 'width: 100px'
   },
   {
     name: 'accuracy',
@@ -387,18 +399,6 @@ const tableColumns = [
     sortable: true,
     style: 'width: 80px',
     format: (val: any) => val ?? '-'
-  },
-  {
-    name: 'hasScc',
-    label: 'SCC状态',
-    field: 'hasScc',
-    align: 'center' as const,
-    sortable: true,
-    style: 'width: 80px',
-    format: (val: any) => {
-      if (val === null || val === undefined) return '-';
-      return val === true ? '存在' : '不存在';
-    }
   },
   {
     name: 'tac',
