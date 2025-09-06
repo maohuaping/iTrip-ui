@@ -548,16 +548,6 @@ export interface SignalParamsVO {
   updatedAt?: string;
 }
 
-/**
- * 分页参数
- */
-export interface PageParam {
-  /** 当前页 */
-  current?: number;
-  /** 每页显示条数，默认 10 */
-  size?: number;
-}
-
 export interface QuerySignalParamInParam {
   /** 主键ID */
   id?: string;
@@ -579,24 +569,13 @@ export interface QuerySignalParamInParam {
   endDate?: string;
   /** 日期筛选类型：today-今天，all-全部，custom-自定义范围 */
   dateFilter?: string;
-  pageParam?: PageParam;
 }
 
-/**
- * 成功数据
- */
-export interface IPageSignalParamsVO {
-  size?: number;
-  pages?: number;
-  total?: number;
-  current?: number;
-  records?: SignalParamsVO[];
-}
-
-export interface ResultIPageSignalParamsVO {
+export interface ResultListSignalParamsVO {
   /** 是否成功 */
   isOk?: boolean;
-  okData?: IPageSignalParamsVO;
+  /** 成功数据 */
+  okData?: SignalParamsVO[];
   /** 失败消息 */
   failMsg?: string;
 }
@@ -840,6 +819,16 @@ export interface SaveDevTaskInParam {
   userId?: number;
 }
 
+/**
+ * 分页参数
+ */
+export interface PageParam {
+  /** 当前页 */
+  current?: number;
+  /** 每页显示条数，默认 10 */
+  size?: number;
+}
+
 export interface QueryDevTaskInParam {
   /** 主键ID */
   id?: string;
@@ -883,10 +872,10 @@ export interface DevTaskVO {
  */
 export interface IPageDevTaskVO {
   size?: number;
-  pages?: number;
-  total?: number;
-  current?: number;
   records?: DevTaskVO[];
+  current?: number;
+  total?: number;
+  pages?: number;
 }
 
 /**
@@ -962,10 +951,10 @@ export interface DevLogVO {
  */
 export interface IPageDevLogVO {
   size?: number;
-  pages?: number;
-  total?: number;
-  current?: number;
   records?: DevLogVO[];
+  current?: number;
+  total?: number;
+  pages?: number;
 }
 
 export interface ResultIPageDevLogVO {

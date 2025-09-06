@@ -107,7 +107,7 @@
             </div>
           </div>
 
-          <!-- 分页数据表格 -->
+          <!-- 数据表格 -->
           <q-table 
             :rows="signalParamsList" 
             :columns="tableColumns" 
@@ -116,17 +116,12 @@
             flat 
             bordered
             class="custom-signal-table" 
-            v-model:pagination="tablePagination" 
-            :rows-per-page-options="[5, 10, 20, 50]"
+            :rows-per-page-options="[10, 20, 50, 0]"
             :rows-per-page-label="'每页条数'" 
             :no-data-label="'暂无数据'" 
             :loading-label="'加载中...'"
-            :pagination-label="getPaginationLabel" 
             binary-state-sort 
-            @request="onRequest"
-            :server-pagination="true"
-            :hide-pagination="false"
-            :hide-bottom="false"
+            :pagination="{ rowsPerPage: 10 }"
           >
 
             <!-- 自定义列模板 - 图片 -->
@@ -250,10 +245,7 @@ const uploading = ref(false);
 const signalParamsList = ref<SignalParamsVO[]>([]);
 const loadingTable = ref(false);
 
-// 分页相关数据
-const totalRecords = ref(0);
-const currentPage = ref(1);
-const pageSize = ref(10);
+// UI状态
 const showImageDialog = ref(false);
 const selectedImageUrl = ref('');
 
@@ -290,12 +282,7 @@ const chartTypeOptions = [
   { label: '散点图', value: 'scatter' }
 ];
 
-// 表格分页配置
-const tablePagination = ref({
-  page: 1,
-  rowsPerPage: 5,
-  rowsNumber: 0
-});
+// 移除了分页配置，现在使用简单的客户端分页
 
 // 表格列定义 - 按重要性和变化频率排序
 const tableColumns = [
@@ -481,13 +468,8 @@ const uploadFile = async () => {
       // 清除选中的文件
       selectedFile.value = null;
 
-      // 刷新表格数据 - 回到第一页显示最新数据，保持当前日期筛选
-      await onRequest({
-        pagination: {
-          page: 1,
-          rowsPerPage: tablePagination.value.rowsPerPage
-        }
-      });
+      // 刷新表格数据，保持当前日期筛选
+      await loadSignalData();
     } else {
       throw new Error(response.data.failMsg || '识别失败');
     }
@@ -502,22 +484,15 @@ const uploadFile = async () => {
   }
 };
 
-// 分页请求处理函数
-const onRequest = async (props: any) => {
-  const { page, rowsPerPage } = props.pagination;
-  
-  console.log('分页请求参数:', { page, rowsPerPage });
+// 加载数据函数（已移除分页功能）
+const loadSignalData = async () => {
+  console.log('加载信号数据，筛选条件:', selectedDateFilter.value);
   
   loadingTable.value = true;
 
   try {
     // 构建查询参数，包含日期筛选
-    const queryParams: any = {
-      pageParam: {
-        current: page,
-        size: rowsPerPage
-      }
-    };
+    const queryParams: any = {};
 
     // 根据选中的日期筛选条件添加日期参数
     if (selectedDateFilter.value === 'today') {
@@ -532,27 +507,28 @@ const onRequest = async (props: any) => {
     const response = await rfSignalApi.querySignalParam(queryParams);
 
     if (response.data && response.data.isOk && response.data.okData) {
-      const pageData = response.data.okData;
+      const dataList = response.data.okData;
       
-      console.log('分页响应数据:', pageData);
+      console.log('响应数据:', dataList);
       
-      signalParamsList.value = pageData.records || [];
+      signalParamsList.value = dataList || [];
       
-      // 更新分页信息
-      tablePagination.value.page = pageData.current || 1;
-      tablePagination.value.rowsPerPage = pageData.size || 5;
-      tablePagination.value.rowsNumber = pageData.total || 0;
-      
-      console.log('更新后的分页状态:', tablePagination.value);
+      console.log('更新后的数据列表长度:', signalParamsList.value.length);
 
-      if (pageData.records && pageData.records.length > 0) {
+      if (dataList && dataList.length > 0) {
         $q.notify({
           type: 'positive',
-          message: `成功加载第 ${pageData.current} 页，共 ${pageData.total} 条记录`,
+          message: `成功加载 ${dataList.length} 条记录`,
           timeout: 2000
         });
         // 更新图表
         updateCharts();
+      } else {
+        $q.notify({
+          type: 'info',
+          message: '当前筛选条件下暂无数据',
+          timeout: 2000
+        });
       }
     } else {
       throw new Error(response.data?.failMsg || '获取数据失败');
@@ -581,9 +557,7 @@ const onRequest = async (props: any) => {
 
 // 兼容性：保持原有的loadSignalParams函数
 const loadSignalParams = async () => {
-  await onRequest({
-    pagination: tablePagination.value
-  });
+  await loadSignalData();
 };
 
 // 日期筛选相关函数
@@ -598,13 +572,8 @@ const setDateFilter = async (filterType: 'today' | 'all' | 'custom') => {
     customDate.value = getTodayString();
   }
   
-  // 重置到第一页并重新加载数据
-  await onRequest({
-    pagination: {
-      page: 1,
-      rowsPerPage: tablePagination.value.rowsPerPage
-    }
-  });
+  // 重新加载数据
+  await loadSignalData();
 };
 
 
@@ -631,10 +600,8 @@ const deleteSignalParam = async (row: SignalParamsVO) => {
           type: 'positive',
           message: '删除成功！'
         });
-        // Refresh the table data - 保持当前页
-        await onRequest({
-          pagination: tablePagination.value
-        });
+        // 刷新表格数据
+        await loadSignalData();
       } else {
         throw new Error(response.data.failMsg || '删除失败');
       }
@@ -664,17 +631,7 @@ const copyToClipboard = (text: string): void => {
     });
 };
 
-// 自定义分页标签函数
-const getPaginationLabel = (firstRowIndex: number, endRowIndex: number, totalRowsNumber: number) => {
-  if (totalRowsNumber === 0) {
-    return '暂无数据';
-  }
-
-  const currentPage = Math.ceil(firstRowIndex / tablePagination.value.rowsPerPage);
-  const totalPages = Math.ceil(totalRowsNumber / tablePagination.value.rowsPerPage);
-
-  return `第 ${currentPage} 页，共 ${totalPages} 页 (显示第 ${firstRowIndex}-${endRowIndex} 条，总计 ${totalRowsNumber} 条)`;
-};
+// 移除了分页标签函数，现在使用Quasar默认的客户端分页
 
 // 初始化图表
 const initCharts = async () => {
@@ -807,12 +764,7 @@ onMounted(async () => {
   customDate.value = '';
   
   // 初始化表格数据 - 默认显示今天的数据
-  await onRequest({
-    pagination: {
-      page: 1,
-      rowsPerPage: 5
-    }
-  });
+  await loadSignalData();
   await initCharts();
   
   // 添加窗口大小变化监听

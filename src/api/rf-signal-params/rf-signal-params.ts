@@ -10,7 +10,7 @@ import type {
   RecognizeSignalParamsBody,
   RecognizeSignalParamsParams,
   ResultBoolean,
-  ResultIPageSignalParamsVO,
+  ResultListSignalParamsVO,
   ResultSignalParamsVO,
 } from '../api.schemas';
 
@@ -45,10 +45,10 @@ export const getRfSignalParams = () => {
     });
   };
   /**
-   * @summary 分页查询射频信号参数列表，支持日期筛选（默认显示今天数据）
+   * @summary 查询射频信号参数列表，支持日期筛选（默认显示今天数据）
    */
   const querySignalParam = (querySignalParamInParam: QuerySignalParamInParam) => {
-    return customInstance<ResultIPageSignalParamsVO>({
+    return customInstance<ResultListSignalParamsVO>({
       url: `/api/signal/querySignalParam`,
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
