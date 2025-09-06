@@ -3,77 +3,85 @@
     <div class="q-gutter-md responsive-container">
       <h4 class="text-center q-mb-lg">射频信号参数识别</h4>
 
-      <!-- File Upload Section -->
-      <q-card class="upload-card q-mb-xl">
-        <q-card-section>
-          <div class="text-h6">上传信号参数图片</div>
-          <div class="text-subtitle2 text-grey-7 q-mb-md">
-            上传图片文件来识别射频信号参数
-          </div>
-        </q-card-section>
-
-        <q-card-section>
-          <q-file v-model="selectedFile" label="选择图片文件" accept=".jpg,.jpeg,.png,.gif" max-file-size="10485760"
-            @rejected="onRejected" outlined class="q-mb-md">
-            <template v-slot:prepend>
-              <q-icon name="attach_file" />
-            </template>
-          </q-file>
-
-          <div class="upload-buttons">
-            <q-btn label="上传并识别" color="primary" :loading="uploading" :disable="!selectedFile" @click="uploadFile"
-              icon="upload" />
-            <q-btn label="清除" color="grey" outline @click="clearFile" :disable="uploading" />
-          </div>
-        </q-card-section>
-      </q-card>
-
-
 
       <!-- Signal Parameters Data Table -->
       <q-card flat bordered class="signal-table-card q-mb-xl">
         <q-card-section class="q-pa-sm">
-          <div class="row justify-between items-center q-mb-md q-pa-sm">
-            <div class="text-h6 text-weight-bold">
-              <q-icon name="signal_cellular_alt" size="28px" class="q-mr-sm" />
-              所有信号参数记录
+          <div class="q-mb-md q-pa-sm">
+            <!-- 标题区域 -->
+            <div class="row items-center q-mb-sm">
+              <div class="text-h6 text-weight-bold">
+                <q-icon name="signal_cellular_alt" size="28px" class="q-mr-sm" />
+                所有信号参数记录
+              </div>
             </div>
-            <div class="row q-gutter-sm items-center">
-              <!-- 日期筛选控件 -->
-              <q-btn-group flat>
-                <q-btn 
-                  :color="selectedDateFilter === 'today' ? 'primary' : 'grey-7'" 
-                  :text-color="selectedDateFilter === 'today' ? 'white' : 'grey-8'"
-                  :label="`今天 (${dateCounts.today})`"
-                  size="sm" 
-                  @click="setDateFilter('today')" 
-                  :disable="loadingTable" 
+            
+            <!-- 分隔线 -->
+            <q-separator class="q-mb-md" color="grey-5" />
+            
+            <!-- 控制区域 - 上传按钮和筛选按钮在同一行 -->
+            <div class="row justify-between items-center q-mb-sm">
+              <!-- 左侧：上传按钮 -->
+              <div class="row items-center">
+                <q-file 
+                  v-model="selectedFile" 
+                  accept=".jpg,.jpeg,.png,.gif" 
+                  max-file-size="10485760"
+                  @rejected="onRejected" 
+                  @update:model-value="onFileSelected"
+                  style="display: none"
+                  ref="fileInput"
                 />
                 <q-btn 
-                  :color="selectedDateFilter === 'yesterday' ? 'primary' : 'grey-7'" 
-                  :text-color="selectedDateFilter === 'yesterday' ? 'white' : 'grey-8'"
-                  :label="`昨天 (${dateCounts.yesterday})`"
+                  color="primary" 
+                  text-color="white"
+                  icon="upload" 
+                  label="上传识别" 
                   size="sm" 
-                  @click="setDateFilter('yesterday')" 
-                  :disable="loadingTable" 
+                  :loading="uploading"
+                  @click="triggerFileUpload"
+                  class="upload-btn"
+                  outline
                 />
-                <q-btn 
-                  :color="selectedDateFilter === 'dayBefore' ? 'primary' : 'grey-7'" 
-                  :text-color="selectedDateFilter === 'dayBefore' ? 'white' : 'grey-8'"
-                  :label="`前天 (${dateCounts.dayBefore})`"
-                  size="sm" 
-                  @click="setDateFilter('dayBefore')" 
-                  :disable="loadingTable" 
-                />
-                <q-btn 
-                  :color="selectedDateFilter === 'all' ? 'primary' : 'grey-7'" 
-                  :text-color="selectedDateFilter === 'all' ? 'white' : 'grey-8'"
-                  :label="`全部 (${dateCounts.all})`"
-                  size="sm" 
-                  @click="setDateFilter('all')" 
-                  :disable="loadingTable" 
-                />
-              </q-btn-group>
+              </div>
+              
+              <!-- 右侧：日期筛选控件 -->
+              <div class="row items-center">
+                <q-btn-group flat>
+                  <q-btn 
+                    :color="selectedDateFilter === 'today' ? 'primary' : 'grey-7'" 
+                    :text-color="selectedDateFilter === 'today' ? 'white' : 'grey-8'"
+                    :label="`今天 (${dateCounts.today})`"
+                    size="sm" 
+                    @click="setDateFilter('today')" 
+                    :disable="loadingTable" 
+                  />
+                  <q-btn 
+                    :color="selectedDateFilter === 'yesterday' ? 'primary' : 'grey-7'" 
+                    :text-color="selectedDateFilter === 'yesterday' ? 'white' : 'grey-8'"
+                    :label="`昨天 (${dateCounts.yesterday})`"
+                    size="sm" 
+                    @click="setDateFilter('yesterday')" 
+                    :disable="loadingTable" 
+                  />
+                  <q-btn 
+                    :color="selectedDateFilter === 'dayBefore' ? 'primary' : 'grey-7'" 
+                    :text-color="selectedDateFilter === 'dayBefore' ? 'white' : 'grey-8'"
+                    :label="`前天 (${dateCounts.dayBefore})`"
+                    size="sm" 
+                    @click="setDateFilter('dayBefore')" 
+                    :disable="loadingTable" 
+                  />
+                  <q-btn 
+                    :color="selectedDateFilter === 'all' ? 'primary' : 'grey-7'" 
+                    :text-color="selectedDateFilter === 'all' ? 'white' : 'grey-8'"
+                    :label="`全部 (${dateCounts.all})`"
+                    size="sm" 
+                    @click="setDateFilter('all')" 
+                    :disable="loadingTable" 
+                  />
+                </q-btn-group>
+              </div>
             </div>
           </div>
 
@@ -306,6 +314,7 @@ const editingRecord = ref<any>(null);
 const editDownSpeedValue = ref('');
 const savingDownSpeed = ref(false);
 const editDownSpeedInput = ref<any>(null);
+const fileInput = ref<any>(null);
 
 // 获取日期字符串的辅助函数 (YYYY-MM-DD格式)
 const getTodayString = (): string => {
@@ -507,6 +516,20 @@ const onRejected = (rejectedEntries: any[]) => {
 
 const clearFile = () => {
   selectedFile.value = null;
+};
+
+// 触发文件选择
+const triggerFileUpload = () => {
+  if (fileInput.value) {
+    fileInput.value.pickFiles();
+  }
+};
+
+// 文件选择后自动上传
+const onFileSelected = (file: File | null) => {
+  if (file) {
+    uploadFile();
+  }
 };
 
 const uploadFile = async () => {
@@ -961,20 +984,32 @@ const formatDateTime = (dateTime?: string) => {
   }
 }
 
-/* 上传卡片样式 */
-.upload-card {
-  border-radius: 12px;
-  box-shadow: $elevation-2;
-  background: $cursor-surface;
-  border: 1px solid $cursor-border;
-  width: 100%;
-  margin: 0 auto;
-}
-
-.upload-buttons {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
+/* 上传按钮样式 - 亮色边框突出显示 */
+.upload-btn {
+  border-radius: 6px !important;
+  transition: all 0.2s ease;
+  border: 2px solid $cursor-primary !important;
+  background: transparent !important;
+  color: $cursor-primary !important;
+  font-weight: 600;
+  
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba($cursor-primary, 0.3);
+    background: rgba($cursor-primary, 0.1) !important;
+    border-color: $cursor-accent !important;
+    color: $cursor-accent !important;
+  }
+  
+  &:active {
+    transform: translateY(0);
+  }
+  
+  // 加载状态样式
+  &.q-btn--loading {
+    background: rgba($cursor-primary, 0.1) !important;
+    border-color: $cursor-primary !important;
+  }
 }
 
 /* 响应式容器 */
@@ -1383,6 +1418,13 @@ const formatDateTime = (dateTime?: string) => {
     border-radius: 8px;
   }
 
+  // 移动端上传按钮优化
+  .upload-btn {
+    font-size: 11px;
+    padding: 6px 12px;
+    min-height: 32px;
+  }
+
   // 移动端日期筛选按钮优化
   .q-btn-group .q-btn {
     font-size: 11px;
@@ -1390,19 +1432,40 @@ const formatDateTime = (dateTime?: string) => {
     min-width: auto;
   }
 
-  // 移动端标题和控件布局优化
+  // 移动端标题区域
+  .text-h6 {
+    font-size: 16px;
+    text-align: center;
+  }
+  
+  // 移动端控制区域布局优化
   .row.justify-between {
     flex-direction: column;
     gap: 12px;
+    align-items: stretch;
     
-    .text-h6 {
-      font-size: 16px;
-      text-align: center;
+    // 上传按钮区域
+    .row.items-center:first-child {
+      justify-content: flex-start;
+      
+      .upload-btn {
+        font-size: 11px;
+        padding: 6px 12px;
+        border-width: 1px !important;
+      }
     }
     
-    .row.q-gutter-sm {
+    // 日期筛选区域
+    .row.items-center:last-child {
       justify-content: center;
-      flex-wrap: wrap;
+      
+      .q-btn-group {
+        width: 100%;
+        
+        .q-btn {
+          flex: 1;
+        }
+      }
     }
   }
 
@@ -1477,43 +1540,6 @@ const formatDateTime = (dateTime?: string) => {
     width: 100%;
   }
 
-  // 移动端上传区域优化
-  .upload-card {
-    margin: 0 auto;
-    width: 100%;
-    border-radius: 8px;
-    
-    .q-card-section {
-      padding: 12px;
-    }
-    
-    .text-h6 {
-      font-size: 16px;
-      text-align: center;
-      margin-bottom: 8px;
-    }
-    
-    .text-subtitle2 {
-      text-align: center;
-      font-size: 12px;
-    }
-    
-    .q-file {
-      margin-bottom: 16px;
-    }
-  }
-
-  .upload-buttons {
-    justify-content: center;
-    gap: 8px;
-    
-    .q-btn {
-      font-size: 12px;
-      padding: 8px 16px;
-      flex: 1;
-      max-width: 140px;
-    }
-  }
 
   // 增加版块间距
   .q-mb-xl {
