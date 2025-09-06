@@ -142,30 +142,7 @@
               </q-td>
             </template>
 
-            <!-- 自定义列模板 - 下行速率 -->
-            <template v-slot:body-cell-downSpeed="props">
-              <q-td :props="props" class="down-speed-cell">
-                <div v-if="editingDownSpeed === props.row.id" class="down-speed-input">
-                  <q-input
-                    v-model="editingDownSpeedValue"
-                    type="number"
-                    dense
-                    outlined
-                    suffix="Mbps"
-                    style="width: 100px"
-                    @keyup.enter="saveDownSpeed(props.row)"
-                    @blur="cancelEditDownSpeed"
-                    ref="downSpeedInput"
-                    :rules="[val => val >= 0 || '速率不能为负数']"
-                  />
-                </div>
-                <div v-else class="down-speed-display" @click="startEditDownSpeed(props.row)">
-                  <span v-if="props.value" class="down-speed-value">{{ props.value }} Mbps</span>
-                  <span v-else class="down-speed-placeholder text-grey-5">点击录入</span>
-                  <q-icon name="edit" size="14px" class="edit-icon q-ml-xs" />
-                </div>
-              </q-td>
-            </template>
+            <!-- 下行速率列正常显示 -->
 
             <!-- 自定义列模板 - 邻区信息 -->
             <template v-slot:body-cell-neighborInfo="props">
@@ -186,6 +163,10 @@
             <template v-slot:body-cell-actions="props">
               <q-td :props="props" class="actions-cell">
                 <div class="action-buttons">
+                  <q-btn flat round dense color="primary" icon="speed" size="sm" @click="openEditDownSpeedDialog(props.row)"
+                    class="action-btn edit-speed-btn">
+                    <q-tooltip>编辑下行速率</q-tooltip>
+                  </q-btn>
                   <q-btn flat round dense color="negative" icon="delete" size="sm" @click="deleteSignalParam(props.row)"
                     class="action-btn delete-btn">
                     <q-tooltip>删除记录</q-tooltip>
@@ -225,6 +206,47 @@
           <q-card-section>
             <q-img :src="selectedImageUrl" fit="contain" style="max-height: 70vh" />
           </q-card-section>
+        </q-card>
+      </q-dialog>
+
+      <!-- Edit Down Speed Dialog -->
+      <q-dialog v-model="showEditDownSpeedDialog" persistent>
+        <q-card style="min-width: 400px;">
+          <q-card-section class="row items-center q-pb-none">
+            <div class="text-h6">编辑下行速率</div>
+            <q-space />
+            <q-btn icon="close" flat round dense v-close-popup />
+          </q-card-section>
+
+          <q-card-section>
+            <div class="q-mb-md text-body2 text-grey-7">
+              记录时间: {{ editingRecord?.createdAt ? formatDateTime(editingRecord.createdAt) : '-' }}
+            </div>
+            <q-input
+              v-model="editDownSpeedValue"
+              type="number"
+              label="下行速率"
+              suffix="Mbps"
+              outlined
+              :rules="[
+                val => val !== null && val !== '' || '请输入下行速率',
+                val => val >= 0 || '速率不能为负数',
+                val => val <= 10000 || '速率值过大'
+              ]"
+              ref="editDownSpeedInput"
+            />
+          </q-card-section>
+
+          <q-card-actions align="right">
+            <q-btn flat label="取消" color="grey" v-close-popup />
+            <q-btn 
+              label="保存" 
+              color="primary" 
+              @click="saveDownSpeedFromDialog" 
+              :loading="savingDownSpeed"
+              :disable="!editDownSpeedValue || parseFloat(editDownSpeedValue) < 0"
+            />
+          </q-card-actions>
         </q-card>
       </q-dialog>
     </div>
@@ -283,9 +305,11 @@ const dateCounts = ref({
 });
 
 // 下行速率编辑相关状态
-const editingDownSpeed = ref<string | null>(null);
-const editingDownSpeedValue = ref('');
-const downSpeedInput = ref<any>(null);
+const showEditDownSpeedDialog = ref(false);
+const editingRecord = ref<any>(null);
+const editDownSpeedValue = ref('');
+const savingDownSpeed = ref(false);
+const editDownSpeedInput = ref<any>(null);
 
 // 获取日期字符串的辅助函数 (YYYY-MM-DD格式)
 const getTodayString = (): string => {
@@ -670,25 +694,21 @@ const setDateFilter = async (filterType: 'today' | 'yesterday' | 'dayBefore' | '
 };
 
 // 下行速率编辑相关函数
-const startEditDownSpeed = (row: any) => {
-  editingDownSpeed.value = row.id;
-  editingDownSpeedValue.value = row.downSpeed || '';
+const openEditDownSpeedDialog = (row: any) => {
+  editingRecord.value = row;
+  editDownSpeedValue.value = row.downSpeed || '';
+  showEditDownSpeedDialog.value = true;
   
   // 使用nextTick确保DOM更新后再聚焦
   nextTick(() => {
-    if (downSpeedInput.value) {
-      downSpeedInput.value.focus();
+    if (editDownSpeedInput.value) {
+      editDownSpeedInput.value.focus();
     }
   });
 };
 
-const cancelEditDownSpeed = () => {
-  editingDownSpeed.value = null;
-  editingDownSpeedValue.value = '';
-};
-
-const saveDownSpeed = async (row: any) => {
-  if (!editingDownSpeedValue.value || parseFloat(editingDownSpeedValue.value) < 0) {
+const saveDownSpeedFromDialog = async () => {
+  if (!editDownSpeedValue.value || parseFloat(editDownSpeedValue.value) < 0) {
     $q.notify({
       type: 'negative',
       message: '请输入有效的下行速率值'
@@ -696,14 +716,16 @@ const saveDownSpeed = async (row: any) => {
     return;
   }
 
+  savingDownSpeed.value = true;
+
   try {
     // 这里调用更新下行速率的API
-    // const response = await rfSignalApi.updateDownSpeed(row.id, parseFloat(editingDownSpeedValue.value));
+    // const response = await rfSignalApi.updateDownSpeed(editingRecord.value.id, parseFloat(editDownSpeedValue.value));
     
     // 临时更新本地数据（实际项目中应该调用API）
-    const targetRow = signalParamsList.value.find(item => item.id === row.id);
+    const targetRow = signalParamsList.value.find(item => item.id === editingRecord.value.id);
     if (targetRow) {
-      (targetRow as any).downSpeed = parseFloat(editingDownSpeedValue.value);
+      (targetRow as any).downSpeed = parseFloat(editDownSpeedValue.value);
     }
 
     $q.notify({
@@ -711,14 +733,18 @@ const saveDownSpeed = async (row: any) => {
       message: '下行速率更新成功！'
     });
 
-    // 结束编辑状态
-    cancelEditDownSpeed();
+    // 关闭对话框
+    showEditDownSpeedDialog.value = false;
+    editingRecord.value = null;
+    editDownSpeedValue.value = '';
   } catch (error: any) {
     console.error('Update down speed error:', error);
     $q.notify({
       type: 'negative',
       message: error.message || '更新下行速率失败'
     });
+  } finally {
+    savingDownSpeed.value = false;
   }
 };
 
@@ -1110,54 +1136,7 @@ const formatDateTime = (dateTime?: string) => {
   }
 }
 
-/* 下行速率列样式 */
-.down-speed-cell {
-  padding: 8px 12px;
-  text-align: center;
-}
-
-.down-speed-display {
-  cursor: pointer;
-  padding: 4px 8px;
-  border-radius: 4px;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 32px;
-
-  &:hover {
-    background-color: rgba($cursor-primary, 0.1);
-    
-    .edit-icon {
-      opacity: 1;
-    }
-  }
-}
-
-.down-speed-value {
-  color: $cursor-text;
-  font-weight: 500;
-}
-
-.down-speed-placeholder {
-  font-style: italic;
-  font-size: 12px;
-}
-
-.edit-icon {
-  opacity: 0.6;
-  transition: opacity 0.2s ease;
-}
-
-.down-speed-input {
-  display: flex;
-  justify-content: center;
-  
-  .q-input {
-    min-width: 100px;
-  }
-}
+/* 移除了下行速率列的编辑样式，现在正常显示 */
 
 /* 操作列样式 */
 .actions-cell {
@@ -1185,6 +1164,15 @@ const formatDateTime = (dateTime?: string) => {
 
   &:active {
     transform: translateY(0);
+  }
+
+  &.edit-speed-btn {
+    color: $cursor-primary;
+
+    &:hover {
+      background-color: rgba($cursor-primary, 0.1);
+      transform: translateY(-1px) scale(1.05);
+    }
   }
 
   &.delete-btn {
