@@ -85,6 +85,7 @@
             row-key="id" 
             flat 
             bordered
+            dense
             class="custom-signal-table" 
             :no-data-label="'暂无数据'" 
             :loading-label="'加载中...'"
@@ -341,7 +342,7 @@ const chartTypeOptions = [
 
 // 移除了分页配置，现在使用简单的客户端分页
 
-// 表格列定义 - 按重要性和变化频率排序
+// 表格列定义 - 按重要性和变化频率排序，优化列宽度以显示更多内容
 const tableColumns = [
   {
     name: 'time',
@@ -349,7 +350,7 @@ const tableColumns = [
     field: 'createdAt',
     align: 'center' as const,
     sortable: true,
-    style: 'width: 80px; min-width: 80px',
+    style: 'width: 60px; min-width: 60px; font-size: 12px',
     format: (val: string) => val ? new Date(val).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', hour12: false }) : '-'
   },
   {
@@ -358,7 +359,7 @@ const tableColumns = [
     field: 'plmnDesc',
     align: 'center' as const,
     sortable: true,
-    style: 'width: 100px',
+    style: 'width: 70px; min-width: 70px',
     format: (val: any) => val ?? '-'
   },
   {
@@ -367,7 +368,7 @@ const tableColumns = [
     field: 'hasScc',
     align: 'center' as const,
     sortable: true,
-    style: 'width: 60px'
+    style: 'width: 45px; min-width: 45px'
   },
   {
     name: 'downSpeed',
@@ -375,8 +376,8 @@ const tableColumns = [
     field: 'downSpeed',
     align: 'center' as const,
     sortable: true,
-    style: 'width: 120px',
-    format: (val: any) => val ? `${val} Mbps` : '-'
+    style: 'width: 80px; min-width: 80px',
+    format: (val: any) => val ? `${val}Mbps` : '-'
   },
   // 核心信号参数 - 最重要且变化频繁的参数
   {
@@ -385,7 +386,7 @@ const tableColumns = [
     field: 'ssbRsrp',
     align: 'center' as const,
     sortable: true,
-    style: 'width: 100px',
+    style: 'width: 75px; min-width: 75px',
     format: (val: any) => val ?? '-'
   },
   {
@@ -394,7 +395,7 @@ const tableColumns = [
     field: 'ssbSinr',
     align: 'center' as const,
     sortable: true,
-    style: 'width: 100px',
+    style: 'width: 75px; min-width: 75px',
     format: (val: any) => val ?? '-'
   },
   {
@@ -403,7 +404,7 @@ const tableColumns = [
     field: 'rssi',
     align: 'center' as const,
     sortable: true,
-    style: 'width: 80px',
+    style: 'width: 60px; min-width: 60px',
     format: (val: any) => val ?? '-'
   },
   {
@@ -412,7 +413,7 @@ const tableColumns = [
     field: 'rsrq',
     align: 'center' as const,
     sortable: true,
-    style: 'width: 80px',
+    style: 'width: 60px; min-width: 60px',
     format: (val: any) => val ?? '-'
   },
   {
@@ -421,16 +422,16 @@ const tableColumns = [
     field: 'nrCqi',
     align: 'center' as const,
     sortable: true,
-    style: 'width: 80px',
+    style: 'width: 60px; min-width: 60px',
     format: (val: any) => val ?? '-'
   },
   {
     name: 'neighborInfo',
-    label: '邻区信息',
+    label: '邻区',
     field: 'neighborInfo',
     align: 'center' as const,
     sortable: false,
-    style: 'width: 100px'
+    style: 'width: 50px; min-width: 50px'
   },
   // 辅助信息
   {
@@ -439,7 +440,7 @@ const tableColumns = [
     field: 'imageUrl',
     align: 'center' as const,
     sortable: false,
-    style: 'width: 80px'
+    style: 'width: 50px; min-width: 50px'
   },
   // 网络配置参数 - 相对稳定的参数
   {
@@ -448,7 +449,7 @@ const tableColumns = [
     field: 'workMode',
     align: 'center' as const,
     sortable: true,
-    style: 'width: 100px',
+    style: 'width: 70px; min-width: 70px',
     format: (val: any) => val ?? '-'
   },
   {
@@ -457,7 +458,7 @@ const tableColumns = [
     field: 'pci',
     align: 'center' as const,
     sortable: true,
-    style: 'width: 80px',
+    style: 'width: 55px; min-width: 55px',
     format: (val: any) => val ?? '-'
   },
   {
@@ -466,7 +467,7 @@ const tableColumns = [
     field: 'nrBand',
     align: 'center' as const,
     sortable: true,
-    style: 'width: 100px',
+    style: 'width: 65px; min-width: 65px',
     format: (val: any) => val ?? '-'
   },
   {
@@ -475,7 +476,7 @@ const tableColumns = [
     field: 'tac',
     align: 'center' as const,
     sortable: true,
-    style: 'width: 100px',
+    style: 'width: 70px; min-width: 70px',
     format: (val: any) => val ?? '-'
   },
   {
@@ -485,7 +486,7 @@ const tableColumns = [
     align: 'center' as const,
     sortable: true,
     format: (val: string) => formatDateTime(val),
-    style: 'width: 160px'
+    style: 'width: 130px; min-width: 130px; font-size: 11px'
   },
   {
     name: 'actions',
@@ -493,7 +494,7 @@ const tableColumns = [
     field: 'actions',
     align: 'center' as const,
     sortable: false,
-    style: 'width: 80px'
+    style: 'width: 60px; min-width: 60px'
   }
 ];
 
@@ -1043,9 +1044,11 @@ const formatDateTime = (dateTime?: string) => {
     font-weight: 600;
     color: $cursor-text;
     border-bottom: 2px solid $cursor-border;
-    font-size: 14px;
-    padding: 12px 8px;
-    text-align: center;
+    font-size: 12px;
+    padding: 8px 6px;
+    text-align: center !important;
+    line-height: 1.2;
+    vertical-align: middle;
   }
 
   /* 表格行样式 */
@@ -1063,10 +1066,24 @@ const formatDateTime = (dateTime?: string) => {
   :deep(th) {
     border-right: 1px solid $cursor-border;
     color: $cursor-text;
+    padding: 6px 4px;
+    font-size: 12px;
+    line-height: 1.3;
+    text-align: center !important;
+    vertical-align: middle;
 
     &:last-child {
       border-right: none;
     }
+  }
+
+  /* 表格数据行样式 */
+  :deep(tbody td) {
+    padding: 6px 4px;
+    font-size: 11px;
+    line-height: 1.2;
+    vertical-align: middle;
+    text-align: center !important;
   }
 
   /* 表格容器 */
@@ -1079,63 +1096,99 @@ const formatDateTime = (dateTime?: string) => {
 
 /* 时间列样式 */
 .time-cell {
-  padding: 12px 8px;
+  padding: 4px 3px;
   font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
-  font-size: 13px;
+  font-size: 10px;
   font-weight: 500;
   color: $cursor-text;
+  line-height: 1.2;
 }
 
 /* 图片列样式 */
-.image-cell {
-  padding: 8px;
-  text-align: center;
+.custom-signal-table :deep(.image-cell),
+.custom-signal-table .image-cell {
+  padding: 6px 4px !important;
+  text-align: center !important;
+  vertical-align: middle !important;
+  position: relative !important;
 }
 
-.image-btn {
-  width: 32px;
-  height: 32px;
+.custom-signal-table :deep(.image-btn),
+.custom-signal-table .image-btn {
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
   transition: all 0.2s ease;
   color: $cursor-primary;
+  position: absolute !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  margin: 0 !important;
 
   &:hover {
     background-color: rgba($cursor-primary, 0.1);
-    transform: scale(1.1);
+    transform: translate(-50%, -50%) scale(1.1) !important;
   }
 }
 
 
-/* SCC状态列样式 */
-.scc-cell {
-  padding: 8px;
-  text-align: center;
+/* SCC状态列样式 - 使用更强的选择器优先级 */
+.custom-signal-table :deep(.scc-cell),
+.custom-signal-table .scc-cell {
+  padding: 6px 4px !important;
+  text-align: center !important;
+  vertical-align: middle !important;
+  display: table-cell !important;
+  position: relative !important;
 }
 
-.scc-cell .q-icon {
+.custom-signal-table :deep(.scc-cell .q-icon),
+.custom-signal-table .scc-cell .q-icon {
   transition: transform 0.2s ease;
+  font-size: 16px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  vertical-align: middle !important;
+  line-height: 1 !important;
+  position: absolute !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  margin: 0 !important;
 }
 
-.scc-cell .q-icon:hover {
-  transform: scale(1.1);
+.custom-signal-table :deep(.scc-cell .q-icon:hover),
+.custom-signal-table .scc-cell .q-icon:hover {
+  transform: translate(-50%, -50%) scale(1.1) !important;
 }
 
 /* 邻区信息列样式 */
-.neighbor-cell {
-  padding: 8px;
-  text-align: center;
+.custom-signal-table :deep(.neighbor-cell),
+.custom-signal-table .neighbor-cell {
+  padding: 6px 4px !important;
+  text-align: center !important;
+  vertical-align: middle !important;
+  position: relative !important;
 }
 
-.neighbor-btn {
-  width: 32px;
-  height: 32px;
+.custom-signal-table :deep(.neighbor-btn),
+.custom-signal-table .neighbor-btn {
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
   transition: all 0.2s ease;
   color: $cursor-info;
+  position: absolute !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  margin: 0 !important;
 
   &:hover {
     background-color: rgba($cursor-info, 0.1);
-    transform: scale(1.1);
+    transform: translate(-50%, -50%) scale(1.1) !important;
   }
 }
 
@@ -1168,7 +1221,7 @@ const formatDateTime = (dateTime?: string) => {
 
 /* 操作列样式 */
 .actions-cell {
-  padding: 8px 12px;
+  padding: 2px 4px;
   text-align: center;
 }
 
@@ -1176,13 +1229,13 @@ const formatDateTime = (dateTime?: string) => {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 4px;
+  gap: 2px;
 }
 
 .action-btn {
-  width: 32px;
-  height: 32px;
-  border-radius: 6px;
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
   transition: all 0.2s ease;
 
   &:hover {
@@ -1212,25 +1265,62 @@ const formatDateTime = (dateTime?: string) => {
 /* 响应式设计 */
 @media (max-width: 1200px) {
   .custom-signal-table {
-    font-size: 13px;
+    font-size: 11px;
 
     :deep(th),
     :deep(td) {
-      padding: 8px 6px;
+      padding: 3px 2px;
+      font-size: 10px;
+    }
+
+    :deep(thead tr:first-child th) {
+      font-size: 10px;
+      padding: 6px 4px;
+      text-align: center !important;
+      vertical-align: middle;
+    }
+
+    .custom-signal-table :deep(.scc-cell),
+    .custom-signal-table .scc-cell {
+      padding: 3px 2px !important;
+      position: relative !important;
+    }
+
+    .custom-signal-table :deep(.scc-cell .q-icon),
+    .custom-signal-table .scc-cell .q-icon {
+      font-size: 14px !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      position: absolute !important;
+      top: 50% !important;
+      left: 50% !important;
+      transform: translate(-50%, -50%) !important;
+      margin: 0 !important;
     }
   }
 }
 
 @media (max-width: 768px) {
   .custom-signal-table {
-    font-size: 12px;
+    font-size: 10px;
     width: 100%;
     margin: 0 auto; // 确保表格居中
 
     :deep(th),
     :deep(td) {
-      padding: 6px 3px; // 进一步减少内边距以显示更多内容
+      padding: 2px 1px; // 进一步减少内边距以显示更多内容
       text-align: center;
+      font-size: 9px;
+      line-height: 1.1;
+    }
+
+    :deep(thead tr:first-child th) {
+      font-size: 9px;
+      padding: 5px 3px;
+      font-weight: 600;
+      text-align: center !important;
+      vertical-align: middle;
     }
 
     :deep(.q-table__container) {
@@ -1240,12 +1330,49 @@ const formatDateTime = (dateTime?: string) => {
     }
 
     .action-btn {
-      width: 28px;
-      height: 28px;
+      width: 20px;
+      height: 20px;
 
       :deep(.q-icon) {
-        font-size: 16px;
+        font-size: 12px;
       }
+    }
+
+    .image-btn {
+      width: 20px;
+      height: 20px;
+
+      :deep(.q-icon) {
+        font-size: 12px;
+      }
+    }
+
+    .neighbor-btn {
+      width: 20px;
+      height: 20px;
+
+      :deep(.q-icon) {
+        font-size: 12px;
+      }
+    }
+
+    .custom-signal-table :deep(.scc-cell),
+    .custom-signal-table .scc-cell {
+      padding: 2px 1px !important;
+      position: relative !important;
+    }
+
+    .custom-signal-table :deep(.scc-cell .q-icon),
+    .custom-signal-table .scc-cell .q-icon {
+      font-size: 12px !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      position: absolute !important;
+      top: 50% !important;
+      left: 50% !important;
+      transform: translate(-50%, -50%) !important;
+      margin: 0 !important;
     }
   }
 
