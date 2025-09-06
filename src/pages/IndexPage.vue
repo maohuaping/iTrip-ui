@@ -116,12 +116,11 @@
             flat 
             bordered
             class="custom-signal-table" 
-            :rows-per-page-options="[10, 20, 50, 0]"
-            :rows-per-page-label="'每页条数'" 
             :no-data-label="'暂无数据'" 
             :loading-label="'加载中...'"
             binary-state-sort 
-            :pagination="{ rowsPerPage: 10 }"
+            :pagination="{ rowsPerPage: 0 }"
+            hide-pagination
           >
 
             <!-- 自定义列模板 - 图片 -->
@@ -822,36 +821,13 @@ const formatDateTime = (dateTime?: string) => {
   border-radius: 8px;
   background: $cursor-surface;
 
-  /* 隐藏默认的表格顶部，保留底部分页 */
+  /* 隐藏默认的表格顶部和底部 */
   :deep(.q-table__top) {
     display: none;
   }
 
-  /* 显示底部分页控件 */
   :deep(.q-table__bottom) {
-    display: flex !important;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px 16px;
-    background: $cursor-surface;
-    border-top: 1px solid $cursor-border;
-  }
-  
-  /* 分页控件样式 */
-  :deep(.q-table__bottom .q-table__control) {
-    color: $cursor-text;
-  }
-  
-  :deep(.q-table__bottom .q-btn) {
-    color: $cursor-text;
-    
-    &:hover {
-      background-color: rgba($cursor-primary, 0.1);
-    }
-  }
-  
-  :deep(.q-table__bottom .q-select) {
-    color: $cursor-text;
+    display: none;
   }
 
   /* 表头样式 */
