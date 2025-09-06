@@ -262,7 +262,7 @@ import {
   GridComponent,
   LegendComponent
 } from 'echarts/components';
-import { LineChart, BarChart, PieChart } from 'echarts/charts';
+import { LineChart, BarChart, PieChart, ScatterChart } from 'echarts/charts';
 import { UniversalTransition } from 'echarts/features';
 import { CanvasRenderer } from 'echarts/renderers';
 
@@ -275,6 +275,7 @@ echarts.use([
   LineChart,
   BarChart,
   PieChart,
+  ScatterChart,
   UniversalTransition,
   CanvasRenderer
 ]);
@@ -819,15 +820,29 @@ const updateSignalTrendChart = () => {
       show: false // 在移动端隐藏标题节省空间
     },
     tooltip: {
-      trigger: 'axis',
-      axisPointer: { type: 'cross' },
+      trigger: chartType.value === 'scatter' ? 'item' : 'axis',
+      axisPointer: chartType.value === 'scatter' ? undefined : { type: 'cross' },
       textStyle: { fontSize: 12 },
       formatter: (params: any) => {
-        let result = `${params[0].axisValue}<br/>`;
-        params.forEach((param: any) => {
-          result += `${param.seriesName}: -${param.value} dBm<br/>`;
-        });
-        return result;
+        if (chartType.value === 'scatter') {
+          // 散点图的tooltip格式
+          if (Array.isArray(params)) {
+            let result = `${params[0].name}<br/>`;
+            params.forEach((param: any) => {
+              result += `${param.seriesName}: -${param.value} dBm<br/>`;
+            });
+            return result;
+          } else {
+            return `${params.name}<br/>${params.seriesName}: -${params.value} dBm`;
+          }
+        } else {
+          // 折线图和柱状图的tooltip格式
+          let result = `${params[0].axisValue}<br/>`;
+          params.forEach((param: any) => {
+            result += `${param.seriesName}: -${param.value} dBm<br/>`;
+          });
+          return result;
+        }
       }
     },
     legend: {
@@ -873,22 +888,26 @@ const updateSignalTrendChart = () => {
       {
         name: 'RSSI',
         type: chartType.value,
-        data: data.map(d => d.rssi),
+        data: chartType.value === 'scatter' 
+          ? data.map((d, index) => ({ name: d.time, value: d.rssi }))
+          : data.map(d => d.rssi),
         smooth: chartType.value === 'line',
         lineStyle: chartType.value === 'line' ? { color: '#1976d2', width: 2 } : undefined,
         itemStyle: { color: '#1976d2' },
         symbol: 'circle',
-        symbolSize: chartType.value === 'scatter' ? 6 : 4
+        symbolSize: chartType.value === 'scatter' ? 8 : 4
       },
       {
         name: 'SSB-RSRP',
         type: chartType.value,
-        data: data.map(d => d.ssbRsrp),
+        data: chartType.value === 'scatter' 
+          ? data.map((d, index) => ({ name: d.time, value: d.ssbRsrp }))
+          : data.map(d => d.ssbRsrp),
         smooth: chartType.value === 'line',
         lineStyle: chartType.value === 'line' ? { color: '#388e3c', width: 2 } : undefined,
         itemStyle: { color: '#388e3c' },
         symbol: 'circle',
-        symbolSize: chartType.value === 'scatter' ? 6 : 4
+        symbolSize: chartType.value === 'scatter' ? 8 : 4
       }
     ]
   };
