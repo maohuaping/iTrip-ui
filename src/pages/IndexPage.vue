@@ -171,8 +171,6 @@
               信号参数分析图表
             </div>
             <div class="row q-gutter-sm">
-              <q-select v-model="chartTimeRange" :options="timeRangeOptions" label="时间范围" dense outlined
-                style="min-width: 120px" @update:model-value="updateCharts" emit-value map-options />
               <q-select v-model="chartType" :options="chartTypeOptions" label="图表类型" dense outlined
                 style="min-width: 120px" @update:model-value="updateCharts" emit-value map-options />
             </div>
@@ -329,20 +327,12 @@ const getDayBeforeString = (): string => {
 const rfSignalApi = getRfSignalParams();
 
 // 图表相关状态
-const chartTimeRange = ref('24h');
 const chartType = ref('line');
 const signalTrendChart = ref<HTMLElement>();
 
 let signalTrendChartInstance: echarts.ECharts | null = null;
 
 // 图表配置选项
-const timeRangeOptions = [
-  { label: '最近1小时', value: '1h' },
-  { label: '最近24小时', value: '24h' },
-  { label: '最近7天', value: '7d' },
-  { label: '最近30天', value: '30d' }
-];
-
 const chartTypeOptions = [
   { label: '折线图', value: 'line' },
   { label: '柱状图', value: 'bar' },
