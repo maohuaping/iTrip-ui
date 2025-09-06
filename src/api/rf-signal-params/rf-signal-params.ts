@@ -12,6 +12,7 @@ import type {
   ResultBoolean,
   ResultListSignalParamsVO,
   ResultSignalParamsVO,
+  UpdateDownSpeedInParam,
 } from '../api.schemas';
 
 import { customInstance } from '../../boot/orval-client';
@@ -24,6 +25,17 @@ export const getRfSignalParams = () => {
     return customInstance<ResultBoolean>({
       url: `/api/signal/${id}/delSignalParams`,
       method: 'POST',
+    });
+  };
+  /**
+   * @summary 更新射频信号参数的下行网速
+   */
+  const updateDownSpeed = (updateDownSpeedInParam: UpdateDownSpeedInParam) => {
+    return customInstance<ResultSignalParamsVO>({
+      url: `/api/signal/updateDownSpeed`,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      data: updateDownSpeedInParam,
     });
   };
   /**
@@ -64,10 +76,19 @@ export const getRfSignalParams = () => {
       method: 'GET',
     });
   };
-  return { deleteSignalParams, recognizeSignalParams, querySignalParam, getSignalParamsById };
+  return {
+    deleteSignalParams,
+    updateDownSpeed,
+    recognizeSignalParams,
+    querySignalParam,
+    getSignalParamsById,
+  };
 };
 export type DeleteSignalParamsResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getRfSignalParams>['deleteSignalParams']>>
+>;
+export type UpdateDownSpeedResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getRfSignalParams>['updateDownSpeed']>>
 >;
 export type RecognizeSignalParamsResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getRfSignalParams>['recognizeSignalParams']>>

@@ -490,6 +490,13 @@ export interface SaveSysFileVO {
   devTaskId?: string;
 }
 
+export interface UpdateDownSpeedInParam {
+  /** 射频信号参数ID */
+  id: string;
+  /** 下行网速(Mbps) */
+  downSpeed?: string;
+}
+
 export interface ResultSignalParamsVO {
   /** 是否成功 */
   isOk?: boolean;
@@ -542,7 +549,7 @@ export interface SignalParamsVO {
   hasScc?: boolean;
   /** 原始图片地址 */
   imageUrl?: string;
-  /** 网速(Mbps) */
+  /** 下行网速(Mbps) */
   downSpeed?: string;
   /** 创建时间 */
   createdAt?: string;
@@ -874,10 +881,10 @@ export interface DevTaskVO {
  */
 export interface IPageDevTaskVO {
   size?: number;
-  records?: DevTaskVO[];
-  current?: number;
-  total?: number;
   pages?: number;
+  total?: number;
+  current?: number;
+  records?: DevTaskVO[];
 }
 
 /**
@@ -953,10 +960,10 @@ export interface DevLogVO {
  */
 export interface IPageDevLogVO {
   size?: number;
-  records?: DevLogVO[];
-  current?: number;
-  total?: number;
   pages?: number;
+  total?: number;
+  current?: number;
+  records?: DevLogVO[];
 }
 
 export interface ResultIPageDevLogVO {

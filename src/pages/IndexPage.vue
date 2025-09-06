@@ -719,24 +719,31 @@ const saveDownSpeedFromDialog = async () => {
   savingDownSpeed.value = true;
 
   try {
-    // 这里调用更新下行速率的API
-    // const response = await rfSignalApi.updateDownSpeed(editingRecord.value.id, parseFloat(editDownSpeedValue.value));
-    
-    // 临时更新本地数据（实际项目中应该调用API）
-    const targetRow = signalParamsList.value.find(item => item.id === editingRecord.value.id);
-    if (targetRow) {
-      (targetRow as any).downSpeed = parseFloat(editDownSpeedValue.value);
-    }
-
-    $q.notify({
-      type: 'positive',
-      message: '下行速率更新成功！'
+    // 调用更新下行速率的API
+    const response = await rfSignalApi.updateDownSpeed({
+      id: Number(editingRecord.value.id),
+      downSpeed: editDownSpeedValue.value
     });
 
-    // 关闭对话框
-    showEditDownSpeedDialog.value = false;
-    editingRecord.value = null;
-    editDownSpeedValue.value = '';
+    if (response.data.isOk) {
+      // 更新本地数据
+      const targetRow = signalParamsList.value.find(item => item.id === editingRecord.value.id);
+      if (targetRow) {
+        (targetRow as any).downSpeed = editDownSpeedValue.value;
+      }
+
+      $q.notify({
+        type: 'positive',
+        message: '下行速率更新成功！'
+      });
+
+      // 关闭对话框
+      showEditDownSpeedDialog.value = false;
+      editingRecord.value = null;
+      editDownSpeedValue.value = '';
+    } else {
+      throw new Error(response.data.failMsg || '更新失败');
+    }
   } catch (error: any) {
     console.error('Update down speed error:', error);
     $q.notify({
