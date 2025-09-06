@@ -45,7 +45,7 @@ export const getRfSignalParams = () => {
     });
   };
   /**
-   * @summary 分页查询射频信号参数列表
+   * @summary 分页查询射频信号参数列表，支持日期筛选（默认显示今天数据）
    */
   const querySignalParam = (querySignalParamInParam: QuerySignalParamInParam) => {
     return customInstance<ResultIPageSignalParamsVO>({

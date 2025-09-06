@@ -573,6 +573,12 @@ export interface QuerySignalParamInParam {
   nrBand?: number;
   /** 是否存在SCC */
   hasScc?: boolean;
+  /** 开始日期，格式：YYYY-MM-DD，用于筛选创建时间 */
+  startDate?: string;
+  /** 结束日期，格式：YYYY-MM-DD，用于筛选创建时间 */
+  endDate?: string;
+  /** 日期筛选类型：today-今天，all-全部，custom-自定义范围 */
+  dateFilter?: string;
   pageParam?: PageParam;
 }
 
