@@ -30,34 +30,6 @@
 
 
 
-      <!-- Data Analysis Charts -->
-      <q-card flat bordered class="analysis-card q-mb-lg">
-        <q-card-section class="q-pa-sm">
-          <div class="row justify-between items-center q-mb-md q-pa-sm">
-            <div class="text-h6 text-weight-bold">
-              <q-icon name="analytics" size="28px" class="q-mr-sm" />
-              信号参数分析图表
-            </div>
-            <div class="row q-gutter-sm">
-              <q-select v-model="chartTimeRange" :options="timeRangeOptions" label="时间范围" dense outlined
-                style="min-width: 120px" @update:model-value="updateCharts" emit-value map-options />
-              <q-select v-model="chartType" :options="chartTypeOptions" label="图表类型" dense outlined
-                style="min-width: 120px" @update:model-value="updateCharts" emit-value map-options />
-            </div>
-          </div>
-
-          <div class="row q-gutter-md">
-            <!-- 信号强度趋势图 -->
-            <div class="col-12">
-              <div class="chart-container">
-                <div class="chart-title">信号强度趋势</div>
-                <div ref="signalTrendChart" style="height: 300px;"></div>
-              </div>
-            </div>
-          </div>
-        </q-card-section>
-      </q-card>
-
       <!-- Signal Parameters Data Table -->
       <q-card flat bordered class="signal-table-card q-mb-lg">
         <q-card-section class="q-pa-sm">
@@ -187,6 +159,34 @@
               <q-inner-loading showing color="primary" />
             </template>
           </q-table>
+        </q-card-section>
+      </q-card>
+
+      <!-- Data Analysis Charts -->
+      <q-card flat bordered class="analysis-card q-mb-lg">
+        <q-card-section class="q-pa-sm">
+          <div class="row justify-between items-center q-mb-md q-pa-sm">
+            <div class="text-h6 text-weight-bold">
+              <q-icon name="analytics" size="28px" class="q-mr-sm" />
+              信号参数分析图表
+            </div>
+            <div class="row q-gutter-sm">
+              <q-select v-model="chartTimeRange" :options="timeRangeOptions" label="时间范围" dense outlined
+                style="min-width: 120px" @update:model-value="updateCharts" emit-value map-options />
+              <q-select v-model="chartType" :options="chartTypeOptions" label="图表类型" dense outlined
+                style="min-width: 120px" @update:model-value="updateCharts" emit-value map-options />
+            </div>
+          </div>
+
+          <div class="row q-gutter-md">
+            <!-- 信号强度趋势图 -->
+            <div class="col-12">
+              <div class="chart-container">
+                <div class="chart-title">信号强度趋势</div>
+                <div ref="signalTrendChart" style="height: 300px;"></div>
+              </div>
+            </div>
+          </div>
         </q-card-section>
       </q-card>
 
