@@ -66,8 +66,45 @@
               <q-icon name="signal_cellular_alt" size="28px" class="q-mr-sm" />
               所有信号参数记录
             </div>
-            <q-btn color="primary" icon="refresh" label="刷新数据" dense unelevated :loading="loadingTable"
-              @click="loadSignalParams" />
+            <div class="row q-gutter-sm items-center">
+              <!-- 日期筛选控件 -->
+              <q-btn-group flat>
+                <q-btn 
+                  :color="selectedDateFilter === 'today' ? 'primary' : 'grey-7'" 
+                  :text-color="selectedDateFilter === 'today' ? 'white' : 'grey-8'"
+                  label="今天" 
+                  size="sm" 
+                  @click="setDateFilter('today')" 
+                  :disable="loadingTable" 
+                />
+                <q-btn 
+                  :color="selectedDateFilter === 'all' ? 'primary' : 'grey-7'" 
+                  :text-color="selectedDateFilter === 'all' ? 'white' : 'grey-8'"
+                  label="全部" 
+                  size="sm" 
+                  @click="setDateFilter('all')" 
+                  :disable="loadingTable" 
+                />
+              </q-btn-group>
+              
+              <!-- 自定义日期选择器 -->
+              <q-input
+                v-model="customDate"
+                type="date"
+                dense
+                outlined
+                style="width: 150px"
+                :disable="loadingTable"
+                @update:model-value="setDateFilter('custom')"
+              >
+                <template v-slot:prepend>
+                  <q-icon name="event" />
+                </template>
+              </q-input>
+              
+              <q-btn color="primary" icon="refresh" label="刷新数据" dense unelevated :loading="loadingTable"
+                @click="loadSignalParams" />
+            </div>
           </div>
 
           <!-- 分页数据表格 -->
@@ -219,6 +256,16 @@ const currentPage = ref(1);
 const pageSize = ref(10);
 const showImageDialog = ref(false);
 const selectedImageUrl = ref('');
+
+// 日期筛选相关状态
+const selectedDateFilter = ref<'today' | 'all' | 'custom'>('today');
+const customDate = ref('');
+
+// 获取当前日期字符串 (YYYY-MM-DD格式)
+const getTodayString = (): string => {
+  const today = new Date();
+  return today.toISOString().split('T')[0] || '';
+};
 
 const rfSignalApi = getRfSignalParams();
 
@@ -434,7 +481,7 @@ const uploadFile = async () => {
       // 清除选中的文件
       selectedFile.value = null;
 
-      // 刷新表格数据 - 回到第一页显示最新数据
+      // 刷新表格数据 - 回到第一页显示最新数据，保持当前日期筛选
       await onRequest({
         pagination: {
           page: 1,
@@ -464,13 +511,21 @@ const onRequest = async (props: any) => {
   loadingTable.value = true;
 
   try {
-    const queryParams = {
-      // 不传入具体的查询条件，获取所有数据
+    // 构建查询参数，包含日期筛选
+    const queryParams: any = {
       pageParam: {
         current: page,
         size: rowsPerPage
       }
     };
+
+    // 根据选中的日期筛选条件添加日期参数
+    if (selectedDateFilter.value === 'today') {
+      queryParams.date = getTodayString();
+    } else if (selectedDateFilter.value === 'custom' && customDate.value) {
+      queryParams.date = customDate.value;
+    }
+    // 如果是 'all'，不添加日期参数，获取所有数据
     
     console.log('API请求参数:', queryParams);
     
@@ -528,6 +583,27 @@ const onRequest = async (props: any) => {
 const loadSignalParams = async () => {
   await onRequest({
     pagination: tablePagination.value
+  });
+};
+
+// 日期筛选相关函数
+const setDateFilter = async (filterType: 'today' | 'all' | 'custom') => {
+  selectedDateFilter.value = filterType;
+  
+  // 如果选择今天，清空自定义日期
+  if (filterType === 'today') {
+    customDate.value = '';
+  } else if (filterType === 'custom' && !customDate.value) {
+    // 如果选择自定义但没有日期，设置为今天
+    customDate.value = getTodayString();
+  }
+  
+  // 重置到第一页并重新加载数据
+  await onRequest({
+    pagination: {
+      page: 1,
+      rowsPerPage: tablePagination.value.rowsPerPage
+    }
   });
 };
 
@@ -726,7 +802,11 @@ const handleResize = () => {
 
 // Load data when component mounts
 onMounted(async () => {
-  // 初始化表格数据 - 触发第一次分页请求，设置较小的每页条数以测试分页
+  // 初始化日期筛选状态为今天
+  selectedDateFilter.value = 'today';
+  customDate.value = '';
+  
+  // 初始化表格数据 - 默认显示今天的数据
   await onRequest({
     pagination: {
       page: 1,
@@ -1055,5 +1135,32 @@ const formatDateTime = (dateTime?: string) => {
 /* 加载状态样式 */
 .custom-signal-table :deep(.q-inner-loading) {
   background: rgba($cursor-bg, 0.8);
+}
+
+/* 日期筛选控件样式 */
+.q-btn-group {
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: $elevation-1;
+}
+
+.q-btn-group .q-btn {
+  border-radius: 0;
+  transition: all 0.2s ease;
+  
+  &:first-child {
+    border-top-left-radius: 6px;
+    border-bottom-left-radius: 6px;
+  }
+  
+  &:last-child {
+    border-top-right-radius: 6px;
+    border-bottom-right-radius: 6px;
+  }
+  
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: $elevation-2;
+  }
 }
 </style>
