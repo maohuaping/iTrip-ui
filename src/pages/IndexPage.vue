@@ -167,10 +167,6 @@
                     class="action-btn edit-speed-btn">
                     <q-tooltip>编辑下行速率</q-tooltip>
                   </q-btn>
-                  <q-btn flat round dense color="negative" icon="delete" size="sm" @click="deleteSignalParam(props.row)"
-                    class="action-btn delete-btn">
-                    <q-tooltip>删除记录</q-tooltip>
-                  </q-btn>
                 </div>
               </q-td>
             </template>
@@ -762,40 +758,7 @@ const viewImage = (imageUrl: string) => {
   showImageDialog.value = true;
 };
 
-// Delete signal parameter record
-const deleteSignalParam = async (row: SignalParamsVO) => {
-  if (!row.id) return;
-
-  $q.dialog({
-    title: '确认删除',
-    message: `确定要删除ID为 ${row.id} 的信号参数记录吗？`,
-    cancel: true,
-    persistent: true
-  }).onOk(async () => {
-    try {
-      const response = await rfSignalApi.deleteSignalParams(Number(row.id!));
-      if (response.data.isOk) {
-        $q.notify({
-          type: 'positive',
-          message: '删除成功！'
-        });
-        // 刷新表格数据和数量统计
-        await Promise.all([
-          loadSignalData(), // 刷新当前显示的数据
-          loadAllDateCounts() // 刷新所有日期的数量统计
-        ]);
-      } else {
-        throw new Error(response.data.failMsg || '删除失败');
-      }
-    } catch (error: any) {
-      console.error('Delete error:', error);
-      $q.notify({
-        type: 'negative',
-        message: error.message || '删除失败'
-      });
-    }
-  });
-};
+// 移除了删除功能
 
 // 复制文本到剪贴板
 const copyToClipboard = (text: string): void => {
@@ -1178,15 +1141,6 @@ const formatDateTime = (dateTime?: string) => {
 
     &:hover {
       background-color: rgba($cursor-primary, 0.1);
-      transform: translateY(-1px) scale(1.05);
-    }
-  }
-
-  &.delete-btn {
-    color: $cursor-error;
-
-    &:hover {
-      background-color: rgba($cursor-error, 0.1);
       transform: translateY(-1px) scale(1.05);
     }
   }
