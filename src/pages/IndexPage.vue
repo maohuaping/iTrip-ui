@@ -72,7 +72,7 @@
                 <q-btn 
                   :color="selectedDateFilter === 'today' ? 'primary' : 'grey-7'" 
                   :text-color="selectedDateFilter === 'today' ? 'white' : 'grey-8'"
-                  label="今天" 
+                  :label="`今天 (${dateCounts.today})`"
                   size="sm" 
                   @click="setDateFilter('today')" 
                   :disable="loadingTable" 
@@ -80,7 +80,7 @@
                 <q-btn 
                   :color="selectedDateFilter === 'yesterday' ? 'primary' : 'grey-7'" 
                   :text-color="selectedDateFilter === 'yesterday' ? 'white' : 'grey-8'"
-                  label="昨天" 
+                  :label="`昨天 (${dateCounts.yesterday})`"
                   size="sm" 
                   @click="setDateFilter('yesterday')" 
                   :disable="loadingTable" 
@@ -88,7 +88,7 @@
                 <q-btn 
                   :color="selectedDateFilter === 'dayBefore' ? 'primary' : 'grey-7'" 
                   :text-color="selectedDateFilter === 'dayBefore' ? 'white' : 'grey-8'"
-                  label="前天" 
+                  :label="`前天 (${dateCounts.dayBefore})`"
                   size="sm" 
                   @click="setDateFilter('dayBefore')" 
                   :disable="loadingTable" 
@@ -96,7 +96,7 @@
                 <q-btn 
                   :color="selectedDateFilter === 'all' ? 'primary' : 'grey-7'" 
                   :text-color="selectedDateFilter === 'all' ? 'white' : 'grey-8'"
-                  label="全部" 
+                  :label="`全部 (${dateCounts.all})`"
                   size="sm" 
                   @click="setDateFilter('all')" 
                   :disable="loadingTable" 
@@ -248,6 +248,14 @@ const selectedImageUrl = ref('');
 
 // 日期筛选相关状态
 const selectedDateFilter = ref<'today' | 'yesterday' | 'dayBefore' | 'all'>('today');
+
+// 各日期的数据数量统计
+const dateCounts = ref({
+  today: 0,
+  yesterday: 0,
+  dayBefore: 0,
+  all: 0
+});
 
 // 获取日期字符串的辅助函数 (YYYY-MM-DD格式)
 const getTodayString = (): string => {
@@ -476,8 +484,11 @@ const uploadFile = async () => {
       // 清除选中的文件
       selectedFile.value = null;
 
-      // 刷新表格数据，保持当前日期筛选
-      await loadSignalData();
+      // 刷新表格数据和数量统计
+      await Promise.all([
+        loadSignalData(), // 刷新当前显示的数据
+        loadAllDateCounts() // 刷新所有日期的数量统计
+      ]);
     } else {
       throw new Error(response.data.failMsg || '识别失败');
     }
@@ -570,6 +581,42 @@ const loadSignalData = async () => {
   }
 };
 
+// 加载所有日期的数据数量统计
+const loadAllDateCounts = async () => {
+  try {
+    // 并行加载各个日期的数据数量
+    const [todayResponse, yesterdayResponse, dayBeforeResponse, allResponse] = await Promise.all([
+      // 今天
+      rfSignalApi.querySignalParam({ dateFilter: 'today' }),
+      // 昨天
+      rfSignalApi.querySignalParam({ 
+        dateFilter: 'custom', 
+        startDate: getYesterdayString(), 
+        endDate: getYesterdayString() 
+      }),
+      // 前天
+      rfSignalApi.querySignalParam({ 
+        dateFilter: 'custom', 
+        startDate: getDayBeforeString(), 
+        endDate: getDayBeforeString() 
+      }),
+      // 全部
+      rfSignalApi.querySignalParam({ dateFilter: 'all' })
+    ]);
+
+    // 更新各日期的数据数量
+    dateCounts.value.today = todayResponse.data?.isOk ? (todayResponse.data.okData?.length || 0) : 0;
+    dateCounts.value.yesterday = yesterdayResponse.data?.isOk ? (yesterdayResponse.data.okData?.length || 0) : 0;
+    dateCounts.value.dayBefore = dayBeforeResponse.data?.isOk ? (dayBeforeResponse.data.okData?.length || 0) : 0;
+    dateCounts.value.all = allResponse.data?.isOk ? (allResponse.data.okData?.length || 0) : 0;
+
+    console.log('数据数量统计:', dateCounts.value);
+  } catch (error) {
+    console.error('加载数据数量统计失败:', error);
+    // 如果加载失败，保持默认值0
+  }
+};
+
 // 兼容性：保持原有的loadSignalParams函数
 const loadSignalParams = async () => {
   await loadSignalData();
@@ -607,8 +654,11 @@ const deleteSignalParam = async (row: SignalParamsVO) => {
           type: 'positive',
           message: '删除成功！'
         });
-        // 刷新表格数据
-        await loadSignalData();
+        // 刷新表格数据和数量统计
+        await Promise.all([
+          loadSignalData(), // 刷新当前显示的数据
+          loadAllDateCounts() // 刷新所有日期的数量统计
+        ]);
       } else {
         throw new Error(response.data.failMsg || '删除失败');
       }
@@ -769,8 +819,12 @@ onMounted(async () => {
   // 初始化日期筛选状态为今天
   selectedDateFilter.value = 'today';
   
-  // 初始化表格数据 - 默认显示今天的数据
-  await loadSignalData();
+  // 并行加载：1) 今天的数据 2) 所有日期的数量统计
+  await Promise.all([
+    loadSignalData(), // 加载今天的详细数据
+    loadAllDateCounts() // 加载所有日期的数量统计
+  ]);
+  
   await initCharts();
   
   // 添加窗口大小变化监听
