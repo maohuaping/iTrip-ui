@@ -93,7 +93,6 @@
             row-key="id" 
             flat 
             bordered
-            dense
             class="custom-signal-table" 
             :no-data-label="'暂无数据'" 
             :loading-label="'加载中...'"
@@ -1079,10 +1078,10 @@ const formatDateTime = (dateTime?: string) => {
     font-weight: 600;
     color: $cursor-text;
     border-bottom: 2px solid $cursor-border;
-    font-size: 12px;
-    padding: 8px 6px;
+    font-size: 14px;
+    padding: 12px 8px;
     text-align: center !important;
-    line-height: 1.2;
+    line-height: 1.3;
     vertical-align: middle;
   }
 
@@ -1101,9 +1100,9 @@ const formatDateTime = (dateTime?: string) => {
   :deep(th) {
     border-right: 1px solid $cursor-border;
     color: $cursor-text;
-    padding: 6px 4px;
-    font-size: 12px;
-    line-height: 1.3;
+    padding: 10px 6px;
+    font-size: 14px;
+    line-height: 1.4;
     text-align: center !important;
     vertical-align: middle;
 
@@ -1114,9 +1113,9 @@ const formatDateTime = (dateTime?: string) => {
 
   /* 表格数据行样式 */
   :deep(tbody td) {
-    padding: 6px 4px;
-    font-size: 11px;
-    line-height: 1.2;
+    padding: 10px 6px;
+    font-size: 13px;
+    line-height: 1.3;
     vertical-align: middle;
     text-align: center !important;
   }
@@ -1142,7 +1141,7 @@ const formatDateTime = (dateTime?: string) => {
 /* 图片列样式 */
 .custom-signal-table :deep(.image-cell),
 .custom-signal-table .image-cell {
-  padding: 6px 4px !important;
+  padding: 10px 6px !important;
   text-align: center !important;
   vertical-align: middle !important;
   position: relative !important;
@@ -1171,7 +1170,7 @@ const formatDateTime = (dateTime?: string) => {
 /* SCC状态列样式 - 使用更强的选择器优先级 */
 .custom-signal-table :deep(.scc-cell),
 .custom-signal-table .scc-cell {
-  padding: 6px 4px !important;
+  padding: 10px 6px !important;
   text-align: center !important;
   vertical-align: middle !important;
   display: table-cell !important;
@@ -1202,7 +1201,7 @@ const formatDateTime = (dateTime?: string) => {
 /* 邻区信息列样式 */
 .custom-signal-table :deep(.neighbor-cell),
 .custom-signal-table .neighbor-cell {
-  padding: 6px 4px !important;
+  padding: 10px 6px !important;
   text-align: center !important;
   vertical-align: middle !important;
   position: relative !important;
@@ -1256,7 +1255,7 @@ const formatDateTime = (dateTime?: string) => {
 
 /* 操作列样式 */
 .actions-cell {
-  padding: 2px 4px;
+  padding: 10px 6px;
   text-align: center;
 }
 
