@@ -1,10 +1,10 @@
 <template>
-  <q-page class="q-pa-md" style="min-height: 100vh; overflow-y: auto;">
-    <div class="q-gutter-md" style="max-width: 1200px; margin: 0 auto;">
+  <q-page class="responsive-page" style="min-height: 100vh; overflow-y: auto;">
+    <div class="q-gutter-md responsive-container">
       <h4 class="text-center q-mb-lg">射频信号参数识别</h4>
 
       <!-- File Upload Section -->
-      <q-card class="q-pa-md">
+      <q-card class="upload-card q-mb-xl">
         <q-card-section>
           <div class="text-h6">上传信号参数图片</div>
           <div class="text-subtitle2 text-grey-7 q-mb-md">
@@ -20,7 +20,7 @@
             </template>
           </q-file>
 
-          <div class="row q-gutter-sm">
+          <div class="upload-buttons">
             <q-btn label="上传并识别" color="primary" :loading="uploading" :disable="!selectedFile" @click="uploadFile"
               icon="upload" />
             <q-btn label="清除" color="grey" outline @click="clearFile" :disable="uploading" />
@@ -31,7 +31,7 @@
 
 
       <!-- Signal Parameters Data Table -->
-      <q-card flat bordered class="signal-table-card q-mb-lg">
+      <q-card flat bordered class="signal-table-card q-mb-xl">
         <q-card-section class="q-pa-sm">
           <div class="row justify-between items-center q-mb-md q-pa-sm">
             <div class="text-h6 text-weight-bold">
@@ -163,7 +163,7 @@
       </q-card>
 
       <!-- Data Analysis Charts -->
-      <q-card flat bordered class="analysis-card q-mb-lg">
+      <q-card flat bordered class="analysis-card q-mb-xl">
         <q-card-section class="q-pa-sm">
           <div class="row justify-between items-center q-mb-md q-pa-sm">
             <div class="text-h6 text-weight-bold">
@@ -805,6 +805,9 @@ const updateSignalTrendChart = () => {
       ssbRsrp: Math.abs(item.ssbRsrp!)
     }));
 
+  // 检测是否为移动端
+  const isMobile = window.innerWidth <= 768;
+
   const option = {
     title: {
       show: false // 在移动端隐藏标题节省空间
@@ -837,16 +840,18 @@ const updateSignalTrendChart = () => {
     },
     legend: {
       data: ['RSSI', 'SSB-RSRP'],
-      textStyle: { fontSize: 11 },
-      itemWidth: 15,
-      itemHeight: 10,
-      top: 5
+      textStyle: { fontSize: isMobile ? 10 : 11 },
+      itemWidth: isMobile ? 12 : 15,
+      itemHeight: isMobile ? 8 : 10,
+      top: isMobile ? 0 : 5,
+      orient: isMobile ? 'horizontal' : 'horizontal',
+      left: 'center'
     },
     grid: {
-      left: '8%',
-      right: '8%',
-      top: '15%',
-      bottom: '15%',
+      left: isMobile ? '20%' : '10%',
+      right: isMobile ? '20%' : '5%',
+      top: isMobile ? '12%' : '15%',
+      bottom: isMobile ? '20%' : '15%',
       containLabel: true
     },
     xAxis: {
@@ -865,13 +870,16 @@ const updateSignalTrendChart = () => {
     },
     yAxis: {
       type: 'value',
-      name: '信号强度',
-      nameTextStyle: { fontSize: 11 },
+      name: isMobile ? '' : '信号强度', // 移动端隐藏Y轴标题
+      nameTextStyle: { fontSize: isMobile ? 9 : 11 },
+      nameLocation: 'middle',
+      nameGap: isMobile ? 15 : 25,
       min: 70, // 设置最小值为70
       max: 100, // 设置最大值为100
       axisLabel: { 
-        fontSize: 10,
-        formatter: (value: number) => `-${value}`
+        fontSize: isMobile ? 9 : 10,
+        formatter: (value: number) => `-${value}`,
+        margin: isMobile ? 5 : 8
       }
     },
     series: [
@@ -943,12 +951,51 @@ const formatDateTime = (dateTime?: string) => {
 <style lang="scss" scoped>
 @import 'src/css/quasar.variables.scss';
 
+/* 响应式页面 */
+.responsive-page {
+  padding: 16px;
+  
+  @media (max-width: 768px) {
+    padding: 8px 4px; // 移动端减少内边距
+  }
+}
+
+/* 上传卡片样式 */
+.upload-card {
+  border-radius: 12px;
+  box-shadow: $elevation-2;
+  background: $cursor-surface;
+  border: 1px solid $cursor-border;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.upload-buttons {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* 响应式容器 */
+.responsive-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+  
+  @media (max-width: 768px) {
+    max-width: 100%;
+    margin: 0;
+  }
+}
+
 /* 分析图表卡片样式 */
 .analysis-card {
   border-radius: 12px;
   box-shadow: $elevation-2;
   background: $cursor-surface;
   border: 1px solid $cursor-border;
+  width: 100%;
+  margin: 0 auto;
 }
 
 .chart-container {
@@ -956,6 +1003,8 @@ const formatDateTime = (dateTime?: string) => {
   border-radius: 8px;
   padding: 16px;
   border: 1px solid $cursor-border;
+  width: 100%;
+  margin: 0 auto;
 }
 
 .chart-title {
@@ -1170,16 +1219,24 @@ const formatDateTime = (dateTime?: string) => {
       padding: 8px 6px;
     }
   }
-
 }
 
 @media (max-width: 768px) {
   .custom-signal-table {
     font-size: 12px;
+    width: 100%;
+    margin: 0 auto; // 确保表格居中
 
     :deep(th),
     :deep(td) {
-      padding: 6px 4px;
+      padding: 6px 3px; // 进一步减少内边距以显示更多内容
+      text-align: center;
+    }
+
+    :deep(.q-table__container) {
+      width: 100%;
+      overflow-x: auto; // 允许水平滚动查看更多列
+      -webkit-overflow-scrolling: touch; // iOS平滑滚动
     }
 
     .action-btn {
@@ -1192,6 +1249,149 @@ const formatDateTime = (dateTime?: string) => {
     }
   }
 
+  // 移动端卡片样式优化
+  .signal-table-card {
+    margin: 0 auto;
+    width: 100%;
+    border-radius: 8px;
+  }
+
+  // 移动端日期筛选按钮优化
+  .q-btn-group .q-btn {
+    font-size: 11px;
+    padding: 4px 8px;
+    min-width: auto;
+  }
+
+  // 移动端标题和控件布局优化
+  .row.justify-between {
+    flex-direction: column;
+    gap: 12px;
+    
+    .text-h6 {
+      font-size: 16px;
+      text-align: center;
+    }
+    
+    .row.q-gutter-sm {
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+  }
+
+  // 移动端图表优化
+  .analysis-card {
+    margin: 0 auto;
+    width: 100%;
+    border-radius: 8px;
+    
+    .q-card-section {
+      padding: 8px;
+    }
+    
+    .row.justify-between {
+      flex-direction: column;
+      gap: 8px;
+      text-align: center;
+      
+      .text-h6 {
+        font-size: 14px;
+        margin-bottom: 8px;
+      }
+      
+      .q-select {
+        max-width: 150px;
+        margin: 0 auto;
+      }
+    }
+  }
+
+  .chart-container {
+    padding: 4px 0;
+    margin: 0 auto;
+    border: none;
+    background: transparent;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    
+    .chart-title {
+      font-size: 14px;
+      margin-bottom: 8px;
+      text-align: center;
+      width: 100%;
+    }
+    
+    // 确保图表div居中
+    > div {
+      margin: 0 auto !important;
+    }
+  }
+
+  // 确保图表容器在移动端完全居中
+  .row.q-gutter-md {
+    margin: 0;
+    justify-content: center;
+    
+    .col-12 {
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+  }
+
+  // 移动端图表区域的额外居中处理
+  .analysis-card .q-card-section .row.q-gutter-md {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+  }
+
+  // 移动端上传区域优化
+  .upload-card {
+    margin: 0 auto;
+    width: 100%;
+    border-radius: 8px;
+    
+    .q-card-section {
+      padding: 12px;
+    }
+    
+    .text-h6 {
+      font-size: 16px;
+      text-align: center;
+      margin-bottom: 8px;
+    }
+    
+    .text-subtitle2 {
+      text-align: center;
+      font-size: 12px;
+    }
+    
+    .q-file {
+      margin-bottom: 16px;
+    }
+  }
+
+  .upload-buttons {
+    justify-content: center;
+    gap: 8px;
+    
+    .q-btn {
+      font-size: 12px;
+      padding: 8px 16px;
+      flex: 1;
+      max-width: 140px;
+    }
+  }
+
+  // 增加版块间距
+  .q-mb-xl {
+    margin-bottom: 32px !important;
+  }
 }
 
 /* 表格滚动条样式 */
