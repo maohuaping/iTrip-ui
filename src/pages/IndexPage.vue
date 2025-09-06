@@ -721,7 +721,7 @@ const saveDownSpeedFromDialog = async () => {
   try {
     // 调用更新下行速率的API
     const response = await rfSignalApi.updateDownSpeed({
-      id: Number(editingRecord.value.id),
+      id: editingRecord.value.id,
       downSpeed: editDownSpeedValue.value
     });
 
