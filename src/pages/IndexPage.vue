@@ -78,6 +78,22 @@
                   :disable="loadingTable" 
                 />
                 <q-btn 
+                  :color="selectedDateFilter === 'yesterday' ? 'primary' : 'grey-7'" 
+                  :text-color="selectedDateFilter === 'yesterday' ? 'white' : 'grey-8'"
+                  label="昨天" 
+                  size="sm" 
+                  @click="setDateFilter('yesterday')" 
+                  :disable="loadingTable" 
+                />
+                <q-btn 
+                  :color="selectedDateFilter === 'dayBefore' ? 'primary' : 'grey-7'" 
+                  :text-color="selectedDateFilter === 'dayBefore' ? 'white' : 'grey-8'"
+                  label="前天" 
+                  size="sm" 
+                  @click="setDateFilter('dayBefore')" 
+                  :disable="loadingTable" 
+                />
+                <q-btn 
                   :color="selectedDateFilter === 'all' ? 'primary' : 'grey-7'" 
                   :text-color="selectedDateFilter === 'all' ? 'white' : 'grey-8'"
                   label="全部" 
@@ -86,24 +102,6 @@
                   :disable="loadingTable" 
                 />
               </q-btn-group>
-              
-              <!-- 自定义日期选择器 -->
-              <q-input
-                v-model="customDate"
-                type="date"
-                dense
-                outlined
-                style="width: 150px"
-                :disable="loadingTable"
-                @update:model-value="setDateFilter('custom')"
-              >
-                <template v-slot:prepend>
-                  <q-icon name="event" />
-                </template>
-              </q-input>
-              
-              <q-btn color="primary" icon="refresh" label="刷新数据" dense unelevated :loading="loadingTable"
-                @click="loadSignalParams" />
             </div>
           </div>
 
@@ -249,13 +247,24 @@ const showImageDialog = ref(false);
 const selectedImageUrl = ref('');
 
 // 日期筛选相关状态
-const selectedDateFilter = ref<'today' | 'all' | 'custom'>('today');
-const customDate = ref('');
+const selectedDateFilter = ref<'today' | 'yesterday' | 'dayBefore' | 'all'>('today');
 
-// 获取当前日期字符串 (YYYY-MM-DD格式)
+// 获取日期字符串的辅助函数 (YYYY-MM-DD格式)
 const getTodayString = (): string => {
   const today = new Date();
   return today.toISOString().split('T')[0] || '';
+};
+
+const getYesterdayString = (): string => {
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+  return yesterday.toISOString().split('T')[0] || '';
+};
+
+const getDayBeforeString = (): string => {
+  const dayBefore = new Date();
+  dayBefore.setDate(dayBefore.getDate() - 2);
+  return dayBefore.toISOString().split('T')[0] || '';
 };
 
 const rfSignalApi = getRfSignalParams();
@@ -490,16 +499,23 @@ const loadSignalData = async () => {
   loadingTable.value = true;
 
   try {
-    // 构建查询参数，包含日期筛选
+    // 构建查询参数，使用新的参数结构
     const queryParams: any = {};
 
-    // 根据选中的日期筛选条件添加日期参数
+    // 根据选中的日期筛选条件设置参数
     if (selectedDateFilter.value === 'today') {
-      queryParams.date = getTodayString();
-    } else if (selectedDateFilter.value === 'custom' && customDate.value) {
-      queryParams.date = customDate.value;
+      queryParams.dateFilter = 'today';
+    } else if (selectedDateFilter.value === 'yesterday') {
+      queryParams.dateFilter = 'custom';
+      queryParams.startDate = getYesterdayString();
+      queryParams.endDate = getYesterdayString();
+    } else if (selectedDateFilter.value === 'dayBefore') {
+      queryParams.dateFilter = 'custom';
+      queryParams.startDate = getDayBeforeString();
+      queryParams.endDate = getDayBeforeString();
+    } else if (selectedDateFilter.value === 'all') {
+      queryParams.dateFilter = 'all';
     }
-    // 如果是 'all'，不添加日期参数，获取所有数据
     
     console.log('API请求参数:', queryParams);
     
@@ -560,16 +576,8 @@ const loadSignalParams = async () => {
 };
 
 // 日期筛选相关函数
-const setDateFilter = async (filterType: 'today' | 'all' | 'custom') => {
+const setDateFilter = async (filterType: 'today' | 'yesterday' | 'dayBefore' | 'all') => {
   selectedDateFilter.value = filterType;
-  
-  // 如果选择今天，清空自定义日期
-  if (filterType === 'today') {
-    customDate.value = '';
-  } else if (filterType === 'custom' && !customDate.value) {
-    // 如果选择自定义但没有日期，设置为今天
-    customDate.value = getTodayString();
-  }
   
   // 重新加载数据
   await loadSignalData();
@@ -760,7 +768,6 @@ const handleResize = () => {
 onMounted(async () => {
   // 初始化日期筛选状态为今天
   selectedDateFilter.value = 'today';
-  customDate.value = '';
   
   // 初始化表格数据 - 默认显示今天的数据
   await loadSignalData();
