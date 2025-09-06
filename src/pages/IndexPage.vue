@@ -142,6 +142,31 @@
               </q-td>
             </template>
 
+            <!-- 自定义列模板 - 下行速率 -->
+            <template v-slot:body-cell-downSpeed="props">
+              <q-td :props="props" class="down-speed-cell">
+                <div v-if="editingDownSpeed === props.row.id" class="down-speed-input">
+                  <q-input
+                    v-model="editingDownSpeedValue"
+                    type="number"
+                    dense
+                    outlined
+                    suffix="Mbps"
+                    style="width: 100px"
+                    @keyup.enter="saveDownSpeed(props.row)"
+                    @blur="cancelEditDownSpeed"
+                    ref="downSpeedInput"
+                    :rules="[val => val >= 0 || '速率不能为负数']"
+                  />
+                </div>
+                <div v-else class="down-speed-display" @click="startEditDownSpeed(props.row)">
+                  <span v-if="props.value" class="down-speed-value">{{ props.value }} Mbps</span>
+                  <span v-else class="down-speed-placeholder text-grey-5">点击录入</span>
+                  <q-icon name="edit" size="14px" class="edit-icon q-ml-xs" />
+                </div>
+              </q-td>
+            </template>
+
             <!-- 自定义列模板 - 邻区信息 -->
             <template v-slot:body-cell-neighborInfo="props">
               <q-td :props="props" class="neighbor-cell">
@@ -257,6 +282,11 @@ const dateCounts = ref({
   all: 0
 });
 
+// 下行速率编辑相关状态
+const editingDownSpeed = ref<string | null>(null);
+const editingDownSpeedValue = ref('');
+const downSpeedInput = ref<any>(null);
+
 // 获取日期字符串的辅助函数 (YYYY-MM-DD格式)
 const getTodayString = (): string => {
   const today = new Date();
@@ -327,6 +357,15 @@ const tableColumns = [
     align: 'center' as const,
     sortable: true,
     style: 'width: 60px'
+  },
+  {
+    name: 'downSpeed',
+    label: '下行速率',
+    field: 'downSpeed',
+    align: 'center' as const,
+    sortable: true,
+    style: 'width: 120px',
+    format: (val: any) => val ? `${val} Mbps` : '-'
   },
   // 核心信号参数 - 最重要且变化频繁的参数
   {
@@ -628,6 +667,59 @@ const setDateFilter = async (filterType: 'today' | 'yesterday' | 'dayBefore' | '
   
   // 重新加载数据
   await loadSignalData();
+};
+
+// 下行速率编辑相关函数
+const startEditDownSpeed = (row: any) => {
+  editingDownSpeed.value = row.id;
+  editingDownSpeedValue.value = row.downSpeed || '';
+  
+  // 使用nextTick确保DOM更新后再聚焦
+  nextTick(() => {
+    if (downSpeedInput.value) {
+      downSpeedInput.value.focus();
+    }
+  });
+};
+
+const cancelEditDownSpeed = () => {
+  editingDownSpeed.value = null;
+  editingDownSpeedValue.value = '';
+};
+
+const saveDownSpeed = async (row: any) => {
+  if (!editingDownSpeedValue.value || parseFloat(editingDownSpeedValue.value) < 0) {
+    $q.notify({
+      type: 'negative',
+      message: '请输入有效的下行速率值'
+    });
+    return;
+  }
+
+  try {
+    // 这里调用更新下行速率的API
+    // const response = await rfSignalApi.updateDownSpeed(row.id, parseFloat(editingDownSpeedValue.value));
+    
+    // 临时更新本地数据（实际项目中应该调用API）
+    const targetRow = signalParamsList.value.find(item => item.id === row.id);
+    if (targetRow) {
+      (targetRow as any).downSpeed = parseFloat(editingDownSpeedValue.value);
+    }
+
+    $q.notify({
+      type: 'positive',
+      message: '下行速率更新成功！'
+    });
+
+    // 结束编辑状态
+    cancelEditDownSpeed();
+  } catch (error: any) {
+    console.error('Update down speed error:', error);
+    $q.notify({
+      type: 'negative',
+      message: error.message || '更新下行速率失败'
+    });
+  }
 };
 
 
@@ -1015,6 +1107,55 @@ const formatDateTime = (dateTime?: string) => {
 
   strong {
     color: $cursor-primary;
+  }
+}
+
+/* 下行速率列样式 */
+.down-speed-cell {
+  padding: 8px 12px;
+  text-align: center;
+}
+
+.down-speed-display {
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 32px;
+
+  &:hover {
+    background-color: rgba($cursor-primary, 0.1);
+    
+    .edit-icon {
+      opacity: 1;
+    }
+  }
+}
+
+.down-speed-value {
+  color: $cursor-text;
+  font-weight: 500;
+}
+
+.down-speed-placeholder {
+  font-style: italic;
+  font-size: 12px;
+}
+
+.edit-icon {
+  opacity: 0.6;
+  transition: opacity 0.2s ease;
+}
+
+.down-speed-input {
+  display: flex;
+  justify-content: center;
+  
+  .q-input {
+    min-width: 100px;
   }
 }
 

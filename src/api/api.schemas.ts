@@ -542,6 +542,8 @@ export interface SignalParamsVO {
   hasScc?: boolean;
   /** 原始图片地址 */
   imageUrl?: string;
+  /** 网速(Mbps) */
+  downSpeed?: string;
   /** 创建时间 */
   createdAt?: string;
   /** 更新时间 */
