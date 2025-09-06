@@ -270,16 +270,15 @@ const tableColumns = [
     style: 'width: 100px',
     format: (val: any) => val ?? '-'
   },
-  // 核心信号参数 - 最重要且变化频繁的参数
   {
-    name: 'rssi',
-    label: 'RSSI',
-    field: 'rssi',
+    name: 'hasScc',
+    label: 'SCC',
+    field: 'hasScc',
     align: 'center' as const,
     sortable: true,
-    style: 'width: 80px',
-    format: (val: any) => val ?? '-'
+    style: 'width: 60px'
   },
+  // 核心信号参数 - 最重要且变化频繁的参数
   {
     name: 'ssbRsrp',
     label: 'SSB-RSRP',
@@ -299,6 +298,15 @@ const tableColumns = [
     format: (val: any) => val ?? '-'
   },
   {
+    name: 'rssi',
+    label: 'RSSI',
+    field: 'rssi',
+    align: 'center' as const,
+    sortable: true,
+    style: 'width: 80px',
+    format: (val: any) => val ?? '-'
+  },
+  {
     name: 'rsrq',
     label: 'RSRQ',
     field: 'rsrq',
@@ -315,14 +323,6 @@ const tableColumns = [
     sortable: true,
     style: 'width: 80px',
     format: (val: any) => val ?? '-'
-  },
-  {
-    name: 'hasScc',
-    label: 'SCC',
-    field: 'hasScc',
-    align: 'center' as const,
-    sortable: true,
-    style: 'width: 60px'
   },
   {
     name: 'neighborInfo',
