@@ -5,9 +5,22 @@
  * 前端提供UI，后端提供API
  * OpenAPI spec version: 1.0
  */
+import type { ResultString, SendTemplateEmailInParam } from '../api.schemas';
+
 import { customInstance } from '../../boot/orval-client';
 
 export const getEmail = () => {
+  /**
+   * @summary 发送模板邮件
+   */
+  const sendTemplateEmail = (sendTemplateEmailInParam: SendTemplateEmailInParam) => {
+    return customInstance<ResultString>({
+      url: `/api/email/send-template`,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      data: sendTemplateEmailInParam,
+    });
+  };
   /**
    * @summary 微博签到提醒
    */
@@ -20,8 +33,11 @@ export const getEmail = () => {
   const sendTodoEmail = () => {
     return customInstance<void>({ url: `/api/email/sendTodoEmail`, method: 'GET' });
   };
-  return { sendWeiboSignEmail, sendTodoEmail };
+  return { sendTemplateEmail, sendWeiboSignEmail, sendTodoEmail };
 };
+export type SendTemplateEmailResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getEmail>['sendTemplateEmail']>>
+>;
 export type SendWeiboSignEmailResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getEmail>['sendWeiboSignEmail']>>
 >;

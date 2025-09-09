@@ -768,6 +768,21 @@ export interface ResultListMessageParseResultVO {
   failMsg?: string;
 }
 
+export type SendTemplateEmailInParamTemplateData = { [key: string]: { [key: string]: unknown } };
+
+export interface SendTemplateEmailInParam {
+  templateData?: SendTemplateEmailInParamTemplateData;
+  smtpConfig?: SmtpConfigParam;
+}
+
+export interface SmtpConfigParam {
+  smtpServer?: string;
+  smtpPort?: number;
+  smtpEmail?: string;
+  smtpPassword?: string;
+  smtpTo?: string;
+}
+
 export interface UpdateDevTaskInParam {
   /** 任务id */
   id?: string;
@@ -881,10 +896,10 @@ export interface DevTaskVO {
  */
 export interface IPageDevTaskVO {
   size?: number;
-  pages?: number;
-  total?: number;
-  current?: number;
   records?: DevTaskVO[];
+  current?: number;
+  total?: number;
+  pages?: number;
 }
 
 /**
@@ -960,10 +975,10 @@ export interface DevLogVO {
  */
 export interface IPageDevLogVO {
   size?: number;
-  pages?: number;
-  total?: number;
-  current?: number;
   records?: DevLogVO[];
+  current?: number;
+  total?: number;
+  pages?: number;
 }
 
 export interface ResultIPageDevLogVO {
