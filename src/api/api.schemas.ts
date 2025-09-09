@@ -829,6 +829,8 @@ export interface ResultDevTask {
 }
 
 export interface SaveDevTaskInParam {
+  /** 开发任务ID */
+  devTaskId?: string;
   /** 需求编号 */
   requirementId?: string;
   /** 需求名称 */

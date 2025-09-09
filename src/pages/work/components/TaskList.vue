@@ -246,6 +246,15 @@
                           </q-item-section>
                         </q-item>
 
+                        <q-item clickable v-close-popup @click="openAssociateDocumentDialog(props.row)">
+                          <q-item-section avatar>
+                            <q-icon name="attach_file" color="orange" />
+                          </q-item-section>
+                          <q-item-section>
+                            <q-item-label>关联文档</q-item-label>
+                          </q-item-section>
+                        </q-item>
+
                         <q-separator />
 
                         <q-item clickable v-close-popup @click="deleteTask(props.row)">
@@ -392,6 +401,106 @@
       </q-card-actions>
     </q-card>
   </q-dialog>
+
+  <!-- 关联文档对话框 -->
+  <q-dialog v-model="showAssociateDocumentDialog" :maximized="$q.screen.lt.md" :full-width="$q.screen.lt.md"
+    :full-height="$q.screen.lt.md">
+    <q-card class="bg-cursor-surface" :style="{
+      width: $q.screen.lt.md ? '100%' : 'min(90vw, 600px)',
+      maxWidth: $q.screen.lt.md ? '100%' : '600px',
+      minWidth: $q.screen.lt.md ? '100%' : '320px'
+    }">
+      <q-card-section class="bg-cursor-bg q-pb-sm border-bottom">
+        <div class="text-h6 text-cursor-text">关联文档 - {{ currentTask?.requirementName || '未命名任务' }}</div>
+        <q-space />
+        <q-btn icon="close" flat round dense v-close-popup class="absolute-top-right q-mt-sm q-mr-sm" color="grey-7" />
+      </q-card-section>
+
+      <q-card-section class="q-pt-md">
+        <!-- 当前已关联的文档 -->
+        <div v-if="currentTask?.relatedFileList && currentTask.relatedFileList.length > 0" class="q-mb-md">
+          <div class="text-subtitle2 text-weight-medium q-mb-sm">
+            <q-icon name="folder_open" class="q-mr-sm" />
+            当前关联文档 ({{ currentTask.relatedFileList.length }})
+          </div>
+          <div class="q-gutter-y-sm">
+            <div v-for="(file, index) in currentTask.relatedFileList" :key="index" class="current-doc-item">
+              <q-icon :name="getFileIcon(file.fileType || '')" :color="getFileIconColor(file.fileType || '')"
+                size="20px" class="q-mr-sm" />
+              <div class="doc-info">
+                <div class="doc-name">{{ file.fileName || '未命名文件' }}</div>
+                <div class="doc-meta">
+                  <span class="doc-type">{{ getFileTypeLabel(file.fileType || '') }}</span>
+                  <span v-if="file.createdAt" class="doc-date">{{ formatDate(file.createdAt) }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <q-separator class="q-my-md" />
+        </div>
+
+        <!-- 新增关联文档 -->
+        <div class="q-mb-md">
+          <div class="row justify-between items-center q-mb-xs">
+            <div class="text-subtitle2 text-cursor-text">新增关联文档</div>
+            <div class="text-caption text-grey-7">上传新文档并关联到此任务</div>
+          </div>
+
+          <!-- 拖拽上传区域 -->
+          <div class="q-mb-md">
+            <div class="drag-upload-area"
+              :class="{ 'drag-over': isAssociateDialogDragOver, 'uploading': isAssociateDialogUploading }"
+              @dragover.prevent="handleAssociateDialogDragOver" @dragleave.prevent="handleAssociateDialogDragLeave"
+              @drop.prevent="handleAssociateDialogDrop" @click="triggerAssociateDialogFileInput">
+              <div class="drag-upload-content">
+                <q-icon :name="isAssociateDialogUploading ? 'cloud_upload' : 'cloud_upload'" size="48px"
+                  class="q-mb-md upload-icon" />
+                <div class="text-h6 text-weight-medium q-mb-xs upload-title">
+                  {{ isAssociateDialogDragOver ? '释放文件开始上传' : isAssociateDialogUploading ? '正在上传文件...' : '拖拽文件到此处或点击选择'
+                  }}
+                </div>
+                <div class="text-caption upload-subtitle">
+                  支持 PDF、Word、Excel、文本文档等格式，单个文件不超过 10MB
+                </div>
+                <div v-if="isAssociateDialogUploading" class="q-mt-md">
+                  <q-spinner-dots size="24px" color="primary" />
+                  <div class="text-caption q-mt-xs">正在上传...</div>
+                </div>
+              </div>
+
+              <!-- 隐藏的文件输入框 -->
+              <input ref="associateDialogFileInputRef" type="file" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.txt,.md"
+                @change="handleAssociateDialogFileInputChange" style="display: none;" />
+            </div>
+          </div>
+
+          <!-- 显示新上传的文档列表 -->
+          <div v-if="associateDocumentList.length > 0" class="q-mt-md">
+            <div class="text-caption text-weight-medium q-mb-xs">待关联文档:</div>
+            <div class="q-gutter-y-sm">
+              <div v-for="(doc, index) in associateDocumentList" :key="index" class="uploaded-doc">
+                <q-icon name="description" size="18px" class="q-mr-xs" />
+                <span class="ellipsis">{{ doc.fileName }}</span>
+                <q-btn flat round dense icon="close" size="xs" @click="removeAssociateDoc(index)" class="q-mr-xs" />
+              </div>
+            </div>
+          </div>
+
+          <!-- 上传进度条 -->
+          <div v-if="associateDialogUploadProgress > 0 && associateDialogUploadProgress < 100" class="q-mt-md">
+            <q-linear-progress :value="associateDialogUploadProgress / 100" color="primary" class="q-mb-xs" />
+            <div class="text-caption text-center">{{ associateDialogUploadProgress.toFixed(1) }}%</div>
+          </div>
+        </div>
+      </q-card-section>
+
+      <q-card-actions align="right" class="q-pb-md q-pr-md">
+        <q-btn flat label="取消" color="grey-7" v-close-popup />
+        <q-btn flat label="关联文档" color="blue-6" @click="associateDocuments"
+          :disable="associateDocumentList.length === 0 || isAssociateDialogUploading" />
+      </q-card-actions>
+    </q-card>
+  </q-dialog>
 </template>
 
 <script setup lang="ts">
@@ -418,6 +527,12 @@ const sysFileApi = getSysFile()
 
 // 控制新建任务对话框的显示
 const showNewTaskDialog = ref(false)
+
+// 控制关联文档对话框的显示
+const showAssociateDocumentDialog = ref(false)
+
+// 当前操作的任务
+const currentTask = ref<DevTaskVO | null>(null)
 
 // 分页大小相关常量和函数
 const PAGE_SIZE_CACHE_KEY = 'task-list-page-size'
@@ -520,6 +635,13 @@ const isUploading = ref(false)
 const isDragOver = ref(false)
 const fileInputRef = ref<HTMLInputElement | null>(null)
 
+// 关联文档对话框的上传相关状态
+const isAssociateDialogDragOver = ref(false)
+const isAssociateDialogUploading = ref(false)
+const associateDialogUploadProgress = ref(0)
+const associateDialogFileInputRef = ref<HTMLInputElement | null>(null)
+const associateDocumentList = ref<SaveSysFileVO[]>([])
+
 // 统一的搜索函数
 const fetchTasks = async (): Promise<void> => {
   try {
@@ -545,7 +667,7 @@ const fetchTasks = async (): Promise<void> => {
 
     // 只添加有值的参数
     if (filterParams.value.reqNo) {
-      queryParams.requirementId = filterParams.value.reqNo
+      queryParams.reqNo = filterParams.value.reqNo
     }
     if (filterParams.value.requirementName) {
       queryParams.requirementName = filterParams.value.requirementName
@@ -1713,6 +1835,270 @@ const generateTaskId = (): void => {
 
   const taskId = `${year}${month}${day}${hours}${minutes}${seconds}`
   newTask.value.id = taskId
+}
+
+// 打开关联文档对话框
+const openAssociateDocumentDialog = (task: DevTaskVO): void => {
+  currentTask.value = task
+  associateDocumentList.value = []
+  resetAssociateDialogState()
+  showAssociateDocumentDialog.value = true
+}
+
+// 重置关联文档对话框状态
+const resetAssociateDialogState = (): void => {
+  isAssociateDialogDragOver.value = false
+  isAssociateDialogUploading.value = false
+  associateDialogUploadProgress.value = 0
+}
+
+// 关联文档对话框的拖拽上传相关方法
+const handleAssociateDialogDragOver = (event: DragEvent): void => {
+  event.preventDefault()
+  isAssociateDialogDragOver.value = true
+}
+
+const handleAssociateDialogDragLeave = (event: DragEvent): void => {
+  event.preventDefault()
+  isAssociateDialogDragOver.value = false
+}
+
+const handleAssociateDialogDrop = async (event: DragEvent): Promise<void> => {
+  event.preventDefault()
+  isAssociateDialogDragOver.value = false
+
+  const files = event.dataTransfer?.files
+  if (files && files.length > 0) {
+    await processAssociateDialogFiles(Array.from(files))
+  }
+}
+
+const triggerAssociateDialogFileInput = (): void => {
+  associateDialogFileInputRef.value?.click()
+}
+
+const handleAssociateDialogFileInputChange = async (event: Event): Promise<void> => {
+  const target = event.target as HTMLInputElement
+  const files = target.files
+  if (files && files.length > 0) {
+    await processAssociateDialogFiles(Array.from(files))
+  }
+  // 清空input值，允许重复选择同一文件
+  target.value = ''
+}
+
+// 处理关联文档对话框的文件
+const processAssociateDialogFiles = async (files: File[]): Promise<void> => {
+  // 验证文件类型
+  const allowedTypes = ['.pdf', '.doc', '.docx', '.xls', '.xlsx', '.txt', '.md']
+  const validFiles = files.filter(file => {
+    const extension = '.' + file.name.split('.').pop()?.toLowerCase()
+    return allowedTypes.includes(extension)
+  })
+
+  // 验证文件大小 (限制为 10MB)
+  const maxSize = 10 * 1024 * 1024 // 10MB
+  const oversizedFiles = validFiles.filter(file => file.size > maxSize)
+
+  if (oversizedFiles.length > 0) {
+    $q.notify({
+      message: `文件 "${oversizedFiles[0]?.name}" 超过 10MB 限制`,
+      color: 'warning',
+      position: 'top',
+      timeout: 3000
+    })
+    return
+  }
+
+  if (validFiles.length !== files.length) {
+    $q.notify({
+      message: `只支持 ${allowedTypes.join(', ')} 格式的文件`,
+      color: 'warning',
+      position: 'top',
+      timeout: 3000
+    })
+  }
+
+  if (validFiles.length > 0) {
+    // 检查是否有重复文件
+    const existingFileNames = associateDocumentList.value.map((doc: SaveSysFileVO) => doc.fileName)
+    const newFiles = validFiles.filter(file => !existingFileNames.includes(file.name))
+
+    if (newFiles.length !== validFiles.length) {
+      $q.notify({
+        message: '已过滤重复文件',
+        color: 'info',
+        position: 'top',
+        timeout: 2000
+      })
+    }
+
+    if (newFiles.length > 0) {
+      await handleAssociateDialogFileSelect(newFiles)
+    }
+  }
+}
+
+// 处理关联文档对话框的文件选择 - 立即上传
+const handleAssociateDialogFileSelect = async (files: File[]): Promise<void> => {
+  if (!files || files.length === 0) return
+
+  // 设置上传状态
+  isAssociateDialogUploading.value = true
+  associateDialogUploadProgress.value = 0
+
+  try {
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i]
+      if (!file) continue
+
+      // 更新进度
+      associateDialogUploadProgress.value = (i / files.length) * 90 // 上传过程占90%
+
+      try {
+        // 调用上传API
+        const uploadFileBody: UploadFileBody = {
+          file: file
+        }
+
+        const response = await sysFileApi.uploadFile(uploadFileBody)
+
+        if (response.data?.isOk && response.data.okData) {
+          // 上传成功，直接构建 SaveSysFileVO 对象并添加到文档列表
+          const sysFile: SaveSysFileVO = {
+            ...response.data.okData,
+            fileName: response.data.okData.fileName || file.name,
+            fileType: response.data.okData.fileType || file.name.split('.').pop() || '',
+          }
+
+          // 添加到关联文档列表
+          associateDocumentList.value.push(sysFile)
+
+          $q.notify({
+            message: `文件 "${file.name}" 上传成功`,
+            color: 'positive',
+            position: 'top',
+            timeout: 1500
+          })
+        } else {
+          throw new Error(response.data?.failMsg || '上传失败')
+        }
+      } catch (error) {
+        console.error('文件上传失败:', error)
+        $q.notify({
+          message: `文件 "${file.name}" 上传失败: ${error instanceof Error ? error.message : '未知错误'}`,
+          color: 'negative',
+          position: 'top',
+          timeout: 3000
+        })
+      }
+
+      // 更新进度
+      associateDialogUploadProgress.value = ((i + 1) / files.length) * 100
+    }
+  } finally {
+    // 重置上传状态
+    setTimeout(() => {
+      isAssociateDialogUploading.value = false
+      associateDialogUploadProgress.value = 0
+    }, 1000)
+  }
+}
+
+// 删除待关联文档
+const removeAssociateDoc = (index: number): void => {
+  associateDocumentList.value.splice(index, 1)
+  $q.notify({
+    message: '文档已从待关联列表中删除',
+    color: 'positive',
+    position: 'top',
+    timeout: 1000
+  })
+}
+
+// 关联文档到任务
+const associateDocuments = async (): Promise<void> => {
+  if (!currentTask.value || associateDocumentList.value.length === 0) {
+    $q.notify({
+      message: '没有可关联的文档',
+      color: 'warning',
+      position: 'top',
+      timeout: 2000
+    })
+    return
+  }
+
+  try {
+    // 检查是否有文件正在上传
+    if (isAssociateDialogUploading.value) {
+      $q.notify({
+        message: '请等待文件上传完成',
+        color: 'warning',
+        position: 'top',
+        timeout: 2000
+      })
+      return
+    }
+
+    // 检查文件是否上传成功
+    const failedUploads = associateDocumentList.value.filter((doc: SaveSysFileVO) => !doc.fileUrl && !doc.id)
+    if (failedUploads.length > 0) {
+      $q.notify({
+        message: `有 ${failedUploads.length} 个文件上传失败，请重新上传`,
+        color: 'warning',
+        position: 'top',
+        timeout: 3000
+      })
+      return
+    }
+
+    // 准备更新任务的参数
+    const existingFileNames = currentTask.value.relatedFileList?.map(file => file.fileName).filter(name => name) || []
+    const newFileNames = associateDocumentList.value.map(doc => doc.fileName).filter(name => name)
+    const allFileNames = [...existingFileNames, ...newFileNames]
+
+    const saveDevTaskParam: SaveDevTaskInParam = {
+      requirementId: currentTask.value.reqNo || '',
+      requirementName: currentTask.value.requirementName || '',
+      systemCategory: currentTask.value.systemCategory || '',
+      relatedRequirementDocs: allFileNames.join(';'),
+      uploadedFilesId: associateDocumentList.value.map((doc: SaveSysFileVO) => doc.id || '').filter(id => id)
+    }
+
+    // 只有当userId存在时才添加
+    if (currentTask.value.userId !== undefined) {
+      saveDevTaskParam.userId = currentTask.value.userId
+    }
+
+    const response = await devTaskApi.saveDevTask(saveDevTaskParam)
+
+    if (response.data?.isOk) {
+      $q.notify({
+        message: `成功为任务 "${currentTask.value.requirementName}" 关联 ${associateDocumentList.value.length} 个文档`,
+        color: 'positive',
+        position: 'top',
+        timeout: 2000
+      })
+
+      // 重新获取任务列表以更新显示
+      await fetchTasks()
+
+      // 关闭对话框并重置状态
+      showAssociateDocumentDialog.value = false
+      associateDocumentList.value = []
+      currentTask.value = null
+    } else {
+      throw new Error(response.data?.failMsg || '关联文档失败')
+    }
+  } catch (error) {
+    console.error('关联文档失败:', error)
+    $q.notify({
+      message: `关联文档失败: ${error instanceof Error ? error.message : '未知错误'}`,
+      color: 'negative',
+      position: 'top',
+      timeout: 3000
+    })
+  }
 }
 
 defineOptions({
@@ -2955,6 +3341,60 @@ defineOptions({
 
     .upload-icon {
       font-size: 36px !important;
+    }
+  }
+}
+
+/* 关联文档对话框样式 */
+.current-doc-item {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  border: 1px solid $cursor-border;
+  border-radius: 8px;
+  background: rgba($cursor-surface, 0.8);
+  transition: all 0.3s ease;
+  backdrop-filter: blur(4px);
+  box-shadow: 0 1px 4px rgba($cursor-bg, 0.2);
+
+  &:hover {
+    border-color: $cursor-primary;
+    background: rgba($cursor-primary, 0.08);
+    transform: translateX(4px);
+    box-shadow: 0 2px 8px rgba($cursor-primary, 0.15);
+  }
+
+  .doc-info {
+    flex: 1;
+    margin-left: 8px;
+  }
+
+  .doc-name {
+    font-weight: 500;
+    color: $cursor-text;
+    font-size: 14px;
+    line-height: 1.4;
+    word-break: break-all;
+  }
+
+  .doc-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 4px;
+    font-size: 12px;
+    color: $cursor-muted;
+
+    .doc-type {
+      background-color: rgba($cursor-primary, 0.1);
+      color: $cursor-primary;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: 500;
+    }
+
+    .doc-date {
+      color: $cursor-muted;
     }
   }
 }
