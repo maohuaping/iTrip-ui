@@ -15,70 +15,70 @@
                 所有信号参数记录
               </div>
             </div>
-            
+
             <!-- 分隔线 -->
             <q-separator class="q-mb-md" color="grey-5" />
-            
+
             <!-- 控制区域 - 上传按钮和筛选按钮在同一行 -->
             <div class="row justify-between items-center q-mb-sm">
               <!-- 左侧：上传按钮 -->
               <div class="row items-center">
-                <q-file 
-                  v-model="selectedFile" 
-                  accept=".jpg,.jpeg,.png,.gif" 
+                <q-file
+                  v-model="selectedFile"
+                  accept=".jpg,.jpeg,.png,.gif"
                   max-file-size="10485760"
-                  @rejected="onRejected" 
+                  @rejected="onRejected"
                   @update:model-value="onFileSelected"
                   style="display: none"
                   ref="fileInput"
                 />
-                <q-btn 
-                  color="primary" 
+                <q-btn
+                  color="primary"
                   text-color="white"
-                  icon="upload" 
-                  label="上传识别" 
-                  size="sm" 
+                  icon="upload"
+                  label="上传识别"
+                  size="sm"
                   :loading="uploading"
                   @click="triggerFileUpload"
                   class="upload-btn"
                   outline
                 />
               </div>
-              
+
               <!-- 右侧：日期筛选控件 -->
               <div class="row items-center">
                 <q-btn-group flat>
-                  <q-btn 
-                    :color="selectedDateFilter === 'today' ? 'primary' : 'grey-7'" 
+                  <q-btn
+                    :color="selectedDateFilter === 'today' ? 'primary' : 'grey-7'"
                     :text-color="selectedDateFilter === 'today' ? 'white' : 'grey-8'"
                     :label="`今天 (${dateCounts.today})`"
-                    size="sm" 
-                    @click="setDateFilter('today')" 
-                    :disable="loadingTable" 
+                    size="sm"
+                    @click="setDateFilter('today')"
+                    :disable="loadingTable"
                   />
-                  <q-btn 
-                    :color="selectedDateFilter === 'yesterday' ? 'primary' : 'grey-7'" 
+                  <q-btn
+                    :color="selectedDateFilter === 'yesterday' ? 'primary' : 'grey-7'"
                     :text-color="selectedDateFilter === 'yesterday' ? 'white' : 'grey-8'"
                     :label="`昨天 (${dateCounts.yesterday})`"
-                    size="sm" 
-                    @click="setDateFilter('yesterday')" 
-                    :disable="loadingTable" 
+                    size="sm"
+                    @click="setDateFilter('yesterday')"
+                    :disable="loadingTable"
                   />
-                  <q-btn 
-                    :color="selectedDateFilter === 'dayBefore' ? 'primary' : 'grey-7'" 
+                  <q-btn
+                    :color="selectedDateFilter === 'dayBefore' ? 'primary' : 'grey-7'"
                     :text-color="selectedDateFilter === 'dayBefore' ? 'white' : 'grey-8'"
                     :label="`前天 (${dateCounts.dayBefore})`"
-                    size="sm" 
-                    @click="setDateFilter('dayBefore')" 
-                    :disable="loadingTable" 
+                    size="sm"
+                    @click="setDateFilter('dayBefore')"
+                    :disable="loadingTable"
                   />
-                  <q-btn 
-                    :color="selectedDateFilter === 'all' ? 'primary' : 'grey-7'" 
+                  <q-btn
+                    :color="selectedDateFilter === 'all' ? 'primary' : 'grey-7'"
                     :text-color="selectedDateFilter === 'all' ? 'white' : 'grey-8'"
                     :label="`全部 (${dateCounts.all})`"
-                    size="sm" 
-                    @click="setDateFilter('all')" 
-                    :disable="loadingTable" 
+                    size="sm"
+                    @click="setDateFilter('all')"
+                    :disable="loadingTable"
                   />
                 </q-btn-group>
               </div>
@@ -86,17 +86,17 @@
           </div>
 
           <!-- 数据表格 -->
-          <q-table 
-            :rows="signalParamsList" 
-            :columns="tableColumns" 
-            :loading="loadingTable" 
-            row-key="id" 
-            flat 
+          <q-table
+            :rows="signalParamsList"
+            :columns="tableColumns"
+            :loading="loadingTable"
+            row-key="id"
+            flat
             bordered
-            class="custom-signal-table" 
-            :no-data-label="'暂无数据'" 
+            class="custom-signal-table"
+            :no-data-label="'暂无数据'"
             :loading-label="'加载中...'"
-            binary-state-sort 
+            binary-state-sort
             :pagination="{ rowsPerPage: 0 }"
             hide-pagination
           >
@@ -241,10 +241,10 @@
 
           <q-card-actions align="right">
             <q-btn flat label="取消" color="grey" v-close-popup />
-            <q-btn 
-              label="保存" 
-              color="primary" 
-              @click="saveDownSpeedFromDialog" 
+            <q-btn
+              label="保存"
+              color="primary"
+              @click="saveDownSpeedFromDialog"
               :loading="savingDownSpeed"
               :disable="!editDownSpeedValue || parseFloat(editDownSpeedValue) < 0"
             />
@@ -371,12 +371,13 @@ const tableColumns = [
     format: (val: any) => val ?? '-'
   },
   {
-    name: 'hasScc',
-    label: 'SCC',
-    field: 'hasScc',
+    name: 'pci',
+    label: '小区',
+    field: 'pci',
     align: 'center' as const,
     sortable: true,
-    style: 'width: 45px; min-width: 45px'
+    style: 'width: 55px; min-width: 55px',
+    format: (val: any) => val ?? '-'
   },
   {
     name: 'downSpeed',
@@ -389,6 +390,15 @@ const tableColumns = [
   },
   // 核心信号参数 - 最重要且变化频繁的参数
   {
+    name: 'ssbSinr',
+    label: 'SSB-SINR',
+    field: 'ssbSinr',
+    align: 'center' as const,
+    sortable: true,
+    style: 'width: 75px; min-width: 75px',
+    format: (val: any) => val ?? '-'
+  },
+  {
     name: 'ssbRsrp',
     label: 'SSB-RSRP',
     field: 'ssbRsrp',
@@ -398,13 +408,12 @@ const tableColumns = [
     format: (val: any) => val ?? '-'
   },
   {
-    name: 'ssbSinr',
-    label: 'SSB-SINR',
-    field: 'ssbSinr',
+    name: 'hasScc',
+    label: 'SCC',
+    field: 'hasScc',
     align: 'center' as const,
     sortable: true,
-    style: 'width: 75px; min-width: 75px',
-    format: (val: any) => val ?? '-'
+    style: 'width: 45px; min-width: 45px'
   },
   {
     name: 'rssi',
@@ -458,15 +467,6 @@ const tableColumns = [
     align: 'center' as const,
     sortable: true,
     style: 'width: 70px; min-width: 70px',
-    format: (val: any) => val ?? '-'
-  },
-  {
-    name: 'pci',
-    label: 'PCI',
-    field: 'pci',
-    align: 'center' as const,
-    sortable: true,
-    style: 'width: 55px; min-width: 55px',
     format: (val: any) => val ?? '-'
   },
   {
@@ -579,7 +579,7 @@ const uploadFile = async () => {
 // 加载数据函数（已移除分页功能）
 const loadSignalData = async () => {
   console.log('加载信号数据，筛选条件:', selectedDateFilter.value);
-  
+
   loadingTable.value = true;
 
   try {
@@ -600,18 +600,18 @@ const loadSignalData = async () => {
     } else if (selectedDateFilter.value === 'all') {
       queryParams.dateFilter = 'all';
     }
-    
+
     console.log('API请求参数:', queryParams);
-    
+
     const response = await rfSignalApi.querySignalParam(queryParams);
 
     if (response.data && response.data.isOk && response.data.okData) {
       const dataList = response.data.okData;
-      
+
       console.log('响应数据:', dataList);
-      
+
       signalParamsList.value = dataList || [];
-      
+
       console.log('更新后的数据列表长度:', signalParamsList.value.length);
 
       if (dataList && dataList.length > 0) {
@@ -662,16 +662,16 @@ const loadAllDateCounts = async () => {
       // 今天
       rfSignalApi.querySignalParam({ dateFilter: 'today' }),
       // 昨天
-      rfSignalApi.querySignalParam({ 
-        dateFilter: 'custom', 
-        startDate: getYesterdayString(), 
-        endDate: getYesterdayString() 
+      rfSignalApi.querySignalParam({
+        dateFilter: 'custom',
+        startDate: getYesterdayString(),
+        endDate: getYesterdayString()
       }),
       // 前天
-      rfSignalApi.querySignalParam({ 
-        dateFilter: 'custom', 
-        startDate: getDayBeforeString(), 
-        endDate: getDayBeforeString() 
+      rfSignalApi.querySignalParam({
+        dateFilter: 'custom',
+        startDate: getDayBeforeString(),
+        endDate: getDayBeforeString()
       }),
       // 全部
       rfSignalApi.querySignalParam({ dateFilter: 'all' })
@@ -698,7 +698,7 @@ const loadSignalParams = async () => {
 // 日期筛选相关函数
 const setDateFilter = async (filterType: 'today' | 'yesterday' | 'dayBefore' | 'all') => {
   selectedDateFilter.value = filterType;
-  
+
   // 重新加载数据
   await loadSignalData();
 };
@@ -708,7 +708,7 @@ const openEditDownSpeedDialog = (row: any) => {
   editingRecord.value = row;
   editDownSpeedValue.value = row.downSpeed || '';
   showEditDownSpeedDialog.value = true;
-  
+
   // 使用nextTick确保DOM更新后再聚焦
   nextTick(() => {
     if (editDownSpeedInput.value) {
@@ -818,11 +818,11 @@ const updateSignalTrendChart = () => {
     .filter(item => item.createdAt && item.rssi !== undefined && item.ssbRsrp !== undefined)
     .sort((a, b) => new Date(a.createdAt!).getTime() - new Date(b.createdAt!).getTime())
     .map(item => ({
-      time: new Date(item.createdAt!).toLocaleString('zh-CN', { 
-        month: '2-digit', 
-        day: '2-digit', 
-        hour: '2-digit', 
-        minute: '2-digit' 
+      time: new Date(item.createdAt!).toLocaleString('zh-CN', {
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit'
       }),
       rssi: Math.abs(item.rssi!), // 取绝对值便于显示
       ssbRsrp: Math.abs(item.ssbRsrp!)
@@ -880,7 +880,7 @@ const updateSignalTrendChart = () => {
     xAxis: {
       type: 'category',
       data: data.map(d => d.time),
-      axisLabel: { 
+      axisLabel: {
         rotate: 30,
         fontSize: 10,
         interval: 'auto',
@@ -899,7 +899,7 @@ const updateSignalTrendChart = () => {
       nameGap: isMobile ? 15 : 25,
       min: 70, // 设置最小值为70
       max: 100, // 设置最大值为100
-      axisLabel: { 
+      axisLabel: {
         fontSize: isMobile ? 9 : 10,
         formatter: (value: number) => `-${value}`,
         margin: isMobile ? 5 : 8
@@ -909,7 +909,7 @@ const updateSignalTrendChart = () => {
       {
         name: 'RSSI',
         type: chartType.value,
-        data: chartType.value === 'scatter' 
+        data: chartType.value === 'scatter'
           ? data.map((d, index) => ({ name: d.time, value: d.rssi }))
           : data.map(d => d.rssi),
         smooth: chartType.value === 'line',
@@ -921,7 +921,7 @@ const updateSignalTrendChart = () => {
       {
         name: 'SSB-RSRP',
         type: chartType.value,
-        data: chartType.value === 'scatter' 
+        data: chartType.value === 'scatter'
           ? data.map((d, index) => ({ name: d.time, value: d.ssbRsrp }))
           : data.map(d => d.ssbRsrp),
         smooth: chartType.value === 'line',
@@ -946,15 +946,15 @@ const handleResize = () => {
 onMounted(async () => {
   // 初始化日期筛选状态为今天
   selectedDateFilter.value = 'today';
-  
+
   // 并行加载：1) 今天的数据 2) 所有日期的数量统计
   await Promise.all([
     loadSignalData(), // 加载今天的详细数据
     loadAllDateCounts() // 加载所有日期的数量统计
   ]);
-  
+
   await initCharts();
-  
+
   // 添加窗口大小变化监听
   window.addEventListener('resize', handleResize);
 });
@@ -977,7 +977,7 @@ const formatDateTime = (dateTime?: string) => {
 /* 响应式页面 */
 .responsive-page {
   padding: 16px;
-  
+
   @media (max-width: 768px) {
     padding: 8px 4px; // 移动端减少内边距
   }
@@ -991,7 +991,7 @@ const formatDateTime = (dateTime?: string) => {
   background: transparent !important;
   color: $cursor-primary !important;
   font-weight: 600;
-  
+
   &:hover {
     transform: translateY(-1px);
     box-shadow: 0 4px 12px rgba($cursor-primary, 0.3);
@@ -999,11 +999,11 @@ const formatDateTime = (dateTime?: string) => {
     border-color: $cursor-accent !important;
     color: $cursor-accent !important;
   }
-  
+
   &:active {
     transform: translateY(0);
   }
-  
+
   // 加载状态样式
   &.q-btn--loading {
     background: rgba($cursor-primary, 0.1) !important;
@@ -1016,7 +1016,7 @@ const formatDateTime = (dateTime?: string) => {
   max-width: 1200px;
   margin: 0 auto;
   width: 100%;
-  
+
   @media (max-width: 768px) {
     max-width: 100%;
     margin: 0;
@@ -1299,24 +1299,24 @@ const formatDateTime = (dateTime?: string) => {
 /* 响应式设计 */
 @media (max-width: 1200px) {
   .custom-signal-table {
-    font-size: 11px;
+    font-size: 13px;
 
     :deep(th),
     :deep(td) {
-      padding: 3px 2px;
-      font-size: 10px;
+      padding: 8px 4px;
+      font-size: 12px;
     }
 
     :deep(thead tr:first-child th) {
-      font-size: 10px;
-      padding: 6px 4px;
+      font-size: 12px;
+      padding: 10px 6px;
       text-align: center !important;
       vertical-align: middle;
     }
 
     .custom-signal-table :deep(.scc-cell),
     .custom-signal-table .scc-cell {
-      padding: 3px 2px !important;
+      padding: 8px 4px !important;
       position: relative !important;
     }
 
@@ -1337,21 +1337,21 @@ const formatDateTime = (dateTime?: string) => {
 
 @media (max-width: 768px) {
   .custom-signal-table {
-    font-size: 10px;
+    font-size: 11px;
     width: 100%;
     margin: 0 auto; // 确保表格居中
 
     :deep(th),
     :deep(td) {
-      padding: 2px 1px; // 进一步减少内边距以显示更多内容
+      padding: 6px 3px; // 适中的内边距
       text-align: center;
-      font-size: 9px;
-      line-height: 1.1;
+      font-size: 11px;
+      line-height: 1.2;
     }
 
     :deep(thead tr:first-child th) {
-      font-size: 9px;
-      padding: 5px 3px;
+      font-size: 11px;
+      padding: 8px 4px;
       font-weight: 600;
       text-align: center !important;
       vertical-align: middle;
@@ -1392,13 +1392,13 @@ const formatDateTime = (dateTime?: string) => {
 
     .custom-signal-table :deep(.scc-cell),
     .custom-signal-table .scc-cell {
-      padding: 2px 1px !important;
+      padding: 6px 3px !important;
       position: relative !important;
     }
 
     .custom-signal-table :deep(.scc-cell .q-icon),
     .custom-signal-table .scc-cell .q-icon {
-      font-size: 12px !important;
+      font-size: 14px !important;
       display: inline-flex !important;
       align-items: center !important;
       justify-content: center !important;
@@ -1436,31 +1436,31 @@ const formatDateTime = (dateTime?: string) => {
     font-size: 16px;
     text-align: center;
   }
-  
+
   // 移动端控制区域布局优化
   .row.justify-between {
     flex-direction: column;
     gap: 12px;
     align-items: stretch;
-    
+
     // 上传按钮区域
     .row.items-center:first-child {
       justify-content: flex-start;
-      
+
       .upload-btn {
         font-size: 11px;
         padding: 6px 12px;
         border-width: 1px !important;
       }
     }
-    
+
     // 日期筛选区域
     .row.items-center:last-child {
       justify-content: center;
-      
+
       .q-btn-group {
         width: 100%;
-        
+
         .q-btn {
           flex: 1;
         }
@@ -1473,21 +1473,21 @@ const formatDateTime = (dateTime?: string) => {
     margin: 0 auto;
     width: 100%;
     border-radius: 8px;
-    
+
     .q-card-section {
       padding: 8px;
     }
-    
+
     .row.justify-between {
       flex-direction: column;
       gap: 8px;
       text-align: center;
-      
+
       .text-h6 {
         font-size: 14px;
         margin-bottom: 8px;
       }
-      
+
       .q-select {
         max-width: 150px;
         margin: 0 auto;
@@ -1504,14 +1504,14 @@ const formatDateTime = (dateTime?: string) => {
     display: flex;
     flex-direction: column;
     align-items: center;
-    
+
     .chart-title {
       font-size: 14px;
       margin-bottom: 8px;
       text-align: center;
       width: 100%;
     }
-    
+
     // 确保图表div居中
     > div {
       margin: 0 auto !important;
@@ -1522,7 +1522,7 @@ const formatDateTime = (dateTime?: string) => {
   .row.q-gutter-md {
     margin: 0;
     justify-content: center;
-    
+
     .col-12 {
       padding: 0;
       display: flex;
@@ -1587,17 +1587,17 @@ const formatDateTime = (dateTime?: string) => {
 .q-btn-group .q-btn {
   border-radius: 0;
   transition: all 0.2s ease;
-  
+
   &:first-child {
     border-top-left-radius: 6px;
     border-bottom-left-radius: 6px;
   }
-  
+
   &:last-child {
     border-top-right-radius: 6px;
     border-bottom-right-radius: 6px;
   }
-  
+
   &:hover {
     transform: translateY(-1px);
     box-shadow: $elevation-2;
