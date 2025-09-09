@@ -186,7 +186,7 @@
                                   <div class="document-meta">
                                     <span class="document-type">{{ getFileTypeLabel(file.fileType || '') }}</span>
                                     <span v-if="file.createdAt" class="document-date">{{ formatDate(file.createdAt)
-                                    }}</span>
+                                      }}</span>
                                   </div>
                                 </div>
                                 <q-icon name="open_in_new" size="16px" color="grey-6" />
@@ -510,7 +510,7 @@ import { getEnum } from 'src/api/enum/enum'
 import { ref, onMounted, computed, watch } from 'vue'
 import { useQuasar } from 'quasar'
 import { getDevTask } from 'src/api/dev-task/dev-task'
-import type { DevTask, DevTaskVO, QueryDevTaskInParam, IPageDevTaskVO, RelatedFile, SaveDevTaskInParam } from 'src/api/api.schemas'
+import type { DevTask, DevTaskVO, QueryDevTaskInParam, IPageDevTaskVO, RelatedFile, SaveDevTaskInParam, UpdateDevTaskInParam } from 'src/api/api.schemas'
 
 // 导入AI API
 import { getAi } from 'src/api/ai/ai'
@@ -2053,24 +2053,12 @@ const associateDocuments = async (): Promise<void> => {
     }
 
     // 准备更新任务的参数
-    const existingFileNames = currentTask.value.relatedFileList?.map(file => file.fileName).filter(name => name) || []
-    const newFileNames = associateDocumentList.value.map(doc => doc.fileName).filter(name => name)
-    const allFileNames = [...existingFileNames, ...newFileNames]
-
-    const saveDevTaskParam: SaveDevTaskInParam = {
-      requirementId: currentTask.value.reqNo || '',
-      requirementName: currentTask.value.requirementName || '',
-      systemCategory: currentTask.value.systemCategory || '',
-      relatedRequirementDocs: allFileNames.join(';'),
+    const updateDevTaskParam: UpdateDevTaskInParam = {
+      id: currentTask.value.id || '',
       uploadedFilesId: associateDocumentList.value.map((doc: SaveSysFileVO) => doc.id || '').filter(id => id)
     }
 
-    // 只有当userId存在时才添加
-    if (currentTask.value.userId !== undefined) {
-      saveDevTaskParam.userId = currentTask.value.userId
-    }
-
-    const response = await devTaskApi.saveDevTask(saveDevTaskParam)
+    const response = await devTaskApi.updateDevTask(updateDevTaskParam)
 
     if (response.data?.isOk) {
       $q.notify({

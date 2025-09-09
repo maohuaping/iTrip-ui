@@ -11,6 +11,7 @@ import type {
   ResultIPageDevTaskVO,
   ResultListString,
   ResultMapStringObject,
+  ResultObject,
   ResultString,
   SaveDevTaskInParam,
   UpdateDevTaskInParam,
@@ -32,7 +33,7 @@ export const getDevTask = () => {
    * @summary 更新开发任务
    */
   const updateDevTask = (updateDevTaskInParam: UpdateDevTaskInParam) => {
-    return customInstance<ResultDevTask>({
+    return customInstance<ResultObject>({
       url: `/api/devTask/updateDevTask`,
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

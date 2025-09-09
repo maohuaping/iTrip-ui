@@ -784,10 +784,27 @@ export interface SmtpConfigParam {
 }
 
 export interface UpdateDevTaskInParam {
-  /** 任务id */
+  /** 开发任务ID */
   id?: string;
-  /** 是否置顶 */
-  isTop?: number;
+  /** 上传的文件列表 */
+  uploadedFilesId?: string[];
+}
+
+export interface SaveDevTaskInParam {
+  /** 开发任务ID */
+  devTaskId?: string;
+  /** 需求编号 */
+  requirementId?: string;
+  /** 需求名称 */
+  requirementName?: string;
+  /** 需求关联的需求文档名称。如果关联多个需求文档，会以;进行分隔 */
+  relatedRequirementDocs?: string;
+  /** 系统分类 */
+  systemCategory?: string;
+  /** 上传的文件列表 */
+  uploadedFilesId?: string[];
+  /** 需求的归属用户ID */
+  userId?: number;
 }
 
 /**
@@ -826,23 +843,6 @@ export interface ResultDevTask {
   okData?: DevTask;
   /** 失败消息 */
   failMsg?: string;
-}
-
-export interface SaveDevTaskInParam {
-  /** 开发任务ID */
-  devTaskId?: string;
-  /** 需求编号 */
-  requirementId?: string;
-  /** 需求名称 */
-  requirementName?: string;
-  /** 需求关联的需求文档名称。如果关联多个需求文档，会以;进行分隔 */
-  relatedRequirementDocs?: string;
-  /** 系统分类 */
-  systemCategory?: string;
-  /** 上传的文件列表 */
-  uploadedFilesId?: string[];
-  /** 需求的归属用户ID */
-  userId?: number;
 }
 
 /**
