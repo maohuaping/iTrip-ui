@@ -329,7 +329,7 @@
             <q-select v-model="newTask.type" :options="taskTypes" label="任务类型" outlined dense class="light-field" />
           </div>
           <div class="col-12 col-sm-7">
-            <q-input v-model="newTask.id" label="任务编号" outlined dense class="light-field">
+            <q-input v-model="newTask.id" label="需求编号" outlined dense class="light-field">
               <template v-slot:append>
                 <q-btn flat round dense icon="schedule" color="primary" size="sm" @click="generateTaskId"
                   title="生成时间戳编号 (yyyyMMddHHmmss)" class="generate-id-btn" />
@@ -341,58 +341,6 @@
         <!-- 任务标题 -->
         <q-input v-model="newTask.title" label="任务标题" outlined dense class="light-field q-mb-md"
           placeholder="请输入任务标题" />
-
-        <!-- 关联文档 -->
-        <div class="q-mb-md">
-          <div class="row justify-between items-center q-mb-xs">
-            <div class="text-subtitle2 text-cursor-text">关联文档</div>
-            <div class="text-caption text-grey-7">上传相关文档</div>
-          </div>
-
-          <!-- 拖拽上传区域 -->
-          <div class="q-mb-md">
-            <div class="drag-upload-area" :class="{ 'drag-over': isDragOver, 'uploading': isUploading }"
-              @dragover.prevent="handleDragOver" @dragleave.prevent="handleDragLeave" @drop.prevent="handleDrop"
-              @click="triggerFileInput">
-              <div class="drag-upload-content">
-                <q-icon :name="isUploading ? 'cloud_upload' : 'cloud_upload'" size="48px" class="q-mb-md upload-icon" />
-                <div class="text-h6 text-weight-medium q-mb-xs upload-title">
-                  {{ isDragOver ? '释放文件开始上传' : isUploading ? '正在上传文件...' : '拖拽文件到此处或点击选择' }}
-                </div>
-                <div class="text-caption upload-subtitle">
-                  支持 PDF、Word、Excel、文本文档等格式，单个文件不超过 10MB
-                </div>
-                <div v-if="isUploading" class="q-mt-md">
-                  <q-spinner-dots size="24px" color="primary" />
-                  <div class="text-caption q-mt-xs">正在上传...</div>
-                </div>
-              </div>
-
-              <!-- 隐藏的文件输入框 -->
-              <input ref="fileInputRef" type="file" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.txt,.md"
-                @change="handleFileInputChange" style="display: none;" />
-            </div>
-          </div>
-
-          <!-- 显示已上传的文档列表 -->
-          <div v-if="newTask.docsList.length > 0" class="q-mt-md">
-            <div class="text-caption text-weight-medium q-mb-xs">已上传文档:</div>
-            <div class="q-gutter-y-sm">
-              <div v-for="(doc, index) in newTask.docsList" :key="index" class="uploaded-doc">
-                <q-icon name="description" size="18px" class="q-mr-xs" />
-                <span class="ellipsis">{{ doc.fileName }}</span>
-                <q-btn flat round dense icon="close" size="xs" @click="removeDoc(index)" class="q-mr-xs" />
-                <q-btn flat round dense icon="download" size="xs" @click="downloadFile(doc)" class="q-ml-xs" />
-              </div>
-            </div>
-          </div>
-
-          <!-- 上传进度条 -->
-          <div v-if="uploadProgress > 0 && uploadProgress < 100" class="q-mt-md">
-            <q-linear-progress :value="uploadProgress / 100" color="primary" class="q-mb-xs" />
-            <div class="text-caption text-center">{{ uploadProgress.toFixed(1) }}%</div>
-          </div>
-        </div>
       </q-card-section>
 
       <q-card-actions align="right" class="q-pb-md q-pr-md">
@@ -627,13 +575,6 @@ const pagination = ref({
   rowsNumber: 0
 })
 
-// 文件上传相关状态
-const uploadProgress = ref(0)
-const isUploading = ref(false)
-
-// 拖拽上传相关状态
-const isDragOver = ref(false)
-const fileInputRef = ref<HTMLInputElement | null>(null)
 
 // 关联文档对话框的上传相关状态
 const isAssociateDialogDragOver = ref(false)
@@ -916,205 +857,16 @@ interface NewTask {
   title: string;
   type: TaskType;
   id: string;
-  docsList: SaveSysFileVO[];
-  uploadFiles: File[] | null;
 }
 
 // 初始化newTask，type初始化为空对象，等待从接口获取
 const newTask = ref<NewTask>({
   title: '',
   type: { label: '', value: '' }, // 初始化为空，等待从接口获取
-  id: '',
-  docsList: [],
-  uploadFiles: null
+  id: ''
 })
 
-// 判断是否有文档的计算属性
-const hasDocuments = computed(() => newTask.value.docsList.length > 0)
 
-// 处理文件选择 - 立即上传
-const handleFileSelect = async (files: File[] | null): Promise<void> => {
-  if (!files || files.length === 0) return
-
-  // 设置上传状态
-  isUploading.value = true
-  uploadProgress.value = 0
-
-  try {
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i]
-      if (!file) continue
-
-      // 更新进度
-      uploadProgress.value = (i / files.length) * 90 // 上传过程占90%
-
-      try {
-        // 调用上传API
-        const uploadFileBody: UploadFileBody = {
-          file: file
-        }
-
-        const response = await sysFileApi.uploadFile(uploadFileBody)
-
-        if (response.data?.isOk && response.data.okData) {
-          // 添加调试日志
-          console.log('文件上传成功，API响应数据:', response.data.okData)
-
-          // 上传成功，直接构建 SaveSysFileVO 对象并添加到文档列表
-          const sysFile: SaveSysFileVO = {
-            ...response.data.okData,
-            fileName: response.data.okData.fileName || file.name,
-            fileType: response.data.okData.fileType || file.name.split('.').pop() || '',
-          }
-
-          // 添加调试日志检查fileUrl
-          console.log('构建的SysFile对象:', sysFile)
-          console.log('fileUrl是否存在:', !!sysFile.fileUrl)
-
-          // 添加到文档列表
-          newTask.value.docsList.push(sysFile)
-
-          $q.notify({
-            message: `文件 "${file.name}" 上传成功`,
-            color: 'positive',
-            position: 'top',
-            timeout: 1500
-          })
-        } else {
-          throw new Error(response.data?.failMsg || '上传失败')
-        }
-      } catch (error) {
-        console.error('文件上传失败:', error)
-        $q.notify({
-          message: `文件 "${file.name}" 上传失败: ${error instanceof Error ? error.message : '未知错误'}`,
-          color: 'negative',
-          position: 'top',
-          timeout: 3000
-        })
-      }
-
-      // 更新进度
-      uploadProgress.value = ((i + 1) / files.length) * 100
-    }
-  } finally {
-    // 重置上传状态
-    setTimeout(() => {
-      isUploading.value = false
-      uploadProgress.value = 0
-    }, 1000)
-  }
-}
-
-// 处理文件移除
-const handleFileRemove = (): void => {
-  // Quasar的file组件会自动处理移除，这里只需要清空docsList
-  newTask.value.docsList = []
-}
-
-// 删除单个文档
-const removeDoc = async (index: number): Promise<void> => {
-  const doc = newTask.value.docsList[index]
-
-  // 从本地列表中移除
-  newTask.value.docsList.splice(index, 1)
-
-  // TODO: 如果需要的话，可以在这里调用删除文件的API
-  // 目前只是从本地列表中移除，文件仍保存在服务器上
-
-  $q.notify({
-    message: '文档已从列表中删除',
-    color: 'positive',
-    position: 'top',
-    timeout: 1000
-  })
-}
-
-// 拖拽上传相关函数
-const handleDragOver = (event: DragEvent): void => {
-  event.preventDefault()
-  isDragOver.value = true
-}
-
-const handleDragLeave = (event: DragEvent): void => {
-  event.preventDefault()
-  isDragOver.value = false
-}
-
-const handleDrop = async (event: DragEvent): Promise<void> => {
-  event.preventDefault()
-  isDragOver.value = false
-
-  const files = event.dataTransfer?.files
-  if (files && files.length > 0) {
-    await processFiles(Array.from(files))
-  }
-}
-
-const triggerFileInput = (): void => {
-  fileInputRef.value?.click()
-}
-
-const handleFileInputChange = async (event: Event): Promise<void> => {
-  const target = event.target as HTMLInputElement
-  const files = target.files
-  if (files && files.length > 0) {
-    await processFiles(Array.from(files))
-  }
-  // 清空input值，允许重复选择同一文件
-  target.value = ''
-}
-
-// 处理文件的统一函数
-const processFiles = async (files: File[]): Promise<void> => {
-  // 验证文件类型
-  const allowedTypes = ['.pdf', '.doc', '.docx', '.xls', '.xlsx', '.txt', '.md']
-  const validFiles = files.filter(file => {
-    const extension = '.' + file.name.split('.').pop()?.toLowerCase()
-    return allowedTypes.includes(extension)
-  })
-
-  // 验证文件大小 (限制为 10MB)
-  const maxSize = 10 * 1024 * 1024 // 10MB
-  const oversizedFiles = validFiles.filter(file => file.size > maxSize)
-
-  if (oversizedFiles.length > 0) {
-    $q.notify({
-      message: `文件 "${oversizedFiles[0]?.name}" 超过 10MB 限制`,
-      color: 'warning',
-      position: 'top',
-      timeout: 3000
-    })
-    return
-  }
-
-  if (validFiles.length !== files.length) {
-    $q.notify({
-      message: `只支持 ${allowedTypes.join(', ')} 格式的文件`,
-      color: 'warning',
-      position: 'top',
-      timeout: 3000
-    })
-  }
-
-  if (validFiles.length > 0) {
-    // 检查是否有重复文件
-    const existingFileNames = newTask.value.docsList.map((doc: SaveSysFileVO) => doc.fileName)
-    const newFiles = validFiles.filter(file => !existingFileNames.includes(file.name))
-
-    if (newFiles.length !== validFiles.length) {
-      $q.notify({
-        message: '已过滤重复文件',
-        color: 'info',
-        position: 'top',
-        timeout: 2000
-      })
-    }
-
-    if (newFiles.length > 0) {
-      await handleFileSelect(newFiles)
-    }
-  }
-}
 
 
 // 修复重置表单函数
@@ -1122,74 +874,21 @@ const resetNewTaskForm = (): void => {
   newTask.value = {
     title: '',
     type: { label: '', value: '' }, // 初始化为空，等待从接口获取
-    id: '',
-    docsList: [],
-    uploadFiles: null
+    id: ''
   }
-
-  // 重置拖拽状态
-  isDragOver.value = false
-  isUploading.value = false
-  uploadProgress.value = 0
 }
 
 // 修改创建任务方法，使用dev-task API
 const createTask = async (): Promise<void> => {
   try {
-    // 检查是否有文件正在上传
-    if (isUploading.value) {
-      $q.notify({
-        message: '请等待文件上传完成',
-        color: 'warning',
-        position: 'top',
-        timeout: 2000
-      })
-      return
-    }
-
-    // 检查是否有文件URL为空的情况（上传失败的文件）
-    console.log('检查文档列表:', newTask.value.docsList)
-
-    // 检查文件是否有必要的字段（id或fileName至少要有一个，表示上传成功）
-    const failedUploads = newTask.value.docsList.filter((doc: SaveSysFileVO) => !doc.fileUrl && !doc.id)
-    console.log('上传失败的文件:', failedUploads)
-
-    if (failedUploads.length > 0) {
-      console.error('发现上传失败的文件:', failedUploads.map((doc: SaveSysFileVO) => ({
-        fileName: doc.fileName,
-        fileUrl: doc.fileUrl,
-        id: doc.id,
-        hasFileUrl: !!doc.fileUrl,
-        hasId: !!doc.id
-      })))
-
-      $q.notify({
-        message: `有 ${failedUploads.length} 个文件上传失败，请重新上传`,
-        color: 'warning',
-        position: 'top',
-        timeout: 3000
-      })
-      return
-    }
-
-    // 如果文件没有fileUrl但有id，说明上传成功但API可能没返回fileUrl
-    const filesWithoutUrl = newTask.value.docsList.filter((doc: SaveSysFileVO) => !doc.fileUrl && doc.id)
-    if (filesWithoutUrl.length > 0) {
-      console.warn('这些文件没有fileUrl但有id，可能是API没有返回fileUrl:', filesWithoutUrl)
-    }
-
     // 直接使用下拉框选择的任务类型值作为systemCategory
     const systemCategory: SystemType = newTask.value.type.value as SystemType;
 
-    // 使用SaveDevTaskInParam接口，将文件ID列表传递给uploadedFilesId字段
+    // 使用SaveDevTaskInParam接口
     const saveDevTaskParam: SaveDevTaskInParam = {
       requirementId: newTask.value.id || '',
       requirementName: newTask.value.title || '',
-      systemCategory,
-      relatedRequirementDocs: newTask.value.docsList.length > 0
-        ? newTask.value.docsList.map((doc: SaveSysFileVO) => doc.fileName || '').join(';')
-        : '',
-      uploadedFilesId: newTask.value.docsList.map((doc: SaveSysFileVO) => doc.id || '').filter(id => id) // 将文件ID列表传递给uploadedFilesId字段
+      systemCategory
     };
 
     const response = await devTaskApi.saveDevTask(saveDevTaskParam);
@@ -1803,25 +1502,6 @@ const handleAddDocument = (task: DevTaskVO): void => {
 
 // 这些函数已经被简化的新函数替代，不再需要
 
-// 添加下载文件方法
-const downloadFile = (file: SaveSysFileVO): void => {
-  if (file.fileUrl) {
-    // 创建一个临时的 a 标签来下载文件
-    const link = document.createElement('a')
-    link.href = file.fileUrl
-    link.download = file.fileName || 'download'
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-  } else {
-    $q.notify({
-      message: '文件下载链接不可用',
-      color: 'warning',
-      position: 'top',
-      timeout: 2000
-    })
-  }
-}
 
 // 生成任务编号方法
 const generateTaskId = (): void => {
