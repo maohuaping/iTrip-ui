@@ -165,13 +165,7 @@
 
                       <!-- 弹出卡片 -->
                       <q-popup-proxy transition-show="scale" transition-hide="scale" class="documents-popup">
-                        <q-card class="documents-card" style="min-width: 300px; max-width: 400px;">
-                          <q-card-section class="q-pb-none">
-                            <div class="text-h6 text-weight-medium">
-                              <q-icon name="folder_open" class="q-mr-sm" />
-                              关联文档
-                            </div>
-                          </q-card-section>
+                        <q-card class="documents-card" style="min-width: 400px; max-width: 600px;">
 
                           <q-card-section class="q-pt-sm">
                             <!-- 文档列表 -->
