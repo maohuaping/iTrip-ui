@@ -184,12 +184,10 @@
                                 <div class="document-info">
                                   <div class="document-name">{{ file.fileName || '未命名文件' }}</div>
                                   <div class="document-meta">
-                                    <span class="document-type">{{ getFileTypeLabel(file.fileType || '') }}</span>
                                     <span v-if="file.createdAt" class="document-date">{{ formatDate(file.createdAt)
                                       }}</span>
                                   </div>
                                 </div>
-                                <q-icon name="open_in_new" size="16px" color="grey-6" />
                               </div>
                             </div>
 
@@ -200,11 +198,6 @@
                             </div>
                           </q-card-section>
 
-                          <!-- 操作按钮 -->
-                          <q-card-actions align="right" class="q-pt-none">
-                            <q-btn flat dense color="primary" icon="add" label="添加关联" size="sm"
-                              @click="handleAddDocument(props.row)" />
-                          </q-card-actions>
                         </q-card>
                       </q-popup-proxy>
                     </q-btn>
