@@ -219,9 +219,6 @@
             <template v-slot:body-cell-actions="props">
               <q-td :props="props" class="actions-cell">
                 <div class="action-buttons">
-                  <q-btn flat round dense color="primary" icon="call_split"
-                    @click="handleSystemClick(props.row.systemCategory || 'other', props.row.reqNo || '')" title="Git分支"
-                    class="action-btn git-btn" />
                   <q-btn flat round dense color="grey-7" icon="more_vert" title="更多操作" class="action-btn more-btn">
                     <q-menu>
                       <q-list style="min-width: 200px">
@@ -1373,7 +1370,7 @@ const examples = ref([
   }
 ])
 
-// 表格列定义 - 优化列宽分配（隐藏需求编号列）
+// 表格列定义 - 优化列宽分配（隐藏需求编号列，调整列顺序）
 const tableColumns = [
   {
     name: 'requirementName',
@@ -1381,7 +1378,7 @@ const tableColumns = [
     field: 'requirementName',
     align: 'left' as const,
     sortable: true,
-    style: 'width: 40%; min-width: 280px' // 扩大需求名称列宽度
+    style: 'width: 35%; min-width: 260px' // 调整需求名称列宽度
   },
   // 暂时隐藏需求编号列
   // {
@@ -1393,12 +1390,20 @@ const tableColumns = [
   //   style: 'width: 20%; min-width: 150px'
   // },
   {
+    name: 'documents',
+    label: '关联文档',
+    field: 'documents',
+    align: 'center' as const,
+    sortable: false,
+    style: 'width: 12%; min-width: 100px' // 关联文档列移到前面
+  },
+  {
     name: 'branchNo',
     label: '分支号',
     field: 'branchNo',
     align: 'left' as const,
     sortable: true,
-    style: 'width: 25%; min-width: 180px' // 扩大分支号列宽度
+    style: 'width: 25%; min-width: 180px' // 分支号列移到关联文档后面
   },
   {
     name: 'systemCategory',
@@ -1406,15 +1411,7 @@ const tableColumns = [
     field: 'systemCategory',
     align: 'center' as const,
     sortable: true,
-    style: 'width: 15%; min-width: 120px' // 扩大系统分类列宽
-  },
-  {
-    name: 'documents',
-    label: '关联文档',
-    field: 'documents',
-    align: 'center' as const,
-    sortable: false,
-    style: 'width: 12%; min-width: 100px' // 扩大关联文档列宽
+    style: 'width: 18%; min-width: 120px' // 调整系统分类列宽
   },
   {
     name: 'actions',
@@ -1422,7 +1419,7 @@ const tableColumns = [
     field: 'actions',
     align: 'center' as const,
     sortable: false,
-    style: 'width: 8%; min-width: 80px' // 保持操作列宽
+    style: 'width: 10%; min-width: 80px' // 稍微增加操作列宽度
   }
 ]
 
@@ -2663,8 +2660,8 @@ defineOptions({
 .requirement-name-cell {
   padding: 12px 16px;
   border-bottom: 1px solid var(--q-border-color);
-  width: 40% !important;
-  min-width: 280px !important;
+  width: 35% !important;
+  min-width: 260px !important;
 }
 
 .requirement-name-content {
@@ -2766,7 +2763,7 @@ defineOptions({
 .system-category-cell {
   padding: 12px 16px;
   border-bottom: 1px solid var(--q-border-color);
-  width: 15% !important;
+  width: 18% !important;
   min-width: 120px !important;
 }
 
@@ -2896,7 +2893,7 @@ defineOptions({
 .actions-cell {
   padding: 8px 12px;
   border-bottom: 1px solid var(--q-border-color);
-  width: 8% !important;
+  width: 10% !important;
   min-width: 80px !important;
 }
 
@@ -2961,7 +2958,11 @@ defineOptions({
 /* 响应式设计优化 */
 @media (max-width: 1200px) {
   .requirement-name-cell {
-    width: 35% !important;
+    width: 30% !important;
+  }
+
+  .documents-cell {
+    width: 12% !important;
   }
 
   .branch-no-cell {
@@ -2969,15 +2970,11 @@ defineOptions({
   }
 
   .system-category-cell {
-    width: 18% !important;
-  }
-
-  .documents-cell {
-    width: 14% !important;
+    width: 20% !important;
   }
 
   .actions-cell {
-    width: 8% !important;
+    width: 13% !important;
     min-width: 80px !important;
     padding: 6px 8px;
   }
