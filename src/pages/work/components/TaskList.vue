@@ -234,7 +234,7 @@
                           </q-item-section>
                         </q-item>
 
-                        <q-item clickable v-close-popup @click="$q.notify(`编辑任务: ${props.row.requirementName}`)">
+                        <q-item clickable v-close-popup @click="openEditTaskDialog(props.row)">
                           <q-item-section avatar>
                             <q-icon name="edit" color="green" />
                           </q-item-section>
@@ -446,6 +446,49 @@
       </q-card-actions>
     </q-card>
   </q-dialog>
+
+  <!-- 编辑任务对话框 -->
+  <q-dialog v-model="showEditTaskDialog" :maximized="$q.screen.lt.md" :full-width="$q.screen.lt.md"
+    :full-height="$q.screen.lt.md">
+    <q-card class="bg-cursor-surface" :style="{
+      width: $q.screen.lt.md ? '100%' : 'min(90vw, 600px)',
+      maxWidth: $q.screen.lt.md ? '100%' : '600px',
+      minWidth: $q.screen.lt.md ? '100%' : '320px'
+    }">
+      <q-card-section class="bg-cursor-bg q-pb-sm border-bottom">
+        <div class="text-h6 text-cursor-text">编辑任务 - {{ editTaskForm.requirementName || '未命名任务' }}</div>
+        <q-space />
+        <q-btn icon="close" flat round dense v-close-popup class="absolute-top-right q-mt-sm q-mr-sm" color="grey-7" />
+      </q-card-section>
+
+      <q-card-section class="q-pt-md">
+        <!-- 任务名称 -->
+        <q-input v-model="editTaskForm.requirementName" label="任务名称" outlined dense class="light-field q-mb-md"
+          placeholder="请输入任务名称" />
+
+        <!-- 分支号 -->
+        <q-input v-model="editTaskForm.branchNo" label="分支号" outlined dense class="light-field q-mb-md"
+          placeholder="请输入分支号" />
+
+        <!-- 需求编号 -->
+        <q-input v-model="editTaskForm.reqNo" label="需求编号" outlined dense class="light-field q-mb-md"
+          placeholder="请输入需求编号" />
+
+        <!-- 系统分类 -->
+        <q-select v-model="editTaskForm.systemCategory" :options="systemCategoryOptions" label="系统分类" outlined dense
+          clearable class="light-field q-mb-md" emit-value map-options>
+          <template v-slot:prepend>
+            <q-icon name="category" size="16px" />
+          </template>
+        </q-select>
+      </q-card-section>
+
+      <q-card-actions align="right" class="q-pb-md q-pr-md">
+        <q-btn flat label="取消" color="grey-7" v-close-popup />
+        <q-btn flat label="保存" color="blue-6" @click="saveEditTask" :loading="isEditTaskSaving" />
+      </q-card-actions>
+    </q-card>
+  </q-dialog>
 </template>
 
 <script setup lang="ts">
@@ -476,8 +519,23 @@ const showNewTaskDialog = ref(false)
 // 控制关联文档对话框的显示
 const showAssociateDocumentDialog = ref(false)
 
+// 控制编辑任务对话框的显示
+const showEditTaskDialog = ref(false)
+
 // 当前操作的任务
 const currentTask = ref<DevTaskVO | null>(null)
+
+// 编辑任务的表单数据
+const editTaskForm = ref({
+  id: '',
+  requirementName: '',
+  branchNo: '',
+  systemCategory: '',
+  reqNo: ''
+})
+
+// 编辑任务保存状态
+const isEditTaskSaving = ref(false)
 
 // 分页大小相关常量和函数
 const PAGE_SIZE_CACHE_KEY = 'task-list-page-size'
@@ -1309,7 +1367,7 @@ const examples = ref([
   }
 ])
 
-// 表格列定义 - 优化列宽分配
+// 表格列定义 - 优化列宽分配（隐藏需求编号列）
 const tableColumns = [
   {
     name: 'requirementName',
@@ -1317,23 +1375,24 @@ const tableColumns = [
     field: 'requirementName',
     align: 'left' as const,
     sortable: true,
-    style: 'width: 30%; min-width: 220px' // 调整宽度为新增列让出空间
+    style: 'width: 40%; min-width: 280px' // 扩大需求名称列宽度
   },
-  {
-    name: 'reqNo',
-    label: '需求编号',
-    field: 'reqNo',
-    align: 'left' as const,
-    sortable: true,
-    style: 'width: 20%; min-width: 150px' // 调整需求编号列宽
-  },
+  // 暂时隐藏需求编号列
+  // {
+  //   name: 'reqNo',
+  //   label: '需求编号',
+  //   field: 'reqNo',
+  //   align: 'left' as const,
+  //   sortable: true,
+  //   style: 'width: 20%; min-width: 150px'
+  // },
   {
     name: 'branchNo',
     label: '分支号',
     field: 'branchNo',
     align: 'left' as const,
     sortable: true,
-    style: 'width: 20%; min-width: 150px' // 新增分支号列
+    style: 'width: 25%; min-width: 180px' // 扩大分支号列宽度
   },
   {
     name: 'systemCategory',
@@ -1341,7 +1400,7 @@ const tableColumns = [
     field: 'systemCategory',
     align: 'center' as const,
     sortable: true,
-    style: 'width: 12%; min-width: 100px' // 调整系统分类列宽
+    style: 'width: 15%; min-width: 120px' // 扩大系统分类列宽
   },
   {
     name: 'documents',
@@ -1349,7 +1408,7 @@ const tableColumns = [
     field: 'documents',
     align: 'center' as const,
     sortable: false,
-    style: 'width: 10%; min-width: 100px' // 调整关联文档列宽
+    style: 'width: 12%; min-width: 100px' // 扩大关联文档列宽
   },
   {
     name: 'actions',
@@ -1357,7 +1416,7 @@ const tableColumns = [
     field: 'actions',
     align: 'center' as const,
     sortable: false,
-    style: 'width: 8%; min-width: 80px' // 调整操作列宽
+    style: 'width: 8%; min-width: 80px' // 保持操作列宽
   }
 ]
 
@@ -1760,6 +1819,113 @@ const removeAssociateDoc = (index: number): void => {
     position: 'top',
     timeout: 1000
   })
+}
+
+// 打开编辑任务对话框
+const openEditTaskDialog = (task: DevTaskVO): void => {
+  currentTask.value = task
+  editTaskForm.value = {
+    id: task.id || '',
+    requirementName: task.requirementName || '',
+    branchNo: task.branchNo || '',
+    systemCategory: task.systemCategory || '',
+    reqNo: task.reqNo || ''
+  }
+  showEditTaskDialog.value = true
+}
+
+// 保存编辑任务
+const saveEditTask = async (): Promise<void> => {
+  try {
+    if (!editTaskForm.value.id) {
+      $q.notify({
+        message: '任务ID不存在，无法保存',
+        color: 'warning',
+        position: 'top',
+        timeout: 2000
+      })
+      return
+    }
+
+    // 验证必填字段
+    if (!editTaskForm.value.requirementName?.trim()) {
+      $q.notify({
+        message: '任务名称不能为空',
+        color: 'warning',
+        position: 'top',
+        timeout: 2000
+      })
+      return
+    }
+
+    isEditTaskSaving.value = true
+
+    // 临时解决方案：显示编辑内容但提示功能待完善
+    $q.notify({
+      message: '编辑功能正在开发中，当前仅为演示界面',
+      color: 'info',
+      position: 'top',
+      timeout: 3000,
+      multiLine: true,
+      html: true,
+      icon: 'info',
+      actions: [
+        {
+          label: '了解',
+          color: 'white',
+          handler: () => { /* dismiss */ }
+        }
+      ]
+    })
+
+    // 模拟API调用延迟
+    await new Promise(resolve => setTimeout(resolve, 1000))
+
+    // 暂时只关闭对话框，不进行实际更新
+    showEditTaskDialog.value = false
+
+    // 提示用户编辑的内容（用于演示）
+    console.log('编辑的任务数据:', {
+      id: editTaskForm.value.id,
+      requirementName: editTaskForm.value.requirementName,
+      branchNo: editTaskForm.value.branchNo,
+      systemCategory: editTaskForm.value.systemCategory,
+      reqNo: editTaskForm.value.reqNo
+    })
+
+    // TODO: 等待后端提供完整的编辑接口后，启用以下代码
+    /*
+    const updateDevTaskParam: UpdateDevTaskInParam = {
+      id: editTaskForm.value.id
+    }
+
+    const response = await devTaskApi.updateDevTask(updateDevTaskParam)
+
+    if (response.data?.isOk) {
+      $q.notify({
+        message: '任务更新成功',
+        color: 'positive',
+        position: 'top',
+        timeout: 2000
+      })
+
+      await fetchTasks()
+      showEditTaskDialog.value = false
+    } else {
+      throw new Error(response.data?.failMsg || '更新任务失败')
+    }
+    */
+  } catch (error) {
+    console.error('保存编辑任务失败:', error)
+    $q.notify({
+      message: `保存失败: ${error instanceof Error ? error.message : '未知错误'}`,
+      color: 'negative',
+      position: 'top',
+      timeout: 3000
+    })
+  } finally {
+    isEditTaskSaving.value = false
+  }
 }
 
 // 关联文档到任务
@@ -2513,8 +2679,8 @@ defineOptions({
 .requirement-name-cell {
   padding: 12px 16px;
   border-bottom: 1px solid var(--q-border-color);
-  width: 30% !important;
-  min-width: 220px !important;
+  width: 40% !important;
+  min-width: 280px !important;
 }
 
 .requirement-name-content {
@@ -2560,8 +2726,8 @@ defineOptions({
 .branch-no-cell {
   padding: 12px 16px;
   border-bottom: 1px solid var(--q-border-color);
-  width: 20% !important;
-  min-width: 150px !important;
+  width: 25% !important;
+  min-width: 180px !important;
 }
 
 .branch-no-content {
@@ -2616,8 +2782,8 @@ defineOptions({
 .system-category-cell {
   padding: 12px 16px;
   border-bottom: 1px solid var(--q-border-color);
-  width: 12% !important;
-  min-width: 100px !important;
+  width: 15% !important;
+  min-width: 120px !important;
 }
 
 .system-category-text {
@@ -2630,7 +2796,7 @@ defineOptions({
 .documents-cell {
   padding: 12px 16px;
   border-bottom: 1px solid var(--q-border-color);
-  width: 10% !important;
+  width: 12% !important;
   min-width: 100px !important;
 }
 
@@ -2811,23 +2977,19 @@ defineOptions({
 /* 响应式设计优化 */
 @media (max-width: 1200px) {
   .requirement-name-cell {
-    width: 25% !important;
-  }
-
-  .requirement-id-cell {
-    width: 20% !important;
+    width: 35% !important;
   }
 
   .branch-no-cell {
-    width: 20% !important;
+    width: 25% !important;
   }
 
   .system-category-cell {
-    width: 15% !important;
+    width: 18% !important;
   }
 
   .documents-cell {
-    width: 12% !important;
+    width: 14% !important;
   }
 
   .actions-cell {
@@ -2859,7 +3021,6 @@ defineOptions({
   }
 
   .requirement-name-cell,
-  .requirement-id-cell,
   .branch-no-cell,
   .system-category-cell,
   .documents-cell {
@@ -2895,12 +3056,8 @@ defineOptions({
     min-width: 200px !important;
   }
 
-  .requirement-id-cell {
-    min-width: 130px !important;
-  }
-
   .branch-no-cell {
-    min-width: 130px !important;
+    min-width: 150px !important;
   }
 
   .documents-card {
