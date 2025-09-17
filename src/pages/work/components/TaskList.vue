@@ -147,8 +147,8 @@
             <!-- 自定义列模板 - 分支号 -->
             <template v-slot:body-cell-branchNo="props">
               <q-td :props="props" class="branch-no-cell">
-                <div class="branch-no-content cursor-pointer" @click="copyToClipboard(props.row.branchNo || '')"
-                  title="点击复制分支号">
+                <div :class="['branch-no-content', { 'no-branch': !props.row.branchNo }]"
+                  @click="handleBranchClick(props.row)" :title="props.row.branchNo ? '点击打开Git分支页面' : '暂无分支信息'">
                   {{ props.row.branchNo || '无分支' }}
                 </div>
               </q-td>
@@ -455,7 +455,7 @@ import { getEnum } from 'src/api/enum/enum'
 import { ref, onMounted, computed, watch } from 'vue'
 import { useQuasar } from 'quasar'
 import { getDevTask } from 'src/api/dev-task/dev-task'
-import type { DevTask, DevTaskVO, QueryDevTaskInParam, IPageDevTaskVO, RelatedFile, SaveDevTaskInParam, UpdateDevTaskInParam } from 'src/api/api.schemas'
+import type { DevTask, DevTaskVO, QueryDevTaskInParam, IPageDevTaskVO, RelatedFile, SaveDevTaskInParam, UpdateDevTaskInParam, GetGitUrlInParam } from 'src/api/api.schemas'
 
 // 导入AI API
 import { getAi } from 'src/api/ai/ai'
@@ -839,6 +839,67 @@ const copyCommitMessage = (reqNo: string): void => {
         timeout: 2000
       })
     })
+}
+
+// 处理分支号点击 - 获取Git URL并在新窗口打开
+const handleBranchClick = async (task: DevTaskVO): Promise<void> => {
+  try {
+    // 检查是否有分支号
+    if (!task.branchNo) {
+      $q.notify({
+        message: '该任务暂无分支信息',
+        color: 'warning',
+        position: 'top',
+        timeout: 2000
+      })
+      return
+    }
+
+    // 显示加载提示
+    const loadingNotify = $q.notify({
+      message: '正在获取Git分支链接...',
+      color: 'info',
+      position: 'top',
+      timeout: 0, // 不自动消失
+      spinner: true
+    })
+
+    // 构建请求参数
+    const getGitUrlParam: GetGitUrlInParam = {
+      id: task.id || '',
+      systemCategory: task.systemCategory || '',
+      branchNo: task.branchNo || ''
+    }
+
+    // 调用API获取Git URL
+    const response = await devTaskApi.getGitUrl(getGitUrlParam)
+
+    // 关闭加载提示
+    loadingNotify()
+
+    if (response.data?.isOk && response.data.okData) {
+      // 获取URL成功，在新窗口打开
+      const gitUrl = response.data.okData as unknown as string
+      window.open(gitUrl, '_blank')
+
+      $q.notify({
+        message: `已打开分支 "${task.branchNo}" 的Git页面`,
+        color: 'positive',
+        position: 'top',
+        timeout: 2000
+      })
+    } else {
+      throw new Error(response.data?.failMsg || '获取Git URL失败')
+    }
+  } catch (error) {
+    console.error('获取Git URL失败:', error)
+    $q.notify({
+      message: `获取Git分支链接失败: ${error instanceof Error ? error.message : '未知错误'}`,
+      color: 'negative',
+      position: 'top',
+      timeout: 3000
+    })
+  }
 }
 
 // 添加新建任务相关的数据
@@ -2507,7 +2568,7 @@ defineOptions({
   font-size: 14px;
   line-height: 1.4;
   cursor: pointer;
-  transition: color 0.2s ease;
+  transition: all 0.3s ease;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -2516,11 +2577,39 @@ defineOptions({
   /* 使用绿色来区分分支号 */
   font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
   /* 使用等宽字体 */
+  text-decoration: none;
+  border-radius: 4px;
+  padding: 2px 6px;
+  display: inline-block;
+  background: rgba(16, 185, 129, 0.1);
+  /* 浅绿色背景 */
 }
 
 .branch-no-content:hover {
   color: #059669;
   /* 悬停时使用更深的绿色 */
+  background: rgba(16, 185, 129, 0.2);
+  /* 悬停时更深的背景 */
+  transform: translateY(-1px);
+  /* 轻微上移效果 */
+  text-decoration: underline;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+  /* 添加阴影 */
+}
+
+/* 无分支状态的样式 */
+.branch-no-content.no-branch {
+  color: #9CA3AF;
+  background: rgba(156, 163, 175, 0.1);
+  cursor: default;
+}
+
+.branch-no-content.no-branch:hover {
+  color: #9CA3AF;
+  background: rgba(156, 163, 175, 0.1);
+  transform: none;
+  text-decoration: none;
+  box-shadow: none;
 }
 
 /* 系统分类列优化 */
