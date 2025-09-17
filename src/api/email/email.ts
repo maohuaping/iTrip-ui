@@ -11,7 +11,7 @@ import { customInstance } from '../../boot/orval-client';
 
 export const getEmail = () => {
   /**
-   * @summary 发送模板邮件
+   * @summary 通用模板邮件发送
    */
   const sendTemplateEmail = (sendTemplateEmailInParam: SendTemplateEmailInParam) => {
     return customInstance<ResultString>({
@@ -22,24 +22,15 @@ export const getEmail = () => {
     });
   };
   /**
-   * @summary 微博签到提醒
-   */
-  const sendWeiboSignEmail = () => {
-    return customInstance<void>({ url: `/api/email/sendWeiboSignEmail`, method: 'GET' });
-  };
-  /**
    * @summary 待办
    */
   const sendTodoEmail = () => {
     return customInstance<void>({ url: `/api/email/sendTodoEmail`, method: 'GET' });
   };
-  return { sendTemplateEmail, sendWeiboSignEmail, sendTodoEmail };
+  return { sendTemplateEmail, sendTodoEmail };
 };
 export type SendTemplateEmailResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getEmail>['sendTemplateEmail']>>
->;
-export type SendWeiboSignEmailResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getEmail>['sendWeiboSignEmail']>>
 >;
 export type SendTodoEmailResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getEmail>['sendTodoEmail']>>

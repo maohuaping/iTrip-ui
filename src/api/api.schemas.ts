@@ -768,9 +768,10 @@ export interface ResultListMessageParseResultVO {
   failMsg?: string;
 }
 
-export type SendTemplateEmailInParamTemplateData = { [key: string]: { [key: string]: unknown } };
+export type SendTemplateEmailInParamTemplateData = { [key: string]: unknown };
 
 export interface SendTemplateEmailInParam {
+  emailType?: string;
   templateData?: SendTemplateEmailInParamTemplateData;
   smtpConfig?: SmtpConfigParam;
 }
@@ -801,8 +802,6 @@ export interface SaveDevTaskInParam {
   relatedRequirementDocs?: string;
   /** 系统分类 */
   systemCategory?: string;
-  /** 上传的文件列表 */
-  uploadedFilesId?: string[];
   /** 需求的归属用户ID */
   userId?: number;
 }
@@ -898,10 +897,10 @@ export interface DevTaskVO {
  */
 export interface IPageDevTaskVO {
   size?: number;
-  records?: DevTaskVO[];
-  current?: number;
-  total?: number;
   pages?: number;
+  total?: number;
+  current?: number;
+  records?: DevTaskVO[];
 }
 
 /**
@@ -926,6 +925,15 @@ export interface ResultIPageDevTaskVO {
   okData?: IPageDevTaskVO;
   /** 失败消息 */
   failMsg?: string;
+}
+
+export interface GetGitUrlInParam {
+  /** 任务ID */
+  id?: string;
+  /** 任务类型 */
+  systemCategory?: string;
+  /** 分支号 */
+  branchNo?: string;
 }
 
 /**
@@ -977,10 +985,10 @@ export interface DevLogVO {
  */
 export interface IPageDevLogVO {
   size?: number;
-  records?: DevLogVO[];
-  current?: number;
-  total?: number;
   pages?: number;
+  total?: number;
+  current?: number;
+  records?: DevLogVO[];
 }
 
 export interface ResultIPageDevLogVO {

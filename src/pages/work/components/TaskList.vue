@@ -189,7 +189,7 @@
                                   <div class="document-name">{{ file.fileName || '未命名文件' }}</div>
                                   <div class="document-meta">
                                     <span v-if="file.createdAt" class="document-date">{{ formatDate(file.createdAt)
-                                    }}</span>
+                                      }}</span>
                                   </div>
                                 </div>
                               </div>

@@ -6,6 +6,7 @@
  * OpenAPI spec version: 1.0
  */
 import type {
+  GetGitUrlInParam,
   QueryDevTaskInParam,
   ResultDevTask,
   ResultIPageDevTaskVO,
@@ -63,6 +64,17 @@ export const getDevTask = () => {
     });
   };
   /**
+   * @summary 获取跳转Git的URL
+   */
+  const getGitUrl = (getGitUrlInParam: GetGitUrlInParam) => {
+    return customInstance<ResultObject>({
+      url: `/api/devTask/getGitUrl`,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      data: getGitUrlInParam,
+    });
+  };
+  /**
    * @summary 获取所有需求的名称
    */
   const getAllDevTaskNames = () => {
@@ -85,6 +97,7 @@ export const getDevTask = () => {
     updateDevTask,
     saveDevTask,
     queryDevTask,
+    getGitUrl,
     getAllDevTaskNames,
     backupDevTask,
     downloadBackup,
@@ -101,6 +114,9 @@ export type SaveDevTaskResult = NonNullable<
 >;
 export type QueryDevTaskResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getDevTask>['queryDevTask']>>
+>;
+export type GetGitUrlResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getDevTask>['getGitUrl']>>
 >;
 export type GetAllDevTaskNamesResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getDevTask>['getAllDevTaskNames']>>
