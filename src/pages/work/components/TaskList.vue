@@ -474,11 +474,17 @@
         <q-input v-model="editTaskForm.reqNo" label="需求编号" outlined dense class="light-field q-mb-md"
           placeholder="请输入需求编号" />
 
-        <!-- 系统分类 -->
+        <!-- 系统分类（只读） -->
         <q-select v-model="editTaskForm.systemCategory" :options="systemCategoryOptions" label="系统分类" outlined dense
-          clearable class="light-field q-mb-md" emit-value map-options>
+          readonly class="light-field q-mb-md" emit-value map-options>
           <template v-slot:prepend>
             <q-icon name="category" size="16px" />
+          </template>
+          <template v-slot:append>
+            <q-icon name="lock" size="16px" color="grey-5" />
+          </template>
+          <template v-slot:hint>
+            <div class="text-caption text-grey-6">系统分类暂不支持修改</div>
           </template>
         </q-select>
       </q-card-section>
@@ -1860,43 +1866,19 @@ const saveEditTask = async (): Promise<void> => {
 
     isEditTaskSaving.value = true
 
-    // 临时解决方案：显示编辑内容但提示功能待完善
-    $q.notify({
-      message: '编辑功能正在开发中，当前仅为演示界面',
-      color: 'info',
-      position: 'top',
-      timeout: 3000,
-      multiLine: true,
-      html: true,
-      icon: 'info',
-      actions: [
-        {
-          label: '了解',
-          color: 'white',
-          handler: () => { /* dismiss */ }
-        }
-      ]
-    })
-
-    // 模拟API调用延迟
-    await new Promise(resolve => setTimeout(resolve, 1000))
-
-    // 暂时只关闭对话框，不进行实际更新
-    showEditTaskDialog.value = false
-
-    // 提示用户编辑的内容（用于演示）
-    console.log('编辑的任务数据:', {
-      id: editTaskForm.value.id,
-      requirementName: editTaskForm.value.requirementName,
-      branchNo: editTaskForm.value.branchNo,
-      systemCategory: editTaskForm.value.systemCategory,
-      reqNo: editTaskForm.value.reqNo
-    })
-
-    // TODO: 等待后端提供完整的编辑接口后，启用以下代码
-    /*
+    // 构建更新参数
     const updateDevTaskParam: UpdateDevTaskInParam = {
-      id: editTaskForm.value.id
+      id: editTaskForm.value.id,
+      requirementName: editTaskForm.value.requirementName.trim()
+    }
+
+    // 只有当字段有值时才添加到参数中
+    if (editTaskForm.value.branchNo?.trim()) {
+      updateDevTaskParam.branchNo = editTaskForm.value.branchNo.trim()
+    }
+
+    if (editTaskForm.value.reqNo?.trim()) {
+      updateDevTaskParam.reqNo = editTaskForm.value.reqNo.trim()
     }
 
     const response = await devTaskApi.updateDevTask(updateDevTaskParam)
@@ -1909,12 +1891,14 @@ const saveEditTask = async (): Promise<void> => {
         timeout: 2000
       })
 
+      // 重新获取任务列表以更新显示
       await fetchTasks()
+
+      // 关闭对话框
       showEditTaskDialog.value = false
     } else {
       throw new Error(response.data?.failMsg || '更新任务失败')
     }
-    */
   } catch (error) {
     console.error('保存编辑任务失败:', error)
     $q.notify({
