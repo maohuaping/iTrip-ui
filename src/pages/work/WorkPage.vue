@@ -577,7 +577,15 @@ const groupedUrls = computed(() => {
     groups[tag]!.push(url) // 添加非空断言
   })
 
-  return groups
+  // 按目录名排序返回
+  const sortedGroups: Record<string, UrlItem[]> = {}
+  Object.keys(groups)
+    .sort((a, b) => a.localeCompare(b, 'zh-CN', { numeric: true, caseFirst: 'lower' }))
+    .forEach(tag => {
+      sortedGroups[tag] = groups[tag]!
+    })
+
+  return sortedGroups
 })
 
 // 添加URL对话框
@@ -719,7 +727,7 @@ const pinUrl = async (url: UrlItem) => {
       id: String(url.id),
       isTop: 1 // 1表示置顶
     }
-    
+
     await urlApi.updateUrl(updateParam)
 
     // 本地更新状态
@@ -752,7 +760,7 @@ const unpinUrl = async (url: UrlItem) => {
       id: String(url.id),
       isTop: 0 // 0表示不置顶
     }
-    
+
     await urlApi.updateUrl(updateParam)
 
     // 本地更新状态
