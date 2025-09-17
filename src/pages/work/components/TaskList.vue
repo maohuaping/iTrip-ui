@@ -144,6 +144,16 @@
               </q-td>
             </template>
 
+            <!-- 自定义列模板 - 分支号 -->
+            <template v-slot:body-cell-branchNo="props">
+              <q-td :props="props" class="branch-no-cell">
+                <div class="branch-no-content cursor-pointer" @click="copyToClipboard(props.row.branchNo || '')"
+                  title="点击复制分支号">
+                  {{ props.row.branchNo || '无分支' }}
+                </div>
+              </q-td>
+            </template>
+
             <!-- 自定义列模板 - 系统分类 -->
             <template v-slot:body-cell-systemCategory="props">
               <q-td :props="props" class="system-category-cell">
@@ -179,7 +189,7 @@
                                   <div class="document-name">{{ file.fileName || '未命名文件' }}</div>
                                   <div class="document-meta">
                                     <span v-if="file.createdAt" class="document-date">{{ formatDate(file.createdAt)
-                                      }}</span>
+                                    }}</span>
                                   </div>
                                 </div>
                               </div>
@@ -1246,7 +1256,7 @@ const tableColumns = [
     field: 'requirementName',
     align: 'left' as const,
     sortable: true,
-    style: 'width: 35%; min-width: 250px' // 使用百分比 + 最小宽度
+    style: 'width: 30%; min-width: 220px' // 调整宽度为新增列让出空间
   },
   {
     name: 'reqNo',
@@ -1254,7 +1264,15 @@ const tableColumns = [
     field: 'reqNo',
     align: 'left' as const,
     sortable: true,
-    style: 'width: 25%; min-width: 180px' // 增加需求编号列宽
+    style: 'width: 20%; min-width: 150px' // 调整需求编号列宽
+  },
+  {
+    name: 'branchNo',
+    label: '分支号',
+    field: 'branchNo',
+    align: 'left' as const,
+    sortable: true,
+    style: 'width: 20%; min-width: 150px' // 新增分支号列
   },
   {
     name: 'systemCategory',
@@ -1262,7 +1280,7 @@ const tableColumns = [
     field: 'systemCategory',
     align: 'center' as const,
     sortable: true,
-    style: 'width: 15%; min-width: 100px' // 使用百分比
+    style: 'width: 12%; min-width: 100px' // 调整系统分类列宽
   },
   {
     name: 'documents',
@@ -1270,7 +1288,7 @@ const tableColumns = [
     field: 'documents',
     align: 'center' as const,
     sortable: false,
-    style: 'width: 15%; min-width: 120px' // 使用百分比
+    style: 'width: 10%; min-width: 100px' // 调整关联文档列宽
   },
   {
     name: 'actions',
@@ -1278,7 +1296,7 @@ const tableColumns = [
     field: 'actions',
     align: 'center' as const,
     sortable: false,
-    style: 'width: 10%; min-width: 100px' // 使用百分比
+    style: 'width: 8%; min-width: 80px' // 调整操作列宽
   }
 ]
 
@@ -2434,8 +2452,8 @@ defineOptions({
 .requirement-name-cell {
   padding: 12px 16px;
   border-bottom: 1px solid var(--q-border-color);
-  width: 35% !important;
-  min-width: 250px !important;
+  width: 30% !important;
+  min-width: 220px !important;
 }
 
 .requirement-name-content {
@@ -2458,8 +2476,8 @@ defineOptions({
 .requirement-id-cell {
   padding: 12px 16px;
   border-bottom: 1px solid var(--q-border-color);
-  width: 25% !important;
-  min-width: 180px !important;
+  width: 20% !important;
+  min-width: 150px !important;
 }
 
 .requirement-id-content {
@@ -2477,11 +2495,39 @@ defineOptions({
   color: var(--q-primary);
 }
 
+/* 分支号列样式 */
+.branch-no-cell {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--q-border-color);
+  width: 20% !important;
+  min-width: 150px !important;
+}
+
+.branch-no-content {
+  font-size: 14px;
+  line-height: 1.4;
+  cursor: pointer;
+  transition: color 0.2s ease;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+  color: #10B981;
+  /* 使用绿色来区分分支号 */
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  /* 使用等宽字体 */
+}
+
+.branch-no-content:hover {
+  color: #059669;
+  /* 悬停时使用更深的绿色 */
+}
+
 /* 系统分类列优化 */
 .system-category-cell {
   padding: 12px 16px;
   border-bottom: 1px solid var(--q-border-color);
-  width: 15% !important;
+  width: 12% !important;
   min-width: 100px !important;
 }
 
@@ -2495,8 +2541,8 @@ defineOptions({
 .documents-cell {
   padding: 12px 16px;
   border-bottom: 1px solid var(--q-border-color);
-  width: 15% !important;
-  min-width: 120px !important;
+  width: 10% !important;
+  min-width: 100px !important;
 }
 
 .documents-wrapper {
@@ -2611,8 +2657,8 @@ defineOptions({
 .actions-cell {
   padding: 8px 12px;
   border-bottom: 1px solid var(--q-border-color);
-  width: 10% !important;
-  min-width: 90px !important;
+  width: 8% !important;
+  min-width: 80px !important;
 }
 
 /* 优化操作按钮样式 */
@@ -2676,11 +2722,15 @@ defineOptions({
 /* 响应式设计优化 */
 @media (max-width: 1200px) {
   .requirement-name-cell {
-    width: 30% !important;
+    width: 25% !important;
   }
 
   .requirement-id-cell {
-    width: 30% !important;
+    width: 20% !important;
+  }
+
+  .branch-no-cell {
+    width: 20% !important;
   }
 
   .system-category-cell {
@@ -2688,12 +2738,12 @@ defineOptions({
   }
 
   .documents-cell {
-    width: 15% !important;
+    width: 12% !important;
   }
 
   .actions-cell {
-    width: 10% !important;
-    min-width: 85px !important;
+    width: 8% !important;
+    min-width: 80px !important;
     padding: 6px 8px;
   }
 
@@ -2721,6 +2771,7 @@ defineOptions({
 
   .requirement-name-cell,
   .requirement-id-cell,
+  .branch-no-cell,
   .system-category-cell,
   .documents-cell {
     width: auto !important;
@@ -2756,7 +2807,11 @@ defineOptions({
   }
 
   .requirement-id-cell {
-    min-width: 150px !important;
+    min-width: 130px !important;
+  }
+
+  .branch-no-cell {
+    min-width: 130px !important;
   }
 
   .documents-card {
