@@ -789,6 +789,12 @@ export interface UpdateDevTaskInParam {
   id?: string;
   /** 上传的文件列表 */
   uploadedFilesId?: string[];
+  /** 需求名称 */
+  requirementName?: string;
+  /** 分支号 */
+  branchNo?: string;
+  /** 需求编号 */
+  reqNo?: string;
 }
 
 export interface SaveDevTaskInParam {
