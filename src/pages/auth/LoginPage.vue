@@ -70,11 +70,15 @@ import { ref, onUnmounted } from 'vue';
 import { useQuasar } from 'quasar';
 import { useRouter, useRoute } from 'vue-router';
 import { useAuthStore } from 'src/stores/auth';
+import { getAuth } from 'src/api/auth/auth';
 
 const $q = useQuasar();
 const router = useRouter();
 const route = useRoute();
 const authStore = useAuthStore();
+
+// 获取API实例
+const authApi = getAuth();
 
 // 表单数据
 const email = ref('');
@@ -105,21 +109,31 @@ const sendVerificationCode = async () => {
   loading.value = true;
 
   try {
-    // TODO: 调用发送验证码API
-    // await api.sendVerificationCode(email.value);
-
-    // 模拟API调用
-    await new Promise(resolve => setTimeout(resolve, 1000));
-
-    isCodeSent.value = true;
-    startCountdown();
-
-    $q.notify({
-      type: 'positive',
-      message: '验证码已发送到您的邮箱',
-      position: 'top'
+    // 调用发送验证码API
+    const response = await authApi.sendVerifyCode({
+      type: 'LOGIN', // 登录类型
+      email: email.value
     });
+
+    // 检查API响应
+    if (response.data.isOk) {
+      isCodeSent.value = true;
+      startCountdown();
+
+      $q.notify({
+        type: 'positive',
+        message: '验证码已发送到您的邮箱',
+        position: 'top'
+      });
+    } else {
+      $q.notify({
+        type: 'negative',
+        message: response.data.failMsg || '发送验证码失败，请重试',
+        position: 'top'
+      });
+    }
   } catch (error) {
+    console.error('发送验证码失败:', error);
     $q.notify({
       type: 'negative',
       message: '发送验证码失败，请重试',
@@ -161,35 +175,44 @@ const handleEmailVerification = async () => {
   loading.value = true;
 
   try {
-    // TODO: 调用验证码验证API
-    // const result = await api.verifyEmailCode(email.value, verificationCode.value);
-
-    // 模拟API调用和返回的token
-    await new Promise(resolve => setTimeout(resolve, 1000));
-
-    // 模拟从服务器返回的认证信息
-    const mockToken = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1aWQiOjE0LCJ1c2VybmFtZSI6IuWcn-aLqOm8oDIxMTUiLCJyb2xlIjoiUk9MRV9BRE1JTiIsImV4cCI6MTgxODAwNTYzMzMzNn0.iIVsnzmoWS5gex_J4209F6koVmAhHqdW_fmraLFJHCo';
-    const mockUserData = {
-      id: 1,
+    // 调用验证码确认API
+    const response = await authApi.confirmVerifyCode({
       email: email.value,
-      username: email.value.split('@')[0],
-      role: 'USER'
-    };
-
-    // 保存认证信息到store
-    authStore.login(mockToken, mockUserData);
-
-    $q.notify({
-      type: 'positive',
-      message: '登录成功',
-      position: 'top'
+      code: verificationCode.value
     });
 
-    // 登录成功后重定向
-    const redirectPath = (route.query.redirect as string) || '/trip';
-    router.push(redirectPath);
+    // 检查API响应
+    if (response.data.isOk && response.data.okData) {
+      // 保存认证信息到store
+      const { token, user } = response.data.okData;
+      if (token && user) {
+        authStore.login(token, user);
 
+        $q.notify({
+          type: 'positive',
+          message: '登录成功',
+          position: 'top'
+        });
+
+        // 登录成功后重定向
+        const redirectPath = (route.query.redirect as string) || '/trip';
+        router.push(redirectPath);
+      } else {
+        $q.notify({
+          type: 'negative',
+          message: '登录信息不完整',
+          position: 'top'
+        });
+      }
+    } else {
+      $q.notify({
+        type: 'negative',
+        message: response.data.failMsg || '验证码错误或已过期',
+        position: 'top'
+      });
+    }
   } catch (error) {
+    console.error('验证码确认失败:', error);
     $q.notify({
       type: 'negative',
       message: '验证码错误或已过期',

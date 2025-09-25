@@ -42,11 +42,11 @@ export const getAuth = () => {
     });
   };
   /**
-   * @summary 登录
+   * @summary 登录或注册
    */
-  const login = (loginInParam: LoginInParam) => {
+  const loginOrRegister = (loginInParam: LoginInParam) => {
     return customInstance<ResultLoginVO>({
-      url: `/api/auth/login`,
+      url: `/api/auth/loginOrRegister`,
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       data: loginInParam,
@@ -64,10 +64,10 @@ export const getAuth = () => {
     });
   };
   /**
-   * @summary 获取验证码
+   * @summary 发送验证码
    */
   const sendVerifyCode = (verifyCodeRequestDTO: VerifyCodeRequestDTO) => {
-    return customInstance<ResultBoolean>({
+    return customInstance<ResultString>({
       url: `/api/auth/code`,
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -80,7 +80,14 @@ export const getAuth = () => {
   const getVapidPublicKey = () => {
     return customInstance<ResultString>({ url: `/api/auth/vapidPublicKey`, method: 'GET' });
   };
-  return { register, updatePassword, login, confirmVerifyCode, sendVerifyCode, getVapidPublicKey };
+  return {
+    register,
+    updatePassword,
+    loginOrRegister,
+    confirmVerifyCode,
+    sendVerifyCode,
+    getVapidPublicKey,
+  };
 };
 export type RegisterResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getAuth>['register']>>
@@ -88,7 +95,9 @@ export type RegisterResult = NonNullable<
 export type UpdatePasswordResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getAuth>['updatePassword']>>
 >;
-export type LoginResult = NonNullable<Awaited<ReturnType<ReturnType<typeof getAuth>['login']>>>;
+export type LoginOrRegisterResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getAuth>['loginOrRegister']>>
+>;
 export type ConfirmVerifyCodeResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getAuth>['confirmVerifyCode']>>
 >;

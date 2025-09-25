@@ -27,11 +27,20 @@ export const getEmail = () => {
   const sendTodoEmail = () => {
     return customInstance<void>({ url: `/api/email/sendTodoEmail`, method: 'GET' });
   };
-  return { sendTemplateEmail, sendTodoEmail };
+  /**
+   * @summary 提醒我
+   */
+  const remindMe = () => {
+    return customInstance<ResultString>({ url: `/api/email/remindMe`, method: 'GET' });
+  };
+  return { sendTemplateEmail, sendTodoEmail, remindMe };
 };
 export type SendTemplateEmailResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getEmail>['sendTemplateEmail']>>
 >;
 export type SendTodoEmailResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getEmail>['sendTodoEmail']>>
+>;
+export type RemindMeResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getEmail>['remindMe']>>
 >;

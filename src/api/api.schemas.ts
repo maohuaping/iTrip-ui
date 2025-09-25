@@ -903,10 +903,10 @@ export interface DevTaskVO {
  */
 export interface IPageDevTaskVO {
   size?: number;
-  pages?: number;
-  total?: number;
-  current?: number;
   records?: DevTaskVO[];
+  current?: number;
+  total?: number;
+  pages?: number;
 }
 
 /**
@@ -991,10 +991,10 @@ export interface DevLogVO {
  */
 export interface IPageDevLogVO {
   size?: number;
-  pages?: number;
-  total?: number;
-  current?: number;
   records?: DevLogVO[];
+  current?: number;
+  total?: number;
+  pages?: number;
 }
 
 export interface ResultIPageDevLogVO {
