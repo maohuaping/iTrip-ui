@@ -1,29 +1,6 @@
 <template>
   <q-page class="national-day-plan-page">
     <div class="page-container">
-      <!-- 页面标题 -->
-      <div class="page-header">
-        <q-icon name="celebration" size="2rem" color="red-6" class="q-mr-sm" />
-        <h1 class="page-title">国庆出行计划</h1>
-      </div>
-      
-      <!-- 计划概览卡片 -->
-      <q-card class="plan-overview q-mb-md" flat bordered>
-        <q-card-section class="bg-red-1">
-          <div class="text-h6 text-red-8 q-mb-sm">
-            <q-icon name="schedule" class="q-mr-xs" />
-            计划时间：10月4日 - 10月8日
-          </div>
-          <div class="text-subtitle2 text-grey-7 q-mb-sm">
-            <q-icon name="location_on" class="q-mr-xs" />
-            主要目的地：嘉兴、杭州周边
-          </div>
-          <div class="text-caption text-grey-6">
-            共 {{ scheduleData.length }} 个行程安排
-          </div>
-        </q-card-section>
-      </q-card>
-
       <!-- 日期筛选 -->
       <q-card class="filter-card q-mb-md" flat bordered>
         <q-card-section class="q-py-sm">
@@ -601,25 +578,6 @@ const toggleCompleted = (item: ScheduleItem) => {
     padding: 16px;
   }
 
-  .page-header {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 24px;
-    
-    .page-title {
-      margin: 0;
-      font-size: 1.8rem;
-      font-weight: 600;
-      color: #d32f2f;
-      text-align: center;
-    }
-  }
-
-  .plan-overview {
-    border-radius: 12px;
-    overflow: hidden;
-  }
 
   .filter-card {
     border-radius: 12px;
@@ -761,9 +719,6 @@ const toggleCompleted = (item: ScheduleItem) => {
       padding: 12px;
     }
     
-    .page-header .page-title {
-      font-size: 1.5rem;
-    }
     
     .schedule-list {
       .schedule-item {
