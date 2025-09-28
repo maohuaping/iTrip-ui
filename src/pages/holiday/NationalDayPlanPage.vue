@@ -4,7 +4,7 @@
       <!-- 行程统计信息 -->
       <div class="schedule-stats">
         <span class="text-caption text-grey-6">
-          共 {{ scheduleData.length }} 个行程安排 · 10月4日-8日 · 5天行程
+          共 {{ scheduleData.length }} 个行程安排 · 济南→淄博→青岛 · 5天行程
           <span v-if="selectedDate"> · 当前显示{{ formatDateLabel(selectedDate) }}行程</span>
         </span>
       </div>
@@ -172,326 +172,373 @@ interface ScheduleItem {
 // 响应式数据
 const selectedDate = ref('')
 
-// 严格按照图片中的数据创建结构化行程
+// 根据fullPlan.md的完整数据创建结构化行程
 const scheduleData = ref<ScheduleItem[]>([
   // 10.4 上午 - 出发
   {
     date: '10.4',
     period: '上午',
-    time: '出发',
-    location: '南京→嘉兴',
+    time: '08:28-12:34',
+    location: '南通→济南西',
     type: '交通',
-    description: 'G2586，8:28-12:34，375元/人',
+    description: 'G2586次列车，375元/人',
     cost: '375元/人',
-    highlights: ['3号线上溪站乘坐', '4号线换乘东站'],
-    notes: '济南高铁一约5小时(9km)，经停打浦桥地铁，人多需要提前预订座位票',
+    highlights: ['高铁出行', '4小时车程'],
+    notes: '3号晚上返回东城，4号预约顺风车从东城前往南通站',
     completed: false
   },
-  // 10.4 下午 - 嘉兴
+  // 10.4 下午 - 黑虎泉
   {
     date: '10.4',
     period: '下午',
-    time: '开车时间',
-    location: '嘉兴',
+    time: '全天开放',
+    location: '黑虎泉',
     type: '景点',
-    description: '全天开放，免费',
-    highlights: ['开车游览', '免费景点'],
-    notes: '下午开车第一站，便民出行观光站点—清水镇',
+    description: '免费，泉城探访第一站',
+    highlights: ['免费景点', '泉城特色'],
+    notes: '导航至解放阁入口，沿途经过九女泉→白石泉(可打水)→玛瑙泉→黑虎泉',
     completed: false
   },
-  // 10.4 下午 - 大塘浜
+  // 10.4 下午 - 护城河游船
   {
     date: '10.4',
     period: '下午',
-    time: '开车时间',
-    location: '大塘浜',
-    type: '景点',
-    description: '全天开放，免费',
-    highlights: ['开车游览', '免费景点'],
-    notes: '打卡景点，有关天然景色分析，西湖景色去处',
+    time: '09:00-17:00',
+    location: '护城河游船',
+    type: '水上游览',
+    description: '黑虎泉→大明湖西，50元/人',
+    cost: '50元/人',
+    highlights: ['水上观光', '建议16:00班次'],
+    notes: '微信小程序"天下第一泉"购买，手机购票最佳位置1、2号',
     completed: false
   },
-  // 10.4 下午 - 庄史村
+  // 10.4 下午 - 大明湖
   {
     date: '10.4',
     period: '下午',
-    time: '开车时间',
-    location: '庄史村',
+    time: '06:00-22:00',
+    location: '大明湖',
     type: '景点',
-    description: '8点-21点营业，40元/人',
-    cost: '40元/人',
-    highlights: ['营业时间长', '性价比高'],
-    notes: '不用买票上山，需开车10-40分钟，看农村乡俗',
+    description: '免费，打卡夏雨荷拍摄地',
+    highlights: ['还珠格格拍摄地', '夕阳拍摄'],
+    notes: '在大明湖拍摄夕阳，感受济南湖光山色',
     completed: false
   },
-  // 10.5 上午 - 野鸭湖
+  // 10.4 下午 - 超然楼
   {
-    date: '10.5',
-    period: '上午',
-    time: '7点-20点',
-    location: '野鸭湖',
+    date: '10.4',
+    period: '下午',
+    time: '08:00-21:30',
+    location: '超然楼',
     type: '景点',
-    description: '40元/人，共83元/人',
-    cost: '83元/人',
-    highlights: ['湖景观光', '野生动物'],
-    notes: '南门→药家奇景→南门→亭子景区后台→坝库→万方桥后→北门',
+    description: '免费上楼，每晚18:40亮灯',
+    highlights: ['免费登楼', '夜景观赏'],
+    notes: '拍照机位：南丰祠新区游船码头可拍南丰桥与超然楼同框',
     completed: false
   },
-  // 10.5 上午 - 五芳斋
+  // 10.4 下午 - 陈氏肥蛤
   {
-    date: '10.5',
-    period: '上午',
-    time: '7点-22点',
-    location: '五芳斋',
+    date: '10.4',
+    period: '下午',
+    time: '用餐时间',
+    location: '陈氏肥蛤(圣凯财富广场店)',
     type: '美食',
-    description: '免费',
-    highlights: ['嘉兴特色', '传统美食'],
-    notes: '南门门店开门，五芳斋美食(广场北侧)，嘉兴特色，普通价格15分钟(9:00-17:00)',
+    description: '济南特色美食',
+    highlights: ['当地特色', '提前确认'],
+    notes: '提前打电话确认，若人多则点外卖或更换餐厅',
     completed: false
   },
-  // 10.5 下午 - 海宁皮革广场
+  // 10.5 上午 - 躁突泉
   {
     date: '10.5',
-    period: '下午',
-    time: '免费',
-    location: '海宁皮革广场',
-    type: '购物',
-    description: '广场高档皮革制品，可选购(35元)投保',
-    cost: '35元/件',
-    highlights: ['皮革制品', '购物中心'],
-    notes: '10:00-18:00 20:00 全年营业！当地特产20元',
+    period: '上午',
+    time: '07:00-20:00',
+    location: '躁突泉',
+    type: '景点',
+    description: '门票40元/人(抖音37元/人)',
+    cost: '40元/人',
+    highlights: ['天下第一泉', '李清照纪念堂'],
+    notes: '免费入园时间：05:00-06:30和18:00-22:30，游览路线：东门→龟石→漱玉泉→李清照纪念堂→三大殿→躁突泉→万竹园→南门',
     completed: false
   },
-  // 10.5 下午 - 沈家
+  // 10.5 上午 - 五龙喷泉
+  {
+    date: '10.5',
+    period: '上午',
+    time: '09:00-17:00',
+    location: '五龙喷泉',
+    type: '景点',
+    description: '整点启动15分钟表演',
+    highlights: ['音乐喷泉', '整点表演'],
+    notes: '位于广场西北角，整点启动15分钟',
+    completed: false
+  },
+  // 10.5 上午 - 曲水亭街
+  {
+    date: '10.5',
+    period: '上午',
+    time: '全天开放',
+    location: '曲水亭街',
+    type: '古街',
+    description: '一条南北向主街+两条东西向次街',
+    highlights: ['古街风情', '文创购物'],
+    notes: '主街以紫米饼、炒锅饼、文创为主；东一街是本地菜市场；东二街商业化面向游客',
+    completed: false
+  },
+  // 10.5 下午 - 五龙潭公园
   {
     date: '10.5',
     period: '下午',
     time: '全天开放',
-    location: '沈家',
+    location: '五龙潭公园',
     type: '景点',
-    description: '免费',
-    highlights: ['免费景点', '古镇风情'],
-    notes: '警告：济南地下反恐管制(单人大客车)',
+    description: '门票30元/人',
+    cost: '30元/人',
+    highlights: ['泉水景观', '邓恩铭塑像'],
+    notes: '免费入园时间：05:00-06:30和18:00-22:30，建议南门进东门出',
     completed: false
   },
-  // 10.5 下午 - 西水学府
+  // 10.5 下午 - 珍珠泉
   {
     date: '10.5',
     period: '下午',
-    time: '免费',
-    location: '西水学府',
+    time: '10:00/15:00/20:00',
+    location: '珍珠泉',
     type: '景点',
-    description: '免费',
-    highlights: ['学府风光', '文化景点'],
-    notes: '学府内有4个时时的自由景',
+    description: '喷泉表演，每场约20分钟',
+    highlights: ['珍珠泉喷涌', '定时表演'],
+    notes: '位于济南历下区院前街1号(省人大院内)',
     completed: false
   },
-  // 10.6 上午 - 海宁潮观潮胜地
+  // 10.6 上午 - 济南→淄博
   {
     date: '10.6',
     period: '上午',
-    time: '09:00-17:00',
-    location: '海宁潮观潮胜地',
-    type: '自然景观',
-    description: '观潮，巨星观潮六大奇迹(9:30)，PP-12点',
-    cost: '68元/人',
-    highlights: ['观潮胜地', '自然奇观'],
-    notes: '4号线到大火车一海港观潮工艺术大观！4号线到大火车，通过到到海港观潮(观潮之路)！',
+    time: '08:50-09:32',
+    location: '济南→淄博',
+    type: '交通',
+    description: 'D6071次列车',
+    highlights: ['城际交通', '42分钟车程'],
+    notes: '到达淄博后需要寄存行李，有多种寄存方案可选',
     completed: false
   },
-  // 10.6 下午 - 八卦田
+  // 10.6 上午 - 淄博陶瓷琉璃博物馆
+  {
+    date: '10.6',
+    period: '上午',
+    time: '09:00-12:00',
+    location: '淄博陶瓷琉璃博物馆',
+    type: '博物馆',
+    description: '免费，需提前7天预约',
+    highlights: ['琉璃艺术', '镇馆之宝'],
+    notes: '游览路线：4楼琉璃灯工厅→5色厅→3楿国粹厅→2楿古瓷厅，重点看战国琉璃珠和青釉莲花尊',
+    completed: false
+  },
+  // 10.6 下午 - 淄博美食
   {
     date: '10.6',
     period: '下午',
-    time: '美景广场',
-    location: '八卦田',
-    type: '景点',
-    description: '登高一景色，DQBS(16:41-18:47)，青岛去一区域(青岛到杭州大量去观光/白话)',
-    highlights: ['登高望远', '摄影胜地'],
-    notes: '海宁到临海的，基础设施不错，但是较收费较高550，易到达的小景点较少',
+    time: '用餐时间',
+    location: '淄博美食街',
+    type: '美食',
+    description: '品尝淄博特色美食',
+    highlights: ['白老三炒锅饼', '博山菜', '淄博烧烤'],
+    notes: '推荐：🌟白老三炒锅饼，🍱博山菜(炸肉、风味茄子)，🍢烧烤(离开前再去吃一次)',
     completed: false
   },
-  // 10.6 晚上 - 古石桥商务酒店
+  // 10.6 下午 - 购物
+  {
+    date: '10.6',
+    period: '下午',
+    time: '下午时光',
+    location: '淄博商业区',
+    type: '购物',
+    description: '买饰品和小礼物',
+    highlights: ['特色纪念品', '淄博特产'],
+    notes: '为朋友和家人挑选淄博特色小礼物',
+    completed: false
+  },
+  // 10.6 晚上 - 前往青岛
   {
     date: '10.6',
     period: '晚上',
-    time: '晚餐',
-    location: '古石桥商务酒店',
-    type: '住宿',
-    description: '商务一百餐厅，酒店5号楼体验',
-    highlights: ['商务酒店', '餐厅用餐'],
-    notes: '诺奖一晚定价目前计算机中心，打车约19，30-22：00，导航便民中心上登录',
+    time: '晚间',
+    location: '淄博→青岛',
+    type: '交通',
+    description: '前往青岛，准备海滨之旅',
+    highlights: ['转战青岛', '海滨城市'],
     completed: false
   },
-  // 10.7 上午 - 古镇水乡游船
+  // 10.6 晚上 - 奥帆中心灯光秀
+  {
+    date: '10.6',
+    period: '晚上',
+    time: '19:30-22:00',
+    location: '奥帆中心',
+    type: '景点',
+    description: '灯光秀表演',
+    highlights: ['奥帆灯光秀', '海上剧场'],
+    notes: '导航至奥帆中心海上剧场',
+    completed: false
+  },
+  // 10.6 晚上 - 来之顺海鲜
+  {
+    date: '10.6',
+    period: '晚上',
+    time: '晚餐时间',
+    location: '来之顺海鲜菜馆',
+    type: '美食',
+    description: '青岛海鲜大餐',
+    highlights: ['海肠捞饭', '青岛海鲜'],
+    notes: '美团已购买套餐，地铁3号线转2号线到奥帆中心共7站',
+    completed: false
+  },
+  // 10.7 上午 - 石老人海水浴场
   {
     date: '10.7',
     period: '上午',
     time: '09:00-18:00',
-    location: '古镇水乡游船',
-    type: '水上游览',
-    description: '游船体验，观光游览船体验(25元)',
-    cost: '25元/人',
-    highlights: ['水乡游船', '观光体验'],
-    notes: '体验古镇水乡游船，观光游览船体验，深度体验船游记忆',
+    location: '石老人海水浴场',
+    type: '海滩',
+    description: '赶海体验，可看日出(05:50)',
+    highlights: ['赶海体验', '日出观赏'],
+    notes: '预测21:00后退潮，提前美团购买赶海工具包(23元/套)，导航至石老人健身区停车场',
     completed: false
   },
-  // 10.7 上午 - 天王寺景区原汁大观园
+  // 10.7 上午 - 小麦岛
   {
     date: '10.7',
     period: '上午',
-    time: '第一时间六：8：00开始：00，当日10：00开始：00',
-    location: '天王寺景区原汁大观园',
-    type: '寺庙',
-    description: '10元/人',
+    time: '全天开放',
+    location: '小麦岛',
+    type: '景点',
+    description: '网红打卡地，寻找"孤独的树"',
+    highlights: ['网红打卡', '孤独的树', '日出观赏'],
+    notes: '导航至雕塑园3号门，游览路线：进岛直走→小海豚左转→木栈道→白色石子路→蓝色房子"五棵树"→石头墙→小路深处"孤独的树"',
+    completed: false
+  },
+  // 10.7 上午 - 天主教堂
+  {
+    date: '10.7',
+    period: '上午',
+    time: '08:00-18:00',
+    location: '浙江路天主教堂',
+    type: '教堂',
+    description: '门票10元/人，门口拍照即可',
     cost: '10元/人',
-    highlights: ['寺庙参观', '文化体验'],
-    notes: '门口服务台，不用排队',
+    highlights: ['哥特式建筑', '拍照打卡'],
+    notes: '周日10:00-18:00开放，门口拍照即可无需入内',
     completed: false
   },
-  // 10.7 上午 - 储钧山
-  {
-    date: '10.7',
-    period: '上午',
-    time: '00:00-20:00',
-    location: '储钧山',
-    type: '山景',
-    description: '免费，但需要打口门票二级景区',
-    highlights: ['登山健身', '免费景点'],
-    notes: '需爬山10人/人，半天',
-    completed: false
-  },
-  // 10.7 上午 - 小黄岛
-  {
-    date: '10.7',
-    period: '上午',
-    time: '免费',
-    location: '小黄岛',
-    type: '海岛',
-    description: '免费',
-    highlights: ['海岛风光', '免费景点'],
-    notes: '本人小岛各种各种台，但需要上午6点半一体验新鲜台，游客各种台风各种台体验台，全天',
-    completed: false
-  },
-  // 10.7 下午 - 嘉园
+  // 10.7 下午 - 五四广场
   {
     date: '10.7',
     period: '下午',
-    time: '免费',
-    location: '嘉园',
-    type: '园林',
-    description: '免费',
-    highlights: ['园林景观', '免费景点'],
-    notes: '本人各种景观一景观景，但需景观景观，现在没有景观台50，易到达景观一景',
+    time: '全天开放',
+    location: '五四广场',
+    type: '广场',
+    description: '青岛标志性广场',
+    highlights: ['五四雕塑', '海滨广场'],
+    notes: '地铁3号线坐6站到达',
     completed: false
   },
-  // 10.7 下午 - 小黄山公园
+  // 10.8 上午 - 小鱼山公园
   {
-    date: '10.7',
-    period: '下午',
+    date: '10.8',
+    period: '上午',
     time: '06:00-20:00',
-    location: '小黄山公园',
+    location: '小鱼山公园',
     type: '公园',
-    description: '免费',
-    highlights: ['公园游览', '免费景点'],
-    notes: '基地，2号5号高速各种台基地，可以经常一清洁浪费，但可以经一杯子景观景观景观景观各种',
+    description: '免费，最佳观景点',
+    highlights: ['览潮阁观景', '红屋顶全景'],
+    notes: '游览路线：正门入口(福山支路)→览潮阁(山顶2楼3楼观景台)→碧波亭→拥翠亭→下山，可看第一海水浴场、远眺栈桥和教堂',
     completed: false
   },
-  // 10.7 下午 - 栈桥
-  {
-    date: '10.7',
-    period: '下午',
-    time: '门票',
-    location: '栈桥',
-    type: '桥梁',
-    description: '需要门票45，但需7:00-19:30，灵活9:00-17:30',
-    cost: '45元/人',
-    highlights: ['桥梁景观', '观景台'],
-    notes: '不用排队，但需要时间',
-    completed: false
-  },
-  // 10.7 下午 - 自然风景区
-  {
-    date: '10.7',
-    period: '下午',
-    time: '汉城(青岛到杭州大量去观光/白话)一清景观景，1.8km',
-    location: '自然风景区',
-    type: '自然景观',
-    description: '06:00-20:00',
-    highlights: ['自然风光', '风景区'],
-    notes: '免费',
-    completed: false
-  },
-  // 10.8 上午 - 小黄岛
-  {
-    date: '10.8',
-    period: '上午',
-    time: '免费',
-    location: '小黄岛',
-    type: '海岛',
-    description: '免费',
-    highlights: ['海岛游览', '免费景点'],
-    notes: '海岛游一景观景观一景观景观一景观景观一景观各种一景观景观',
-    completed: false
-  },
-  // 10.8 上午 - 大平山景园
-  {
-    date: '10.8',
-    period: '上午',
-    time: '08:30-19:30',
-    location: '大平山景园',
-    type: '山景',
-    description: '景区500元/人',
-    cost: '500元/人',
-    highlights: ['山景游览', '景区体验'],
-    notes: '17号到中山景区，大平景到一景景到景景，各种景到了到景景，各种景到了到景景',
-    completed: false
-  },
-  // 10.8 上午 - 八大关
+  // 10.8 上午 - 栈桥
   {
     date: '10.8',
     period: '上午',
     time: '全天开放',
+    location: '栈桥',
+    type: '景点',
+    description: '青岛标志性景点，免费',
+    highlights: ['青岛地标', '海上栈桥'],
+    notes: '青岛最著名的地标建筑',
+    completed: false
+  },
+  // 10.8 上午 - 小青岛
+  {
+    date: '10.8',
+    period: '上午',
+    time: '06:00-20:00',
+    location: '小青岛',
+    type: '海岛',
+    description: '免费，环岛游览',
+    highlights: ['白色灯塔', '海边礁石'],
+    notes: '游览路线：上岛后往左边环岛走一圈(海边礁石→堤坝→蘑菇亭→贝壳亭→转角石阶→石板路→龙柏树→白色灯塔→小火车轨礁石)',
+    completed: false
+  },
+  // 10.8 上午 - 太平山索道
+  {
+    date: '10.8',
+    period: '上午',
+    time: '08:30-19:30',
+    location: '太平山索道',
+    type: '索道',
+    description: '单程票80元/人，拍照效果最佳',
+    cost: '80元/人',
+    highlights: ['山顶观景', '专业拍照'],
+    notes: '打车到湛山寺南门，大门左边走到厕所旁边小门进入，有工作人员指导摆姿势，照片+电子档30元',
+    completed: false
+  },
+  // 10.8 下午 - 八大关
+  {
+    date: '10.8',
+    period: '下午',
+    time: '全天开放',
     location: '八大关',
     type: '历史街区',
-    description: '免费',
-    highlights: ['历史建筑', '免费景点'],
-    notes: '青岛十一个收费各种各种，但收费各种各种，全天收费各种各种到了各种各种到了',
+    description: '街区免费，部分建筑收费',
+    highlights: ['万国建筑', '花石楼', '公主楼'],
+    notes: '游览路线：中山公园C出口→韶关路→嘉峪关路→临淮关路(龙柏树拍照)→公主楼→蝴蝶楼→花石楼(推荐二楼观景台)',
     completed: false
   },
   // 10.8 下午 - 第二海水浴场
   {
     date: '10.8',
     period: '下午',
-    time: '免费',
+    time: '全天开放',
     location: '第二海水浴场',
     type: '海滩',
-    description: '免费',
-    highlights: ['海滩游玩', '免费景点'],
-    notes: '冷敷各种1元/人，科学到各种4小时',
+    description: '冲脚1元/次，储物柜20元/小时',
+    cost: '1元/次',
+    highlights: ['海滩游玩', '山洞拍照'],
+    notes: '有山洞可打卡拍照(随缘逛)',
     completed: false
   },
-  // 10.8 下午 - 青岛啤酒
+  // 10.8 下午 - 青岛轮渡
   {
     date: '10.8',
     period: '下午',
-    time: '08:00-18:20，【机场到到】9:50min',
-    location: '青岛啤酒',
-    type: '工厂参观',
-    description: '青岛到各种各种1:50(上海)',
-    highlights: ['啤酒文化', '工厂参观'],
-    notes: '青岛各种各种一清景到一景景到各种各种一各种景到一各种，到各种各种各种200各种各种各种',
+    time: '08:00-18:20',
+    location: '青岛轮渡',
+    type: '水上游览',
+    description: '海上观光30分钟，89元/人',
+    cost: '89元/人',
+    highlights: ['海上观光', '免费啤酒'],
+    notes: '抖音132元/两人已购买，凭游船纸质票可领取200毫升啤酒或饮料一杯及一份鸥食',
     completed: false
   },
   // 10.8 晚上 - 返程
   {
     date: '10.8',
     period: '晚上',
-    time: '返程',
-    location: '青岛→上海东D2271 18:19-23:54',
+    time: '18:19-23:54',
+    location: '青岛→上海东',
     type: '交通',
-    description: '青岛→上海东D2271 18:19-23:54',
-    highlights: ['高铁返程', '结束行程'],
+    description: 'D2911次列车返程',
+    highlights: ['高铁返程', '结束旅程'],
+    notes: '5小时35分钟车程，结束愉快的山东之旅',
     completed: false
   }
 ])
