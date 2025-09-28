@@ -10,6 +10,7 @@
           :disable="isLoading" />
       </div>
 
+
       <!-- 加载状态 -->
       <div v-if="isLoading" class="q-pa-lg flex flex-center">
         <q-spinner color="primary" size="3em" />
@@ -196,6 +197,7 @@ const showNewLogDialog = ref(false)
 // 删除确认对话框状态
 const showDeleteDialog = ref(false)
 const deleteIndex = ref(-1)
+
 
 // 日志项目管理
 const logItems = ref<LogItemEntry[]>([
@@ -459,6 +461,98 @@ function copyLog(log: WorkLogItem) {
     })
 }
 
+// 数组转SQL IN格式
+function convertArrayToSql() {
+  if (!arrayInput.value.trim()) {
+    sqlOutput.value = ''
+    return
+  }
+
+  try {
+    // 尝试解析JSON数组
+    let parsedArray: any[]
+
+    // 处理不同的输入格式
+    const trimmedInput = arrayInput.value.trim()
+
+    if (trimmedInput.startsWith('[') && trimmedInput.endsWith(']')) {
+      // 标准JSON数组格式
+      parsedArray = JSON.parse(trimmedInput)
+    } else {
+      // 尝试处理其他格式，比如逗号分隔的字符串
+      const items = trimmedInput.split(',').map(item => item.trim().replace(/['"]/g, ''))
+      parsedArray = items.filter(item => item.length > 0)
+    }
+
+    if (!Array.isArray(parsedArray)) {
+      throw new Error('输入不是有效的数组格式')
+    }
+
+    if (parsedArray.length === 0) {
+      sqlOutput.value = '()'
+      return
+    }
+
+    // 转换为SQL IN格式，所有值都用单引号包围
+    const sqlValues = parsedArray.map(item => `'${String(item).replace(/'/g, "''")}'`).join(',')
+    sqlOutput.value = `(${sqlValues})`
+
+    $q.notify({
+      color: 'positive',
+      message: `成功转换 ${parsedArray.length} 个值`,
+      icon: 'check_circle',
+      timeout: 1500
+    })
+
+  } catch (error) {
+    console.error('转换失败:', error)
+    sqlOutput.value = ''
+    $q.notify({
+      color: 'negative',
+      message: '转换失败：请检查输入格式是否正确',
+      icon: 'error',
+      timeout: 2000
+    })
+  }
+}
+
+// 复制SQL输出
+async function copySqlOutput() {
+  if (!sqlOutput.value) {
+    $q.notify({
+      color: 'warning',
+      message: '没有可复制的内容',
+      icon: 'warning'
+    })
+    return
+  }
+
+  try {
+    await navigator.clipboard.writeText(sqlOutput.value)
+    sqlCopied.value = true
+
+    $q.notify({
+      color: 'positive',
+      message: `已复制: ${sqlOutput.value}`,
+      icon: 'content_copy',
+      timeout: 2000
+    })
+
+    // 2秒后重置复制状态
+    setTimeout(() => {
+      sqlCopied.value = false
+    }, 2000)
+
+  } catch (error) {
+    console.error('复制失败:', error)
+    $q.notify({
+      color: 'negative',
+      message: '复制失败，请手动复制',
+      icon: 'error'
+    })
+  }
+}
+
 // 当打开新建对话框时重置表单
 function resetForm() {
   logItems.value = [{ type: '', content: '' }]
@@ -547,6 +641,51 @@ defineOptions({
 
   &.older {
     background-color: $cursor-info; // 使用变量系统
+  }
+}
+
+// 数组转SQL工具样式
+.array-to-sql-card {
+  background: var(--q-card-bg, $card-bg);
+  border: 1px solid var(--q-border-color, $border-color);
+  border-radius: 8px;
+
+  .light-field {
+    :deep(.q-field__control) {
+      background: rgba(255, 255, 255, 0.02);
+    }
+  }
+
+  .sql-output {
+    :deep(.q-field__control) {
+      background: rgba($cursor-primary, 0.05);
+      border-color: rgba($cursor-primary, 0.2);
+    }
+
+    :deep(.q-field__native) {
+      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+      font-size: 13px;
+      color: $cursor-primary;
+      font-weight: 500;
+    }
+  }
+
+  .copy-btn {
+    opacity: 0.7;
+    transition: opacity 0.3s ease;
+
+    &:hover {
+      opacity: 1;
+    }
+  }
+
+  code {
+    background: rgba($cursor-primary, 0.1);
+    color: $cursor-primary;
+    padding: 2px 4px;
+    border-radius: 4px;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-size: 12px;
   }
 }
 </style>

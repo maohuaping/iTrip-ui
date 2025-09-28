@@ -213,6 +213,8 @@
             <TaskList />
             <!-- AI变量命名部分 -->
             <AiNaming />
+            <!-- 数组转SQL工具 -->
+            <ArrayToSql />
             <!-- 工具箱部分 -->
             <ToolBox />
             <!-- AI表设计部分 -->
@@ -450,6 +452,7 @@ import TaskList from './components/TaskList.vue'
 import WorkLog from './components/WorkLog.vue'
 import AiNaming from './components/AiNaming.vue'
 import ToolBox from './components/ToolBox.vue'
+import ArrayToSql from './components/ArrayToSql.vue'
 import { getUrl } from 'src/api/url/url'
 import { getTodo } from 'src/api/todo/todo'
 import type { SysUrl, TodoVO } from 'src/api/api.schemas'
