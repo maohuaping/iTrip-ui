@@ -488,18 +488,6 @@ const scheduleData = ref<ScheduleItem[]>([
     notes: '看好赶海时间，预测是21点之后退潮，提前美团买好送到酒店(23元/套)',
     completed: false
   },
-  // 10.7 上午 - 石老人海水浴场
-  {
-    date: '10.7',
-    period: '上午',
-    time: '09:00-18:00',
-    location: '石老人海水浴场',
-    type: '海滩',
-    description: '赶海体验，可看日出(05:50)',
-    highlights: ['赶海体验', '日出观赏'],
-    notes: '预测21:00后退潮，提前美团购买赶海工具包(23元/套)，导航至石老人健身区停车场',
-    completed: false
-  },
   // 10.7 上午 - 小麦岛
   {
     date: '10.7',
@@ -507,9 +495,9 @@ const scheduleData = ref<ScheduleItem[]>([
     time: '全天开放',
     location: '小麦岛',
     type: '景点',
-    description: '网红打卡地，寻找"孤独的树"',
+    description: '免费，去小麦岛定位东园北侧更近',
     highlights: ['网红打卡', '孤独的树', '日出观赏'],
-    notes: '导航至雕塑园3号门，游览路线：进岛直走→小海豚左转→木栈道→白色石子路→蓝色房子"五棵树"→石头墙→小路深处"孤独的树"',
+    notes: '进去之后直走→到分叉路口(小海豚)左转→进入向上的木栈道→沿着白色石子路走到尽头左转→蓝色房子边上"五棵树"→接着往前走能看到石头墙→再往前就是"孤独的树"。天气好的话这个地方可以早看日出，日出时间5点50',
     completed: false
   },
   // 10.7 上午 - 天主教堂
@@ -517,24 +505,72 @@ const scheduleData = ref<ScheduleItem[]>([
     date: '10.7',
     period: '上午',
     time: '08:00-18:00',
-    location: '浙江路天主教堂',
+    location: '天主教圣弥厄尔大教堂',
     type: '教堂',
-    description: '门票10元/人，门口拍照即可',
+    description: '门票10元/人，门口拍照即可，不用进去',
     cost: '10元/人',
     highlights: ['哥特式建筑', '拍照打卡'],
-    notes: '周日10:00-18:00开放，门口拍照即可无需入内',
+    notes: '周一至周六08:00-18:00，周日10:00-18:00开放',
     completed: false
   },
-  // 10.7 下午 - 五四广场
+  // 10.7 上午 - 信号山
+  {
+    date: '10.7',
+    period: '上午',
+    time: '06:00-20:00',
+    location: '信号山',
+    type: '景点',
+    description: '免费，但需要在门口扫描二维码预约',
+    highlights: ['观景楼票价10元', '可不去'],
+    notes: '信号山→小麦岛/雕塑园3号线转2号线，或者打车12km，20左右',
+    completed: false
+  },
+  // 10.7 上午 - 雕塑园
+  {
+    date: '10.7',
+    period: '上午',
+    time: '全天开放',
+    location: '雕塑园',
+    type: '景点',
+    description: '免费',
+    highlights: ['艺术雕塑', '休闲漫步'],
+    notes: '导航：雕塑园3号门',
+    completed: false
+  },
+  // 10.7 下午 - 小鱼山公园
+  {
+    date: '10.7',
+    period: '下午',
+    time: '06:00-20:00',
+    location: '小鱼山公园',
+    type: '公园',
+    description: '免费',
+    highlights: ['览潮阁观景', '红屋顶全景'],
+    notes: '游览路线：正门入口(福山支路)→沿台阶上山→览潮阁(山顶)→碧波亭→拥翠亭→下山。览潮阁2楼3楼观景平台无遮挡，可以看到第一海水浴场，也可以远眺栈桥和教堂，与信号山相望，可以看到一片片的红屋顶青岛老房子',
+    completed: false
+  },
+  // 10.7 下午 - 栈桥
   {
     date: '10.7',
     period: '下午',
     time: '全天开放',
-    location: '五四广场',
-    type: '广场',
-    description: '青岛标志性广场',
-    highlights: ['五四雕塑', '海滨广场'],
-    notes: '地铁3号线坐6站到达',
+    location: '栈桥',
+    type: '景点',
+    description: '免费',
+    highlights: ['青岛地标', '海上栈桥'],
+    notes: '回澜阁4元(旺季7:00-19:00，淡季8:00-17:30)，不用登阁，拍拍照即可',
+    completed: false
+  },
+  // 10.7 下午 - 团岛农贸市场
+  {
+    date: '10.7',
+    period: '下午',
+    time: '市场营业时间',
+    location: '团岛农贸市场',
+    type: '市场',
+    description: '干饭，海胆/',
+    highlights: ['海鲜市场', '当地美食'],
+    notes: '品尝新鲜海鲜，体验当地市场文化',
     completed: false
   },
   // 10.8 上午 - 小鱼山公园
