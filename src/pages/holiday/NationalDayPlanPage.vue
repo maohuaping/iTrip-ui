@@ -316,56 +316,68 @@ const scheduleData = ref<ScheduleItem[]>([
     description: '门票40元/人(抖音37元/人)',
     cost: '40元/人',
     highlights: ['天下第一泉', '李清照纪念堂'],
-    notes: '免费入园时间：05:00-06:30和18:00-22:30，游览路线：东门→龟石→漱玉泉→李清照纪念堂→三大殿→趵突泉→万竹园→南门',
+    notes: '免费入园时间：05:00-06:30和18:00-22:30，8点前到人少一点，南门进北门出',
     completed: false
   },
-  // 10.5 上午 - 五龙喷泉
+  // 10.5 上午 - 五龙潭
   {
     date: '10.5',
     period: '上午',
-    time: '09:00-17:00',
-    location: '五龙喷泉',
+    time: '07:00-22:00',
+    location: '五龙潭',
     type: '景点',
-    description: '整点启动15分钟表演',
-    highlights: ['音乐喷泉', '整点表演'],
-    notes: '位于广场西北角，整点启动15分钟',
+    description: '免费景点，含五龙喷泉表演',
+    highlights: ['五龙喷泉', '邓恩铭塑像'],
+    notes: '南门进东门出，五龙喷泉整点启动15分钟(09:00-17:00)',
     completed: false
   },
-  // 10.5 上午 - 曲水亭街
-  {
-    date: '10.5',
-    period: '上午',
-    time: '全天开放',
-    location: '曲水亭街',
-    type: '古街',
-    description: '一条南北向主街+两条东西向次街',
-    highlights: ['古街风情', '文创购物'],
-    notes: '主街以紫米饼、炒锅饼、文创为主；东一街是本地菜市场；东二街商业化面向游客',
-    completed: false
-  },
-  // 10.5 下午 - 五龙潭公园
+  // 10.5 下午 - 泉城广场
   {
     date: '10.5',
     period: '下午',
-    time: '全天开放',
-    location: '五龙潭公园',
+    time: '免费',
+    location: '泉城广场',
     type: '景点',
-    description: '门票30元/人',
-    cost: '30元/人',
-    highlights: ['泉水景观', '邓恩铭塑像'],
-    notes: '免费入园时间：05:00-06:30和18:00-22:30，建议南门进东门出',
+    description: '免费景点，可投喂鸽子',
+    highlights: ['喷泉表演', '投喂鸽子'],
+    notes: '广场西侧常有鸽子群，可买粮食(3元/包)投喂。喷泉表演：10:00, 15:00, 20:00三场，每场约20分钟',
     completed: false
   },
   // 10.5 下午 - 珍珠泉
   {
     date: '10.5',
     period: '下午',
-    time: '10:00/15:00/20:00',
+    time: '全天开放',
     location: '珍珠泉',
     type: '景点',
-    description: '喷泉表演，每场约20分钟',
-    highlights: ['珍珠泉喷涌', '定时表演'],
-    notes: '位于济南历下区院前街1号(省人大院内)',
+    description: '免费景点',
+    highlights: ['省人大院内', '历史景点'],
+    notes: '定位：济南历下区院前街1号(省人大院内)',
+    completed: false
+  },
+  // 10.5 下午 - 曲水亭街
+  {
+    date: '10.5',
+    period: '下午',
+    time: '免费',
+    location: '曲水亭街',
+    type: '古街',
+    description: '街上走一走，墙上有大学的可以拍照',
+    highlights: ['拍照打卡', '特色美食'],
+    notes: '美食推荐：老周家牛肉烧饼、刘小忙把子肉',
+    completed: false
+  },
+  // 10.5 下午 - 千佛山
+  {
+    date: '10.5',
+    period: '下午',
+    time: '门票30元/人',
+    location: '千佛山',
+    type: '景点',
+    description: '从南门上山，10-20分钟能登顶',
+    cost: '30元/人',
+    highlights: ['登山健身', '俯瞰济南'],
+    notes: '免费入园时间5点-6点半和18点-22点半',
     completed: false
   },
   // 10.6 上午 - 济南→淄博
