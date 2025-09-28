@@ -306,17 +306,17 @@ const scheduleData = ref<ScheduleItem[]>([
     notes: '提前打电话确认，若人多则点外卖或更换餐厅',
     completed: false
   },
-  // 10.5 上午 - 躁突泉
+  // 10.5 上午 - 趵突泉
   {
     date: '10.5',
     period: '上午',
     time: '07:00-20:00',
-    location: '躁突泉',
+    location: '趵突泉',
     type: '景点',
     description: '门票40元/人(抖音37元/人)',
     cost: '40元/人',
     highlights: ['天下第一泉', '李清照纪念堂'],
-    notes: '免费入园时间：05:00-06:30和18:00-22:30，游览路线：东门→龟石→漱玉泉→李清照纪念堂→三大殿→躁突泉→万竹园→南门',
+    notes: '免费入园时间：05:00-06:30和18:00-22:30，游览路线：东门→龟石→漱玉泉→李清照纪念堂→三大殿→趵突泉→万竹园→南门',
     completed: false
   },
   // 10.5 上午 - 五龙喷泉
@@ -591,12 +591,12 @@ const scheduleData = ref<ScheduleItem[]>([
   {
     date: '10.8',
     period: '晚上',
-    time: '18:19-23:54',
-    location: '青岛→上海东',
+    time: '18:19-23:34',
+    location: '青岛北→上海松江',
     type: '交通',
     description: 'D2911次列车返程',
     highlights: ['高铁返程', '结束旅程'],
-    notes: '5小时35分钟车程，结束愉快的山东之旅',
+    notes: '5小时15分钟车程，结束愉快的山东之旅',
     completed: false
   }
 ])
