@@ -71,6 +71,11 @@ const routes: RouteRecordRaw[] = [
         path: '', 
         component: () => import('pages/holiday/HolidayPage.vue'),
         meta: { requiresAuth: true }
+      },
+      { 
+        path: 'national-day-plan', 
+        component: () => import('pages/holiday/NationalDayPlanPage.vue'),
+        meta: { requiresAuth: true }
       }
     ]
   },
