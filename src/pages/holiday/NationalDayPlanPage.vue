@@ -636,7 +636,7 @@ const toggleCompleted = (item: ScheduleItem) => {
   .schedule-stats {
     text-align: center;
     padding: 8px 0 16px 0;
-    border-bottom: 1px solid #f0f0f0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
     margin-bottom: 16px;
     
     .text-caption {
@@ -648,6 +648,7 @@ const toggleCompleted = (item: ScheduleItem) => {
 
   .filter-card {
     border-radius: 12px;
+    border-color: rgba(255, 255, 255, 0.12);
     
     .date-filter-btn {
       border-radius: 20px;
@@ -660,6 +661,7 @@ const toggleCompleted = (item: ScheduleItem) => {
       border-radius: 12px;
       transition: all 0.2s ease;
       border-left: 4px solid transparent;
+      border-color: rgba(255, 255, 255, 0.12);
       
       &:hover {
         transform: translateY(-2px);
@@ -864,6 +866,42 @@ const toggleCompleted = (item: ScheduleItem) => {
   
   .location-name span {
     text-decoration: line-through;
+  }
+}
+
+// 深色模式适配
+.body--dark {
+  .national-day-plan-page {
+    .schedule-stats {
+      border-bottom-color: rgba(255, 255, 255, 0.12);
+    }
+    
+    .filter-card {
+      border-color: rgba(255, 255, 255, 0.12);
+      background: rgba(255, 255, 255, 0.05);
+    }
+    
+    .schedule-list .schedule-item {
+      border-color: rgba(255, 255, 255, 0.12);
+      background: rgba(255, 255, 255, 0.05);
+      
+      &:hover {
+        background: rgba(255, 255, 255, 0.08);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      }
+      
+      .activity-details {
+        .cost-info {
+          background: rgba(76, 175, 80, 0.15);
+          border-left-color: #4caf50;
+        }
+        
+        .notes-info {
+          background: rgba(255, 152, 0, 0.15);
+          border-left-color: #ff9800;
+        }
+      }
+    }
   }
 }
 </style>
