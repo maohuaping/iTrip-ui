@@ -573,30 +573,6 @@ const scheduleData = ref<ScheduleItem[]>([
     notes: '品尝新鲜海鲜，体验当地市场文化',
     completed: false
   },
-  // 10.8 上午 - 小鱼山公园
-  {
-    date: '10.8',
-    period: '上午',
-    time: '06:00-20:00',
-    location: '小鱼山公园',
-    type: '公园',
-    description: '免费，最佳观景点',
-    highlights: ['览潮阁观景', '红屋顶全景'],
-    notes: '游览路线：正门入口(福山支路)→览潮阁(山顶2楼3楼观景台)→碧波亭→拥翠亭→下山，可看第一海水浴场、远眺栈桥和教堂',
-    completed: false
-  },
-  // 10.8 上午 - 栈桥
-  {
-    date: '10.8',
-    period: '上午',
-    time: '全天开放',
-    location: '栈桥',
-    type: '景点',
-    description: '青岛标志性景点，免费',
-    highlights: ['青岛地标', '海上栈桥'],
-    notes: '青岛最著名的地标建筑',
-    completed: false
-  },
   // 10.8 上午 - 小青岛
   {
     date: '10.8',
@@ -604,9 +580,9 @@ const scheduleData = ref<ScheduleItem[]>([
     time: '06:00-20:00',
     location: '小青岛',
     type: '海岛',
-    description: '免费，环岛游览',
+    description: '免费',
     highlights: ['白色灯塔', '海边礁石'],
-    notes: '游览路线：上岛后往左边环岛走一圈(海边礁石→堤坝→蘑菇亭→贝壳亭→转角石阶→石板路→龙柏树→白色灯塔→小火车轨礁石)',
+    notes: '游览路线：海边礁石→堤坝→蘑菇亭→贝壳亭→转角石阶→右边石板路→龙柏树→白色灯塔→小火车轨礁石。上岛后往左边开始环岛走一圈。汉庭(青岛栈桥火车站东广场店)→青海轮渡站，1.8km',
     completed: false
   },
   // 10.8 上午 - 太平山索道
@@ -616,10 +592,10 @@ const scheduleData = ref<ScheduleItem[]>([
     time: '08:30-19:30',
     location: '太平山索道',
     type: '索道',
-    description: '单程票80元/人，拍照效果最佳',
+    description: '单程票80元/人',
     cost: '80元/人',
-    highlights: ['山顶观景', '专业拍照'],
-    notes: '打车到湛山寺南门，大门左边走到厕所旁边小门进入，有工作人员指导摆姿势，照片+电子档30元',
+    highlights: ['湛山寺→太平角公园→中山公园'],
+    notes: '🚗打车到湛山寺南门，大门左边一直走到厕所，旁边有小门可以进去，进到公园可以看到"索道站"。📸湛山寺到太平山拍照最出片！拍照的时候有阿姨会提醒摆动作。在太平山下缆车可以选照片，照片+电子档30元',
     completed: false
   },
   // 10.8 下午 - 八大关
@@ -629,9 +605,9 @@ const scheduleData = ref<ScheduleItem[]>([
     time: '全天开放',
     location: '八大关',
     type: '历史街区',
-    description: '街区免费，部分建筑收费',
+    description: '免费',
     highlights: ['万国建筑', '花石楼', '公主楼'],
-    notes: '游览路线：中山公园C出口→韶关路→嘉峪关路→临淮关路(龙柏树拍照)→公主楼→蝴蝶楼→花石楼(推荐二楼观景台)',
+    notes: '游览贴士：街区免费开放，部分建筑单独收费(如花石楼8元，公主楼20元)。花石楼可进入。游览路线：中山公园C出口→韶关路→嘉峪关路→临淮关路(龙柏超适合拍照)→公主楼→蝴蝶楼→花石楼(推荐二楼观景台打卡)',
     completed: false
   },
   // 10.8 下午 - 第二海水浴场
@@ -641,23 +617,22 @@ const scheduleData = ref<ScheduleItem[]>([
     time: '全天开放',
     location: '第二海水浴场',
     type: '海滩',
-    description: '冲脚1元/次，储物柜20元/小时',
-    cost: '1元/次',
+    description: '免费',
     highlights: ['海滩游玩', '山洞拍照'],
-    notes: '有山洞可打卡拍照(随缘逛)',
+    notes: '冲脚处1元/次，储物柜20元/小时。有山洞可以打卡拍照(随缘逛)',
     completed: false
   },
-  // 10.8 下午 - 青岛轮渡
+  // 10.8 晚上 - 青岛轮渡
   {
     date: '10.8',
-    period: '下午',
+    period: '晚上',
     time: '08:00-18:20',
     location: '青岛轮渡',
     type: '水上游览',
-    description: '海上观光30分钟，89元/人',
+    description: '【航行时间】为30min',
     cost: '89元/人',
     highlights: ['海上观光', '免费啤酒'],
-    notes: '抖音132元/两人已购买，凭游船纸质票可领取200毫升啤酒或饮料一杯及一份鸥食',
+    notes: '青岛轮渡公众号89元/人，抖音132元/两人(已买)。环游路线：青岛轮渡站→小港湾→邮轮母港→胶州湾大桥→马踏飞燕灯塔→青岛轮渡站。凭游船纸质票(核销后领取凭证)可在指定位置领取200毫升啤酒或饮料一杯，及一份鸥食，当日有效',
     completed: false
   },
   // 10.8 晚上 - 返程
