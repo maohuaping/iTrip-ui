@@ -245,6 +245,18 @@ const scheduleData = ref<ScheduleItem[]>([
     notes: '3号晚上返回东城，4号预约顺风车从东城前往南通站',
     completed: false
   },
+  // 10.4 下午 - 陈氏肥蛤
+  {
+    date: '10.4',
+    period: '下午',
+    time: '用餐时间',
+    location: '陈氏肥蛤(圣凯财富广场店)',
+    type: '美食',
+    description: '济南特色美食',
+    highlights: ['当地特色', '提前确认'],
+    notes: '提前打电话确认，若人多则点外卖或更换餐厅',
+    completed: false
+  },
   // 10.4 下午 - 黑虎泉
   {
     date: '10.4',
@@ -292,18 +304,6 @@ const scheduleData = ref<ScheduleItem[]>([
     description: '免费上楼，每晚18:40亮灯',
     highlights: ['免费登楼', '夜景观赏'],
     notes: '拍照机位：南丰祠新区游船码头可拍南丰桥与超然楼同框',
-    completed: false
-  },
-  // 10.4 下午 - 陈氏肥蛤
-  {
-    date: '10.4',
-    period: '下午',
-    time: '用餐时间',
-    location: '陈氏肥蛤(圣凯财富广场店)',
-    type: '美食',
-    description: '济南特色美食',
-    highlights: ['当地特色', '提前确认'],
-    notes: '提前打电话确认，若人多则点外卖或更换餐厅',
     completed: false
   },
   // 10.5 上午 - 趵突泉
