@@ -1,6 +1,14 @@
 <template>
   <q-page class="national-day-plan-page">
     <div class="page-container">
+      <!-- 行程统计信息 -->
+      <div class="schedule-stats">
+        <span class="text-caption text-grey-6">
+          共 {{ scheduleData.length }} 个行程安排 · 10月4日-8日 · 5天行程
+          <span v-if="selectedDate"> · 当前显示{{ formatDateLabel(selectedDate) }}行程</span>
+        </span>
+      </div>
+      
       <!-- 日期筛选 -->
       <q-card class="filter-card q-mb-md" flat bordered>
         <q-card-section class="q-py-sm">
@@ -576,6 +584,18 @@ const toggleCompleted = (item: ScheduleItem) => {
     max-width: 800px;
     margin: 0 auto;
     padding: 16px;
+  }
+
+  .schedule-stats {
+    text-align: center;
+    padding: 8px 0 16px 0;
+    border-bottom: 1px solid #f0f0f0;
+    margin-bottom: 16px;
+    
+    .text-caption {
+      font-size: 0.75rem;
+      line-height: 1.4;
+    }
   }
 
 

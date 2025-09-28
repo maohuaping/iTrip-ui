@@ -71,9 +71,16 @@ const routes: RouteRecordRaw[] = [
         path: '', 
         component: () => import('pages/holiday/HolidayPage.vue'),
         meta: { requiresAuth: true }
-      },
+      }
+    ]
+  },
+  {
+    path: '/holiday/national-day-plan',
+    component: () => import('layouts/CleanLayout.vue'),
+    meta: { requiresAuth: true },
+    children: [
       { 
-        path: 'national-day-plan', 
+        path: '', 
         component: () => import('pages/holiday/NationalDayPlanPage.vue'),
         meta: { requiresAuth: true }
       }
