@@ -389,64 +389,65 @@ const scheduleData = ref<ScheduleItem[]>([
     type: '交通',
     description: 'D6071次列车',
     highlights: ['城际交通', '42分钟车程'],
-    notes: '到达淄博后需要寄存行李，有多种寄存方案可选',
+    notes: '到达淄博后需要寄存行李。寄存柜：支持24小时自助存取，中号柜可容纳20寸行李箱，3小时8元/柜，不足3小时按3小时计费，超出按4元/小时叠加。大号柜3小时10元/柜，超出按5元/小时叠加',
     completed: false
   },
   // 10.6 上午 - 淄博陶瓷琉璃博物馆
   {
     date: '10.6',
     period: '上午',
-    time: '09:00-12:00',
+    time: '09:00-17:00',
     location: '淄博陶瓷琉璃博物馆',
     type: '博物馆',
-    description: '免费，需提前7天预约',
-    highlights: ['琉璃艺术', '镇馆之宝'],
-    notes: '游览路线：4楼琉璃灯工厅→5色厅→3楿国粹厅→2楿古瓷厅，重点看战国琉璃珠和青釉莲花尊',
+    description: '免费，需提前7天预约(9.30)，约9-12点的',
+    highlights: ['琉璃艺术', '镇馆之宝', '琉璃烧烤'],
+    notes: '游览路线：4楼琉璃灯工厅→五色厅→3楼国粹厅→2楼古瓷厅。4楼五色厅：战国琉璃珠【镇馆之宝】；3楼国粹厅：鸡油黄编钟、国宴骆驼、灯工石榴、琉璃淄博烧烤；2楼古瓷厅：青釉莲花尊【镇馆之宝】',
     completed: false
   },
-  // 10.6 下午 - 淄博美食
+  // 10.6 下午 - 八大局
   {
     date: '10.6',
     period: '下午',
     time: '用餐时间',
-    location: '淄博美食街',
+    location: '八大局',
     type: '美食',
-    description: '品尝淄博特色美食',
+    description: '美食广场：逛+吃',
     highlights: ['白老三炒锅饼', '博山菜', '淄博烧烤'],
-    notes: '推荐：🌟白老三炒锅饼，🍱博山菜(炸肉、风味茄子)，🍢烧烤(离开前再去吃一次)',
+    notes: '一条南北向的主街+两条东西向的次街。美食推荐：🌟白老三炒锅饼，麦香面食紫米饼；🍱博山菜：炸肉和风味茄子；🍢烧烤：走之前再去趟烧烤店',
     completed: false
   },
-  // 10.6 下午 - 购物
+  // 10.6 下午 - 淄博义乌小商品城2期
   {
     date: '10.6',
     period: '下午',
     time: '下午时光',
-    location: '淄博商业区',
+    location: '淄博义乌小商品城2期',
     type: '购物',
     description: '买饰品和小礼物',
     highlights: ['特色纪念品', '淄博特产'],
-    notes: '为朋友和家人挑选淄博特色小礼物',
+    notes: '推荐店铺：二期二楼东区5602@欣悦家居生活馆 冰箱贴、琉璃摆件和饰品；5505号店小圣诞树8元一个',
     completed: false
   },
-  // 10.6 晚上 - 前往青岛
+  // 10.6 晚上 - 淄博→青岛
   {
     date: '10.6',
     period: '晚上',
-    time: '晚间',
+    time: '16:41-18:47',
     location: '淄博→青岛',
     type: '交通',
-    description: '前往青岛，准备海滨之旅',
+    description: 'D8185次列车，青岛站→汉庭(青岛栈桥火车站东广场店)',
     highlights: ['转战青岛', '海滨城市'],
+    notes: '列车路程约2小时06分钟',
     completed: false
   },
-  // 10.6 晚上 - 奥帆中心灯光秀
+  // 10.6 晚上 - 奥帆中心
   {
     date: '10.6',
     period: '晚上',
     time: '19:30-22:00',
     location: '奥帆中心',
     type: '景点',
-    description: '灯光秀表演',
+    description: '灯光秀19:30-22:00',
     highlights: ['奥帆灯光秀', '海上剧场'],
     notes: '导航至奥帆中心海上剧场',
     completed: false
@@ -458,9 +459,33 @@ const scheduleData = ref<ScheduleItem[]>([
     time: '晚餐时间',
     location: '来之顺海鲜菜馆',
     type: '美食',
-    description: '青岛海鲜大餐',
+    description: '推荐海肠捞饭',
     highlights: ['海肠捞饭', '青岛海鲜'],
-    notes: '美团已购买套餐，地铁3号线转2号线到奥帆中心共7站',
+    notes: '美团已买套餐，但是有效期至9.30，到期后需重新买一张',
+    completed: false
+  },
+  // 10.6 晚上 - 五四广场
+  {
+    date: '10.6',
+    period: '晚上',
+    time: '晚间',
+    location: '五四广场',
+    type: '广场',
+    description: '溜达一圈之后可以步行至奥帆中心',
+    highlights: ['五四雕塑', '海滨广场'],
+    notes: '来之顺→五四广场，地铁3号线坐6站',
+    completed: false
+  },
+  // 10.6 晚上 - 石老人海水浴场
+  {
+    date: '10.6',
+    period: '晚上',
+    time: '09:00-18:00',
+    location: '石老人海水浴场',
+    type: '海滩',
+    description: '导航至石老人健身区停车场',
+    highlights: ['赶海体验', '预测21点后退潮'],
+    notes: '看好赶海时间，预测是21点之后退潮，提前美团买好送到酒店(23元/套)',
     completed: false
   },
   // 10.7 上午 - 石老人海水浴场
