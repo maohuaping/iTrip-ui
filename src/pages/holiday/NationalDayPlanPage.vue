@@ -5,8 +5,17 @@
       <div class="schedule-stats">
         <span class="text-caption text-grey-6">
           共 {{ scheduleData.length }} 个行程安排 · 济南→淄博→青岛 · 5天行程
-          <span v-if="selectedDate"> · 当前显示{{ formatDateLabel(selectedDate) }}行程</span>
         </span>
+        <q-btn 
+          flat 
+          dense 
+          size="sm" 
+          icon="image" 
+          label="查看原图" 
+          color="grey-5"
+          class="view-original-btn q-ml-md"
+          @click="showOriginalImage = true"
+        />
       </div>
       
       <!-- 日期筛选 -->
@@ -145,6 +154,54 @@
         <div class="text-caption text-grey-5">请选择其他日期查看</div>
       </div>
     </div>
+
+    <!-- 原图查看对话框 -->
+    <q-dialog v-model="showOriginalImage" maximized>
+      <q-card class="bg-black">
+        <q-card-section class="q-pa-none full-height">
+          <div class="full-height flex flex-center">
+            <q-img 
+              src="/国庆计划.jpg"
+              alt="国庆计划原图"
+              fit="contain"
+              class="full-width full-height"
+            >
+              <template v-slot:loading>
+                <q-inner-loading showing color="primary" />
+              </template>
+              <template v-slot:error>
+                <div class="absolute-full flex flex-center bg-negative text-white">
+                  <q-icon name="broken_image" size="2rem" class="q-mr-sm" />
+                  图片加载失败
+                </div>
+              </template>
+            </q-img>
+          </div>
+          
+          <!-- 关闭按钮 -->
+          <q-btn 
+            icon="close" 
+            flat 
+            round 
+            dense 
+            v-close-popup 
+            class="absolute-top-right q-ma-md text-white"
+            size="lg"
+          />
+          
+          <!-- 下载按钮 -->
+          <q-btn 
+            icon="download" 
+            flat 
+            round 
+            dense 
+            @click="downloadOriginalImage"
+            class="absolute-top-left q-ma-md text-white"
+            size="lg"
+          />
+        </q-card-section>
+      </q-card>
+    </q-dialog>
   </q-page>
 </template>
 
@@ -171,6 +228,7 @@ interface ScheduleItem {
 
 // 响应式数据
 const selectedDate = ref('')
+const showOriginalImage = ref(false)
 
 // 根据fullPlan.md的完整数据创建结构化行程
 const scheduleData = ref<ScheduleItem[]>([
@@ -623,6 +681,21 @@ const toggleCompleted = (item: ScheduleItem) => {
     icon: item.completed ? 'check_circle' : 'radio_button_unchecked'
   })
 }
+
+const downloadOriginalImage = () => {
+  const link = document.createElement('a')
+  link.href = '/国庆计划.jpg'
+  link.download = '国庆计划原图.jpg'
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+  
+  $q.notify({
+    message: '原图下载已开始',
+    color: 'positive',
+    icon: 'download'
+  })
+}
 </script>
 
 <style lang="scss" scoped>
@@ -634,7 +707,9 @@ const toggleCompleted = (item: ScheduleItem) => {
   }
 
   .schedule-stats {
-    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     padding: 8px 0 16px 0;
     border-bottom: 1px solid rgba(255, 255, 255, 0.12);
     margin-bottom: 16px;
@@ -642,6 +717,15 @@ const toggleCompleted = (item: ScheduleItem) => {
     .text-caption {
       font-size: 0.75rem;
       line-height: 1.4;
+    }
+    
+    .view-original-btn {
+      opacity: 0.6;
+      transition: opacity 0.2s ease;
+      
+      &:hover {
+        opacity: 1;
+      }
     }
   }
 
@@ -786,6 +870,15 @@ const toggleCompleted = (item: ScheduleItem) => {
   .national-day-plan-page {
     .page-container {
       padding: 12px;
+    }
+    
+    .schedule-stats {
+      flex-direction: column;
+      gap: 8px;
+      
+      .view-original-btn {
+        font-size: 0.75rem;
+      }
     }
     
     
