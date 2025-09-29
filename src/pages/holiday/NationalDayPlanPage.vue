@@ -344,8 +344,8 @@ const scheduleData = ref<ScheduleItem[]>([
     location: '五龙潭',
     type: '景点',
     description: '免费景点，含五龙喷泉表演',
-    highlights: ['五龙喷泉', '邓恩铭塑像'],
-    notes: '南门进东门出，五龙喷泉整点启动15分钟(09:00-17:00)',
+    highlights: ['五龙喷泉', '邓恩铭塑像', '天镜泉'],
+    notes: '游玩路线：南门→五龙壁→天镜泉→玉泉→月牙泉→美铭广场→邓恩铭塑像→假山机位→五龙喷泉→东门。五龙喷泉整点启动15分钟(09:00-17:00)',
     completed: false
   },
   // 10.5 下午 - 泉城广场
