@@ -675,17 +675,112 @@ const formatDateLabel = (date: string) => {
 }
 
 const openNavigation = (item: ScheduleItem) => {
-  // 尝试打开地图导航
-  const query = encodeURIComponent(item.location)
-  const mapUrl = `https://uri.amap.com/navigation?to=${query}`
+  // 检测设备类型
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
+  const isAndroid = /Android/.test(navigator.userAgent)
+  
+  // 获取当前位置并打开导航
+  if (navigator.geolocation) {
+    $q.notify({
+      message: '正在获取当前位置...',
+      color: 'info',
+      icon: 'location_searching',
+      timeout: 2000
+    })
+    
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords
+        const destination = encodeURIComponent(item.location)
+        
+        let navigationUrl = ''
+        
+        if (isIOS) {
+          // iOS 高德地图通用链接
+          navigationUrl = `iosamap://navi?sourceApplication=iTrip&backScheme=itrip&lat=${latitude}&lon=${longitude}&dlat=&dlon=&dname=${destination}&dev=0&t=0`
+        } else if (isAndroid) {
+          // Android 高德地图通用链接
+          navigationUrl = `androidamap://navi?sourceApplication=iTrip&backScheme=itrip&lat=${latitude}&lon=${longitude}&dlat=&dlon=&dname=${destination}&dev=0&t=0`
+        } else {
+          // 其他设备使用网页版高德地图
+          navigationUrl = `https://uri.amap.com/navigation?from=${longitude},${latitude},我的位置&to=,${destination}&mode=car&policy=1&src=mypage&coordinate=gaode&callnative=1`
+        }
+        
+        // 尝试打开导航
+        try {
+          if (isIOS || isAndroid) {
+            // 移动设备直接跳转
+            window.location.href = navigationUrl
+          } else {
+            // 桌面设备在新标签页打开
+            window.open(navigationUrl, '_blank')
+          }
+          
+          $q.notify({
+            message: `正在打开高德地图导航到: ${item.location}`,
+            color: 'positive',
+            icon: 'navigation'
+          })
+        } catch (error) {
+          // 如果打开失败，提供备用方案
+          fallbackNavigation(item.location)
+        }
+      },
+      (error) => {
+        console.warn('无法获取当前位置:', error)
+        // 位置获取失败时的备用方案
+        fallbackNavigation(item.location)
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 300000 // 5分钟缓存
+      }
+    )
+  } else {
+    // 浏览器不支持地理定位时的备用方案
+    fallbackNavigation(item.location)
+  }
+}
+
+// 备用导航方案
+const fallbackNavigation = (location: string) => {
+  const destination = encodeURIComponent(location)
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
+  const isAndroid = /Android/.test(navigator.userAgent)
+  
+  let fallbackUrl = ''
+  
+  if (isIOS) {
+    // iOS 备用方案：直接打开高德地图到目标位置
+    fallbackUrl = `iosamap://poi?sourceApplication=iTrip&backScheme=itrip&name=${destination}&dev=0`
+  } else if (isAndroid) {
+    // Android 备用方案：直接打开高德地图到目标位置
+    fallbackUrl = `androidamap://poi?sourceApplication=iTrip&backScheme=itrip&name=${destination}&dev=0`
+  } else {
+    // 桌面设备备用方案：网页版高德地图搜索
+    fallbackUrl = `https://ditu.amap.com/search?query=${destination}&city=全国`
+  }
   
   try {
-    window.open(mapUrl, '_blank')
-  } catch (error) {
+    if (isIOS || isAndroid) {
+      window.location.href = fallbackUrl
+    } else {
+      window.open(fallbackUrl, '_blank')
+    }
+    
     $q.notify({
-      message: `导航到: ${item.location}`,
-      color: 'primary',
-      icon: 'navigation'
+      message: `正在打开高德地图搜索: ${location}`,
+      color: 'warning',
+      icon: 'search'
+    })
+  } catch (error) {
+    // 最终备用方案：复制地址到剪贴板
+    copyTextToClipboard(location)
+    $q.notify({
+      message: `无法打开地图，已复制地址: ${location}`,
+      color: 'negative',
+      icon: 'content_copy'
     })
   }
 }
