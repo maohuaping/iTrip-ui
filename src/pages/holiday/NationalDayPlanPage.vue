@@ -607,25 +607,26 @@ const openNavigation = (item: ScheduleItem) => {
   const locationName = encodeURIComponent(item.location)
   const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
 
-  // 桌面设备直接打开网页版搜索
+  // 桌面设备直接打开网页版导航
   if (!isMobile) {
-    window.open(`https://ditu.amap.com/search?query=${locationName}`, '_blank')
+    window.open(`https://uri.amap.com/navigation?to=,,${locationName}&mode=walk&src=iTrip`, '_blank')
     return
   }
 
   const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent)
-  const iosUrl = `iosamap://poi?sourceApplication=iTrip&keywords=${locationName}`
-  const androidUrl = `androidamap://poi?sourceApplication=iTrip&keywords=${locationName}`
-  const webUrl = `https://ditu.amap.com/search?query=${locationName}`
+  // 使用导航URL格式，直接设置目的地
+  const iosUrl = `iosamap://route/plan/?dname=${locationName}&dev=0&t=0&sourceApplication=iTrip`
+  const androidUrl = `amap://route/plan/?dname=${locationName}&dev=0&t=0&sourceApplication=iTrip`
+  const webUrl = `https://uri.amap.com/navigation?to=,,${locationName}&mode=walk&src=iTrip`
 
   $q.notify({
-    message: '正在打开高德地图...',
+    message: '正在打开高德地图导航...',
     color: 'positive',
     icon: 'directions_walk',
     timeout: 2000
   })
 
-  // 尝试打开APP
+  // 尝试打开APP进行导航
   window.open(isIOS ? iosUrl : androidUrl, '_blank')
 
   // 2秒后如果APP没有打开，则打开网页版作为备用方案
