@@ -407,6 +407,7 @@ const scheduleData = ref<ScheduleItem[]>([
     description: 'D6071次列车',
     highlights: ['城际交通', '42分钟车程'],
     notes: '到达淄博后需要寄存行李。寄存柜：支持24小时自助存取，中号柜可容纳20寸行李箱，3小时8元/柜，不足3小时按3小时计费，超出按4元/小时叠加。大号柜3小时10元/柜，超出按5元/小时叠加',
+    image: '柜子寄存.png',
     completed: false
   },
   // 10.6 上午 - 淄博陶瓷琉璃博物馆
@@ -772,6 +773,8 @@ const getImageLinkText = (imagePath: string) => {
     return '查看全天路线图'
   } else if (imagePath.includes('轮渡')) {
     return '查看预订截图'
+  } else if (imagePath.includes('寄存') || imagePath.includes('柜子')) {
+    return '查看寄存柜信息'
   } else {
     return '查看相关图片'
   }
