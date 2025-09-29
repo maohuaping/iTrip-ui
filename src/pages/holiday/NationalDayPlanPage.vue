@@ -607,7 +607,6 @@ const openNavigation = (item: ScheduleItem) => {
   // 检测设备类型
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
   const isAndroid = /Android/.test(navigator.userAgent)
-  const isMobile = isIOS || isAndroid
 
   // 目的地名称，URL编码
   const destination = encodeURIComponent(item.location)
@@ -615,145 +614,69 @@ const openNavigation = (item: ScheduleItem) => {
   // 获取景点的精确坐标（如果有的话）
   const coordinates = getLocationCoordinates(item.location)
 
-  // 显示导航选择对话框
-  $q.dialog({
-    title: '选择导航方式',
-    message: `导航到: ${item.location}`,
-    options: {
-      type: 'radio',
-      model: 'amap',
-      items: [
-        { label: '高德地图', value: 'amap', color: 'primary' },
-        { label: '百度地图', value: 'baidu', color: 'secondary' },
-        { label: '腾讯地图', value: 'tencent', color: 'accent' },
-        { label: '苹果地图 (iOS)', value: 'apple', color: 'positive', disable: !isIOS }
-      ]
-    },
-    cancel: true,
-    persistent: false
-  }).onOk(navType => {
-    openNavigationByType(item, navType, coordinates)
-  })
-}
-
-const openNavigationByType = (item: ScheduleItem, navType: string, coordinates: any) => {
-  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
-  const isAndroid = /Android/.test(navigator.userAgent)
-  const destination = encodeURIComponent(item.location)
-
   let navigationUrl = ''
-  let appName = ''
 
-  switch (navType) {
-    case 'amap':
-      appName = '高德地图'
-      if (isIOS) {
-        // iOS高德地图使用通用链接
-        if (coordinates) {
-          navigationUrl = `https://uri.amap.com/navigation?to=${coordinates.lon},${coordinates.lat},${destination}&mode=walk&callnative=1&src=iTrip`
-        } else {
-          navigationUrl = `https://uri.amap.com/navigation?to=,,${destination}&mode=walk&callnative=1&src=iTrip`
-        }
-      } else if (isAndroid) {
-        // Android高德地图使用URL Scheme
-        if (coordinates) {
-          navigationUrl = `amap://route/plan/?dlat=${coordinates.lat}&dlon=${coordinates.lon}&dname=${destination}&dev=0&t=2&sourceApplication=iTrip`
-        } else {
-          navigationUrl = `amap://route/plan/?dname=${destination}&dev=0&t=2&sourceApplication=iTrip`
-        }
-      } else {
-        // 桌面设备使用网页版
-        navigationUrl = `https://ditu.amap.com/search?query=${destination}`
-      }
-      break
-
-    case 'baidu':
-      appName = '百度地图'
-      if (isIOS || isAndroid) {
-        // 移动设备使用百度地图URL Scheme
-        if (coordinates) {
-          navigationUrl = `baidumap://map/direction?destination=latlng:${coordinates.lat},${coordinates.lon}|name:${destination}&mode=walking&src=iTrip`
-        } else {
-          navigationUrl = `baidumap://map/direction?destination=${destination}&mode=walking&src=iTrip`
-        }
-      } else {
-        // 桌面设备使用网页版
-        navigationUrl = `https://map.baidu.com/search/${destination}`
-      }
-      break
-
-    case 'tencent':
-      appName = '腾讯地图'
-      if (isIOS || isAndroid) {
-        // 移动设备使用腾讯地图URL Scheme
-        if (coordinates) {
-          navigationUrl = `qqmap://map/routeplan?type=walk&to=${destination}&tocoord=${coordinates.lat},${coordinates.lon}&referer=iTrip`
-        } else {
-          navigationUrl = `qqmap://map/routeplan?type=walk&to=${destination}&referer=iTrip`
-        }
-      } else {
-        // 桌面设备使用网页版
-        navigationUrl = `https://map.qq.com/search/${destination}`
-      }
-      break
-
-    case 'apple':
-      appName = '苹果地图'
-      if (isIOS) {
-        if (coordinates) {
-          navigationUrl = `http://maps.apple.com/?daddr=${coordinates.lat},${coordinates.lon}&dirflg=w`
-        } else {
-          navigationUrl = `http://maps.apple.com/?q=${destination}&dirflg=w`
-        }
-      }
-      break
-
-    default:
-      fallbackNavigation(item.location)
-      return
-  }
-
-  try {
-    if (isIOS) {
-      // iOS使用特殊方式打开链接，避免Safari拦截
-      window.location.href = navigationUrl
-    } else if (isAndroid) {
-      // Android直接跳转
-      window.location.href = navigationUrl
+  if (isIOS) {
+    // iOS 优先使用 URL Scheme 直接拉起高德地图APP
+    if (coordinates) {
+      // 使用坐标进行导航，更精确
+      navigationUrl = `iosamap://route/plan/?sid=BGVIS1&did=BGVIS2&dlat=${coordinates.lat}&dlon=${coordinates.lon}&dname=${destination}&dev=0&t=0`
     } else {
-      // 桌面设备在新标签页打开
-      window.open(navigationUrl, '_blank')
+      // 使用地名搜索
+      navigationUrl = `iosamap://route/plan/?dname=${destination}&dev=0&t=0`
     }
 
-    $q.notify({
-      message: `正在打开${appName}导航到: ${item.location}`,
-      color: 'positive',
-      icon: 'directions_walk'
-    })
+    // 尝试打开高德地图APP
+    const iframe = document.createElement('iframe')
+    iframe.style.display = 'none'
+    iframe.src = navigationUrl
+    document.body.appendChild(iframe)
 
-    // 设置超时检测，如果应用未安装则提供备用方案
+    // 如果APP未安装，2秒后跳转到App Store或使用通用链接
     setTimeout(() => {
-      if (document.hidden === false) {
-        // 如果页面仍然可见，说明可能没有成功跳转到应用
-        $q.notify({
-          message: `如果${appName}未打开，请手动搜索: ${item.location}`,
-          color: 'warning',
-          icon: 'info',
-          actions: [
-            {
-              label: '复制地址',
-              color: 'white',
-              handler: () => copyTextToClipboard(item.location)
-            }
-          ]
-        })
-      }
-    }, 2000)
+      document.body.removeChild(iframe)
+      // 检查是否成功跳转到APP（页面是否变为后台）
+      if (!document.hidden) {
+        // APP未安装，使用通用链接作为备用方案
+        const universalLink = coordinates
+          ? `https://uri.amap.com/navigation?to=${coordinates.lon},${coordinates.lat},${destination}&mode=walk&callnative=1&src=iTrip`
+          : `https://uri.amap.com/navigation?to=,,${destination}&mode=walk&callnative=1&src=iTrip`
 
-  } catch (error) {
-    console.warn('打开导航失败:', error)
-    fallbackNavigation(item.location)
+        window.location.href = universalLink
+      }
+    }, 1500)
+
+  } else if (isAndroid) {
+    // Android 使用高德地图 URL Scheme
+    if (coordinates) {
+      navigationUrl = `amap://route/plan/?dlat=${coordinates.lat}&dlon=${coordinates.lon}&dname=${destination}&dev=0&t=0&sourceApplication=iTrip`
+    } else {
+      navigationUrl = `amap://route/plan/?dname=${destination}&dev=0&t=0&sourceApplication=iTrip`
+    }
+
+    try {
+      window.location.href = navigationUrl
+    } catch (error) {
+      // 如果失败，使用通用链接
+      const universalLink = coordinates
+        ? `https://uri.amap.com/navigation?to=${coordinates.lon},${coordinates.lat},${destination}&mode=walk&callnative=1&src=iTrip`
+        : `https://uri.amap.com/navigation?to=,,${destination}&mode=walk&callnative=1&src=iTrip`
+
+      window.location.href = universalLink
+    }
+
+  } else {
+    // 桌面设备使用高德地图网页版
+    navigationUrl = `https://ditu.amap.com/search?query=${destination}&city=全国`
+    window.open(navigationUrl, '_blank')
   }
+
+  $q.notify({
+    message: `正在打开高德地图导航到: ${item.location}`,
+    color: 'positive',
+    icon: 'directions_walk',
+    timeout: 3000
+  })
 }
 
 // 获取景点的精确坐标（高德坐标系 GCJ-02）
@@ -801,68 +724,6 @@ const getLocationCoordinates = (locationName: string): { lat: number; lon: numbe
   return coordinates[locationName] || null
 }
 
-// 备用导航方案
-const fallbackNavigation = (location: string) => {
-  const destination = encodeURIComponent(location)
-
-  // 显示备用导航选择
-  $q.dialog({
-    title: '导航备用方案',
-    message: `无法打开应用，请选择备用方案导航到: ${location}`,
-    options: {
-      type: 'radio',
-      model: 'web',
-      items: [
-        { label: '高德地图网页版', value: 'amap-web', color: 'primary' },
-        { label: '百度地图网页版', value: 'baidu-web', color: 'secondary' },
-        { label: '腾讯地图网页版', value: 'tencent-web', color: 'accent' },
-        { label: '复制地址到剪贴板', value: 'copy', color: 'grey-7' }
-      ]
-    },
-    cancel: true,
-    persistent: false
-  }).onOk(fallbackType => {
-    let fallbackUrl = ''
-    let serviceName = ''
-
-    switch (fallbackType) {
-      case 'amap-web':
-        fallbackUrl = `https://ditu.amap.com/search?query=${destination}&city=全国`
-        serviceName = '高德地图网页版'
-        break
-      case 'baidu-web':
-        fallbackUrl = `https://map.baidu.com/search/${destination}`
-        serviceName = '百度地图网页版'
-        break
-      case 'tencent-web':
-        fallbackUrl = `https://map.qq.com/search/${destination}`
-        serviceName = '腾讯地图网页版'
-        break
-      case 'copy':
-        copyTextToClipboard(location)
-        return
-      default:
-        copyTextToClipboard(location)
-        return
-    }
-
-    try {
-      window.open(fallbackUrl, '_blank')
-      $q.notify({
-        message: `正在打开${serviceName}搜索: ${location}`,
-        color: 'positive',
-        icon: 'search'
-      })
-    } catch (error) {
-      copyTextToClipboard(location)
-      $q.notify({
-        message: `无法打开网页，已复制地址: ${location}`,
-        color: 'negative',
-        icon: 'content_copy'
-      })
-    }
-  })
-}
 
 const shareItem = (item: ScheduleItem) => {
   const shareText = `${item.date} ${item.period} - ${item.location}\n${item.description}`
