@@ -604,79 +604,45 @@ const formatDateLabel = (date: string) => {
 }
 
 const openNavigation = (item: ScheduleItem) => {
-  // 检测设备类型
-  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
-  const isAndroid = /Android/.test(navigator.userAgent)
-
-  // 目的地名称，URL编码
-  const destination = encodeURIComponent(item.location)
-
-  // 获取景点的精确坐标（如果有的话）
+  // 获取景点的精确坐标
   const coordinates = getLocationCoordinates(item.location)
 
-  let navigationUrl = ''
-
-  if (isIOS) {
-    // iOS 优先使用 URL Scheme 直接拉起高德地图APP
-    if (coordinates) {
-      // 使用坐标进行导航，更精确
-      navigationUrl = `iosamap://route/plan/?sid=BGVIS1&did=BGVIS2&dlat=${coordinates.lat}&dlon=${coordinates.lon}&dname=${destination}&dev=0&t=0`
-    } else {
-      // 使用地名搜索
-      navigationUrl = `iosamap://route/plan/?dname=${destination}&dev=0&t=0`
-    }
-
-    // 尝试打开高德地图APP
-    const iframe = document.createElement('iframe')
-    iframe.style.display = 'none'
-    iframe.src = navigationUrl
-    document.body.appendChild(iframe)
-
-    // 如果APP未安装，2秒后跳转到App Store或使用通用链接
-    setTimeout(() => {
-      document.body.removeChild(iframe)
-      // 检查是否成功跳转到APP（页面是否变为后台）
-      if (!document.hidden) {
-        // APP未安装，使用通用链接作为备用方案
-        const universalLink = coordinates
-          ? `https://uri.amap.com/navigation?to=${coordinates.lon},${coordinates.lat},${destination}&mode=walk&callnative=1&src=iTrip`
-          : `https://uri.amap.com/navigation?to=,,${destination}&mode=walk&callnative=1&src=iTrip`
-
-        window.location.href = universalLink
-      }
-    }, 1500)
-
-  } else if (isAndroid) {
-    // Android 使用高德地图 URL Scheme
-    if (coordinates) {
-      navigationUrl = `amap://route/plan/?dlat=${coordinates.lat}&dlon=${coordinates.lon}&dname=${destination}&dev=0&t=0&sourceApplication=iTrip`
-    } else {
-      navigationUrl = `amap://route/plan/?dname=${destination}&dev=0&t=0&sourceApplication=iTrip`
-    }
-
-    try {
-      window.location.href = navigationUrl
-    } catch (error) {
-      // 如果失败，使用通用链接
-      const universalLink = coordinates
-        ? `https://uri.amap.com/navigation?to=${coordinates.lon},${coordinates.lat},${destination}&mode=walk&callnative=1&src=iTrip`
-        : `https://uri.amap.com/navigation?to=,,${destination}&mode=walk&callnative=1&src=iTrip`
-
-      window.location.href = universalLink
-    }
-
-  } else {
-    // 桌面设备使用高德地图网页版
-    navigationUrl = `https://ditu.amap.com/search?query=${destination}&city=全国`
-    window.open(navigationUrl, '_blank')
+  if (!coordinates) {
+    $q.notify({
+      message: '暂无位置信息，无法导航',
+      color: 'warning',
+      icon: 'location_off'
+    })
+    return
   }
 
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+
+  // 桌面设备直接打开网页版
+  if (!isMobile) {
+    window.open(`https://uri.amap.com/marker?position=${coordinates.lon},${coordinates.lat}&name=${encodeURIComponent(item.location)}`, '_blank')
+    return
+  }
+
+  const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent)
+  const iosUrl = `iosamap://viewMap?sourceApplication=iTrip&poiname=${encodeURIComponent(item.location)}&lat=${coordinates.lat}&lon=${coordinates.lon}`
+  const androidUrl = `androidamap://viewMap?sourceApplication=iTrip&poiname=${encodeURIComponent(item.location)}&lat=${coordinates.lat}&lon=${coordinates.lon}`
+  const webUrl = `https://uri.amap.com/marker?position=${coordinates.lon},${coordinates.lat}&name=${encodeURIComponent(item.location)}`
+
   $q.notify({
-    message: `正在打开高德地图导航到: ${item.location}`,
+    message: '正在打开高德地图...',
     color: 'positive',
     icon: 'directions_walk',
-    timeout: 3000
+    timeout: 2000
   })
+
+  // 尝试打开APP
+  window.open(isIOS ? iosUrl : androidUrl, '_blank')
+
+  // 2秒后如果APP没有打开，则打开网页版作为备用方案
+  setTimeout(() => {
+    window.open(webUrl, '_blank')
+  }, 2000)
 }
 
 // 获取景点的精确坐标（高德坐标系 GCJ-02）
