@@ -604,30 +604,19 @@ const formatDateLabel = (date: string) => {
 }
 
 const openNavigation = (item: ScheduleItem) => {
-  // 获取景点的精确坐标
-  const coordinates = getLocationCoordinates(item.location)
-
-  if (!coordinates) {
-    $q.notify({
-      message: '暂无位置信息，无法导航',
-      color: 'warning',
-      icon: 'location_off'
-    })
-    return
-  }
-
+  const locationName = encodeURIComponent(item.location)
   const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
 
-  // 桌面设备直接打开网页版
+  // 桌面设备直接打开网页版搜索
   if (!isMobile) {
-    window.open(`https://uri.amap.com/marker?position=${coordinates.lon},${coordinates.lat}&name=${encodeURIComponent(item.location)}`, '_blank')
+    window.open(`https://ditu.amap.com/search?query=${locationName}`, '_blank')
     return
   }
 
   const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent)
-  const iosUrl = `iosamap://viewMap?sourceApplication=iTrip&poiname=${encodeURIComponent(item.location)}&lat=${coordinates.lat}&lon=${coordinates.lon}`
-  const androidUrl = `androidamap://viewMap?sourceApplication=iTrip&poiname=${encodeURIComponent(item.location)}&lat=${coordinates.lat}&lon=${coordinates.lon}`
-  const webUrl = `https://uri.amap.com/marker?position=${coordinates.lon},${coordinates.lat}&name=${encodeURIComponent(item.location)}`
+  const iosUrl = `iosamap://poi?sourceApplication=iTrip&keywords=${locationName}`
+  const androidUrl = `androidamap://poi?sourceApplication=iTrip&keywords=${locationName}`
+  const webUrl = `https://ditu.amap.com/search?query=${locationName}`
 
   $q.notify({
     message: '正在打开高德地图...',
@@ -645,50 +634,6 @@ const openNavigation = (item: ScheduleItem) => {
   }, 2000)
 }
 
-// 获取景点的精确坐标（高德坐标系 GCJ-02）
-const getLocationCoordinates = (locationName: string): { lat: number; lon: number } | null => {
-  // 主要景点的精确坐标（高德坐标系）
-  const coordinates: Record<string, { lat: number; lon: number }> = {
-    // 济南景点
-    '黑虎泉': { lat: 36.661, lon: 117.024 },
-    '大明湖': { lat: 36.675, lon: 117.025 },
-    '趵突泉': { lat: 36.661, lon: 117.020 },
-    '五龙潭': { lat: 36.668, lon: 117.016 },
-    '泉城广场': { lat: 36.664, lon: 117.024 },
-    '珍珠泉': { lat: 36.670, lon: 117.025 },
-    '曲水亭街': { lat: 36.667, lon: 117.024 },
-    '千佛山': { lat: 36.643, lon: 117.043 },
-    '超然楼': { lat: 36.675, lon: 117.025 },
-
-    // 淄博景点
-    '淄博陶瓷琉璃博物馆': { lat: 36.813, lon: 118.055 },
-    '八大局': { lat: 36.813, lon: 118.055 },
-    '淄博义乌小商品城2期': { lat: 36.813, lon: 118.055 },
-
-    // 青岛景点
-    '奥帆中心': { lat: 36.070, lon: 120.394 },
-    '五四广场': { lat: 36.062, lon: 120.382 },
-    '石老人海水浴场': { lat: 36.045, lon: 120.453 },
-    '小麦岛': { lat: 36.048, lon: 120.427 },
-    '天主教圣弥厄尔大教堂': { lat: 36.066, lon: 120.311 },
-    '信号山': { lat: 36.071, lon: 120.310 },
-    '雕塑园': { lat: 36.048, lon: 120.427 },
-    '小鱼山公园': { lat: 36.058, lon: 120.324 },
-    '栈桥': { lat: 36.057, lon: 120.319 },
-    '团岛农贸市场': { lat: 36.047, lon: 120.315 },
-    '小青岛': { lat: 36.058, lon: 120.320 },
-    '太平山索道': { lat: 36.047, lon: 120.340 },
-    '八大关': { lat: 36.047, lon: 120.340 },
-    '第二海水浴场': { lat: 36.047, lon: 120.340 },
-    '青岛轮渡': { lat: 36.058, lon: 120.320 },
-
-    // 餐厅
-    '陈氏肥蛤(圣凯财富广场店)': { lat: 36.664, lon: 117.024 },
-    '来之顺海鲜菜馆': { lat: 36.062, lon: 120.382 }
-  }
-
-  return coordinates[locationName] || null
-}
 
 
 const shareItem = (item: ScheduleItem) => {
