@@ -214,6 +214,28 @@
         </q-card-section>
       </q-card>
     </q-dialog>
+
+    <!-- 截图预览对话框（用于手动复制） -->
+    <q-dialog v-model="showScreenshotPreviewDialog" maximized>
+      <q-card class="bg-black">
+        <q-card-section class="q-pa-none full-height">
+          <div class="full-height flex flex-center">
+            <img :src="screenshotDataUrl" :alt="screenshotTitle"
+              style="max-width: 90%; max-height: 90%; object-fit: contain;" class="screenshot-preview" />
+          </div>
+
+          <!-- 关闭按钮 -->
+          <q-btn icon="close" flat round dense v-close-popup class="absolute-top-right q-ma-md text-white" size="lg" />
+
+          <!-- 操作提示 -->
+          <div class="absolute-bottom-center q-ma-md text-center text-white">
+            <div class="text-h6 q-mb-sm">{{ screenshotTitle }}</div>
+            <div class="text-body2 q-mb-md">长按图片选择"拷贝"或"复制图片"</div>
+            <q-btn color="primary" label="我已复制" v-close-popup unelevated class="q-px-xl" />
+          </div>
+        </q-card-section>
+      </q-card>
+    </q-dialog>
   </q-page>
 </template>
 
@@ -246,6 +268,9 @@ const showImageDialogVisible = ref(false)
 const currentImage = ref('')
 const currentImageTitle = ref('')
 const imageZoomed = ref(false)
+const showScreenshotPreviewDialog = ref(false)
+const screenshotDataUrl = ref('')
+const screenshotTitle = ref('')
 
 // 获取智能默认日期
 const getSmartDefaultDate = (): string => {
@@ -876,6 +901,13 @@ const toggleImageZoom = () => {
   imageZoomed.value = !imageZoomed.value
 }
 
+// 显示截图预览（用于手动复制）
+const showScreenshotPreview = (dataUrl: string, title: string) => {
+  screenshotDataUrl.value = dataUrl
+  screenshotTitle.value = `${title} - 行程卡片`
+  showScreenshotPreviewDialog.value = true
+}
+
 const getImageLinkText = (imagePath: string) => {
   if (imagePath.includes('路线')) {
     return '查看全天路线图'
@@ -934,14 +966,14 @@ const shareItem = async (item: ScheduleItem, event: Event) => {
       height: cardElement.clientHeight,
     })
 
-    // 转换为blob
+    // 转换为blob并直接保存到剪贴板
     canvas.toBlob(async (blob: Blob | null) => {
       if (!blob) {
         throw new Error('截图生成失败')
       }
 
       try {
-        // 使用Clipboard API保存到剪贴板
+        // 直接使用Clipboard API保存到剪贴板
         await navigator.clipboard.write([
           new ClipboardItem({
             'image/png': blob
@@ -949,28 +981,38 @@ const shareItem = async (item: ScheduleItem, event: Event) => {
         ])
 
         $q.notify({
-          message: '卡片截图已保存到剪贴板！',
+          message: '卡片截图已保存到剪贴板！可直接粘贴到微信等应用',
           color: 'positive',
           icon: 'content_copy',
-          timeout: 3000
+          timeout: 4000,
+          actions: [
+            {
+              label: '知道了',
+              color: 'white',
+              handler: () => { }
+            }
+          ]
         })
       } catch (clipboardError) {
-        console.warn('剪贴板保存失败，尝试下载:', clipboardError)
-        // 备用方案：下载图片
-        const url = URL.createObjectURL(blob)
-        const link = document.createElement('a')
-        link.href = url
-        link.download = `${item.location}-行程卡片.png`
-        document.body.appendChild(link)
-        link.click()
-        document.body.removeChild(link)
-        URL.revokeObjectURL(url)
+        console.error('剪贴板保存失败:', clipboardError)
 
+        // 如果剪贴板不支持，提示用户手动操作
         $q.notify({
-          message: '截图已下载到设备！',
-          color: 'positive',
-          icon: 'download'
+          message: '您的浏览器不支持自动保存到剪贴板，请长按图片手动复制',
+          color: 'warning',
+          icon: 'info',
+          timeout: 5000,
+          actions: [
+            {
+              label: '我知道了',
+              color: 'white',
+              handler: () => { }
+            }
+          ]
         })
+
+        // 显示截图预览，让用户手动复制
+        showScreenshotPreview(canvas.toDataURL('image/png', 0.9), item.location)
       }
     }, 'image/png', 0.9)
 
