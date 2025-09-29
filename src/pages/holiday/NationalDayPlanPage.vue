@@ -174,6 +174,18 @@ const scheduleData = ref<ScheduleItem[]>([
     notes: '3号晚上返回东城，4号预约顺风车从东城前往南通站',
     completed: false
   },
+  // 10.4 下午 - 济南西→你好酒店
+  {
+    date: '10.4',
+    period: '下午',
+    time: '约40-60分钟',
+    location: '济南西→你好酒店',
+    type: '交通',
+    description: '约19公里',
+    highlights: ['地铁出行', '打车备选'],
+    notes: '可选择地铁或打车前往你好酒店，建议地铁经济实惠',
+    completed: false
+  },
   // 10.4 下午 - 陈氏肥蛤
   {
     date: '10.4',
