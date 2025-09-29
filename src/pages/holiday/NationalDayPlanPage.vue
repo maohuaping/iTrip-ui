@@ -235,6 +235,18 @@ const scheduleData = ref<ScheduleItem[]>([
     notes: '拍照机位：南丰祠新区游船码头可拍南丰桥与超然楼同框',
     completed: false
   },
+  // 10.5 上午 - 你好酒店→趵突泉
+  {
+    date: '10.5',
+    period: '上午',
+    time: '步行约30分钟',
+    location: '你好酒店→趵突泉',
+    type: '交通',
+    description: '约2.5公里',
+    highlights: ['步行健身', '打车备选'],
+    notes: '可选择步行约30分钟或打车前往趵突泉',
+    completed: false
+  },
   // 10.5 上午 - 趵突泉
   {
     date: '10.5',
@@ -369,18 +381,6 @@ const scheduleData = ref<ScheduleItem[]>([
     notes: '列车路程约2小时06分钟',
     completed: false
   },
-  // 10.6 晚上 - 奥帆中心
-  {
-    date: '10.6',
-    period: '晚上',
-    time: '19:30-22:00',
-    location: '奥帆中心',
-    type: '景点',
-    description: '灯光秀19:30-22:00',
-    highlights: ['奥帆灯光秀', '海上剧场'],
-    notes: '导航至奥帆中心海上剧场',
-    completed: false
-  },
   // 10.6 晚上 - 来之顺海鲜
   {
     date: '10.6',
@@ -393,6 +393,18 @@ const scheduleData = ref<ScheduleItem[]>([
     notes: '美团已买套餐，但是有效期至9.30，到期后需重新买一张',
     completed: false
   },
+  // 10.6 晚上 - 来之顺→五四广场交通
+  {
+    date: '10.6',
+    period: '晚上',
+    time: '约30分钟',
+    location: '来之顺→五四广场',
+    type: '交通',
+    description: '地铁3号线坐6站',
+    highlights: ['地铁出行', '6站路程'],
+    notes: '从来之顺海鲜菜馆前往五四广场，地铁3号线直达',
+    completed: false
+  },
   // 10.6 晚上 - 五四广场
   {
     date: '10.6',
@@ -402,7 +414,19 @@ const scheduleData = ref<ScheduleItem[]>([
     type: '广场',
     description: '溜达一圈之后可以步行至奥帆中心',
     highlights: ['五四雕塑', '海滨广场'],
-    notes: '来之顺→五四广场，地铁3号线坐6站',
+    notes: '欣赏五四雕塑，感受青岛海滨夜景',
+    completed: false
+  },
+  // 10.6 晚上 - 奥帆中心
+  {
+    date: '10.6',
+    period: '晚上',
+    time: '19:30-22:00',
+    location: '奥帆中心',
+    type: '景点',
+    description: '灯光秀19:30-22:00',
+    highlights: ['奥帆灯光秀', '海上剧场'],
+    notes: '导航至奥帆中心海上剧场',
     completed: false
   },
   // 10.6 晚上 - 石老人海水浴场
