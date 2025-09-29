@@ -668,18 +668,6 @@ const scheduleData = ref<ScheduleItem[]>([
     notes: '品尝新鲜海鲜，体验当地市场文化',
     completed: false
   },
-  // 10.8 上午 - 汉庭→青海轮渡站
-  {
-    date: '10.8',
-    period: '上午',
-    time: '步行约20分钟',
-    location: '汉庭→青海轮渡站',
-    type: '交通',
-    description: '汉庭(青岛栈桥火车站东广场店)→青海轮渡站，1.8km',
-    highlights: ['步行或打车', '前往轮渡站'],
-    notes: '可选择步行约20分钟或打车前往青海轮渡站',
-    completed: false
-  },
   // 10.8 上午 - 小青岛
   {
     date: '10.8',
@@ -689,7 +677,7 @@ const scheduleData = ref<ScheduleItem[]>([
     type: '海岛',
     description: '免费',
     highlights: ['白色灯塔', '海边礁石'],
-    notes: '游览路线：海边礁石→堤坝→蘑菇亭→贝壳亭→转角石阶→右边石板路→龙柏树→白色灯塔→小火车轨礁石。上岛后往左边开始环岛走一圈',
+    notes: '游览路线：海边礁石→堤坝→蘑菇亭→贝壳亭→转角石阶→右边石板路→龙柏树→白色灯塔→小火车轨礁石。上岛后往左边开始环岛走一圈。汉庭(青岛栈桥火车站东广场店)→青海轮渡站，1.8km，可步行约20分钟或打车前往',
     completed: false
   },
   // 10.8 上午 - 太平山索道
