@@ -360,7 +360,7 @@ const scheduleData = ref<ScheduleItem[]>([
     type: '景点',
     description: '免费上楼，每晚18:40亮灯',
     highlights: ['免费登楼', '夜景观赏'],
-    notes: '拍照机位：南丰祠新区游船码头可拍南丰桥与超然楼同框',
+    notes: '拍照机位1: 搜索“南丰祠新区游船码头”，可拍摄南丰桥与超然楼同框。拍照机位2: 搜索“尚泉尚水茶馆”，其前面平台可拍摄湖面与楼阁全景。',
     completed: false
   },
   // 10.5 上午 - 你好酒店→趵突泉
@@ -519,7 +519,7 @@ const scheduleData = ref<ScheduleItem[]>([
     type: '美食',
     description: '推荐海肠捞饭',
     highlights: ['海肠捞饭', '青岛海鲜'],
-    notes: '美团已买套餐，但是有效期至9.30，到期后需重新买一张',
+    notes: '美团已买套餐，有效期至10.6',
     completed: false
   },
   // 10.6 晚上 - 来之顺→五四广场交通
