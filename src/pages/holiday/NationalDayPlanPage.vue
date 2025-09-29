@@ -91,7 +91,7 @@
                       <q-icon name="image" color="primary" size="1rem" class="q-mr-xs" />
                       <span class="text-caption text-primary cursor-pointer"
                         @click="showImageDialog(item.image, item.location)">
-                        查看预订截图
+                        {{ getImageLinkText(item.image) }}
                       </span>
                     </div>
                   </div>
@@ -528,6 +528,7 @@ const scheduleData = ref<ScheduleItem[]>([
     cost: '10元/人',
     highlights: ['哥特式建筑', '拍照打卡'],
     notes: '周一至周六08:00-18:00，周日10:00-18:00开放',
+    image: '7号全天路线.png',
     completed: false
   },
   // 10.7 上午 - 信号山
@@ -764,6 +765,16 @@ const showImageDialog = (imagePath: string, title: string) => {
   currentImage.value = imagePath
   currentImageTitle.value = title
   showImageDialogVisible.value = true
+}
+
+const getImageLinkText = (imagePath: string) => {
+  if (imagePath.includes('路线')) {
+    return '查看全天路线图'
+  } else if (imagePath.includes('轮渡')) {
+    return '查看预订截图'
+  } else {
+    return '查看相关图片'
+  }
 }
 
 const shareItem = (item: ScheduleItem) => {
