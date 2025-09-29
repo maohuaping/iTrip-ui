@@ -177,8 +177,10 @@
     <q-dialog v-model="showImageDialogVisible" maximized>
       <q-card class="bg-black">
         <q-card-section class="q-pa-none full-height">
-          <div class="full-height flex flex-center">
-            <q-img :src="`/${currentImage}`" :alt="currentImageTitle" fit="contain" class="full-width full-height">
+          <div class="full-height flex flex-center image-container" @dblclick="toggleImageZoom"
+            :class="{ 'zoomed': imageZoomed }">
+            <q-img :src="`/${currentImage}`" :alt="currentImageTitle" :fit="imageZoomed ? 'scale-down' : 'contain'"
+              class="zoomable-image" :class="{ 'zoomed': imageZoomed }" @dblclick="toggleImageZoom">
               <template v-slot:loading>
                 <q-inner-loading showing color="primary" />
               </template>
@@ -194,9 +196,20 @@
           <!-- 关闭按钮 -->
           <q-btn icon="close" flat round dense v-close-popup class="absolute-top-right q-ma-md text-white" size="lg" />
 
+          <!-- 缩放提示和控制 -->
+          <div class="absolute-top-left q-ma-md">
+            <q-btn :icon="imageZoomed ? 'zoom_out' : 'zoom_in'" flat round dense @click="toggleImageZoom"
+              class="text-white zoom-btn" size="lg">
+              <q-tooltip class="bg-dark">
+                {{ imageZoomed ? '缩小' : '放大' }} (双击图片)
+              </q-tooltip>
+            </q-btn>
+          </div>
+
           <!-- 标题 -->
           <div class="absolute-bottom-left q-ma-md text-white">
             <div class="text-h6">{{ currentImageTitle }}</div>
+            <div class="text-caption opacity-70">双击图片可以放大/缩小</div>
           </div>
         </q-card-section>
       </q-card>
@@ -232,6 +245,7 @@ const showOriginalImage = ref(false)
 const showImageDialogVisible = ref(false)
 const currentImage = ref('')
 const currentImageTitle = ref('')
+const imageZoomed = ref(false)
 
 // 获取智能默认日期
 const getSmartDefaultDate = (): string => {
@@ -865,7 +879,13 @@ const openNavigation = (item: ScheduleItem) => {
 const showImageDialog = (imagePath: string, title: string) => {
   currentImage.value = imagePath
   currentImageTitle.value = title
+  imageZoomed.value = false // 重置缩放状态
   showImageDialogVisible.value = true
+}
+
+// 双击切换缩放
+const toggleImageZoom = () => {
+  imageZoomed.value = !imageZoomed.value
 }
 
 const getImageLinkText = (imagePath: string) => {
@@ -1235,6 +1255,39 @@ const downloadOriginalImage = () => {
 
   .location-name span {
     text-decoration: line-through;
+  }
+}
+
+// 图片缩放相关样式
+.image-container {
+  cursor: pointer;
+  overflow: hidden;
+
+  .zoomable-image {
+    transition: all 0.3s ease;
+    cursor: pointer;
+
+    &.zoomed {
+      transform: scale(2);
+      cursor: grab;
+
+      &:active {
+        cursor: grabbing;
+      }
+    }
+  }
+
+  &.zoomed {
+    overflow: auto;
+  }
+}
+
+.zoom-btn {
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(8px);
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.7);
   }
 }
 
