@@ -6,48 +6,25 @@
         <span class="text-caption text-grey-6">
           共 {{ scheduleData.length }} 个行程安排 · 济南→淄博→青岛 · 5天行程
         </span>
-        <q-btn 
-          flat 
-          dense 
-          size="sm" 
-          icon="image" 
-          label="查看原图" 
-          color="grey-5"
-          class="view-original-btn q-ml-md"
-          @click="showOriginalImage = true"
-        />
+        <q-btn flat dense size="sm" icon="image" label="查看原图" color="grey-5" class="view-original-btn q-ml-md"
+          @click="showOriginalImage = true" />
       </div>
-      
+
       <!-- 日期筛选 -->
       <q-card class="filter-card q-mb-md" flat bordered>
         <q-card-section class="q-py-sm">
           <div class="row q-gutter-xs">
-            <q-btn 
-              v-for="date in uniqueDates" 
-              :key="date"
-              :label="formatDateLabel(date)"
-              :color="selectedDate === date ? 'red-6' : 'grey-4'"
-              :text-color="selectedDate === date ? 'white' : 'dark'"
-              size="sm"
-              unelevated
-              @click="selectedDate = selectedDate === date ? '' : date"
-              class="date-filter-btn"
-            />
+            <q-btn v-for="date in uniqueDates" :key="date" :label="formatDateLabel(date)"
+              :color="selectedDate === date ? 'red-6' : 'grey-4'" :text-color="selectedDate === date ? 'white' : 'dark'"
+              size="sm" unelevated @click="selectedDate = selectedDate === date ? '' : date" class="date-filter-btn" />
           </div>
         </q-card-section>
       </q-card>
 
       <!-- 行程列表 -->
       <div class="schedule-list">
-        <q-card 
-          v-for="(item, index) in filteredSchedule" 
-          :key="index"
-          class="schedule-item q-mb-md"
-          :class="{ completed: item.completed }"
-          :data-type="item.type"
-          flat 
-          bordered
-        >
+        <q-card v-for="(item, index) in filteredSchedule" :key="index" class="schedule-item q-mb-md"
+          :class="{ completed: item.completed }" :data-type="item.type" flat bordered>
           <q-card-section class="q-pb-none">
             <!-- 日期和时间段 -->
             <div class="schedule-header">
@@ -56,11 +33,8 @@
                 {{ item.date }}
               </div>
               <div class="time-period">
-                <q-chip 
-                  :color="item.period === '上午' ? 'orange-3' : item.period === '下午' ? 'blue-3' : 'purple-3'"
-                  text-color="dark"
-                  size="sm"
-                >
+                <q-chip :color="item.period === '上午' ? 'orange-3' : item.period === '下午' ? 'blue-3' : 'purple-3'"
+                  text-color="dark" size="sm">
                   {{ item.period }}
                 </q-chip>
               </div>
@@ -86,18 +60,12 @@
                 <span class="text-weight-medium">{{ item.time }}</span>
                 <span class="text-grey-6 q-ml-sm">{{ item.duration }}</span>
               </div>
-              
+
               <div class="activity-description">
                 <p class="text-body2 q-mb-sm">{{ item.description }}</p>
                 <div v-if="item.highlights && item.highlights.length" class="highlights">
-                  <q-chip 
-                    v-for="highlight in item.highlights"
-                    :key="highlight"
-                    color="red-1"
-                    text-color="red-8"
-                    size="sm"
-                    class="q-mr-xs q-mb-xs"
-                  >
+                  <q-chip v-for="highlight in item.highlights" :key="highlight" color="red-1" text-color="red-8"
+                    size="sm" class="q-mr-xs q-mb-xs">
                     {{ highlight }}
                   </q-chip>
                 </div>
@@ -119,30 +87,11 @@
 
           <!-- 操作按钮 -->
           <q-card-actions class="q-px-md q-pb-md">
-            <q-btn 
-              flat 
-              size="sm" 
-              color="primary" 
-              icon="map"
-              label="导航"
-              @click="openNavigation(item)"
-            />
-            <q-btn 
-              flat 
-              size="sm" 
-              color="secondary" 
-              icon="share"
-              label="分享"
-              @click="shareItem(item)"
-            />
+            <q-btn flat size="sm" color="primary" icon="map" label="导航" @click="openNavigation(item)" />
+            <q-btn flat size="sm" color="secondary" icon="share" label="分享" @click="shareItem(item)" />
             <q-space />
-            <q-btn 
-              flat 
-              size="sm" 
-              :icon="item.completed ? 'check_circle' : 'radio_button_unchecked'"
-              :color="item.completed ? 'positive' : 'grey'"
-              @click="toggleCompleted(item)"
-            />
+            <q-btn flat size="sm" :icon="item.completed ? 'check_circle' : 'radio_button_unchecked'"
+              :color="item.completed ? 'positive' : 'grey'" @click="toggleCompleted(item)" />
           </q-card-actions>
         </q-card>
       </div>
@@ -160,12 +109,7 @@
       <q-card class="bg-black">
         <q-card-section class="q-pa-none full-height">
           <div class="full-height flex flex-center">
-            <q-img 
-              src="/国庆计划.jpg"
-              alt="国庆计划原图"
-              fit="contain"
-              class="full-width full-height"
-            >
+            <q-img src="/国庆计划.jpg" alt="国庆计划原图" fit="contain" class="full-width full-height">
               <template v-slot:loading>
                 <q-inner-loading showing color="primary" />
               </template>
@@ -177,28 +121,13 @@
               </template>
             </q-img>
           </div>
-          
+
           <!-- 关闭按钮 -->
-          <q-btn 
-            icon="close" 
-            flat 
-            round 
-            dense 
-            v-close-popup 
-            class="absolute-top-right q-ma-md text-white"
-            size="lg"
-          />
-          
+          <q-btn icon="close" flat round dense v-close-popup class="absolute-top-right q-ma-md text-white" size="lg" />
+
           <!-- 下载按钮 -->
-          <q-btn 
-            icon="download" 
-            flat 
-            round 
-            dense 
-            @click="downloadOriginalImage"
-            class="absolute-top-left q-ma-md text-white"
-            size="lg"
-          />
+          <q-btn icon="download" flat round dense @click="downloadOriginalImage"
+            class="absolute-top-left q-ma-md text-white" size="lg" />
         </q-card-section>
       </q-card>
     </q-dialog>
@@ -666,7 +595,7 @@ const filteredSchedule = computed(() => {
 const formatDateLabel = (date: string) => {
   const dateMap: Record<string, string> = {
     '10.4': '10月4日',
-    '10.5': '10月5日', 
+    '10.5': '10月5日',
     '10.6': '10月6日',
     '10.7': '10月7日',
     '10.8': '10月8日'
@@ -675,35 +604,154 @@ const formatDateLabel = (date: string) => {
 }
 
 const openNavigation = (item: ScheduleItem) => {
+  // 检测设备类型
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
+  const isAndroid = /Android/.test(navigator.userAgent)
+  const isMobile = isIOS || isAndroid
+
   // 目的地名称，URL编码
   const destination = encodeURIComponent(item.location)
-  
+
   // 获取景点的精确坐标（如果有的话）
   const coordinates = getLocationCoordinates(item.location)
-  
+
+  // 显示导航选择对话框
+  $q.dialog({
+    title: '选择导航方式',
+    message: `导航到: ${item.location}`,
+    options: {
+      type: 'radio',
+      model: 'amap',
+      items: [
+        { label: '高德地图', value: 'amap', color: 'primary' },
+        { label: '百度地图', value: 'baidu', color: 'secondary' },
+        { label: '腾讯地图', value: 'tencent', color: 'accent' },
+        { label: '苹果地图 (iOS)', value: 'apple', color: 'positive', disable: !isIOS }
+      ]
+    },
+    cancel: true,
+    persistent: false
+  }).onOk(navType => {
+    openNavigationByType(item, navType, coordinates)
+  })
+}
+
+const openNavigationByType = (item: ScheduleItem, navType: string, coordinates: any) => {
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
+  const isAndroid = /Android/.test(navigator.userAgent)
+  const destination = encodeURIComponent(item.location)
+
   let navigationUrl = ''
-  
-  if (coordinates) {
-    // 使用精确坐标的原生URL Scheme进行步行导航
-    // 格式：amap://route/plan/?dlat=纬度&dlon=经度&dname=目的地名称&dev=0&t=2&sourceApplication=iTrip
-    navigationUrl = `amap://route/plan/?dlat=${coordinates.lat}&dlon=${coordinates.lon}&dname=${destination}&dev=0&t=2&sourceApplication=iTrip`
-  } else {
-    // 没有精确坐标时，仅使用地名
-    navigationUrl = `amap://route/plan/?dname=${destination}&dev=0&t=2&sourceApplication=iTrip`
+  let appName = ''
+
+  switch (navType) {
+    case 'amap':
+      appName = '高德地图'
+      if (isIOS) {
+        // iOS高德地图使用通用链接
+        if (coordinates) {
+          navigationUrl = `https://uri.amap.com/navigation?to=${coordinates.lon},${coordinates.lat},${destination}&mode=walk&callnative=1&src=iTrip`
+        } else {
+          navigationUrl = `https://uri.amap.com/navigation?to=,,${destination}&mode=walk&callnative=1&src=iTrip`
+        }
+      } else if (isAndroid) {
+        // Android高德地图使用URL Scheme
+        if (coordinates) {
+          navigationUrl = `amap://route/plan/?dlat=${coordinates.lat}&dlon=${coordinates.lon}&dname=${destination}&dev=0&t=2&sourceApplication=iTrip`
+        } else {
+          navigationUrl = `amap://route/plan/?dname=${destination}&dev=0&t=2&sourceApplication=iTrip`
+        }
+      } else {
+        // 桌面设备使用网页版
+        navigationUrl = `https://ditu.amap.com/search?query=${destination}`
+      }
+      break
+
+    case 'baidu':
+      appName = '百度地图'
+      if (isIOS || isAndroid) {
+        // 移动设备使用百度地图URL Scheme
+        if (coordinates) {
+          navigationUrl = `baidumap://map/direction?destination=latlng:${coordinates.lat},${coordinates.lon}|name:${destination}&mode=walking&src=iTrip`
+        } else {
+          navigationUrl = `baidumap://map/direction?destination=${destination}&mode=walking&src=iTrip`
+        }
+      } else {
+        // 桌面设备使用网页版
+        navigationUrl = `https://map.baidu.com/search/${destination}`
+      }
+      break
+
+    case 'tencent':
+      appName = '腾讯地图'
+      if (isIOS || isAndroid) {
+        // 移动设备使用腾讯地图URL Scheme
+        if (coordinates) {
+          navigationUrl = `qqmap://map/routeplan?type=walk&to=${destination}&tocoord=${coordinates.lat},${coordinates.lon}&referer=iTrip`
+        } else {
+          navigationUrl = `qqmap://map/routeplan?type=walk&to=${destination}&referer=iTrip`
+        }
+      } else {
+        // 桌面设备使用网页版
+        navigationUrl = `https://map.qq.com/search/${destination}`
+      }
+      break
+
+    case 'apple':
+      appName = '苹果地图'
+      if (isIOS) {
+        if (coordinates) {
+          navigationUrl = `http://maps.apple.com/?daddr=${coordinates.lat},${coordinates.lon}&dirflg=w`
+        } else {
+          navigationUrl = `http://maps.apple.com/?q=${destination}&dirflg=w`
+        }
+      }
+      break
+
+    default:
+      fallbackNavigation(item.location)
+      return
   }
-  
+
   try {
-    // 使用原生协议直接唤起高德地图App
-    window.location.href = navigationUrl
-    
+    if (isIOS) {
+      // iOS使用特殊方式打开链接，避免Safari拦截
+      window.location.href = navigationUrl
+    } else if (isAndroid) {
+      // Android直接跳转
+      window.location.href = navigationUrl
+    } else {
+      // 桌面设备在新标签页打开
+      window.open(navigationUrl, '_blank')
+    }
+
     $q.notify({
-      message: `正在打开高德地图步行导航到: ${item.location}`,
+      message: `正在打开${appName}导航到: ${item.location}`,
       color: 'positive',
       icon: 'directions_walk'
     })
+
+    // 设置超时检测，如果应用未安装则提供备用方案
+    setTimeout(() => {
+      if (document.hidden === false) {
+        // 如果页面仍然可见，说明可能没有成功跳转到应用
+        $q.notify({
+          message: `如果${appName}未打开，请手动搜索: ${item.location}`,
+          color: 'warning',
+          icon: 'info',
+          actions: [
+            {
+              label: '复制地址',
+              color: 'white',
+              handler: () => copyTextToClipboard(item.location)
+            }
+          ]
+        })
+      }
+    }, 2000)
+
   } catch (error) {
     console.warn('打开导航失败:', error)
-    // 如果打开失败，提供备用方案
     fallbackNavigation(item.location)
   }
 }
@@ -722,12 +770,12 @@ const getLocationCoordinates = (locationName: string): { lat: number; lon: numbe
     '曲水亭街': { lat: 36.667, lon: 117.024 },
     '千佛山': { lat: 36.643, lon: 117.043 },
     '超然楼': { lat: 36.675, lon: 117.025 },
-    
+
     // 淄博景点
     '淄博陶瓷琉璃博物馆': { lat: 36.813, lon: 118.055 },
     '八大局': { lat: 36.813, lon: 118.055 },
     '淄博义乌小商品城2期': { lat: 36.813, lon: 118.055 },
-    
+
     // 青岛景点
     '奥帆中心': { lat: 36.070, lon: 120.394 },
     '五四广场': { lat: 36.062, lon: 120.382 },
@@ -744,44 +792,81 @@ const getLocationCoordinates = (locationName: string): { lat: number; lon: numbe
     '八大关': { lat: 36.047, lon: 120.340 },
     '第二海水浴场': { lat: 36.047, lon: 120.340 },
     '青岛轮渡': { lat: 36.058, lon: 120.320 },
-    
+
     // 餐厅
     '陈氏肥蛤(圣凯财富广场店)': { lat: 36.664, lon: 117.024 },
     '来之顺海鲜菜馆': { lat: 36.062, lon: 120.382 }
   }
-  
+
   return coordinates[locationName] || null
 }
 
 // 备用导航方案
 const fallbackNavigation = (location: string) => {
   const destination = encodeURIComponent(location)
-  
-  // 备用方案：使用高德地图网页版搜索
-  const fallbackUrl = `https://ditu.amap.com/search?query=${destination}&city=全国`
-  
-  try {
-    window.open(fallbackUrl, '_blank')
-    
-    $q.notify({
-      message: `正在打开高德地图网页版搜索: ${location}`,
-      color: 'warning',
-      icon: 'search'
-    })
-  } catch (error) {
-    // 最终备用方案：复制地址到剪贴板
-    copyTextToClipboard(location)
-    $q.notify({
-      message: `无法打开地图，已复制地址: ${location}`,
-      color: 'negative',
-      icon: 'content_copy'
-    })
-  }
+
+  // 显示备用导航选择
+  $q.dialog({
+    title: '导航备用方案',
+    message: `无法打开应用，请选择备用方案导航到: ${location}`,
+    options: {
+      type: 'radio',
+      model: 'web',
+      items: [
+        { label: '高德地图网页版', value: 'amap-web', color: 'primary' },
+        { label: '百度地图网页版', value: 'baidu-web', color: 'secondary' },
+        { label: '腾讯地图网页版', value: 'tencent-web', color: 'accent' },
+        { label: '复制地址到剪贴板', value: 'copy', color: 'grey-7' }
+      ]
+    },
+    cancel: true,
+    persistent: false
+  }).onOk(fallbackType => {
+    let fallbackUrl = ''
+    let serviceName = ''
+
+    switch (fallbackType) {
+      case 'amap-web':
+        fallbackUrl = `https://ditu.amap.com/search?query=${destination}&city=全国`
+        serviceName = '高德地图网页版'
+        break
+      case 'baidu-web':
+        fallbackUrl = `https://map.baidu.com/search/${destination}`
+        serviceName = '百度地图网页版'
+        break
+      case 'tencent-web':
+        fallbackUrl = `https://map.qq.com/search/${destination}`
+        serviceName = '腾讯地图网页版'
+        break
+      case 'copy':
+        copyTextToClipboard(location)
+        return
+      default:
+        copyTextToClipboard(location)
+        return
+    }
+
+    try {
+      window.open(fallbackUrl, '_blank')
+      $q.notify({
+        message: `正在打开${serviceName}搜索: ${location}`,
+        color: 'positive',
+        icon: 'search'
+      })
+    } catch (error) {
+      copyTextToClipboard(location)
+      $q.notify({
+        message: `无法打开网页，已复制地址: ${location}`,
+        color: 'negative',
+        icon: 'content_copy'
+      })
+    }
+  })
 }
 
 const shareItem = (item: ScheduleItem) => {
   const shareText = `${item.date} ${item.period} - ${item.location}\n${item.description}`
-  
+
   if (navigator.share) {
     navigator.share({
       title: '国庆行程分享',
@@ -826,7 +911,7 @@ const downloadOriginalImage = () => {
   document.body.appendChild(link)
   link.click()
   document.body.removeChild(link)
-  
+
   $q.notify({
     message: '原图下载已开始',
     color: 'positive',
@@ -850,16 +935,16 @@ const downloadOriginalImage = () => {
     padding: 8px 0 16px 0;
     border-bottom: 1px solid rgba(255, 255, 255, 0.12);
     margin-bottom: 16px;
-    
+
     .text-caption {
       font-size: 0.75rem;
       line-height: 1.4;
     }
-    
+
     .view-original-btn {
       opacity: 0.6;
       transition: opacity 0.2s ease;
-      
+
       &:hover {
         opacity: 1;
       }
@@ -870,7 +955,7 @@ const downloadOriginalImage = () => {
   .filter-card {
     border-radius: 12px;
     border-color: rgba(255, 255, 255, 0.12);
-    
+
     .date-filter-btn {
       border-radius: 20px;
       transition: all 0.2s ease;
@@ -883,64 +968,64 @@ const downloadOriginalImage = () => {
       transition: all 0.2s ease;
       border-left: 4px solid transparent;
       border-color: rgba(255, 255, 255, 0.12);
-      
+
       &:hover {
         transform: translateY(-2px);
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
       }
-      
+
       .schedule-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
         margin-bottom: 8px;
-        
+
         .date-badge {
           display: flex;
           align-items: center;
           font-weight: 600;
           color: #1976d2;
         }
-        
+
         .time-period {
           .q-chip {
             font-weight: 500;
           }
         }
       }
-      
+
       .location-info {
         .location-name {
           display: flex;
           align-items: center;
           margin-bottom: 4px;
-          
+
           span {
             font-weight: 600;
           }
         }
-        
+
         .location-type {
           font-style: italic;
         }
       }
-      
+
       .activity-details {
         .activity-time {
           display: flex;
           align-items: center;
         }
-        
+
         .activity-description {
           p {
             line-height: 1.5;
           }
-          
+
           .highlights {
             margin-top: 8px;
           }
         }
-        
+
         .cost-info {
           display: flex;
           align-items: center;
@@ -949,7 +1034,7 @@ const downloadOriginalImage = () => {
           border-radius: 8px;
           border-left: 3px solid #4caf50;
         }
-        
+
         .notes-info {
           display: flex;
           align-items: flex-start;
@@ -959,36 +1044,36 @@ const downloadOriginalImage = () => {
           border-left: 3px solid #ff9800;
         }
       }
-      
+
       // 根据类型设置不同的左边框颜色
       &[data-type="交通"] {
         border-left-color: #2196f3;
       }
-      
+
       &[data-type="景点"] {
         border-left-color: #4caf50;
       }
-      
+
       &[data-type="美食"] {
         border-left-color: #ff9800;
       }
-      
+
       &[data-type="购物"] {
         border-left-color: #e91e63;
       }
-      
+
       &[data-type="自然景观"] {
         border-left-color: #009688;
       }
-      
+
       &[data-type="古镇"] {
         border-left-color: #795548;
       }
-      
+
       &[data-type="园林"] {
         border-left-color: #8bc34a;
       }
-      
+
       &[data-type="山景"] {
         border-left-color: #607d8b;
       }
@@ -1008,17 +1093,17 @@ const downloadOriginalImage = () => {
     .page-container {
       padding: 12px;
     }
-    
+
     .schedule-stats {
       flex-direction: column;
       gap: 8px;
-      
+
       .view-original-btn {
         font-size: 0.75rem;
       }
     }
-    
-    
+
+
     .schedule-list {
       .schedule-item {
         .schedule-header {
@@ -1026,7 +1111,7 @@ const downloadOriginalImage = () => {
           align-items: flex-start;
           gap: 8px;
         }
-        
+
         .location-info .location-name {
           span {
             font-size: 1.1rem;
@@ -1034,12 +1119,12 @@ const downloadOriginalImage = () => {
         }
       }
     }
-    
+
     .filter-card {
       .row {
         justify-content: center;
       }
-      
+
       .date-filter-btn {
         min-width: auto;
         padding: 4px 12px;
@@ -1053,34 +1138,35 @@ const downloadOriginalImage = () => {
     .page-container {
       padding: 8px;
     }
-    
+
     .filter-card .row {
       flex-direction: column;
       align-items: stretch;
-      
+
       .date-filter-btn {
         margin-bottom: 4px;
         width: 100%;
       }
     }
-    
+
     .schedule-list .schedule-item {
       .activity-details {
+
         .cost-info,
         .notes-info {
           flex-direction: column;
           align-items: flex-start;
-          
+
           .q-icon {
             margin-bottom: 4px;
           }
         }
       }
-      
+
       .q-card-actions {
         flex-wrap: wrap;
         justify-content: space-between;
-        
+
         .q-btn {
           min-width: 80px;
           margin-bottom: 4px;
@@ -1093,7 +1179,7 @@ const downloadOriginalImage = () => {
 // 完成状态样式
 .schedule-item.completed {
   opacity: 0.7;
-  
+
   .location-name span {
     text-decoration: line-through;
   }
@@ -1105,27 +1191,27 @@ const downloadOriginalImage = () => {
     .schedule-stats {
       border-bottom-color: rgba(255, 255, 255, 0.12);
     }
-    
+
     .filter-card {
       border-color: rgba(255, 255, 255, 0.12);
       background: rgba(255, 255, 255, 0.05);
     }
-    
+
     .schedule-list .schedule-item {
       border-color: rgba(255, 255, 255, 0.12);
       background: rgba(255, 255, 255, 0.05);
-      
+
       &:hover {
         background: rgba(255, 255, 255, 0.08);
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
       }
-      
+
       .activity-details {
         .cost-info {
           background: rgba(76, 175, 80, 0.15);
           border-left-color: #4caf50;
         }
-        
+
         .notes-info {
           background: rgba(255, 152, 0, 0.15);
           border-left-color: #ff9800;
@@ -1135,4 +1221,3 @@ const downloadOriginalImage = () => {
   }
 }
 </style>
-
