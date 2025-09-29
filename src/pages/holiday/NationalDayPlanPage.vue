@@ -82,6 +82,26 @@
                 <q-icon name="info" color="orange-6" class="q-mr-xs" />
                 <span class="text-caption text-grey-7">{{ item.notes }}</span>
               </div>
+
+              <!-- 图片信息 -->
+              <div v-if="item.image" class="image-info q-mt-sm">
+                <q-img :src="`/${item.image}`" :alt="item.location" class="rounded-borders"
+                  style="max-width: 100%; height: 200px; object-fit: cover;"
+                  @click="showImageDialog(item.image, item.location)">
+                  <template v-slot:loading>
+                    <q-inner-loading showing color="primary" />
+                  </template>
+                  <template v-slot:error>
+                    <div class="absolute-full flex flex-center bg-grey-3 text-grey-7">
+                      <q-icon name="broken_image" size="2rem" class="q-mr-sm" />
+                      图片加载失败
+                    </div>
+                  </template>
+                </q-img>
+                <div class="text-caption text-grey-6 q-mt-xs text-center">
+                  点击查看大图
+                </div>
+              </div>
             </div>
           </q-card-section>
 
@@ -131,6 +151,35 @@
         </q-card-section>
       </q-card>
     </q-dialog>
+
+    <!-- 行程图片查看对话框 -->
+    <q-dialog v-model="showImageDialogVisible" maximized>
+      <q-card class="bg-black">
+        <q-card-section class="q-pa-none full-height">
+          <div class="full-height flex flex-center">
+            <q-img :src="`/${currentImage}`" :alt="currentImageTitle" fit="contain" class="full-width full-height">
+              <template v-slot:loading>
+                <q-inner-loading showing color="primary" />
+              </template>
+              <template v-slot:error>
+                <div class="absolute-full flex flex-center bg-negative text-white">
+                  <q-icon name="broken_image" size="2rem" class="q-mr-sm" />
+                  图片加载失败
+                </div>
+              </template>
+            </q-img>
+          </div>
+
+          <!-- 关闭按钮 -->
+          <q-btn icon="close" flat round dense v-close-popup class="absolute-top-right q-ma-md text-white" size="lg" />
+
+          <!-- 标题 -->
+          <div class="absolute-bottom-left q-ma-md text-white">
+            <div class="text-h6">{{ currentImageTitle }}</div>
+          </div>
+        </q-card-section>
+      </q-card>
+    </q-dialog>
   </q-page>
 </template>
 
@@ -152,12 +201,16 @@ interface ScheduleItem {
   highlights?: string[]
   cost?: string
   notes?: string
+  image?: string
   completed: boolean
 }
 
 // 响应式数据
 const selectedDate = ref('')
 const showOriginalImage = ref(false)
+const showImageDialogVisible = ref(false)
+const currentImage = ref('')
+const currentImageTitle = ref('')
 
 // 根据fullPlan.md的完整数据创建结构化行程
 const scheduleData = ref<ScheduleItem[]>([
@@ -622,6 +675,7 @@ const scheduleData = ref<ScheduleItem[]>([
     cost: '89元/人',
     highlights: ['海上观光', '免费啤酒'],
     notes: '青岛轮渡公众号89元/人，抖音132元/两人(已买)。环游路线：青岛轮渡站→小港湾→邮轮母港→胶州湾大桥→马踏飞燕灯塔→青岛轮渡站。凭游船纸质票(核销后领取凭证)可在指定位置领取200毫升啤酒或饮料一杯，及一份鸥食，当日有效',
+    image: '青岛轮渡.png',
     completed: false
   },
   // 10.8 晚上 - 返程
@@ -695,7 +749,11 @@ const openNavigation = (item: ScheduleItem) => {
   }, 2000)
 }
 
-
+const showImageDialog = (imagePath: string, title: string) => {
+  currentImage.value = imagePath
+  currentImageTitle.value = title
+  showImageDialogVisible.value = true
+}
 
 const shareItem = (item: ScheduleItem) => {
   const shareText = `${item.date} ${item.period} - ${item.location}\n${item.description}`
@@ -875,6 +933,19 @@ const downloadOriginalImage = () => {
           background: rgba(255, 152, 0, 0.1);
           border-radius: 8px;
           border-left: 3px solid #ff9800;
+        }
+
+        .image-info {
+          .q-img {
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 2px solid transparent;
+
+            &:hover {
+              border-color: #1976d2;
+              transform: scale(1.02);
+            }
+          }
         }
       }
 
