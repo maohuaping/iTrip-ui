@@ -614,9 +614,9 @@ const openNavigation = (item: ScheduleItem) => {
   }
 
   const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent)
-  // 使用导航URL格式，直接设置目的地
-  const iosUrl = `iosamap://route/plan/?dname=${locationName}&dev=0&t=0&sourceApplication=iTrip`
-  const androidUrl = `amap://route/plan/?dname=${locationName}&dev=0&t=0&sourceApplication=iTrip`
+  // 使用导航URL格式，直接设置目的地，t=2表示步行导航
+  const iosUrl = `iosamap://route/plan/?dname=${locationName}&dev=0&t=2&sourceApplication=iTrip`
+  const androidUrl = `amap://route/plan/?dname=${locationName}&dev=0&t=2&sourceApplication=iTrip`
   const webUrl = `https://uri.amap.com/navigation?to=,,${locationName}&mode=walk&src=iTrip`
 
   $q.notify({
