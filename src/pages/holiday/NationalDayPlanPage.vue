@@ -129,7 +129,7 @@
           <!-- 操作按钮 -->
           <q-card-actions class="q-px-md q-pb-md">
             <q-btn flat size="sm" color="primary" icon="map" label="导航" @click="openNavigation(item)" />
-            <q-btn flat size="sm" color="secondary" icon="share" label="分享" @click="shareItem(item)" />
+            <q-btn flat size="sm" color="secondary" icon="share" label="分享" @click="shareItem(item, $event)" />
             <q-space />
             <q-btn flat size="sm" :icon="item.completed ? 'check_circle' : 'radio_button_unchecked'"
               :color="item.completed ? 'positive' : 'grey'" @click="toggleCompleted(item)" />
@@ -900,18 +900,116 @@ const getImageLinkText = (imagePath: string) => {
   }
 }
 
-const shareItem = (item: ScheduleItem) => {
-  const shareText = `${item.date} ${item.period} - ${item.location}\n${item.description}`
+const shareItem = async (item: ScheduleItem, event: Event) => {
+  try {
+    // 获取点击的卡片元素
+    const cardElement = (event.target as HTMLElement).closest('.schedule-item') as HTMLElement
+    if (!cardElement) {
+      throw new Error('无法找到卡片元素')
+    }
 
-  if (navigator.share) {
-    navigator.share({
-      title: '国庆行程分享',
-      text: shareText,
-    }).catch(() => {
-      copyTextToClipboard(shareText)
+    $q.notify({
+      message: '正在生成卡片截图...',
+      color: 'info',
+      icon: 'photo_camera',
+      timeout: 2000
     })
-  } else {
-    copyTextToClipboard(shareText)
+
+    // 动态加载html2canvas
+    const loadHtml2Canvas = (): Promise<any> => {
+      return new Promise((resolve, reject) => {
+        if ((window as any).html2canvas) {
+          resolve((window as any).html2canvas)
+          return
+        }
+
+        const script = document.createElement('script')
+        script.src = 'https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js'
+        script.onload = () => {
+          resolve((window as any).html2canvas)
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      })
+    }
+
+    const html2canvas = await loadHtml2Canvas()
+
+    // 截图配置
+    const canvas = await html2canvas(cardElement, {
+      backgroundColor: '#ffffff',
+      scale: 2, // 高清截图
+      logging: false,
+      useCORS: true,
+      allowTaint: true,
+      width: cardElement.clientWidth,
+      height: cardElement.clientHeight,
+    })
+
+    // 转换为blob
+    canvas.toBlob(async (blob: Blob | null) => {
+      if (!blob) {
+        throw new Error('截图生成失败')
+      }
+
+      try {
+        // 使用Clipboard API保存到剪贴板
+        await navigator.clipboard.write([
+          new ClipboardItem({
+            'image/png': blob
+          })
+        ])
+
+        $q.notify({
+          message: '卡片截图已保存到剪贴板！',
+          color: 'positive',
+          icon: 'content_copy',
+          timeout: 3000
+        })
+      } catch (clipboardError) {
+        console.warn('剪贴板保存失败，尝试下载:', clipboardError)
+        // 备用方案：下载图片
+        const url = URL.createObjectURL(blob)
+        const link = document.createElement('a')
+        link.href = url
+        link.download = `${item.location}-行程卡片.png`
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+        URL.revokeObjectURL(url)
+
+        $q.notify({
+          message: '截图已下载到设备！',
+          color: 'positive',
+          icon: 'download'
+        })
+      }
+    }, 'image/png', 0.9)
+
+  } catch (error) {
+    console.error('截图失败:', error)
+
+    // 降级到文本分享
+    const shareText = `${item.date} ${item.period} - ${item.location}\n${item.description}`
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: '国庆行程分享',
+          text: shareText,
+        })
+      } catch {
+        copyTextToClipboard(shareText)
+      }
+    } else {
+      copyTextToClipboard(shareText)
+    }
+
+    $q.notify({
+      message: '截图功能暂不可用，已复制文本内容',
+      color: 'warning',
+      icon: 'text_snippet'
+    })
   }
 }
 
