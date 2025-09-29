@@ -83,23 +83,34 @@
                 <span class="text-caption text-grey-7">{{ item.notes }}</span>
               </div>
 
-              <!-- 图片信息 -->
-              <div v-if="item.image" class="image-info q-mt-sm">
-                <q-img :src="`/${item.image}`" :alt="item.location" class="rounded-borders"
-                  style="max-width: 100%; height: 200px; object-fit: cover;"
-                  @click="showImageDialog(item.image, item.location)">
-                  <template v-slot:loading>
-                    <q-inner-loading showing color="primary" />
-                  </template>
-                  <template v-slot:error>
-                    <div class="absolute-full flex flex-center bg-grey-3 text-grey-7">
-                      <q-icon name="broken_image" size="2rem" class="q-mr-sm" />
-                      图片加载失败
+              <!-- 图片信息 - 紧凑型展示 -->
+              <div v-if="item.image" class="image-info-compact q-mt-sm">
+                <div class="row items-center no-wrap">
+                  <div class="col">
+                    <div class="flex items-center">
+                      <q-icon name="image" color="primary" size="1rem" class="q-mr-xs" />
+                      <span class="text-caption text-primary cursor-pointer"
+                        @click="showImageDialog(item.image, item.location)">
+                        查看预订截图
+                      </span>
                     </div>
-                  </template>
-                </q-img>
-                <div class="text-caption text-grey-6 q-mt-xs text-center">
-                  点击查看大图
+                  </div>
+                  <div class="col-auto">
+                    <q-img :src="`/${item.image}`" :alt="item.location"
+                      class="thumbnail-image rounded-borders cursor-pointer"
+                      @click="showImageDialog(item.image, item.location)">
+                      <template v-slot:loading>
+                        <div class="flex flex-center full-height">
+                          <q-spinner size="xs" color="primary" />
+                        </div>
+                      </template>
+                      <template v-slot:error>
+                        <div class="flex flex-center full-height bg-grey-3">
+                          <q-icon name="broken_image" size="xs" color="grey-6" />
+                        </div>
+                      </template>
+                    </q-img>
+                  </div>
                 </div>
               </div>
             </div>
@@ -935,15 +946,32 @@ const downloadOriginalImage = () => {
           border-left: 3px solid #ff9800;
         }
 
-        .image-info {
-          .q-img {
-            cursor: pointer;
+        .image-info-compact {
+          padding: 8px 12px;
+          background: rgba(25, 118, 210, 0.04);
+          border-radius: 8px;
+          border-left: 3px solid #1976d2;
+
+          span {
             transition: all 0.2s ease;
-            border: 2px solid transparent;
 
             &:hover {
+              text-decoration: underline;
+              color: #1565c0;
+            }
+          }
+
+          .thumbnail-image {
+            width: 60px;
+            height: 40px;
+            object-fit: cover;
+            transition: all 0.2s ease;
+            border: 1px solid rgba(0, 0, 0, 0.12);
+
+            &:hover {
+              transform: scale(1.05);
               border-color: #1976d2;
-              transform: scale(1.02);
+              box-shadow: 0 2px 8px rgba(25, 118, 210, 0.3);
             }
           }
         }
