@@ -223,6 +223,34 @@ const showImageDialogVisible = ref(false)
 const currentImage = ref('')
 const currentImageTitle = ref('')
 
+// 获取智能默认日期
+const getSmartDefaultDate = (): string => {
+  const today = new Date()
+  const currentMonth = today.getMonth() + 1 // getMonth() 返回0-11
+  const currentDay = today.getDate()
+
+  // 行程日期范围：10月4日-10月8日
+  const tripDates = ['10.4', '10.5', '10.6', '10.7', '10.8']
+
+  // 如果是10月份，检查是否在行程日期范围内
+  if (currentMonth === 10) {
+    const currentDateStr = `10.${currentDay}`
+    if (tripDates.includes(currentDateStr)) {
+      // 当前日期在行程范围内，选择当天
+      return currentDateStr
+    }
+  }
+
+  // 三种情况都默认选择第一天：
+  // 1. 还没到行程开始日期（10月4日之前）
+  // 2. 已经过了行程结束日期（10月8日之后）  
+  // 3. 不是10月份
+  return tripDates[0] || '10.4'
+}
+
+// 初始化默认选择的日期
+selectedDate.value = getSmartDefaultDate()
+
 // 根据fullPlan.md的完整数据创建结构化行程
 const scheduleData = ref<ScheduleItem[]>([
   // 10.4 上午 - 出发
