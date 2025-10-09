@@ -220,19 +220,22 @@
     <q-dialog v-model="showEditBottomSheet" position="bottom" :maximized="false">
       <q-card class="edit-bottom-sheet">
         <!-- 顶部拖拽条和标题 -->
-        <q-card-section class="q-pa-md q-pb-sm">
-          <div class="row items-center">
-            <!-- 拖拽指示条 -->
-            <div class="col-12 flex justify-center q-mb-sm">
-              <div class="drag-indicator"></div>
-            </div>
+        <q-card-section class="q-pa-none">
+          <!-- 拖拽指示条 -->
+          <div class="flex justify-center q-pt-sm q-pb-xs">
+            <div class="drag-indicator"></div>
+          </div>
 
+          <!-- 标题区域 -->
+          <div class="row items-center q-px-md q-pb-sm">
             <div class="col">
-              <div class="text-h6 text-weight-medium">编辑行程</div>
-              <div class="text-caption text-grey-6">{{ editForm.location || '行程信息' }}</div>
+              <div class="text-h6 text-weight-medium q-mb-xs">编辑行程</div>
+              <div class="text-caption text-grey-6 ellipsis">
+                {{ editForm.location || '行程信息' }}
+              </div>
             </div>
-            <div class="col-auto">
-              <q-btn flat round icon="close" size="sm" v-close-popup />
+            <div class="col-auto q-ml-sm">
+              <q-btn flat round icon="close" size="md" v-close-popup color="grey-7" />
             </div>
           </div>
         </q-card-section>
@@ -1758,14 +1761,20 @@ const downloadOriginalImage = () => {
 
 // 底部编辑面板样式
 .edit-bottom-sheet {
-  border-radius: 16px 16px 0 0;
+  border-radius: 20px 20px 0 0;
   max-height: 85vh;
+  min-height: 50vh;
 
   .drag-indicator {
-    width: 36px;
+    width: 40px;
     height: 4px;
-    background: rgba(0, 0, 0, 0.2);
+    background: rgba(0, 0, 0, 0.3);
     border-radius: 2px;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background: rgba(0, 0, 0, 0.4);
+    }
   }
 
   .edit-form-container {
@@ -1813,6 +1822,25 @@ const downloadOriginalImage = () => {
       font-weight: 500;
     }
   }
+
+  // 文字省略样式
+  .ellipsis {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
+  }
+
+  // 标题区域优化
+  .text-h6 {
+    font-size: 1.125rem;
+    line-height: 1.4;
+  }
+
+  .text-caption {
+    font-size: 0.75rem;
+    line-height: 1.3;
+  }
 }
 
 // 深色模式适配
@@ -1856,7 +1884,11 @@ const downloadOriginalImage = () => {
     color: white;
 
     .drag-indicator {
-      background: rgba(255, 255, 255, 0.3);
+      background: rgba(255, 255, 255, 0.4);
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.5);
+      }
     }
 
     .form-group-title {
