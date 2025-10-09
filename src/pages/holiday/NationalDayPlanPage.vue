@@ -130,7 +130,7 @@
           <q-card-actions class="q-px-md q-pb-md">
             <q-btn flat size="sm" color="primary" icon="map" label="导航" @click="openNavigation(item)" />
             <q-btn flat size="sm" color="orange" icon="local_taxi" label="滴滴" @click="openDidiTaxi(item)" />
-            <q-btn flat size="sm" color="secondary" icon="share" label="分享" @click="shareItem(item, $event)" />
+            <q-btn flat size="sm" color="secondary" icon="edit" label="编辑" @click="editItem(item)" />
             <q-space />
             <q-btn flat size="sm" :icon="item.completed ? 'check_circle' : 'radio_button_unchecked'"
               :color="item.completed ? 'positive' : 'grey'" @click="toggleCompleted(item)" />
@@ -216,25 +216,173 @@
       </q-card>
     </q-dialog>
 
-    <!-- 截图预览对话框（用于手动复制） -->
-    <q-dialog v-model="showScreenshotPreviewDialog" maximized>
-      <q-card class="bg-black">
-        <q-card-section class="q-pa-none full-height">
-          <div class="full-height flex flex-center">
-            <img :src="screenshotDataUrl" :alt="screenshotTitle"
-              style="max-width: 90%; max-height: 90%; object-fit: contain;" class="screenshot-preview" />
-          </div>
+    <!-- 底部编辑面板 -->
+    <q-dialog v-model="showEditBottomSheet" position="bottom" :maximized="false">
+      <q-card class="edit-bottom-sheet">
+        <!-- 顶部拖拽条和标题 -->
+        <q-card-section class="q-pa-md q-pb-sm">
+          <div class="row items-center">
+            <!-- 拖拽指示条 -->
+            <div class="col-12 flex justify-center q-mb-sm">
+              <div class="drag-indicator"></div>
+            </div>
 
-          <!-- 关闭按钮 -->
-          <q-btn icon="close" flat round dense v-close-popup class="absolute-top-right q-ma-md text-white" size="lg" />
-
-          <!-- 操作提示 -->
-          <div class="absolute-bottom-center q-ma-md text-center text-white">
-            <div class="text-h6 q-mb-sm">{{ screenshotTitle }}</div>
-            <div class="text-body2 q-mb-md">长按图片选择"拷贝"或"复制图片"</div>
-            <q-btn color="primary" label="我已复制" v-close-popup unelevated class="q-px-xl" />
+            <div class="col">
+              <div class="text-h6 text-weight-medium">编辑行程</div>
+              <div class="text-caption text-grey-6">{{ editForm.location || '行程信息' }}</div>
+            </div>
+            <div class="col-auto">
+              <q-btn flat round icon="close" size="sm" v-close-popup />
+            </div>
           </div>
         </q-card-section>
+
+        <q-separator />
+
+        <!-- 编辑表单 -->
+        <q-card-section class="q-pa-md edit-form-container">
+          <q-form class="q-gutter-md">
+            <!-- 基本信息组 -->
+            <div class="form-group">
+              <div class="form-group-title">基本信息</div>
+
+              <!-- 日期和时间段 -->
+              <div class="row q-gutter-sm q-mb-md">
+                <div class="col">
+                  <q-select v-model="editForm.date" :options="dateOptions" label="日期" outlined dense emit-value
+                    map-options behavior="menu">
+                    <template v-slot:prepend>
+                      <q-icon name="event" />
+                    </template>
+                  </q-select>
+                </div>
+                <div class="col">
+                  <q-select v-model="editForm.period" :options="periodOptions" label="时间段" outlined dense
+                    behavior="menu">
+                    <template v-slot:prepend>
+                      <q-icon name="schedule" />
+                    </template>
+                  </q-select>
+                </div>
+              </div>
+
+              <!-- 具体时间和时长 -->
+              <div class="row q-gutter-sm q-mb-md">
+                <div class="col">
+                  <q-input v-model="editForm.time" label="具体时间" outlined dense placeholder="如: 08:28-12:34">
+                    <template v-slot:prepend>
+                      <q-icon name="access_time" />
+                    </template>
+                  </q-input>
+                </div>
+                <div class="col">
+                  <q-input v-model="editForm.duration" label="时长" outlined dense placeholder="如: 4小时车程">
+                    <template v-slot:prepend>
+                      <q-icon name="timer" />
+                    </template>
+                  </q-input>
+                </div>
+              </div>
+            </div>
+
+            <!-- 地点信息组 -->
+            <div class="form-group">
+              <div class="form-group-title">地点信息</div>
+
+              <!-- 地点输入 -->
+              <q-input v-model="editForm.location" label="地点" outlined dense :rules="[val => !!val || '地点不能为空']"
+                placeholder="如: 南通→济南西" class="q-mb-md">
+                <template v-slot:prepend>
+                  <q-icon name="place" />
+                </template>
+                <template v-slot:append>
+                  <q-btn flat round icon="swap_horiz" size="sm" @click="swapLocation" />
+                </template>
+              </q-input>
+
+              <!-- 类型选择 -->
+              <q-select v-model="editForm.type" :options="typeOptions" label="类型" outlined dense behavior="menu"
+                class="q-mb-md">
+                <template v-slot:prepend>
+                  <q-icon name="category" />
+                </template>
+              </q-select>
+            </div>
+
+            <!-- 详细信息组 -->
+            <div class="form-group">
+              <div class="form-group-title">详细信息</div>
+
+              <!-- 描述 -->
+              <q-input v-model="editForm.description" label="描述" outlined type="textarea" rows="3"
+                :rules="[val => !!val || '描述不能为空']" placeholder="详细描述行程内容..." class="q-mb-md">
+                <template v-slot:prepend>
+                  <q-icon name="description" />
+                </template>
+              </q-input>
+
+              <!-- 费用 -->
+              <q-input v-model="editForm.cost" label="费用" outlined dense placeholder="如: 375元/人" class="q-mb-md">
+                <template v-slot:prepend>
+                  <q-icon name="payments" />
+                </template>
+              </q-input>
+
+              <!-- 备注 -->
+              <q-input v-model="editForm.notes" label="备注" outlined type="textarea" rows="2" placeholder="其他注意事项..."
+                class="q-mb-md">
+                <template v-slot:prepend>
+                  <q-icon name="note" />
+                </template>
+              </q-input>
+            </div>
+
+            <!-- 标签管理组 -->
+            <div class="form-group">
+              <div class="form-group-title">亮点标签</div>
+
+              <!-- 推荐标签 -->
+              <div v-if="recommendedTags.length" class="q-mb-sm">
+                <div class="text-caption text-grey-6 q-mb-xs">推荐标签</div>
+                <div class="row q-gutter-xs">
+                  <q-chip v-for="tag in recommendedTags" :key="tag" clickable @click="addRecommendedTag(tag)"
+                    color="blue-1" text-color="blue-8" size="sm" icon="add">
+                    {{ tag }}
+                  </q-chip>
+                </div>
+              </div>
+
+              <!-- 当前标签 -->
+              <div v-if="editForm.highlights && editForm.highlights.length" class="q-mb-sm">
+                <div class="text-caption text-grey-6 q-mb-xs">当前标签</div>
+                <div class="row q-gutter-xs">
+                  <q-chip v-for="(highlight, index) in editForm.highlights" :key="index" removable
+                    @remove="removeHighlight(index)" color="red-1" text-color="red-8" size="sm">
+                    {{ highlight }}
+                  </q-chip>
+                </div>
+              </div>
+
+              <!-- 添加新标签 -->
+              <q-input v-model="highlightInput" label="添加新标签" outlined dense @keyup.enter="addHighlight"
+                placeholder="输入标签内容后按回车">
+                <template v-slot:prepend>
+                  <q-icon name="local_offer" />
+                </template>
+                <template v-slot:append>
+                  <q-btn flat icon="add" @click="addHighlight" :disable="!highlightInput.trim()" />
+                </template>
+              </q-input>
+            </div>
+          </q-form>
+        </q-card-section>
+
+        <!-- 底部操作按钮 -->
+        <q-card-actions class="q-pa-md q-pt-none sticky-bottom">
+          <q-btn flat label="取消" color="grey" class="col-5" @click="cancelEdit" />
+          <q-space />
+          <q-btn unelevated label="保存" color="primary" class="col-5" :disable="!hasChanges" @click="saveEdit" />
+        </q-card-actions>
       </q-card>
     </q-dialog>
   </q-page>
@@ -269,9 +417,42 @@ const showImageDialogVisible = ref(false)
 const currentImage = ref('')
 const currentImageTitle = ref('')
 const imageZoomed = ref(false)
-const showScreenshotPreviewDialog = ref(false)
-const screenshotDataUrl = ref('')
-const screenshotTitle = ref('')
+// 编辑功能相关
+const showEditBottomSheet = ref(false)
+const editingIndex = ref(-1)
+const highlightInput = ref('')
+const originalEditForm = ref<ScheduleItem | null>(null)
+const editForm = ref<ScheduleItem>({
+  date: '',
+  period: '上午' as '上午' | '下午' | '晚上',
+  time: '',
+  duration: '',
+  location: '',
+  type: '',
+  description: '',
+  highlights: [],
+  cost: '',
+  notes: '',
+  image: '',
+  completed: false
+})
+
+// 选项数据
+const dateOptions = [
+  { label: '10月4日', value: '10.4' },
+  { label: '10月5日', value: '10.5' },
+  { label: '10月6日', value: '10.6' },
+  { label: '10月7日', value: '10.7' },
+  { label: '10月8日', value: '10.8' }
+]
+
+const periodOptions = ['上午', '下午', '晚上']
+
+const typeOptions = [
+  '交通', '景点', '美食', '购物', '博物馆', '水上游览',
+  '广场', '海滩', '教堂', '索道', '历史街区', '公园',
+  '古街', '海岛', '市场', '自然景观', '古镇', '园林', '山景'
+]
 
 // 获取智能默认日期
 const getSmartDefaultDate = (): string => {
@@ -846,6 +1027,54 @@ const dynamicStats = computed(() => {
   }
 })
 
+// 计算属性 - 推荐标签
+const recommendedTags = computed(() => {
+  const tags: string[] = []
+
+  // 根据类型推荐标签
+  if (editForm.value.type === '交通') {
+    if (editForm.value.description?.includes('G')) tags.push('高铁出行')
+    if (editForm.value.description?.includes('D')) tags.push('动车出行')
+    if (editForm.value.time?.includes('-')) {
+      const times = editForm.value.time.split('-')
+      if (times.length === 2 && times[0] && times[1]) {
+        const start = times[0].split(':')
+        const end = times[1].split(':')
+        if (start.length === 2 && end.length === 2 && start[0] && start[1] && end[0] && end[1]) {
+          const startMinutes = parseInt(start[0]) * 60 + parseInt(start[1])
+          const endMinutes = parseInt(end[0]) * 60 + parseInt(end[1])
+          const duration = Math.round((endMinutes - startMinutes) / 60 * 10) / 10
+          if (duration > 0) tags.push(`${duration}小时车程`)
+        }
+      }
+    }
+  }
+
+  if (editForm.value.type === '景点') {
+    tags.push('必游景点', '拍照打卡')
+  }
+
+  if (editForm.value.type === '美食') {
+    tags.push('当地特色', '美食推荐')
+  }
+
+  if (editForm.value.cost) {
+    tags.push('需要费用')
+  } else {
+    tags.push('免费景点')
+  }
+
+  // 过滤已存在的标签
+  return tags.filter(tag => !editForm.value.highlights?.includes(tag))
+})
+
+// 计算属性 - 是否有变化
+const hasChanges = computed(() => {
+  if (!originalEditForm.value) return false
+
+  return JSON.stringify(editForm.value) !== JSON.stringify(originalEditForm.value)
+})
+
 // 方法
 const formatDateLabel = (date: string) => {
   const dateMap: Record<string, string> = {
@@ -1021,11 +1250,137 @@ const toggleImageZoom = () => {
   imageZoomed.value = !imageZoomed.value
 }
 
-// 显示截图预览（用于手动复制）
-const showScreenshotPreview = (dataUrl: string, title: string) => {
-  screenshotDataUrl.value = dataUrl
-  screenshotTitle.value = `${title} - 行程卡片`
-  showScreenshotPreviewDialog.value = true
+// 编辑功能相关方法
+const editItem = (item: ScheduleItem) => {
+  // 找到当前编辑项的索引
+  editingIndex.value = scheduleData.value.findIndex(scheduleItem =>
+    scheduleItem.date === item.date &&
+    scheduleItem.location === item.location &&
+    scheduleItem.time === item.time
+  )
+
+  // 深拷贝当前项到编辑表单
+  editForm.value = {
+    ...item,
+    highlights: item.highlights ? [...item.highlights] : []
+  }
+
+  // 保存原始数据用于变化检测
+  originalEditForm.value = {
+    ...item,
+    highlights: item.highlights ? [...item.highlights] : []
+  }
+
+  // 清空亮点输入框
+  highlightInput.value = ''
+
+  // 显示底部编辑面板
+  showEditBottomSheet.value = true
+}
+
+const addHighlight = () => {
+  const highlight = highlightInput.value.trim()
+  if (highlight && !editForm.value.highlights?.includes(highlight)) {
+    if (!editForm.value.highlights) {
+      editForm.value.highlights = []
+    }
+    editForm.value.highlights.push(highlight)
+    highlightInput.value = ''
+  }
+}
+
+const addRecommendedTag = (tag: string) => {
+  if (!editForm.value.highlights?.includes(tag)) {
+    if (!editForm.value.highlights) {
+      editForm.value.highlights = []
+    }
+    editForm.value.highlights.push(tag)
+  }
+}
+
+const removeHighlight = (index: number) => {
+  if (editForm.value.highlights) {
+    editForm.value.highlights.splice(index, 1)
+  }
+}
+
+const swapLocation = () => {
+  const location = editForm.value.location
+  if (location.includes('→')) {
+    const parts = location.split('→')
+    if (parts.length === 2 && parts[0] && parts[1]) {
+      editForm.value.location = `${parts[1].trim()}→${parts[0].trim()}`
+    }
+  }
+}
+
+const cancelEdit = () => {
+  if (hasChanges.value) {
+    $q.dialog({
+      title: '确认取消',
+      message: '您有未保存的修改，确定要取消吗？',
+      cancel: true,
+      persistent: true
+    }).onOk(() => {
+      showEditBottomSheet.value = false
+    })
+  } else {
+    showEditBottomSheet.value = false
+  }
+}
+
+const saveEdit = () => {
+  // 验证必填字段
+  if (!editForm.value.location.trim()) {
+    $q.notify({
+      message: '地点不能为空',
+      color: 'negative',
+      icon: 'error'
+    })
+    return
+  }
+
+  if (!editForm.value.description.trim()) {
+    $q.notify({
+      message: '描述不能为空',
+      color: 'negative',
+      icon: 'error'
+    })
+    return
+  }
+
+  // 更新数据
+  if (editingIndex.value >= 0) {
+    // 清理空字符串字段
+    const updatedItem: ScheduleItem = { ...editForm.value }
+    if (!updatedItem.duration?.trim()) {
+      delete (updatedItem as any).duration
+    }
+    if (!updatedItem.cost?.trim()) {
+      delete (updatedItem as any).cost
+    }
+    if (!updatedItem.notes?.trim()) {
+      delete (updatedItem as any).notes
+    }
+    if (!updatedItem.image?.trim()) {
+      delete (updatedItem as any).image
+    }
+    if (!updatedItem.highlights?.length) {
+      delete (updatedItem as any).highlights
+    }
+
+    scheduleData.value[editingIndex.value] = updatedItem
+
+    $q.notify({
+      message: '行程信息已更新',
+      color: 'positive',
+      icon: 'check_circle',
+      timeout: 2000
+    })
+
+    // 关闭面板
+    showEditBottomSheet.value = false
+  }
 }
 
 const getImageLinkText = (imagePath: string) => {
@@ -1040,144 +1395,6 @@ const getImageLinkText = (imagePath: string) => {
   }
 }
 
-const shareItem = async (item: ScheduleItem, event: Event) => {
-  try {
-    // 获取点击的卡片元素
-    const cardElement = (event.target as HTMLElement).closest('.schedule-item') as HTMLElement
-    if (!cardElement) {
-      throw new Error('无法找到卡片元素')
-    }
-
-    $q.notify({
-      message: '正在生成卡片截图...',
-      color: 'info',
-      icon: 'photo_camera',
-      timeout: 2000
-    })
-
-    // 动态加载html2canvas
-    const loadHtml2Canvas = (): Promise<any> => {
-      return new Promise((resolve, reject) => {
-        if ((window as any).html2canvas) {
-          resolve((window as any).html2canvas)
-          return
-        }
-
-        const script = document.createElement('script')
-        script.src = 'https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js'
-        script.onload = () => {
-          resolve((window as any).html2canvas)
-        }
-        script.onerror = reject
-        document.head.appendChild(script)
-      })
-    }
-
-    const html2canvas = await loadHtml2Canvas()
-
-    // 截图配置
-    const canvas = await html2canvas(cardElement, {
-      backgroundColor: '#ffffff',
-      scale: 2, // 高清截图
-      logging: false,
-      useCORS: true,
-      allowTaint: true,
-      width: cardElement.clientWidth,
-      height: cardElement.clientHeight,
-    })
-
-    // 转换为blob并直接保存到剪贴板
-    canvas.toBlob(async (blob: Blob | null) => {
-      if (!blob) {
-        throw new Error('截图生成失败')
-      }
-
-      try {
-        // 直接使用Clipboard API保存到剪贴板
-        await navigator.clipboard.write([
-          new ClipboardItem({
-            'image/png': blob
-          })
-        ])
-
-        $q.notify({
-          message: '卡片截图已保存到剪贴板！可直接粘贴到微信等应用',
-          color: 'positive',
-          icon: 'content_copy',
-          timeout: 4000,
-          actions: [
-            {
-              label: '知道了',
-              color: 'white',
-              handler: () => { }
-            }
-          ]
-        })
-      } catch (clipboardError) {
-        console.error('剪贴板保存失败:', clipboardError)
-
-        // 如果剪贴板不支持，提示用户手动操作
-        $q.notify({
-          message: '您的浏览器不支持自动保存到剪贴板，请长按图片手动复制',
-          color: 'warning',
-          icon: 'info',
-          timeout: 5000,
-          actions: [
-            {
-              label: '我知道了',
-              color: 'white',
-              handler: () => { }
-            }
-          ]
-        })
-
-        // 显示截图预览，让用户手动复制
-        showScreenshotPreview(canvas.toDataURL('image/png', 0.9), item.location)
-      }
-    }, 'image/png', 0.9)
-
-  } catch (error) {
-    console.error('截图失败:', error)
-
-    // 降级到文本分享
-    const shareText = `${item.date} ${item.period} - ${item.location}\n${item.description}`
-
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: '国庆行程分享',
-          text: shareText,
-        })
-      } catch {
-        copyTextToClipboard(shareText)
-      }
-    } else {
-      copyTextToClipboard(shareText)
-    }
-
-    $q.notify({
-      message: '截图功能暂不可用，已复制文本内容',
-      color: 'warning',
-      icon: 'text_snippet'
-    })
-  }
-}
-
-const copyTextToClipboard = (text: string) => {
-  navigator.clipboard.writeText(text).then(() => {
-    $q.notify({
-      message: '行程信息已复制到剪贴板',
-      color: 'positive',
-      icon: 'content_copy'
-    })
-  }).catch(() => {
-    $q.notify({
-      message: '复制失败',
-      color: 'negative',
-      icon: 'error'
-    })
-  })
-}
 
 const toggleCompleted = (item: ScheduleItem) => {
   item.completed = !item.completed
@@ -1539,6 +1756,65 @@ const downloadOriginalImage = () => {
   }
 }
 
+// 底部编辑面板样式
+.edit-bottom-sheet {
+  border-radius: 16px 16px 0 0;
+  max-height: 85vh;
+
+  .drag-indicator {
+    width: 36px;
+    height: 4px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 2px;
+  }
+
+  .edit-form-container {
+    max-height: 60vh;
+    overflow-y: auto;
+
+    // 自定义滚动条
+    &::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.05);
+      border-radius: 2px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 2px;
+
+      &:hover {
+        background: rgba(0, 0, 0, 0.3);
+      }
+    }
+  }
+
+  .form-group {
+    margin-bottom: 24px;
+
+    .form-group-title {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: #1976d2;
+      margin-bottom: 12px;
+      padding-bottom: 4px;
+      border-bottom: 2px solid rgba(25, 118, 210, 0.1);
+    }
+  }
+
+  .sticky-bottom {
+    background: white;
+    border-top: 1px solid rgba(0, 0, 0, 0.12);
+
+    .q-btn {
+      font-weight: 500;
+    }
+  }
+}
+
 // 深色模式适配
 .body--dark {
   .national-day-plan-page {
@@ -1569,6 +1845,40 @@ const downloadOriginalImage = () => {
         .notes-info {
           background: rgba(255, 152, 0, 0.15);
           border-left-color: #ff9800;
+        }
+      }
+    }
+  }
+
+  // 深色模式下的编辑面板
+  .edit-bottom-sheet {
+    background: #1e1e1e;
+    color: white;
+
+    .drag-indicator {
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    .form-group-title {
+      color: #64b5f6;
+      border-bottom-color: rgba(100, 181, 246, 0.2);
+    }
+
+    .sticky-bottom {
+      background: #1e1e1e;
+      border-top-color: rgba(255, 255, 255, 0.12);
+    }
+
+    .edit-form-container {
+      &::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.05);
+      }
+
+      &::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.2);
+
+        &:hover {
+          background: rgba(255, 255, 255, 0.3);
         }
       }
     }
