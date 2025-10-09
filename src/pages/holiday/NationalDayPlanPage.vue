@@ -129,6 +129,7 @@
           <!-- 操作按钮 -->
           <q-card-actions class="q-px-md q-pb-md">
             <q-btn flat size="sm" color="primary" icon="map" label="导航" @click="openNavigation(item)" />
+            <q-btn flat size="sm" color="orange" icon="local_taxi" label="滴滴" @click="openDidiTaxi(item)" />
             <q-btn flat size="sm" color="secondary" icon="share" label="分享" @click="shareItem(item, $event)" />
             <q-space />
             <q-btn flat size="sm" :icon="item.completed ? 'check_circle' : 'radio_button_unchecked'"
@@ -887,6 +888,125 @@ const openNavigation = (item: ScheduleItem) => {
   setTimeout(() => {
     window.open(webUrl, '_blank')
   }, 2000)
+}
+
+// 获取用户当前位置
+const getCurrentLocation = (): Promise<{ latitude: number; longitude: number }> => {
+  return new Promise((resolve, reject) => {
+    if (!navigator.geolocation) {
+      reject(new Error('浏览器不支持地理位置获取'))
+      return
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        resolve({
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude
+        })
+      },
+      (error) => {
+        let errorMessage = '获取位置失败'
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            errorMessage = '用户拒绝了位置权限请求'
+            break
+          case error.POSITION_UNAVAILABLE:
+            errorMessage = '位置信息不可用'
+            break
+          case error.TIMEOUT:
+            errorMessage = '获取位置超时'
+            break
+        }
+        reject(new Error(errorMessage))
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 300000 // 5分钟内的缓存位置可用
+      }
+    )
+  })
+}
+
+// 滴滴打车功能
+const openDidiTaxi = async (item: ScheduleItem) => {
+  try {
+    $q.notify({
+      message: '正在获取您的位置...',
+      color: 'info',
+      icon: 'my_location',
+      timeout: 3000
+    })
+
+    // 获取用户当前位置
+    const currentLocation = await getCurrentLocation()
+
+    // 处理目的地名称
+    let destinationName = item.location
+    // 如果包含箭头，取目标地点
+    if (destinationName.includes('→')) {
+      destinationName = destinationName.split('→').pop()?.trim() || destinationName
+    }
+    // 去掉括号内的详细信息
+    if (destinationName.includes('(')) {
+      destinationName = destinationName.split('(')[0]?.trim() || destinationName
+    }
+
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+
+    // 构建滴滴打车URL
+    const didiWebUrl = `https://webapp.diditaxi.com.cn/?city=&maptype=wgs84&fromlat=${currentLocation.latitude}&fromlng=${currentLocation.longitude}&fromaddr=当前位置&toaddr=${encodeURIComponent(destinationName)}&toshop=&channel=web`
+
+    // 尝试打开滴滴APP (URL Scheme)
+    const didiAppUrl = `diditaxi://taxi?fromlat=${currentLocation.latitude}&fromlng=${currentLocation.longitude}&fromaddr=当前位置&toaddr=${encodeURIComponent(destinationName)}`
+
+    $q.notify({
+      message: '正在打开滴滴打车...',
+      color: 'positive',
+      icon: 'local_taxi',
+      timeout: 2000
+    })
+
+    if (isMobile) {
+      // 移动端：先尝试打开APP，失败则打开网页版
+      try {
+        window.open(didiAppUrl, '_blank')
+        // 2秒后如果APP没有打开，则打开网页版作为备用方案
+        setTimeout(() => {
+          window.open(didiWebUrl, '_blank')
+        }, 2000)
+      } catch (error) {
+        // 如果APP调用失败，直接打开网页版
+        window.open(didiWebUrl, '_blank')
+      }
+    } else {
+      // 桌面端：直接打开网页版
+      window.open(didiWebUrl, '_blank')
+    }
+
+  } catch (error) {
+    console.error('滴滴打车调用失败:', error)
+
+    $q.notify({
+      message: `滴滴打车调用失败: ${error instanceof Error ? error.message : '未知错误'}`,
+      color: 'negative',
+      icon: 'error',
+      timeout: 4000,
+      actions: [
+        {
+          label: '重试',
+          color: 'white',
+          handler: () => openDidiTaxi(item)
+        },
+        {
+          label: '关闭',
+          color: 'white',
+          handler: () => { }
+        }
+      ]
+    })
+  }
 }
 
 const showImageDialog = (imagePath: string, title: string) => {
