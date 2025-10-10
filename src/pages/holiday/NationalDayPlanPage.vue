@@ -1514,7 +1514,7 @@ const viewItemDetails = (item: ScheduleItem) => {
       </div>
     `,
     html: true,
-    ok: '关闭'
+    ok: false
   })
 }
 
