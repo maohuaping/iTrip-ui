@@ -1,23 +1,38 @@
 <template>
   <q-page class="national-day-plan-page">
     <div class="page-container">
-      <!-- 行程统计信息 -->
+      <!-- 行程统计信息和模式切换 -->
       <div class="schedule-stats">
-        <span class="text-caption text-grey-6">
-          <template v-if="!selectedDate">
-            共 {{ dynamicStats.count }} 个行程安排 · {{ dynamicStats.route }} · {{ dynamicStats.duration }}
-          </template>
-          <template v-else>
-            <template v-if="dynamicStats.locations.length > 0">
-              {{ dynamicStats.locations.join(' → ') }} · 共 {{ dynamicStats.count }} 个安排
+        <div class="stats-content">
+          <span class="text-caption text-grey-6">
+            <template v-if="!selectedDate">
+              共 {{ dynamicStats.count }} 个行程安排 · {{ dynamicStats.route }} · {{ dynamicStats.duration }}
             </template>
             <template v-else>
-              {{ dynamicStats.route }} · 共 {{ dynamicStats.count }} 个安排
+              <template v-if="dynamicStats.locations.length > 0">
+                {{ dynamicStats.locations.join(' → ') }} · 共 {{ dynamicStats.count }} 个安排
+              </template>
+              <template v-else>
+                {{ dynamicStats.route }} · 共 {{ dynamicStats.count }} 个安排
+              </template>
             </template>
-          </template>
-        </span>
-        <q-btn flat dense size="sm" icon="image" label="查看原图" color="grey-5" class="view-original-btn q-ml-md"
-          @click="showOriginalImage = true" />
+          </span>
+
+          <!-- 当日行程概览按钮 -->
+          <q-btn v-if="selectedDate" flat dense size="sm" icon="timeline"
+            :label="`查看${formatDateLabel(selectedDate)}行程`" color="primary" class="daily-overview-btn q-ml-md"
+            @click="showDailyOverview = true" />
+
+          <q-btn flat dense size="sm" icon="image" label="查看原图" color="grey-5" class="view-original-btn q-ml-md"
+            @click="showOriginalImage = true" />
+        </div>
+
+        <!-- 模式切换按钮 -->
+        <div class="mode-toggle">
+          <q-btn :icon="isEditMode ? 'check' : 'edit'" :label="isEditMode ? '完成' : '编辑'"
+            :color="isEditMode ? 'positive' : 'primary'" size="sm" unelevated @click="toggleEditMode"
+            class="mode-toggle-btn" />
+        </div>
       </div>
 
       <!-- 日期筛选 -->
@@ -32,9 +47,9 @@
       </q-card>
 
       <!-- 行程列表 -->
-      <div class="schedule-list">
+      <div class="schedule-list" :class="{ 'edit-mode': isEditMode }">
         <q-card v-for="(item, index) in filteredSchedule" :key="index" class="schedule-item q-mb-md"
-          :class="{ completed: item.completed }" :data-type="item.type" flat bordered>
+          :class="{ completed: item.completed, 'edit-mode': isEditMode }" :data-type="item.type" flat bordered>
           <q-card-section class="q-pb-none">
             <!-- 日期和时间段 -->
             <div class="schedule-header">
@@ -126,14 +141,39 @@
             </div>
           </q-card-section>
 
+          <!-- 编辑模式控制按钮 -->
+          <div v-if="isEditMode" class="edit-controls">
+            <!-- 拖拽手柄 -->
+            <div class="drag-handle">
+              <q-icon name="drag_indicator" size="1.2rem" color="grey-6" />
+            </div>
+
+            <!-- 删除按钮 -->
+            <q-btn flat round icon="delete" color="negative" size="sm" @click="confirmDeleteItem(item, index)"
+              class="delete-btn">
+              <q-tooltip class="bg-negative">删除此行程</q-tooltip>
+            </q-btn>
+          </div>
+
           <!-- 操作按钮 -->
-          <q-card-actions class="q-px-md q-pb-md">
-            <q-btn flat size="sm" color="primary" icon="map" label="导航" @click="openNavigation(item)" />
-            <q-btn flat size="sm" color="orange" icon="local_taxi" label="滴滴" @click="openDidiTaxi(item)" />
-            <q-btn flat size="sm" color="secondary" icon="edit" label="编辑" @click="editItem(item)" />
-            <q-space />
-            <q-btn flat size="sm" :icon="item.completed ? 'check_circle' : 'radio_button_unchecked'"
-              :color="item.completed ? 'positive' : 'grey'" @click="toggleCompleted(item)" />
+          <q-card-actions class="q-px-md q-pb-md" :class="{ 'view-mode': !isEditMode }">
+            <!-- 查看模式：功能按钮 -->
+            <template v-if="!isEditMode">
+              <q-btn flat size="sm" color="primary" icon="map" label="导航" @click="openNavigation(item)" />
+              <q-btn flat size="sm" color="orange" icon="local_taxi" label="滴滴" @click="openDidiTaxi(item)" />
+              <q-btn flat size="sm" color="secondary" icon="visibility" label="详情" @click="viewItemDetails(item)" />
+              <q-space />
+              <q-btn flat size="sm" :icon="item.completed ? 'check_circle' : 'radio_button_unchecked'"
+                :color="item.completed ? 'positive' : 'grey'" @click="toggleCompleted(item)" />
+            </template>
+
+            <!-- 编辑模式：编辑按钮 -->
+            <template v-else>
+              <q-btn flat size="sm" color="secondary" icon="edit" label="编辑内容" @click="editItem(item)" />
+              <q-space />
+              <q-btn flat size="sm" :icon="item.completed ? 'check_circle' : 'radio_button_unchecked'"
+                :color="item.completed ? 'positive' : 'grey'" @click="toggleCompleted(item)" />
+            </template>
           </q-card-actions>
         </q-card>
       </div>
@@ -211,6 +251,109 @@
           <div class="absolute-bottom-left q-ma-md text-white">
             <div class="text-h6">{{ currentImageTitle }}</div>
             <div class="text-caption opacity-70">双击图片可以放大/缩小</div>
+          </div>
+        </q-card-section>
+      </q-card>
+    </q-dialog>
+
+    <!-- 当日行程概览对话框 -->
+    <q-dialog v-model="showDailyOverview" maximized>
+      <q-card class="daily-overview-dialog">
+        <q-card-section class="q-pa-none full-height">
+          <!-- 顶部标题栏 -->
+          <div class="dialog-header q-pa-md">
+            <div class="row items-center">
+              <div class="col">
+                <div class="text-h5 text-weight-medium">
+                  <q-icon name="timeline" size="1.5rem" class="q-mr-sm" color="primary" />
+                  {{ formatDateLabel(selectedDate) }}行程安排
+                </div>
+                <div class="text-caption text-grey-6 q-mt-xs">
+                  共 {{ filteredSchedule.length }} 个安排 · {{ dynamicStats.locations.join(' → ') }}
+                </div>
+              </div>
+              <div class="col-auto">
+                <q-btn flat round icon="close" size="lg" v-close-popup color="grey-7" />
+              </div>
+            </div>
+          </div>
+
+          <q-separator />
+
+          <!-- 简洁行程列表 -->
+          <div class="simple-list-container q-pa-md">
+            <q-list separator>
+              <q-item 
+                v-for="(item, index) in filteredSchedule" 
+                :key="index" 
+                class="simple-list-item"
+                :class="{ completed: item.completed }"
+                clickable
+                @click="viewItemDetails(item)"
+              >
+                <q-item-section avatar>
+                  <q-avatar 
+                    :color="getTypeBadgeColor(item.type)" 
+                    text-color="white" 
+                    size="40px"
+                  >
+                    <q-icon :name="getTimelineIcon(item.type)" size="1.2rem" />
+                  </q-avatar>
+                </q-item-section>
+
+                <q-item-section>
+                  <q-item-label class="text-h6 text-weight-medium">
+                    {{ getSimpleLocationName(item.location) }}
+                  </q-item-label>
+                  <q-item-label caption class="text-grey-6">
+                    {{ item.time }} · {{ item.type }}
+                    <q-chip 
+                      :color="item.period === '上午' ? 'orange-3' : item.period === '下午' ? 'blue-3' : 'purple-3'"
+                      text-color="dark" 
+                      size="sm" 
+                      class="q-ml-sm"
+                    >
+                      {{ item.period }}
+                    </q-chip>
+                  </q-item-label>
+                </q-item-section>
+
+                <q-item-section side>
+                  <div class="row items-center q-gutter-xs">
+                    <q-btn 
+                      flat 
+                      round 
+                      size="sm" 
+                      icon="map" 
+                      color="primary"
+                      @click.stop="openNavigation(item)"
+                    >
+                      <q-tooltip>导航</q-tooltip>
+                    </q-btn>
+                    <q-btn 
+                      flat 
+                      round 
+                      size="sm" 
+                      icon="local_taxi" 
+                      color="orange"
+                      @click.stop="openDidiTaxi(item)"
+                    >
+                      <q-tooltip>滴滴打车</q-tooltip>
+                    </q-btn>
+                    <q-btn 
+                      flat 
+                      round 
+                      size="sm" 
+                      :icon="item.completed ? 'check_circle' : 'radio_button_unchecked'"
+                      :color="item.completed ? 'positive' : 'grey'"
+                      @click.stop="toggleCompleted(item)"
+                    >
+                      <q-tooltip>{{ item.completed ? '已完成' : '标记完成' }}</q-tooltip>
+                    </q-btn>
+                  </div>
+                </q-item-section>
+              </q-item>
+            </q-list>
           </div>
         </q-card-section>
       </q-card>
@@ -420,6 +563,12 @@ const showImageDialogVisible = ref(false)
 const currentImage = ref('')
 const currentImageTitle = ref('')
 const imageZoomed = ref(false)
+// 编辑模式状态
+const isEditMode = ref(false)
+
+// 当日行程概览对话框
+const showDailyOverview = ref(false)
+
 // 编辑功能相关
 const showEditBottomSheet = ref(false)
 const editingIndex = ref(-1)
@@ -1422,6 +1571,151 @@ const downloadOriginalImage = () => {
     icon: 'download'
   })
 }
+
+// 模式切换相关方法
+const toggleEditMode = () => {
+  isEditMode.value = !isEditMode.value
+
+  if (isEditMode.value) {
+    $q.notify({
+      message: '已进入编辑模式，可以拖拽排序和删除行程',
+      color: 'info',
+      icon: 'edit',
+      timeout: 3000
+    })
+  } else {
+    $q.notify({
+      message: '已退出编辑模式',
+      color: 'positive',
+      icon: 'check',
+      timeout: 2000
+    })
+  }
+}
+
+// 查看详情（查看模式专用）
+const viewItemDetails = (item: ScheduleItem) => {
+  $q.dialog({
+    title: item.location,
+    message: `
+      <div style="text-align: left;">
+        <p><strong>日期：</strong>${formatDateLabel(item.date)} ${item.period}</p>
+        <p><strong>时间：</strong>${item.time}${item.duration ? ` (${item.duration})` : ''}</p>
+        <p><strong>类型：</strong>${item.type}</p>
+        <p><strong>描述：</strong>${item.description}</p>
+        ${item.cost ? `<p><strong>费用：</strong>${item.cost}</p>` : ''}
+        ${item.notes ? `<p><strong>备注：</strong>${item.notes}</p>` : ''}
+        ${item.highlights?.length ? `<p><strong>亮点：</strong>${item.highlights.join(', ')}</p>` : ''}
+      </div>
+    `,
+    html: true,
+    ok: '关闭'
+  })
+}
+
+// 确认删除（编辑模式专用）
+const confirmDeleteItem = (item: ScheduleItem, index: number) => {
+  $q.dialog({
+    title: '确认删除',
+    message: `您确定要删除「${item.location}」这段行程吗？此操作无法撤销。`,
+    persistent: true,
+    ok: {
+      label: '确认删除',
+      color: 'negative'
+    },
+    cancel: {
+      label: '取消',
+      color: 'grey'
+    }
+  }).onOk(() => {
+    // 删除行程
+    const actualIndex = scheduleData.value.findIndex(scheduleItem =>
+      scheduleItem.date === item.date &&
+      scheduleItem.location === item.location &&
+      scheduleItem.time === item.time
+    )
+
+    if (actualIndex >= 0) {
+      scheduleData.value.splice(actualIndex, 1)
+      $q.notify({
+        message: '行程已删除',
+        color: 'positive',
+        icon: 'delete',
+        timeout: 2000
+      })
+    }
+  })
+}
+
+// 时间轴相关方法
+const getTimelineIcon = (type: string) => {
+  const iconMap: Record<string, string> = {
+    '交通': 'directions_transit',
+    '景点': 'place',
+    '美食': 'restaurant',
+    '购物': 'shopping_bag',
+    '博物馆': 'museum',
+    '水上游览': 'directions_boat',
+    '广场': 'park',
+    '海滩': 'beach_access',
+    '教堂': 'church',
+    '索道': 'cable_car',
+    '历史街区': 'location_city',
+    '公园': 'nature',
+    '古街': 'streetview',
+    '海岛': 'island',
+    '市场': 'store',
+    '自然景观': 'landscape',
+    '古镇': 'home_work',
+    '园林': 'eco',
+    '山景': 'terrain'
+  }
+  return iconMap[type] || 'place'
+}
+
+const getTypeBadgeColor = (type: string) => {
+  const colorMap: Record<string, string> = {
+    '交通': 'blue-6',
+    '景点': 'green-6',
+    '美食': 'orange-6',
+    '购物': 'pink-6',
+    '博物馆': 'purple-6',
+    '水上游览': 'cyan-6',
+    '广场': 'teal-6',
+    '海滩': 'light-blue-6',
+    '教堂': 'deep-purple-6',
+    '索道': 'indigo-6',
+    '历史街区': 'brown-6',
+    '公园': 'light-green-6',
+    '古街': 'amber-6',
+    '海岛': 'blue-grey-6',
+    '市场': 'red-6',
+    '自然景观': 'green-7',
+    '古镇': 'brown-7',
+    '园林': 'light-green-7',
+    '山景': 'blue-grey-7'
+  }
+  return colorMap[type] || 'grey-6'
+}
+
+// 简化地点名称显示
+const getSimpleLocationName = (location: string) => {
+  let simpleName = location
+  
+  // 如果包含箭头，取目标地点
+  if (simpleName.includes('→')) {
+    const parts = simpleName.split('→')
+    simpleName = parts[parts.length - 1]?.trim() || simpleName
+  }
+  
+  // 去掉括号内的详细信息
+  if (simpleName.includes('(')) {
+    const parts = simpleName.split('(')
+    simpleName = parts[0]?.trim() || simpleName
+  }
+  
+  return simpleName
+}
 </script>
 
 <style lang="scss" scoped>
@@ -1435,29 +1729,56 @@ const downloadOriginalImage = () => {
   .schedule-stats {
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: space-between;
     padding: 8px 0 16px 0;
     border-bottom: 1px solid rgba(255, 255, 255, 0.12);
     margin-bottom: 16px;
 
-    .text-caption {
-      font-size: 0.75rem;
-      line-height: 1.4;
-      transition: all 0.3s ease;
+    .stats-content {
+      display: flex;
+      align-items: center;
+      flex: 1;
 
-      // 当选中特定日期时的样式
-      &:not(:empty) {
-        color: #1976d2;
-        font-weight: 500;
+      .text-caption {
+        font-size: 0.75rem;
+        line-height: 1.4;
+        transition: all 0.3s ease;
+
+        // 当选中特定日期时的样式
+        &:not(:empty) {
+          color: #1976d2;
+          font-weight: 500;
+        }
+      }
+
+      .view-original-btn {
+        opacity: 0.6;
+        transition: opacity 0.2s ease;
+
+        &:hover {
+          opacity: 1;
+        }
+      }
+
+      .daily-overview-btn {
+        transition: all 0.2s ease;
+
+        &:hover {
+          transform: translateY(-1px);
+          box-shadow: 0 2px 8px rgba(25, 118, 210, 0.2);
+        }
       }
     }
 
-    .view-original-btn {
-      opacity: 0.6;
-      transition: opacity 0.2s ease;
+    .mode-toggle {
+      .mode-toggle-btn {
+        font-weight: 600;
+        transition: all 0.3s ease;
 
-      &:hover {
-        opacity: 1;
+        &:hover {
+          transform: translateY(-1px);
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        }
       }
     }
   }
@@ -1617,6 +1938,60 @@ const downloadOriginalImage = () => {
 
       &[data-type="山景"] {
         border-left-color: #607d8b;
+      }
+
+      // 编辑模式样式
+      &.edit-mode {
+        position: relative;
+
+        .edit-controls {
+          position: absolute;
+          top: 12px;
+          right: 12px;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          z-index: 10;
+
+          .drag-handle {
+            cursor: grab;
+            padding: 4px;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+
+            &:hover {
+              background: rgba(0, 0, 0, 0.05);
+            }
+
+            &:active {
+              cursor: grabbing;
+              background: rgba(0, 0, 0, 0.1);
+            }
+          }
+
+          .delete-btn {
+            transition: all 0.2s ease;
+
+            &:hover {
+              transform: scale(1.1);
+            }
+          }
+        }
+      }
+    }
+
+    // 编辑模式下的列表样式
+    &.edit-mode {
+      .schedule-item {
+        padding-right: 80px; // 为编辑控件留出空间
+
+        &:hover {
+          .edit-controls {
+            .drag-handle {
+              background: rgba(0, 0, 0, 0.08);
+            }
+          }
+        }
       }
     }
   }
@@ -1875,6 +2250,29 @@ const downloadOriginalImage = () => {
           border-left-color: #ff9800;
         }
       }
+
+      // 深色模式下的编辑控件
+      &.edit-mode {
+        .edit-controls {
+          .drag-handle {
+            &:hover {
+              background: rgba(255, 255, 255, 0.08);
+            }
+
+            &:active {
+              background: rgba(255, 255, 255, 0.12);
+            }
+          }
+        }
+
+        &:hover {
+          .edit-controls {
+            .drag-handle {
+              background: rgba(255, 255, 255, 0.1);
+            }
+          }
+        }
+      }
     }
   }
 
@@ -1911,6 +2309,336 @@ const downloadOriginalImage = () => {
 
         &:hover {
           background: rgba(255, 255, 255, 0.3);
+        }
+      }
+    }
+  }
+}
+
+// 当日行程概览对话框样式
+.daily-overview-dialog {
+  .dialog-header {
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+  }
+
+  .simple-list-container {
+    max-height: calc(100vh - 120px);
+    overflow-y: auto;
+
+    // 自定义滚动条
+    &::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.05);
+      border-radius: 3px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 3px;
+
+      &:hover {
+        background: rgba(0, 0, 0, 0.3);
+      }
+    }
+    
+    .q-list {
+      .simple-list-item {
+        border-radius: 8px;
+        margin-bottom: 4px;
+        transition: all 0.2s ease;
+        
+        &:hover {
+          background: rgba(25, 118, 210, 0.04);
+          transform: translateX(4px);
+        }
+        
+        &.completed {
+          opacity: 0.6;
+          
+          .q-item-label {
+            text-decoration: line-through;
+          }
+        }
+        
+        .q-avatar {
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        }
+        
+        .q-item-label {
+          font-size: 1rem;
+          line-height: 1.4;
+          
+          &.text-h6 {
+            color: #1976d2;
+          }
+        }
+        
+        .q-item-section--side {
+          .q-btn {
+            transition: all 0.2s ease;
+            
+            &:hover {
+              transform: scale(1.1);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .timeline-wrapper {
+    position: relative;
+    padding-left: 40px;
+  }
+
+  .timeline-item {
+    position: relative;
+    display: flex;
+    margin-bottom: 24px;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+
+    .timeline-line {
+      position: absolute;
+      left: -40px;
+      top: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+
+      .timeline-node {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 600;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        z-index: 2;
+
+        // 不同类型的节点颜色
+        &.node-交通 {
+          background: linear-gradient(135deg, #2196f3, #1976d2);
+        }
+
+        &.node-景点 {
+          background: linear-gradient(135deg, #4caf50, #388e3c);
+        }
+
+        &.node-美食 {
+          background: linear-gradient(135deg, #ff9800, #f57c00);
+        }
+
+        &.node-购物 {
+          background: linear-gradient(135deg, #e91e63, #c2185b);
+        }
+
+        &.node-博物馆 {
+          background: linear-gradient(135deg, #9c27b0, #7b1fa2);
+        }
+
+        &.node-水上游览 {
+          background: linear-gradient(135deg, #00bcd4, #0097a7);
+        }
+
+        &.node-广场 {
+          background: linear-gradient(135deg, #009688, #00695c);
+        }
+
+        &.node-海滩 {
+          background: linear-gradient(135deg, #03a9f4, #0277bd);
+        }
+
+        &.node-教堂 {
+          background: linear-gradient(135deg, #673ab7, #512da8);
+        }
+
+        &.node-索道 {
+          background: linear-gradient(135deg, #3f51b5, #303f9f);
+        }
+
+        &.node-历史街区 {
+          background: linear-gradient(135deg, #795548, #5d4037);
+        }
+
+        &.node-公园 {
+          background: linear-gradient(135deg, #8bc34a, #689f38);
+        }
+
+        &.node-古街 {
+          background: linear-gradient(135deg, #ffc107, #ffa000);
+        }
+
+        &.node-海岛 {
+          background: linear-gradient(135deg, #607d8b, #455a64);
+        }
+
+        &.node-市场 {
+          background: linear-gradient(135deg, #f44336, #d32f2f);
+        }
+      }
+
+      .timeline-connector {
+        width: 3px;
+        height: 60px;
+        background: linear-gradient(to bottom, #e0e0e0, #bdbdbd);
+        margin-top: 8px;
+        border-radius: 2px;
+      }
+    }
+
+    .timeline-content {
+      flex: 1;
+      margin-left: 16px;
+
+      .timeline-card {
+        border-radius: 12px;
+        transition: all 0.3s ease;
+        border-left: 4px solid transparent;
+
+        &:hover {
+          transform: translateX(4px);
+          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+        }
+
+        &.completed {
+          opacity: 0.7;
+
+          .timeline-header .timeline-location span {
+            text-decoration: line-through;
+          }
+        }
+
+        .timeline-header {
+          .timeline-time {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+          }
+
+          .timeline-location {
+            display: flex;
+            align-items: center;
+
+            span {
+              font-weight: 600;
+              font-size: 1.1rem;
+            }
+          }
+        }
+
+        .timeline-details {
+          .timeline-highlights {
+            margin: 8px 0;
+          }
+
+          .timeline-meta {
+            .meta-item {
+              display: flex;
+              align-items: center;
+
+              &.cost {
+                padding: 6px 12px;
+                background: rgba(76, 175, 80, 0.1);
+                border-radius: 6px;
+                border-left: 3px solid #4caf50;
+              }
+
+              &.notes {
+                padding: 6px 12px;
+                background: rgba(255, 152, 0, 0.1);
+                border-radius: 6px;
+                border-left: 3px solid #ff9800;
+              }
+            }
+          }
+        }
+
+        .timeline-actions {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+      }
+    }
+  }
+}
+
+// 深色模式下的时间轴对话框
+.body--dark {
+  .daily-overview-dialog {
+    background: #1e1e1e;
+    color: white;
+
+    .dialog-header {
+      background: linear-gradient(135deg, #2d2d2d 0%, #1e1e1e 100%);
+      border-bottom-color: rgba(255, 255, 255, 0.12);
+    }
+
+    .simple-list-container {
+      &::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.05);
+      }
+
+      &::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.2);
+
+        &:hover {
+          background: rgba(255, 255, 255, 0.3);
+        }
+      }
+      
+      .q-list {
+        .simple-list-item {
+          &:hover {
+            background: rgba(100, 181, 246, 0.08);
+          }
+          
+          .q-item-label.text-h6 {
+            color: #64b5f6;
+          }
+        }
+      }
+    }
+
+    .timeline-item {
+      .timeline-line {
+        .timeline-connector {
+          background: linear-gradient(to bottom, #424242, #616161);
+        }
+      }
+
+      .timeline-content {
+        .timeline-card {
+          background: rgba(255, 255, 255, 0.05);
+          border-color: rgba(255, 255, 255, 0.12);
+
+          &:hover {
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+          }
+
+          .timeline-details {
+            .timeline-meta {
+              .meta-item {
+                &.cost {
+                  background: rgba(76, 175, 80, 0.15);
+                }
+
+                &.notes {
+                  background: rgba(255, 152, 0, 0.15);
+                }
+              }
+            }
+          }
         }
       }
     }
