@@ -4,23 +4,9 @@
       <!-- 行程统计信息和模式切换 -->
       <div class="schedule-stats">
         <div class="stats-content">
-          <span class="text-caption text-grey-6">
-            <template v-if="!selectedDate">
-              共 {{ dynamicStats.count }} 个行程安排 · {{ dynamicStats.route }} · {{ dynamicStats.duration }}
-            </template>
-            <template v-else>
-              <template v-if="dynamicStats.locations.length > 0">
-                {{ dynamicStats.locations.join(' → ') }} · 共 {{ dynamicStats.count }} 个安排
-              </template>
-              <template v-else>
-                {{ dynamicStats.route }} · 共 {{ dynamicStats.count }} 个安排
-              </template>
-            </template>
-          </span>
-
           <!-- 当日行程概览按钮 -->
           <q-btn v-if="selectedDate" flat dense size="sm" icon="timeline"
-            :label="`查看${formatDateLabel(selectedDate)}行程`" color="primary" class="daily-overview-btn q-ml-md"
+            :label="`查看${formatDateLabel(selectedDate)}行程`" color="primary" class="daily-overview-btn"
             @click="showDailyOverview = true" />
 
           <q-btn flat dense size="sm" icon="image" label="查看原图" color="grey-5" class="view-original-btn q-ml-md"
@@ -269,7 +255,7 @@
                   {{ formatDateLabel(selectedDate) }}行程安排
                 </div>
                 <div class="text-caption text-grey-6 q-mt-xs">
-                  共 {{ filteredSchedule.length }} 个安排 · {{ dynamicStats.locations.join(' → ') }}
+                  共 {{ filteredSchedule.length }} 个安排
                 </div>
               </div>
               <div class="col-auto">
@@ -1086,58 +1072,15 @@ const dynamicStats = computed(() => {
     return {
       count: scheduleData.value.length,
       route: '济南→淄博→青岛',
-      duration: '5天行程',
-      locations: []
+      duration: '5天行程'
     }
   }
 
   // 显示当日统计
   const daySchedule = filteredSchedule.value
-  const locations = daySchedule
-    .filter(item => item.type !== '交通') // 过滤掉纯交通项目
-    .map(item => {
-      // 提取主要地点名称（去掉箭头和详细描述）
-      let locationName = item.location
-      if (locationName.includes('→')) {
-        // 如果包含箭头，取目标地点
-        locationName = locationName.split('→').pop()?.trim() || locationName
-      }
-      // 简化地点名称
-      if (locationName.includes('(')) {
-        locationName = locationName.split('(')[0]?.trim() || locationName
-      }
-      return locationName
-    })
-    .filter((location, index, arr) => arr.indexOf(location) === index) // 去重
-
-  // 获取当日主要城市
-  const dateNum = selectedDate.value?.split('.')[1] || '4'
-  let cityInfo = ''
-  switch (dateNum) {
-    case '4':
-      cityInfo = '南通→济南'
-      break
-    case '5':
-      cityInfo = '济南游览'
-      break
-    case '6':
-      cityInfo = '济南→淄博→青岛'
-      break
-    case '7':
-      cityInfo = '青岛游览'
-      break
-    case '8':
-      cityInfo = '青岛→返程'
-      break
-    default:
-      cityInfo = '行程安排'
-  }
 
   return {
-    count: daySchedule.length,
-    route: cityInfo,
-    duration: formatDateLabel(selectedDate.value),
-    locations: locations
+    count: daySchedule.length
   }
 })
 
