@@ -283,20 +283,10 @@
           <!-- 简洁行程列表 -->
           <div class="simple-list-container q-pa-md">
             <q-list separator>
-              <q-item 
-                v-for="(item, index) in filteredSchedule" 
-                :key="index" 
-                class="simple-list-item"
-                :class="{ completed: item.completed }"
-                clickable
-                @click="viewItemDetails(item)"
-              >
+              <q-item v-for="(item, index) in filteredSchedule" :key="index" class="simple-list-item"
+                :class="{ completed: item.completed }" clickable @click="viewItemDetails(item)">
                 <q-item-section avatar>
-                  <q-avatar 
-                    :color="getTypeBadgeColor(item.type)" 
-                    text-color="white" 
-                    size="40px"
-                  >
+                  <q-avatar :color="getTypeBadgeColor(item.type)" text-color="white" size="40px">
                     <q-icon :name="getTimelineIcon(item.type)" size="1.2rem" />
                   </q-avatar>
                 </q-item-section>
@@ -307,12 +297,8 @@
                   </q-item-label>
                   <q-item-label caption class="text-grey-6">
                     {{ item.time }} · {{ item.type }}
-                    <q-chip 
-                      :color="item.period === '上午' ? 'orange-3' : item.period === '下午' ? 'blue-3' : 'purple-3'"
-                      text-color="dark" 
-                      size="sm" 
-                      class="q-ml-sm"
-                    >
+                    <q-chip :color="item.period === '上午' ? 'orange-3' : item.period === '下午' ? 'blue-3' : 'purple-3'"
+                      text-color="dark" size="sm" class="q-ml-sm">
                       {{ item.period }}
                     </q-chip>
                   </q-item-label>
@@ -320,35 +306,11 @@
 
                 <q-item-section side>
                   <div class="row items-center q-gutter-xs">
-                    <q-btn 
-                      flat 
-                      round 
-                      size="sm" 
-                      icon="map" 
-                      color="primary"
-                      @click.stop="openNavigation(item)"
-                    >
+                    <q-btn flat round size="sm" icon="map" color="primary" @click.stop="openNavigation(item)">
                       <q-tooltip>导航</q-tooltip>
                     </q-btn>
-                    <q-btn 
-                      flat 
-                      round 
-                      size="sm" 
-                      icon="local_taxi" 
-                      color="orange"
-                      @click.stop="openDidiTaxi(item)"
-                    >
+                    <q-btn flat round size="sm" icon="local_taxi" color="orange" @click.stop="openDidiTaxi(item)">
                       <q-tooltip>滴滴打车</q-tooltip>
-                    </q-btn>
-                    <q-btn 
-                      flat 
-                      round 
-                      size="sm" 
-                      :icon="item.completed ? 'check_circle' : 'radio_button_unchecked'"
-                      :color="item.completed ? 'positive' : 'grey'"
-                      @click.stop="toggleCompleted(item)"
-                    >
-                      <q-tooltip>{{ item.completed ? '已完成' : '标记完成' }}</q-tooltip>
                     </q-btn>
                   </div>
                 </q-item-section>
@@ -1701,19 +1663,19 @@ const getTypeBadgeColor = (type: string) => {
 // 简化地点名称显示
 const getSimpleLocationName = (location: string) => {
   let simpleName = location
-  
+
   // 如果包含箭头，取目标地点
   if (simpleName.includes('→')) {
     const parts = simpleName.split('→')
     simpleName = parts[parts.length - 1]?.trim() || simpleName
   }
-  
+
   // 去掉括号内的详细信息
   if (simpleName.includes('(')) {
     const parts = simpleName.split('(')
     simpleName = parts[0]?.trim() || simpleName
   }
-  
+
   return simpleName
 }
 </script>
@@ -2344,43 +2306,43 @@ const getSimpleLocationName = (location: string) => {
         background: rgba(0, 0, 0, 0.3);
       }
     }
-    
+
     .q-list {
       .simple-list-item {
         border-radius: 8px;
         margin-bottom: 4px;
         transition: all 0.2s ease;
-        
+
         &:hover {
           background: rgba(25, 118, 210, 0.04);
           transform: translateX(4px);
         }
-        
+
         &.completed {
           opacity: 0.6;
-          
+
           .q-item-label {
             text-decoration: line-through;
           }
         }
-        
+
         .q-avatar {
           box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
         }
-        
+
         .q-item-label {
           font-size: 1rem;
           line-height: 1.4;
-          
+
           &.text-h6 {
             color: #1976d2;
           }
         }
-        
+
         .q-item-section--side {
           .q-btn {
             transition: all 0.2s ease;
-            
+
             &:hover {
               transform: scale(1.1);
             }
@@ -2595,13 +2557,13 @@ const getSimpleLocationName = (location: string) => {
           background: rgba(255, 255, 255, 0.3);
         }
       }
-      
+
       .q-list {
         .simple-list-item {
           &:hover {
             background: rgba(100, 181, 246, 0.08);
           }
-          
+
           .q-item-label.text-h6 {
             color: #64b5f6;
           }
