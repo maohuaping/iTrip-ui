@@ -422,6 +422,14 @@
                 </template>
               </q-input>
 
+              <!-- 游览路线 -->
+              <q-input v-model="editForm.route" label="游览路线" outlined type="textarea" rows="2"
+                placeholder="如: 海边礁石→堤坝→蘑菇亭→贝壳亭..." class="q-mb-md">
+                <template v-slot:prepend>
+                  <q-icon name="route" />
+                </template>
+              </q-input>
+
               <!-- 备注 -->
               <q-input v-model="editForm.notes" label="备注" outlined type="textarea" rows="2" placeholder="其他注意事项..."
                 class="q-mb-md">
@@ -499,6 +507,7 @@ interface ScheduleItem {
   description: string
   highlights?: string[]
   cost?: string
+  route?: string
   notes?: string
   image?: string
   completed: boolean
@@ -532,6 +541,7 @@ const editForm = ref<ScheduleItem>({
   description: '',
   highlights: [],
   cost: '',
+  route: '',
   notes: '',
   image: '',
   completed: false
@@ -984,7 +994,8 @@ const scheduleData = ref<ScheduleItem[]>([
     type: '海岛',
     description: '免费',
     highlights: ['白色灯塔', '海边礁石'],
-    notes: '游览路线：海边礁石→堤坝→蘑菇亭→贝壳亭→转角石阶→右边石板路→龙柏树→白色灯塔→小火车轨礁石。上岛后往左边开始环岛走一圈。汉庭(青岛栈桥火车站东广场店)→青海轮渡站，1.8km，可步行约20分钟或打车前往',
+    route: '海边礁石→堤坝→蘑菇亭→贝壳亭→转角石阶→石板路→龙柏树→白色灯塔→小火车轨礁石',
+    notes: '上岛后往左边开始环岛走一圈。汉庭(青岛栈桥火车站东广场店)→青海轮渡站，1.8km，可步行约20分钟或打车前往',
     completed: false
   },
   // 10.8 上午 - 太平山索道
@@ -1416,6 +1427,9 @@ const saveEdit = () => {
     if (!updatedItem.cost?.trim()) {
       delete (updatedItem as any).cost
     }
+    if (!updatedItem.route?.trim()) {
+      delete (updatedItem as any).route
+    }
     if (!updatedItem.notes?.trim()) {
       delete (updatedItem as any).notes
     }
@@ -1509,6 +1523,7 @@ const viewItemDetails = (item: ScheduleItem) => {
         <p><strong>类型：</strong>${item.type}</p>
         <p><strong>描述：</strong>${item.description}</p>
         ${item.cost ? `<p><strong>费用：</strong>${item.cost}</p>` : ''}
+        ${item.route ? `<p><strong>路线：</strong>${item.route}</p>` : ''}
         ${item.notes ? `<p><strong>备注：</strong>${item.notes}</p>` : ''}
         ${item.highlights?.length ? `<p><strong>亮点：</strong>${item.highlights.join(', ')}</p>` : ''}
       </div>
